@@ -1,0 +1,36 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build-ubuntu-18_04:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install required packages
+      run: sudo apt-get update && sudo apt-get install -y git curl wget
+    - name: Initialize dotfiles
+      run: bin/dotfiles.sh init
+    - name: Deploy dotfiles
+      run: bin/dotfiles.sh deploy
+
+  build-ubuntu-20_04:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install required packages
+      run: sudo apt-get update && sudo apt-get install -y git curl wget
+    - name: Initialize dotfiles
+      run: bin/dotfiles.sh init
+    - name: Deploy dotfiles
+      run: bin/dotfiles.sh deploy

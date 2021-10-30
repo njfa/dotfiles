@@ -1,0 +1,245 @@
+{
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "initialCols": 120,
+    "initialRows": 30,
+    "copyOnSelect": true,
+    "tabWidthMode": "titleLength",
+    "theme": "dark",
+    "showTabsInTitlebar": true,
+    "showTerminalTitleInTitlebar": true,
+    "wordDelimiters": " ./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}~?\u2502",
+    "profiles": {
+        "defaults": {
+            "fontFace": "更紗等幅ゴシック J",
+            "fontSize": 12,
+            "closeOnExit": true,
+            "colorScheme": "Andromeda"
+        },
+        
+        // pwsh.exeは下記のようにscoop以下の実行ファイルを指定しないとCtrl+Cで停止するときにpwsh.exeのプロセス自体が停止してしまう
+        // {
+        //     "guid":  "{<任意のGUID>}",
+        //     "hidden":  false,
+        //     "name":  "PowerShell",
+        //     "commandline": "%USERPROFILE%\\scoop\\apps\\pwsh\\current\\pwsh.exe"
+        // },
+        "list": []
+    },
+    "schemes": [
+        {
+            "name": "Dracula",
+            "background": "#282A36",
+            "black": "#21222C",
+            "blue": "#BD93F9",
+            "brightBlack": "#6272A4",
+            "brightBlue": "#D6ACFF",
+            "brightCyan": "#A4FFFF",
+            "brightGreen": "#69FF94",
+            "brightPurple": "#FF92DF",
+            "brightRed": "#FF6E6E",
+            "brightWhite": "#FFFFFF",
+            "brightYellow": "#FFFFA5",
+            "cyan": "#8BE9FD",
+            "foreground": "#F8F8F2",
+            "green": "#50FA7B",
+            "purple": "#FF79C6",
+            "red": "#FF5555",
+            "white": "#F8F8F2",
+            "yellow": "#F1FA8C"
+        },
+        {
+            "name": "Material",
+            "background": "#263238",
+            "foreground": "#eeffff",
+            "black": "#000000",
+            "blue": "#82aaff",
+            "brightBlack": "#546e7a",
+            "brightBlue": "#82aaff",
+            "brightCyan": "#89ddff",
+            "brightGreen": "#c3e88d",
+            "brightPurple": "#c792ea",
+            "brightRed": "#ff5370",
+            "brightWhite": "#ffffff",
+            "brightYellow": "#ffcb6b",
+            "cyan": "#89ddff",
+            "green": "#c3e88d",
+            "purple": "#c792ea",
+            "red": "#ff5370",
+            "white": "#ffffff",
+            "yellow": "#ffcb6b"
+        },
+        {
+            "name": "Material Darker",
+            "background": "#212121",
+            "foreground": "#eeffff",
+            "black": "#000000",
+            "blue": "#82aaff",
+            "brightBlack": "#545454",
+            "brightBlue": "#82aaff",
+            "brightCyan": "#89ddff",
+            "brightGreen": "#c3e88d",
+            "brightPurple": "#c792ea",
+            "brightRed": "#ff5370",
+            "brightWhite": "#ffffff",
+            "brightYellow": "#ffcb6b",
+            "cyan": "#89ddff",
+            "green": "#c3e88d",
+            "purple": "#c792ea",
+            "red": "#ff5370",
+            "white": "#ffffff",
+            "yellow": "#ffcb6b"
+        },
+        {
+            "name": "Material Lighter",
+            "background": "#fafafa",
+            "foreground": "#90a4ae",
+            "black": "#000000",
+            "blue": "#6182b8",
+            "brightBlack": "#90a4ae",
+            "brightBlue": "#6182b8",
+            "brightCyan": "#39adb5",
+            "brightGreen": "#91b859",
+            "brightPurple": "#7c4dff",
+            "brightRed": "#e53935",
+            "brightWhite": "#ffffff",
+            "brightYellow": "#ffb62c",
+            "cyan": "#39adb5",
+            "green": "#91b859",
+            "purple": "#7c4dff",
+            "red": "#e53935",
+            "white": "#ffffff",
+            "yellow": "#ffb62c"
+        },
+        {
+            "name": "Material Ocean",
+            "background": "#0f111a",
+            "foreground": "#8f93a2",
+            "black": "#000000",
+            "blue": "#82aaff",
+            "brightBlack": "#464b5d",
+            "brightBlue": "#82aaff",
+            "brightCyan": "#89ddff",
+            "brightGreen": "#c3e88d",
+            "brightPurple": "#c792ea",
+            "brightRed": "#ff5370",
+            "brightWhite": "#ffffff",
+            "brightYellow": "#ffcb6b",
+            "cyan": "#89ddff",
+            "green": "#c3e88d",
+            "purple": "#c792ea",
+            "red": "#ff5370",
+            "white": "#ffffff",
+            "yellow": "#ffcb6b"
+        },
+        {
+            "name": "Material Palenight",
+            "background": "#292d3e",
+            "foreground": "#a6accd",
+            "black": "#000000",
+            "blue": "#82aaff",
+            "brightBlack": "#676e95",
+            "brightBlue": "#82aaff",
+            "brightCyan": "#89ddff",
+            "brightGreen": "#c3e88d",
+            "brightPurple": "#c792ea",
+            "brightRed": "#ff5370",
+            "brightWhite": "#ffffff",
+            "brightYellow": "#ffcb6b",
+            "cyan": "#89ddff",
+            "green": "#c3e88d",
+            "purple": "#c792ea",
+            "red": "#ff5370",
+            "white": "#ffffff",
+            "yellow": "#ffcb6b"
+        },
+        {
+            "name": "OneDark",
+            "black": "#1e2127",
+            "red": "#e06c75",
+            "green": "#98c379",
+            "yellow": "#d19a66",
+            "blue": "#61afef",
+            "purple": "#c678dd",
+            "cyan": "#56b6c2",
+            "white": "#abb2bf",
+            "brightBlack": "#5c6370",
+            "brightRed": "#e06c75",
+            "brightGreen": "#98c379",
+            "brightYellow": "#d19a66",
+            "brightBlue": "#61afef",
+            "brightPurple": "#c678dd",
+            "brightCyan": "#56b6c2",
+            "brightWhite": "#ffffff",
+            "background": "#1e2127",
+            "foreground": "#abb2bf"
+        },
+        {
+            "name": "OneStar",
+            "black": "#000000",
+            "red": "#d13b3b",
+            "green": "#0dbc79",
+            "yellow": "#dfdf44",
+            "blue": "#2472c8",
+            "purple": "#c42cc4",
+            "cyan": "#33a0bb",
+            "white": "#f1f1f1",
+            "brightBlack": "#666666",
+            "brightRed": "#fa4b4b",
+            "brightGreen": "#23d18b",
+            "brightYellow": "#fcfc5c",
+            "brightBlue": "#3b8eea",
+            "brightPurple": "#d861d8",
+            "brightCyan": "#29b8db",
+            "brightWhite": "#fafafa",
+            "background": "#263238",
+            "foreground": "#e4e4e4"
+        },
+        {
+            "name": "Andromeda",
+            "black": "#000000",
+            "red": "#cd3131",
+            "green": "#05bc79",
+            "yellow": "#e5e512",
+            "blue": "#2472c8",
+            "purple": "#bc3fbc",
+            "cyan": "#0fa8cd",
+            "white": "#e5e5e5",
+            "brightBlack": "#666666",
+            "brightRed": "#cd3131",
+            "brightGreen": "#05bc79",
+            "brightYellow": "#e5e512",
+            "brightBlue": "#2472c8",
+            "brightPurple": "#bc3fbc",
+            "brightCyan": "#0fa8cd",
+            "brightWhite": "#e5e5e5",
+            "background": "#262a33",
+            "foreground": "#e5e5e5"
+        }
+    ],
+    "keybindings": [
+        {
+            "command": "newTab",
+            "keys": [
+                "ctrl+shift+t"
+            ]
+        },
+        {
+            "command": "nextTab",
+            "keys": [
+                "ctrl+tab"
+            ]
+        },
+        {
+            "command": "openSettings",
+            "keys": [
+                "ctrl+,"
+            ]
+        },
+        {
+            "command": "prevTab",
+            "keys": [
+                "ctrl+shift+tab"
+            ]
+        }
+    ]
+}

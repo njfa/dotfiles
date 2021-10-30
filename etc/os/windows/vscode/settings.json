@@ -1,0 +1,399 @@
+{
+    // ------------------------------------------------------------------------
+    // フォント
+    // ------------------------------------------------------------------------
+    "editor.fontFamily": "更紗等幅ゴシック J",
+    "editor.fontLigatures": true,
+    "terminal.integrated.fontFamily": "更紗等幅ゴシック J",
+    "terminal.integrated.fontSize": 16,
+    "terminal.integrated.fontWeight": "400",
+    "terminal.integrated.rendererType": "canvas", // 指定しないとnerd fontの幅がおかしくなる
+    "rest-client.fontFamily": "更紗等幅ゴシック J",
+    "rest-client.fontSize": 16,
+    "vim.easymotionMarkerFontWeight": "600",
+
+    // ------------------------------------------------------------------------
+    // カーソル
+    // ------------------------------------------------------------------------
+    "editor.cursorBlinking": "smooth",
+    "editor.cursorSmoothCaretAnimation": false,
+    "editor.multiCursorModifier": "ctrlCmd",
+    "vim.cursorStylePerMode.insert": "line",
+    "vim.cursorStylePerMode.normal": "block",
+    "vim.cursorStylePerMode.replace": "block-outline",
+    "vim.cursorStylePerMode.visual": "line",
+    "vim.cursorStylePerMode.visualblock": "line",
+    "vim.cursorStylePerMode.visualline": "line",
+    "terminal.integrated.copyOnSelection": true,
+    "workbench.startupEditor": "newUntitledFile",
+    "editor.renderWhitespace": "boundary",
+    "editor.minimap.enabled": false,
+    "editor.renderControlCharacters": true,
+    "editor.renderIndentGuides": true,
+    "editor.renderLineHighlight": "gutter",
+    "editor.wordWrap": "on",
+    "editor.wordSeparators": "`~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?、。「」（）；：・？＜＞＋－＊／｛｝｜～＆％＄＃”！’　にをはがのとも",
+    "editor.mouseWheelZoom": true,
+    "editor.matchBrackets": "always",
+    "workbench.colorTheme": "Dracula",
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.editor.enablePreview": false,
+    "workbench.tree.indent": 20,
+    "workbench.colorCustomizations": {
+        "editor.background": "#131d26",
+    },
+    "breadcrumbs.enabled": true,
+    "editor.lineNumbers": "relative",
+
+    // ファイルエクスプローラーの表示対象外
+    "files.exclude": {
+        "**/.git": false,
+        "**/.svn": false,
+        "**/.hg": false,
+        "**/CVS": false,
+        "**/.DS_Store": false,
+        "**/.history": false
+    },
+
+    // 検索の対象外
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/.history": true
+    },
+
+    // ファイル監視の除外
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.svn/**": true,
+        "**/target/**": true,
+        "**/.history/**": true
+    },
+
+    // ------------------------------------------------------------------------
+    // ターミナル
+    // ------------------------------------------------------------------------
+
+    "terminal.explorerKind": "external",
+    "terminal.integrated.allowChords": false,
+    // "terminal.integrated.shell.linux": "/usr/local/bin/zsh",
+    "terminal.external.windowsExec": "%LOCALAPPDATA%\\Microsoft\\WindowsApps\\wt.exe",
+    "terminal.integrated.cursorBlinking": true,
+    // "terminal.integrated.shell.windows": "C:\\Windows\\System32\\wsl.exe",
+
+    // ------------------------------------------------------------------------
+    // 予測変換
+    // ------------------------------------------------------------------------
+
+    "editor.acceptSuggestionOnEnter": "on",
+    "editor.quickSuggestionsDelay": 30,
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+
+    // ------------------------------------------------------------------------
+    // デバッグ
+    // ------------------------------------------------------------------------
+    "debug.allowBreakpointsEverywhere": true,
+    "debug.inlineValues": true,
+
+    // ------------------------------------------------------------------------
+    // ファイル
+    // ------------------------------------------------------------------------
+    "files.autoGuessEncoding": true,
+    "files.associations": {
+        ".xonshrc": "python",
+        ".tmpl": "html"
+    },
+    "workbench.editor.focusRecentEditorAfterClose": false,
+
+    // ------------------------------------------------------------------------
+    // vim
+    // ------------------------------------------------------------------------
+    "vim.leader": "<Space>",
+    "vim.whichwrap": "h,l,<,>,[,]", // hl<>[]で行頭左移動、行末右移動を可能にする
+    "vim.useSystemClipboard": true, // vimとシステムのクリップボードを共有
+    "vim.hlsearch": false,
+    "vim.highlightedyank.enable": false,
+    "vim.searchHighlightColor": "#aa00aa",
+    "vim.searchHighlightTextColor": "#ffffff",
+    "vim.easymotion": true,
+    "vim.easymotionKeys": "wersdf",
+    "vim.easymotionMarkerBackgroundColor": "#011628",
+    "vim.easymotionMarkerForegroundColorOneChar": "#ff1453",
+    "vim.easymotionMarkerForegroundColorTwoCharFirst": "#ff1453",
+    "vim.easymotionMarkerForegroundColorTwoCharSecond": "#ff1453",
+    "vim.sneak": false,
+    "vim.sneakUseIgnorecaseAndSmartcase": true,
+    "vim.camelCaseMotion.enable": true,
+    "vim.visualstar": true,
+    "vim.handleKeys": {
+        "<C-n>": false,
+        "<C-h>": false,
+        "<C-l>": false,
+        "<C-f>": false,
+        "<C-b>": false,
+        "<C-a>": true,
+        "<C-o>": false,
+        "<C-y>": false,
+        "<C-i>": false
+    },
+    "vim.normalModeKeyBindingsNonRecursive": [
+        // コマンド実行
+        { "before": ["'"], "commands": ["vim.showQuickpickCmdLine"] },
+        { "before": [":"], "commands": ["workbench.action.showCommands"] },
+
+        // カーソル移動
+        { "before": ["k"], "after": ["g", "k"] },
+        { "before": ["g", "k"], "after": ["k"] },
+        { "before": ["j"], "after": ["g", "j"] },
+        { "before": ["g", "j"], "after": ["j"] },
+
+        // CamelCaseMotion
+        { "before": ["w"], "after": ["<Leader>", "w"] },
+        { "before": ["b"], "after": ["<Leader>", "b"] },
+        { "before": ["e"], "after": ["<Leader>", "e"] },
+
+        // easyMotion
+        { "before": ["f"], "after": ["<Leader>", "<Leader>", "f"] },
+        { "before": ["F"], "after": ["<Leader>", "<Leader>", "F"] },
+        { "before": ["t"], "after": ["<Leader>", "<Leader>", "t"] },
+        { "before": ["T"], "after": ["<Leader>", "<Leader>", "T"] },
+        { "before": ["<C-j>"], "after": ["<Leader>", "<Leader>", "j"] },
+        { "before": ["<C-k>"], "after": ["<Leader>", "<Leader>", "k"] },
+
+        // 検索
+        { "before": ["*"], "after": ["*", "z", "z"] },
+        { "before": ["#"], "after": ["#", "z", "z"] },
+
+        // 検索時の入力文字が見づらいため、vscodeの検索を利用するように変更
+        // keybindings.jsonも利用しているため、extension.multiCommand.executeが必須
+        // ?の動作を再現するのは難しいので、?は置換に割当
+        { "before": ["/"], "commands": ["actions.find"]},
+        { "before": ["?"], "commands": ["actions.find", "editor.action.startFindReplaceAction"]},
+        { "before": ["n"], "commands": ["editor.action.nextMatchFindAction", "extension.vim_escape"], "after": ["z", "z", "l"]},
+        { "before": ["N"], "commands": ["editor.action.previousMatchFindAction", "extension.vim_escape"], "after": ["z", "z", "h"]},
+        { "before": ["<Leader>", "/"], "commands": ["workbench.view.search.focus"] },
+
+        // ウィンドウ操作
+        { "before": ["<C-w>", "-"], "commands": [":split"] },
+        { "before": ["<C-w>", "\\"], "commands": [":vsplit"] },
+        { "before": ["<C-w>", "="], "commands": ["workbench.action.evenEditorWidths"] },
+        { "before": ["<C-w>", ","], "commands": ["workbench.action.decreaseViewSize"] },
+        { "before": ["<C-w>", "."], "commands": ["workbench.action.increaseViewSize"] },
+        { "before": ["<C-w>", "H"], "commands": ["workbench.action.moveEditorToLeftGroup"] },
+        { "before": ["<C-w>", "L"], "commands": ["workbench.action.moveEditorToRightGroup"] },
+        { "before": ["<C-w>", "J"], "commands": ["workbench.action.moveEditorToBelowGroup"] },
+        { "before": ["<C-w>", "K"], "commands": ["workbench.action.moveEditorToAboveGroup"] },
+        { "before": ["<C-w>", "q"], "commands": ["workbench.action.closeEditorsInGroup"] },
+
+        // システム側のundo/redoを利用する
+        { "before": ["u"], "commands": ["undo"] },
+        { "before": ["<C-r>"], "commands": ["redo"] },
+
+        // インデント
+        { "before": ["."], "commands": ["editor.action.indentLines"] },
+        { "before": [","], "commands": ["editor.action.outdentLines"] }, // <C-[a-z]> の定義が存在する場合に"<"がうまく動かないためCommaに変更
+
+        // 繰り返し (indexLinesで "." を潰してしまったため別キーに変更)
+        { "before": [">"], "after": ["."] },
+
+        // 問題箇所の移動、非表示化、クイックフィックスの表示
+        { "before": ["m", "m"], "commands": ["closeMarkersNavigation"] },
+        { "before": ["m", "n"], "commands": ["editor.action.marker.next"] },
+        { "before": ["m", "p"], "commands": ["editor.action.marker.prev"] },
+        { "before": ["m", "f"], "commands": ["editor.action.quickFix"] },
+
+        { "before": ["m", "b"], "commands": ["bookmarks.toggleLabeled"] },
+
+        // ファイル編集時の設定を変更
+        { "before": ["m", "l"], "commands": ["workbench.action.editor.changeLanguageMode"]},
+        { "before": ["m", "i"], "commands": ["changeEditorIndentation"]},
+        { "before": ["m", "e"], "commands": ["workbench.action.editor.changeEncoding"]},
+
+        // VSCodeのUI操作
+        { "before": ["<Leader>", "s"], "commands": ["workbench.action.toggleSidebarVisibility"] },
+        { "before": ["<Leader>", "."], "commands": ["workbench.action.togglePanel", "workbench.action.focusActiveEditorGroup"] },
+        { "before": ["<Leader>", "l"], "commands": ["workbench.action.nextPanelView", "workbench.action.focusActiveEditorGroup"] },
+        { "before": ["<Leader>", "h"], "commands": ["workbench.action.previousPanelView", "workbench.action.focusActiveEditorGroup"] },
+        { "before": ["<Leader>", "j"], "commands": ["workbench.action.nextSideBarView", "workbench.action.focusActiveEditorGroup"] },
+        { "before": ["<Leader>", "k"], "commands": ["workbench.action.previousSideBarView", "workbench.action.focusActiveEditorGroup"] },
+
+        // ファイル操作
+        { "before": ["<Leader>", "f"], "commands": ["workbench.action.quickOpen"]},
+        { "before": ["<Leader>", "w"], "commands": [":w"] },
+        { "before": ["<Leader>", "q"], "commands": [":q!"] },
+        { "before": ["<Leader>", "c"], "commands": [":enew"]},
+        { "before": ["<Leader>", "r"], "commands": ["workbench.action.openRecent"]},
+
+        // 削除時にクリップボードを上書きしない
+        { "before": ["s"], "after":["\"", "_", "s"] },
+        { "before": ["x"], "after":["\"", "_", "x"] }
+    ],
+    "vim.normalModeKeyBindings": [
+    ],
+    "vim.visualModeKeyBindingsNonRecursive": [
+        // カーソル移動
+        { "before": ["k"], "after": ["g", "k"] },
+        { "before": ["g", "k"], "after": ["k"] },
+        { "before": ["j"], "after": ["g", "j"] },
+        { "before": ["g", "j"], "after": ["j"] },
+
+        // 削除時にクリップボードを上書きしない
+        { "before": ["s"], "after":["\"", "_", "s"] },
+        { "before": ["x"], "after":["\"", "_", "x"] },
+
+        // registerを書き換えずにペーストする
+        { "before": ["p"], "after":["\"", "_", "d", "P"] },
+
+        { "before": [";"], "commands": ["vim.showQuickpickCmdLine"] },
+        { "before": [":"], "commands": ["workbench.action.showCommands"] },
+
+        // easyMotion
+        { "before": ["f"], "after": ["<Leader>", "<Leader>", "f"] },
+        { "before": ["F"], "after": ["<Leader>", "<Leader>", "F"] },
+        { "before": ["t"], "after": ["<Leader>", "<Leader>", "t"] },
+        { "before": ["T"], "after": ["<Leader>", "<Leader>", "T"] },
+        { "before": ["<C-j>"], "after": ["<Leader>", "<Leader>", "j"] },
+        { "before": ["<C-k>"], "after": ["<Leader>", "<Leader>", "k"] },
+
+        // 検索
+        { "before": ["/"], "commands": ["actions.find"]},
+        { "before": ["?"], "commands": ["actions.find", "editor.action.startFindReplaceAction"]},
+        { "before": ["n"], "commands": ["editor.action.nextMatchFindAction", "extension.vim_escape"], "after": ["z", "z", "l"]},
+        { "before": ["N"], "commands": ["editor.action.previousMatchFindAction", "extension.vim_escape"], "after": ["z", "z", "h"]},
+        { "before": ["<Leader>", "/"], "commands": ["workbench.view.search.focus"] },
+
+        { "before": ["*"], "after": ["*", "z", "z"] },
+        { "before": ["#"], "after": ["#", "z", "z"] },
+        { "before": ["n"], "after": ["n", "z", "z"] },
+        { "before": ["N"], "after": ["N", "z", "z"] },
+
+        // インデント
+        { "before": ["."], "commands": ["editor.action.indentLines"] },
+        { "before": [","], "commands": ["editor.action.outdentLines"] },
+
+        // CamelCaseMotion
+        { "before": ["w"], "after": ["<Leader>", "w"] },
+        { "before": ["b"], "after": ["<Leader>", "b"] },
+        { "before": ["e"], "after": ["<Leader>", "e"] },
+
+        // Align
+        { "before": ["<CR>"], "commands": ["alignment.align"] },
+        { "before": ["<Leader>", "a"], "commands": ["alignment.align"] },
+        { "before": ["<Leader>", "f"], "commands": ["alignment.alignFirst"] },
+        { "before": ["<Leader>", "w"], "commands": ["alignment.alignWhitespace"] }
+    ],
+    "vim.insertModeKeyBindingsNonRecursive": [
+        // Esc
+        // { "before": ["j", "j"], "after": ["<Esc>"] }
+    ],
+    // ------------------------------------------------------------------------
+    // 言語別設定
+    // ------------------------------------------------------------------------
+
+    // html
+    "html.format.endWithNewline": true,
+
+    // markdown
+    "markdownlint.config": {
+        "MD004": false,
+        "MD007": false,
+        "MD009": {
+            "br_spaces": 2
+        },
+        "MD013": false,
+        "MD032": false
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+    },
+    "markdown-preview-enhanced.mermaidTheme": "dark",
+    "markdown.extension.list.indentationSize": "inherit",
+
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+
+    // ------------------------------------------------------------------------
+    // Alignment
+    // ------------------------------------------------------------------------
+
+    "alignment.indentBase": "dontchange",
+    "alignment.operatorPadding": "left",
+    "alignment.surroundSpace": {
+        "colon": [
+            0,
+            1
+        ],
+        "assignment": [
+            1,
+            1
+        ],
+        "arrow": [
+            1,
+            1
+        ],
+        "comment": 2
+    },
+
+    "autoAlign.alignment": "left",
+    "autoAlign.associations": {
+        "csv": ",",
+        "bsv": "|"
+    },
+    "autoAlign.enabled": {
+        "csv": true,
+        "bsv": true
+    },
+    "autoAlign.extraSpace": true,
+
+    // ------------------------------------------------------------------------
+    // ローカルヒストリー
+    // ------------------------------------------------------------------------
+
+    "local-history.enabled": 1,
+    "local-history.maxDisplay": 10,
+    "local-history.daysLimit": 30,
+    "local-history.absolute": false,
+    "local-history.path": "%USERPROFILE%",
+
+    // ------------------------------------------------------------------------
+    // その他
+    // ------------------------------------------------------------------------
+    "telemetry.enableCrashReporter": false,
+    "telemetry.enableTelemetry": false,
+    "git.autofetch": true,
+    "workbench.editor.closeEmptyGroups": true,
+    "scm.alwaysShowActions": true,
+    "editor.formatOnPaste": true,
+    "workbench.commandPalette.history": 20,
+    "tabnine.experimentalAutoImports": true,
+    "rust-analyzer.debug.engineSettings": {
+        "lldb": {
+            "terminal":"external"
+        }
+    },
+    "rust-analyzer.runnableEnv": {
+        "RUST_BACKTRACE": "full",
+        "RA_LOG": "debug"
+    },
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter-notebook"
+    },
+    "cSpell.userWords": [
+        "Askama",
+        "Palenight",
+        "Titlebar",
+        "USERPROFILE",
+        "actix",
+        "commandline",
+        "pwsh",
+        "rusqlite",
+        "sqlite",
+        "thiserror"
+    ],
+    "window.zoomLevel": 0,
+    "security.workspace.trust.untrustedFiles": "open"
+}
