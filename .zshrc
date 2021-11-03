@@ -318,6 +318,8 @@ typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=8
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+alias code='code.sh'
+
 # lsに色を付ける
 alias ls='ls --color=auto'
 
