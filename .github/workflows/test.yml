@@ -18,6 +18,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install required packages
       run: sudo apt-get update && sudo apt-get install -y git curl wget
+    - name: change permission
+      run: chmod +x bin/setup.sh
     - name: Initialize dotfiles
       run: bin/setup.sh init
     - name: Deploy dotfiles
@@ -30,6 +32,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install required packages
       run: sudo apt-get update && sudo apt-get install -y git curl wget
+    - name: change permission
+      run: chmod +x bin/setup.sh
     - name: Initialize dotfiles
       run: bin/setup.sh init
     - name: Deploy dotfiles
