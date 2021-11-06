@@ -170,17 +170,14 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "bat"
         "fzf"
         "corretto11"
-        "ghq"
-        "go"
         "googlechrome"
         "msys2"
-        "neovim-nightly"
+        "neovim"
         "nodejs-lts"
-        "pwsh"
-        "ripgrep"
         "vscode"
         "powertoys"
         "jq"
+        "zenhan"
     )
 
     scoop install $UTILS
