@@ -19,9 +19,9 @@ jobs:
     - name: Install required packages
       run: sudo apt-get update && sudo apt-get install -y git curl wget
     - name: Initialize dotfiles
-      run: bin/dotfiles.sh init
+      run: bin/setup.sh init
     - name: Deploy dotfiles
-      run: bin/dotfiles.sh deploy
+      run: bin/setup.sh deploy
 
   build-ubuntu-20_04:
     runs-on: ubuntu-20.04
@@ -31,6 +31,6 @@ jobs:
     - name: Install required packages
       run: sudo apt-get update && sudo apt-get install -y git curl wget
     - name: Initialize dotfiles
-      run: bin/dotfiles.sh init
+      run: bin/setup.sh init
     - name: Deploy dotfiles
-      run: bin/dotfiles.sh deploy
+      run: bin/setup.sh deploy
