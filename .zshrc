@@ -330,21 +330,21 @@ alias ssh='TERM=xterm ssh'
 alias ta='tmux-create-new-session'
 
 # rust製ツールを入れている場合はコマンドを置き換える
-if [ ! -z "$(command -v lsd)" ]; then
-    alias ls='lsd'
-fi
-if [ ! -z "$(command -v exa)" ]; then
-    alias es='exa'
-fi
+# if [ ! -z "$(command -v lsd)" ]; then
+#     alias ls='lsd'
+# fi
+# if [ ! -z "$(command -v exa)" ]; then
+#     alias es='exa'
+# fi
 
-if [ ! -z "$(command -v bat)" ]; then
-    alias cat='bat'
-    alias cap='bat -p'
-fi
-
-if [ ! -z "$(command -v fselect)" ]; then
-    alias fs='fselect'
-fi
+# if [ ! -z "$(command -v bat)" ]; then
+#     alias cat='bat'
+#     alias cap='bat -p'
+# fi
+# 
+# if [ ! -z "$(command -v fselect)" ]; then
+#     alias fs='fselect'
+# fi
 
 # インタラクティブにjqを使用できるプラグイン (jq依存)
 if [ ! -z "$(command -v jq)" ]; then
