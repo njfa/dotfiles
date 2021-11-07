@@ -26,6 +26,9 @@ if !exists('g:vscode')
     Plug 'markonm/traces.vim'
     Plug 'osyo-manga/vim-anzu'
     Plug 'mhinz/vim-grepper'
+
+    Plug 'lambdalisue/fern.vim'
+    Plug 'lambdalisue/fern-git-status.vim'
 else
     Plug 'asvetliakov/vim-easymotion', { 'as': 'vsc-easymotion' }
 endif
@@ -81,6 +84,9 @@ let mapleader = "\<SPACE>"
 let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
 highlight QuickScopePrimary guifg='#ff3f1f' gui=underline ctermfg=155 cterm=underline
 highlight QuickScopeSecondary guifg='#ff8f5f' gui=underline ctermfg=81 cterm=underline
+
+" vim-sandwitch
+let g:sandwich_no_default_key_mappings = 1
 
 " vscodeで起動した場合に反映しない設定
 if !exists('g:vscode')
