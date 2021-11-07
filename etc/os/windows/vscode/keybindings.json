@@ -25,15 +25,20 @@
     },
 
     // サイドバーにフォーカスする
+    // {
+    //     "key": "ctrl+s",
+    //     "command": "workbench.action.focusSideBar",
+    //     "when": "!sideBarFocus"
+    // },
     {
-        "key": "ctrl+s",
-        "command": "workbench.action.focusSideBar",
-        "when": "!sideBarFocus"
-    },
-    {
-        "key": "ctrl+s",
+        "key": "ctrl+w s",
         "command": "workbench.action.focusActiveEditorGroup",
         "when": "sideBarFocus"
+    },
+    {
+        "key": "ctrl+w s",
+        "command": "workbench.action.focusSideBar",
+        "when": "inSettingsSearch || inKeybindings || inSettingsEditor || activeEditorGroupEmpty"
     },
 
     // エディタの移動
@@ -197,6 +202,10 @@
         "key": "r",
         "command": "renameFile",
         "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus"
+    },
+    {
+        "key": "ctrl+q",
+        "command": "workbench.action.closeActiveEditor"
     },
     {
         "key": "Escape",
@@ -671,5 +680,45 @@
         "key": "ctrl+i",
         "command": "-markdown.extension.editing.toggleItalic",
         "when": "editorTextFocus && !editorReadonly && editorLangId == 'markdown'"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "-workbench.action.reloadWindow",
+        "when": "isDevelopment"
+    },
+    {
+        "key": "alt+l",
+        "command": "-toggleSearchEditorContextLines",
+        "when": "inSearchEditor"
+    },
+    {
+        "key": "alt+l",
+        "command": "workbench.action.nextPanelView"
+    },
+    {
+        "key": "alt+h",
+        "command": "-git.viewFileHistory"
+    },
+    {
+        "key": "alt+h",
+        "command": "-gitlens.showQuickFileHistory",
+        "when": "!gitlens:disabled && config.gitlens.keymap == 'alternate'"
+    },
+    {
+        "key": "alt+h",
+        "command": "workbench.action.previousPanelView"
+    },
+    {
+        "key": "alt+k",
+        "command": "-keybindings.editor.recordSearchKeys",
+        "when": "inKeybindings && inKeybindingsSearch"
+    },
+    {
+        "key": "alt+j",
+        "command": "workbench.action.nextSideBarView"
+    },
+    {
+        "key": "alt+k",
+        "command": "workbench.action.previousSideBarView"
     }
 ]
