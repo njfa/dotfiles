@@ -43,7 +43,7 @@
         "editor.background": "#131d26",
     },
     "breadcrumbs.enabled": true,
-    "editor.lineNumbers": "relative",
+    "editor.lineNumbers": "on",
 
     // ファイルエクスプローラーの表示対象外
     "files.exclude": {
@@ -395,5 +395,10 @@
         "thiserror"
     ],
     "window.zoomLevel": 0,
-    "security.workspace.trust.untrustedFiles": "open"
+    "security.workspace.trust.untrustedFiles": "open",
+    "powershell.powerShellDefaultVersion": "Windows PowerShell (x86)",
+    "vscode-neovim.neovimExecutablePaths.linux": "/usr/bin/nvim",
+    "vscode-neovim.useWSL": true,
+    "vscode-neovim.neovimInitVimPaths.linux": "~/.config/nvim/init.vim",
+    "workbench.activityBar.visible": false
 }
