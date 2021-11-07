@@ -8,9 +8,12 @@ nnoremap gk k
 noremap 0 ^
 noremap ^ 0
 
-map ' <Plug>(easymotion-bd-f)
-map <leader>j <Plug>(easymotion-bd-w)
-map <leader>l <Plug>(easymotion-bd-jk)
+nmap ' <Plug>(easymotion-bd-f)
+nmap <leader>j <Plug>(easymotion-bd-w)
+nmap <leader>l <Plug>(easymotion-bd-jk)
+vmap ' <Plug>(easymotion-bd-f)
+vmap <leader>j <Plug>(easymotion-bd-w)
+vmap <leader>l <Plug>(easymotion-bd-jk)
 
 " 検索
 nnoremap <silent> <Esc> :noh<cr>
@@ -36,14 +39,24 @@ vmap V <Plug>(expand_region_shrink)
 
 " EasyAlign
 " Start interactive EasyAlign in visual mode (e.g. vipga)
-xmap ga <Plug>(EasyAlign)
+xmap <leader>a <Plug>(EasyAlign)
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap ga <Plug>(EasyAlign)
+nmap <leader>a <Plug>(EasyAlign)
+vmap <cr> <Plug>(EasyAlign)
 
 nmap R <Plug>(operator-replace)
 
-" vscodeでのみ使用するキーマップの開始: m
-" vscode, nvim共通で使用するキーマップの開始: <leader> or <C-w>
+" vim-sandwitch
+nmap ga  <Plug>(operator-sandwich-add)
+nmap gab <Plug>(operator-sandwich-add)<Plug>(textobj-sandwich-auto-a)
+nmap gr  <Plug>(operator-sandwich-replace)<Plug>(textobj-sandwich-query-a)
+nmap grb <Plug>(operator-sandwich-replace)<Plug>(textobj-sandwich-auto-a)
+nmap gd  <Plug>(operator-sandwich-delete)<Plug>(textobj-sandwich-query-a)
+nmap gdb <Plug>(operator-sandwich-delete)<Plug>(textobj-sandwich-auto-a)
+
+"よく使用する機能: <leader>
+" ウィンドウ操作系: <C-w>
+" たまに使う機能: g
 if exists('g:vscode')
 
     function! VSCodeNotifyVisual(cmd, leaveSelection, ...)
@@ -80,19 +93,19 @@ if exists('g:vscode')
     nnoremap <C-w>, <cmd>call VSCodeNotify('workbench.action.decreaseViewSize')<cr>
     nnoremap <C-w>r <cmd>call VSCodeNotify('workbench.action.reloadWindow')<cr>
     nnoremap <C-w>s <cmd>call VSCodeNotify('workbench.action.focusSideBar')<cr>
-    nnoremap mva <cmd>call VSCodeNotify('workbench.action.toggleActivityBarVisibility')<cr>
-    nnoremap mvs <cmd>call VSCodeNotify('workbench.action.toggleSidebarVisibility')<cr>
-    nnoremap mvt <cmd>call VSCodeNotify('workbench.action.togglePanel')<cr>:sleep 100m<cr><cmd>call VSCodeNotify('workbench.action.focusActiveEditorGroup')<cr>
+    nnoremap <C-w>ta <cmd>call VSCodeNotify('workbench.action.toggleActivityBarVisibility')<cr>
+    nnoremap <C-w>ts <cmd>call VSCodeNotify('workbench.action.toggleSidebarVisibility')<cr>
+    nnoremap <C-w>tp <cmd>call VSCodeNotify('workbench.action.togglePanel')<cr>:sleep 100m<cr><cmd>call VSCodeNotify('workbench.action.focusActiveEditorGroup')<cr>
 
     " 検索
     nnoremap <leader>g <cmd>call VSCodeNotify('workbench.action.findInFiles')<cr>
     nnoremap <leader>* <cmd>call VSCodeNotify('workbench.action.findInFiles', { 'query': expand('<cword>')})<cr>
 
     " vscode特有の操作
-    nnoremap mm <cmd>call VSCodeNotify('workbench.action.showCommands')<cr>
-    nnoremap mf <cmd>call VSCodeNotify('workbench.action.editor.changeLanguageMode')<cr>
-    nnoremap mi <cmd>call VSCodeNotify('changeEditorIndentation')<cr>
-    nnoremap me <cmd>call VSCodeNotify('workbench.action.editor.changeEncoding')<cr>
+    nnoremap <leader>: <cmd>call VSCodeNotify('workbench.action.showCommands')<cr>
+    nnoremap gf <cmd>call VSCodeNotify('workbench.action.editor.changeLanguageMode')<cr>
+    nnoremap gi <cmd>call VSCodeNotify('changeEditorIndentation')<cr>
+    nnoremap ge <cmd>call VSCodeNotify('workbench.action.editor.changeEncoding')<cr>
 
     " インデント
     nnoremap < <cmd>call VSCodeNotify('editor.action.outdentLines')<cr>
@@ -114,6 +127,8 @@ else
     " ウィンドウ操作
     nnoremap <C-w>\| :vsplit<cr>
     nnoremap <C-w>- :split<cr>
+    nnoremap <C-w>s :Fern . -drawer<cr>
+    nnoremap <C-w>ts :Fern . -drawer -toggle -stay<cr>
 
     " 検索
     nnoremap <leader>g :Grepper<cr>
