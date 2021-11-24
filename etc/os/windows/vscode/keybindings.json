@@ -1,16 +1,7 @@
-// 既定値を上書きするには、このファイル内にキー バインドを挿入します
+// Place your key bindings in this file to override the defaultsauto[]
 [
-    ///////////////////////////////////////////////////////////////////////////////////////
-    // ViewGroup、sidobar、terminal、panel間の移動、操作
-    ///////////////////////////////////////////////////////////////////////////////////////
-    // Prefix: ctrl+w
-    // エディタ内の操作はvscodevimの設定項目で設定する
-
-    // sidebar、panelからエディタにフォーカスする
-    {
-        "key": "ctrl+'",
-        "command": "workbench.action.focusActiveEditorGroup"
-    },
+    ///////////////////////////////////
+    // 移動系
 
     // パネルにフォーカスする
     {
@@ -22,23 +13,6 @@
         "key": "ctrl+.",
         "command": "workbench.action.focusPanel",
         "when": "editorFocus"
-    },
-
-    // サイドバーにフォーカスする
-    // {
-    //     "key": "ctrl+s",
-    //     "command": "workbench.action.focusSideBar",
-    //     "when": "!sideBarFocus"
-    // },
-    {
-        "key": "ctrl+w s",
-        "command": "workbench.action.focusActiveEditorGroup",
-        "when": "sideBarFocus"
-    },
-    {
-        "key": "ctrl+w s",
-        "command": "workbench.action.focusSideBar",
-        "when": "inSettingsSearch || inKeybindings || inSettingsEditor || activeEditorGroupEmpty"
     },
 
     // エディタの移動
@@ -53,7 +27,14 @@
         "when": "!terminalFocus"
     },
 
-    // vscodevimが使えない状態のエディタグループ移動
+    // sidebarにフォーカスがある状態のエディタグループ移動
+    {
+        "key": "ctrl+w l",
+        "command": "workbench.action.focusActiveEditorGroup",
+        "when": "sideBarFocus"
+    },
+
+    // neovimが使えない状態のエディタグループ移動
     {
         "key": "ctrl+w h",
         "command": "workbench.action.focusLeftGroup",
@@ -65,653 +46,25 @@
         "when": "inSettingsSearch || inKeybindings || inSettingsEditor || activeEditorGroupEmpty"
     },
     {
-        "key": "ctrl+w k",
-        "command": "workbench.action.focusAboveGroup",
-        "when": "inSettingsSearch || inKeybindings || inSettingsEditor || activeEditorGroupEmpty"
-    },
-    {
         "key": "ctrl+w l",
         "command": "workbench.action.focusRightGroup",
         "when": "inSettingsSearch || inKeybindings || inSettingsEditor || activeEditorGroupEmpty"
     },
 
-    // sidebarにフォーカスがある状態のエディタグループ移動
     {
-        "key": "ctrl+w l",
-        "command": "workbench.action.focusActiveEditorGroup",
-        "when": "sideBarFocus"
+        "key": "ctrl+w s",
+        "command": "workbench.action.focusSideBar",
+        "when": "inSettingsSearch || inKeybindings || inSettingsEditor || activeEditorGroupEmpty"
     },
 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    // 検索系
-    ///////////////////////////////////////////////////////////////////////////////////////
-
-    {
-        "key": "enter",
-        "command": "extension.multiCommand.execute",
-        "args": {
-            "sequence": [
-                "workbench.action.focusActiveEditorGroup",
-                "extension.vim_escape"
-            ]
-        },
-        "when": "findInputFocussed || replaceInputFocussed"
-    },
-    {
-        "key": "escape",
-        "command": "extension.multiCommand.execute",
-        "args": {
-            "sequence": [
-                "closeFindWidget",
-                "extension.vim_escape"
-            ]
-        },
-        "when": "editorFocus && findWidgetVisible && !terminalFocus || findInputFocussed || replaceInputFocussed"
-    },
-    {
-        "key": "enter",
-        "command": "workbench.action.terminal.hideFind",
-        "when": "terminalFindVisible && terminalFocus"
-    },
-    {
-        "key": "enter",
-        "command": "keybindings.editor.focusKeybindings",
-        "when": "inKeybindings && inKeybindingsSearch"
-    },
-    {
-        "key": "enter",
-        "command": "search.focus.nextInputBox",
-        "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible"
-    },
-    {
-        "key": "enter",
-        "command": "settings.action.focusSettingsFromSearch",
-        "when": "inSettingsSearch && !suggestWidgetVisible"
-    },
-    {
-        "key": "enter",
-        "command": "editor.action.insertLineAfter",
-        "when": "editorFocus && vim.mode == 'Normal' && !renameInputVisible && !findInputFocussed && !replaceInputFocussed"
-    },
-    {
-        "key": "shift+enter",
-        "command": "editor.action.insertLineBefore",
-        "when": "editorFocus && vim.mode == 'Normal' && !renameInputVisible && !findInputFocussed && !replaceInputFocussed"
-    },
-    {
-        "key": "'",
-        "command": "workbench.action.showCommands",
-        "when": "activeEditorGroupEmpty && !terminalFocus"
-    },
-    {
-        "key": "shift+space",
-        "command": "editor.action.triggerSuggest",
-        "when": "editorFocus && vim.mode == 'Insert' && !renameInputVisible && !findInputFocussed && !replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+i",
-        "command": "editor.action.triggerSuggest",
-        "when": "editorFocus && !findInputFocussed && !renameInputVisible && !replaceInputFocussed && vim.mode == 'Insert'"
-    },
-    {
-        "key": "ctrl+a",
-        "command": "editor.action.replaceAll",
-        "when": "findWidgetVisible && editorFocus && vim.mode == 'Normal' && !findInputFocussed && !replaceInputFocussed"
-    },
-    {
-        "key": "d d",
-        "command": "deleteFile",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceMoveableToTrash && !explorerResourceReadonly && !inputFocus"
-    },
-    {
-        "key": "d d",
-        "command": "moveFileToTrash",
-        "when": "explorerResourceMoveableToTrash && explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
-    },
-    {
-        "key": "shift+f",
-        "command": "explorer.newFolder",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
-    },
-    {
-        "key": "f",
-        "command": "explorer.newFile",
-        "when": "explorerViewletVisible && filesExplorerFocus && !inputFocus"
-    },
-    {
-        "key": "p",
-        "command": "filesExplorer.paste",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
-    },
-    {
-        "key": "x",
-        "command": "filesExplorer.cut",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !inputFocus"
-    },
-    {
-        "key": "y y",
-        "command": "filesExplorer.copy",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !inputFocus"
-    },
-    {
-        "key": ".",
-        "command": "toggleexcludedfiles.toggle",
-        "when": "explorerViewletVisible && filesExplorerFocus && !inputFocus"
-    },
-    {
-        "key": "r",
-        "command": "renameFile",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus"
-    },
-    {
-        "key": "ctrl+q",
-        "command": "workbench.action.closeActiveEditor"
-    },
-    {
-        "key": "Escape",
-        "command": "workbench.action.closeActiveEditor",
-        "when": "!editorFocus && activeEditor == 'workbench.editor.extension' || inKeybindings && !inKeybindingsSearch"
-    },
-    {
-        "key": "space c",
-        "command": "workbench.action.files.newUntitledFile",
-        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen",
-        "args": {"viewType": "default"}
-    },
-    {
-        "key": "space e",
-        "command": "workbench.action.files.openFile",
-        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen"
-    },
-    {
-        "key": "space shift+e",
-        "command": "workbench.action.files.openFolder",
-        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen"
-    },
-    {
-        "key": "space f",
-        "command": "workbench.action.quickOpen",
-        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen"
-    },
-    {
-        "key": "space r",
-        "command": "workbench.action.openRecent",
-        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen"
-    },
-    {
-        "key": "ctrl+a",
-        "command": "editor.action.replaceAll",
-        "when": "editorFocus && replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+a",
-        "command": "search.action.replaceAll",
-        "when": "replaceActive && searchViewletVisible && !findWidgetVisible"
-    },
-    {
-        "key": "ctrl+d",
-        "command": "toggleFindWholeWord",
-        "when": "editorFocus && findInputFocussed"
-    },
-    {
-        "key": "ctrl+d",
-        "command": "workbench.action.terminal.toggleFindWholeWord",
-        "when": "terminalFindWidgetFocused"
-    },
-    {
-        "key": "ctrl+d",
-        "command": "toggleSearchWholeWord",
-        "when": "searchViewletFocus"
-    },
-    {
-        "key": "ctrl+t",
-        "command": "workbench.action.search.toggleQueryDetails",
-        "when": "searchViewletFocus"
-    },
-    {
-        "key": "ctrl+r",
-        "command": "workbench.action.replaceInFiles",
-        "when": "!replaceInputBoxFocus && searchViewletFocus"
-    },
-    {
-        "key": "ctrl+r",
-        "command": "closeReplaceInFilesWidget",
-        "when": "replaceInputBoxFocus && searchViewletVisible"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "workbench.files.action.focusFilesExplorer",
-        "when": "explorerViewletVisible && openEditorsFocus && !explorerResourceIsRoot && !inputFocus"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "outline.focus",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !inputFocus"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "search.focus.nextInputBox",
-        "when": "inputBoxFocus && searchViewletVisible"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "editor.action.startFindReplaceAction",
-        "when": "editorFocus && findInputFocussed && !terminalFocus"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "actions.find",
-        "when": "editorFocus && replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "selectNextSuggestion",
-        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus || quickFixWidgetVisible"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "workbench.view.search.focus",
-        "when": "!inputBoxFocus && searchViewletVisible && sideBarFocus"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "list.focusDown",
-        "when": "listFocus && !inputFocus && !sideBarFocus"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "workbench.action.quickOpenSelectNext",
-        "when": "inQuickOpen"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "workbench.files.action.focusOpenEditorsView",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !inputFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "workbench.files.action.focusFilesExplorer",
-        "when": "explorerViewletVisible && !filesExplorerFocus && !openEditorsFocus && !inputFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "search.action.focusSearchList",
-        "when": "inputBoxFocus && searchViewletVisible && searchInputBoxFocus && sideBarFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "search.focus.previousInputBox",
-        "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible && !searchInputBoxFocus && sideBarFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "search.action.focusSearchFromResults",
-        "when": "!inputBoxFocus && searchViewletVisible && sideBarFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "editor.action.startFindReplaceAction",
-        "when": "editorFocus && findInputFocussed && !terminalFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "actions.find",
-        "when": "editorFocus && replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "list.focusUp",
-        "when": "listFocus && !inputFocus && !sideBarFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "selectPrevSuggestion",
-        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
-    },
-    {
-        "key": "ctrl+k",
-        "command": "workbench.action.quickOpenSelectPrevious",
-        "when": "inQuickOpen"
-    },
-    {
-        "key": "ctrl+g",
-        "command": "toggleFindInSelection",
-        "when": "editorFocus && findInputFocussed || editorFocus && replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+n",
-        "command": "editor.action.nextMatchFindAction",
-        "when": "editorFocus && findInputFocussed || editorFocus && replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+n",
-        "command": "workbench.action.quickOpenSelectNext",
-        "when": "inQuickOpen"
-    },
-    {
-        "key": "ctrl+n",
-        "command": "workbench.action.terminal.findNext",
-        "when": "terminalFindWidgetFocused"
-    },
-    {
-        "key": "ctrl+n",
-        "command": "selectNextSuggestion",
-        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus || quickFixWidgetVisible"
-    },
-    {
-        "key": "ctrl+p",
-        "command": "editor.action.previousMatchFindAction",
-        "when": "editorFocus && findInputFocussed"
-    },
-    {
-        "key": "ctrl+p",
-        "command": "workbench.action.quickOpenSelectPrevious",
-        "when": "inQuickOpen"
-    },
-    {
-        "key": "ctrl+p",
-        "command": "workbench.action.terminal.findPrevious",
-        "when": "terminalFindWidgetFocused"
-    },
-    {
-        "key": "ctrl+p",
-        "command": "selectPrevSuggestion",
-        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "toggleFindRegex",
-        "when": "editorFocus && findInputFocussed"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "workbench.action.terminal.toggleFindRegex",
-        "when": "terminalFindWidgetFocused"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "toggleSearchRegex",
-        "when": "searchViewletFocus"
-    },
-    {
-        "key": "ctrl+s",
-        "command": "workbench.action.replaceInFiles",
-        "when": "searchViewletFocus"
-    },
-    {
-        "key": "ctrl+s",
-        "command": "toggleFindCaseSensitive",
-        "when": "editorFocus && findInputFocussed"
-    },
-    {
-        "key": "ctrl+s",
-        "command": "workbench.action.terminal.toggleFindCaseSensitive",
-        "when": "terminalFindWidgetFocused"
-    },
-    {
-        "key": "ctrl+s",
-        "command": "toggleSearchCaseSensitive",
-        "when": "searchViewletFocus && !fileMatchOrFolderMatchFocus"
-    },
-    {
-        "key": "ctrl+y",
-        "command": "editor.action.replaceOne",
-        "when": "findWidgetVisible && editorFocus && vim.mode == 'Normal' && !findInputFocussed && !replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+y",
-        "command": "editor.action.replaceOne",
-        "when": "editorFocus && findWidgetVisible && replaceInputFocussed"
-    },
-    {
-        "key": "ctrl+y",
-        "command": "search.action.replace",
-        "when": "matchFocus && replaceActive && searchViewletVisible"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "editor.action.startFindReplaceAction",
-        "when": "editorFocus && findInputFocussed && !terminalFocus"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "workbench.action.terminal.focusFind",
-        "when": "terminalFocus"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "settings.action.search",
-        "when": "inSettingsEditor"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "keybindings.editor.searchKeybindings",
-        "when": "inKeybindings"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "problems.action.focusFilter",
-        "when": "focusedView == 'workbench.panel.markers.view'"
-    },
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    // 無効化するデフォルトキーバインド
-    /////////////////////////////////////////////////////////////////////////////////////
-
-    {
-        "key": "enter",
-        "command": "-editor.action.nextMatchFindAction",
-        "when": "editorFocus && findInputFocussed"
-    },
-    {
-        "key": "enter",
-        "command": "-editor.action.replaceOne",
-        "when": "editorFocus && findWidgetVisible && replaceInputFocussed"
-    },
-    {
-        "key": "shift+enter",
-        "command": "-editor.action.previousMatchFindAction",
-        "when": "editorFocus && findInputFocussed"
-    },
-    {
-        "key": "ctrl+alt+enter",
-        "command": "-editor.action.replaceAll",
-        "when": "editorFocus && findWidgetVisible"
-    },
-    {
-        "key": "alt+c",
-        "command": "-toggleFindCaseSensitive",
-        "when": "editorFocus"
-    },
-    {
-        "key": "ctrl+e",
-        "command": "-workbench.action.quickOpen"
-    },
-    {
-        "key": "alt+l",
-        "command": "-toggleFindInSelection",
-        "when": "editorFocus"
-    },
-    {
-        "key": "alt+r",
-        "command": "-toggleFindRegex",
-        "when": "editorFocus"
-    },
-    {
-        "key": "ctrl+space",
-        "command": "-editor.action.triggerSuggest",
-        "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly"
-    },
-    {
-        "key": "ctrl+space",
-        "command": "-toggleSuggestionDetails",
-        "when": "suggestWidgetVisible && textInputFocus"
-    },
-    {
-        "key": "ctrl+0",
-        "command": "-workbench.action.focusSideBar"
-    },
-    {
-        "key": "ctrl+b",
-        "command": "-workbench.action.toggleSidebarVisibility"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "-workbench.action.terminal.focusFindWidget",
-        "when": "terminalFindWidgetFocused || terminalFocus"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "-actions.find"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "-settings.action.search",
-        "when": "inSettingsEditor"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "-keybindings.editor.searchKeybindings",
-        "when": "inKeybindings"
-    },
-    {
-        "key": "ctrl+h",
-        "command": "-editor.action.startFindReplaceAction"
-    },
-    {
-        "key": "ctrl+j",
-        "command": "-workbench.action.togglePanel"
-    },
-    {
-        "key": "ctrl+l",
-        "command": "-expandLineSelection",
-        "when": "textInputFocus"
-    },
-    {
-        "key": "ctrl+k e",
-        "command": "-workbench.files.action.focusOpenEditorsView",
-        "when": "workbench.explorer.openEditorsView.active"
-    },
-    {
-        "key": "ctrl+shift+m",
-        "command": "-workbench.actions.view.problems"
-    },
-    {
-        "key": "ctrl+n",
-        "command": "-workbench.action.files.newUntitledFile"
-    },
-    {
-        "key": "ctrl+o",
-        "command": "-workbench.action.files.openFile"
-    },
-    {
-        "key": "ctrl+p",
-        "command": "-workbench.action.quickOpen"
-    },
-    {
-        "key": "ctrl+shift+p",
-        "command": "-workbench.action.showCommands"
-    },
-    {
-        "key": "ctrl+s",
-        "command": "-workbench.action.files.save"
-    },
-    {
-        "key": "ctrl+t",
-        "command": "-workbench.action.showAllSymbols"
-    },
-    {
-        "key": "ctrl+w",
-        "command": "-workbench.action.closeActiveEditor"
-    },
-    {
-        "key": "ctrl+x",
-        "command": "-editor.action.clipboardCutAction",
-        "when": "textInputFocus && !editorReadonly"
-    },
-    {
-        "key": "ctrl+k ctrl+x",
-        "command": "-editor.action.trimTrailingWhitespace",
-        "when": "editorTextFocus && !editorReadonly"
-    },
-    {
-        "key": "ctrl+shift+x",
-        "command": "-workbench.view.extensions"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "-toggleExplainMode",
-        "when": "suggestWidgetVisible"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "-editor.action.commentLine",
-        "when": "editorTextFocus && !editorReadonly"
-    },
-    {
-        "key": "ctrl+oem_2",
-        "command": "-editor.action.commentLine",
-        "when": "editorTextFocus && !editorReadonly"
-    },
-    {
-        "key": "ctrl+shift+e",
-        "command": "-workbench.view.explorer"
-    },
-    {
-        "key": "ctrl+k w",
-        "command": "-workbench.action.closeEditorsInGroup"
-    },
-    {
-        "key": "ctrl+w",
-        "command": "-workbench.action.closeWindow",
-        "when": "!editorIsOpen && !multipleEditorGroups"
-    },
-    {
-        "key": "ctrl+oem_6",
-        "command": "-editor.action.indentLines",
-        "when": "editorTextFocus && !editorReadonly"
-    },
-    {
-        "key": "ctrl+f",
-        "command": "-workbench.action.terminal.focusFind",
-        "when": "terminalFindFocused && terminalProcessSupported || terminalFocus && terminalProcessSupported"
-    },
-    {
-        "key": "ctrl+i",
-        "command": "-markdown.extension.editing.toggleItalic",
-        "when": "editorTextFocus && !editorReadonly && editorLangId == 'markdown'"
-    },
-    {
-        "key": "ctrl+r",
-        "command": "-workbench.action.reloadWindow",
-        "when": "isDevelopment"
-    },
-    {
-        "key": "alt+l",
-        "command": "-toggleSearchEditorContextLines",
-        "when": "inSearchEditor"
-    },
+    // vscodeのサイドバー、パネル移動
     {
         "key": "alt+l",
         "command": "workbench.action.nextPanelView"
     },
     {
         "key": "alt+h",
-        "command": "-git.viewFileHistory"
-    },
-    {
-        "key": "alt+h",
-        "command": "-gitlens.showQuickFileHistory",
-        "when": "!gitlens:disabled && config.gitlens.keymap == 'alternate'"
-    },
-    {
-        "key": "alt+h",
         "command": "workbench.action.previousPanelView"
-    },
-    {
-        "key": "alt+k",
-        "command": "-keybindings.editor.recordSearchKeys",
-        "when": "inKeybindings && inKeybindingsSearch"
     },
     {
         "key": "alt+j",
@@ -720,5 +73,545 @@
     {
         "key": "alt+k",
         "command": "workbench.action.previousSideBarView"
-    }
+    },
+
+    ///////////////////////////////////
+    // ウィンドウ操作
+
+    // neovimが使えない状態のウィンドウ操作
+    {
+        "key": "Escape",
+        "command": "workbench.action.closeActiveEditor",
+        "when": "!editorFocus && activeEditor == 'workbench.editor.extension' || inKeybindings && inKeybindingsSearch || inSettingsEditor"
+    },
+
+    ///////////////////////////////////
+    // サイドバー操作
+    {
+        "key": "ctrl+f",
+        "command": "workbench.action.findInFiles",
+        "when": "searchViewletFocus"
+    },
+    {
+        "key": "ctrl+d",
+        "command": "toggleSearchRegex",
+        "when": "searchViewletFocus"
+    },
+    {
+        "key": "ctrl+a",
+        "command": "toggleSearchCaseSensitive",
+        "when": "searchViewletFocus"
+    },
+    {
+        "key": "ctrl+s",
+        "command": "toggleSearchWholeWord",
+        "when": "searchViewletFocus"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "search.focus.previousInputBox",
+        "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "workbench.action.findInFiles",
+        "when": "inSearchEditor && !inputBoxFocus || !inputBoxFocus && searchViewletVisible"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "search.focus.nextInputBox",
+        "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "workbench.action.replaceInFiles",
+        "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible"
+    },
+
+    ///////////////////////////////////
+    // キーバインド設定
+
+    {
+        "key": "Enter",
+        "command": "keybindings.editor.focusKeybindings",
+        "when": "inKeybindings && inKeybindingsSearch"
+    },
+
+    ///////////////////////////////////
+    // 無効化するキー
+
+    {
+        "key": "alt+l",
+        "command": "-toggleFindInSelection",
+        "when": "editorFocus"
+    },
+    {
+        "key": "alt+l",
+        "command": "-toggleSearchEditorContextLines",
+        "when": "inSearchEditor"
+    },
+    {
+        "key": "alt+k",
+        "command": "-keybindings.editor.recordSearchKeys",
+        "when": "inKeybindings && inKeybindingsSearch"
+    },
+    {
+        "key": "alt+r",
+        "command": "-toggleSearchRegex",
+        "when": "searchViewletFocus"
+    },
+    {
+        "key": "alt+c",
+        "command": "-toggleSearchCaseSensitive",
+        "when": "searchViewletFocus"
+    },
+    {
+        "key": "alt+w",
+        "command": "-toggleSearchWholeWord",
+        "when": "searchViewletFocus"
+    },
+    {
+        "key": "ctrl+f",
+        "command": "-actions.find",
+        "when": "editorFocus || editorIsOpen"
+    },
+    {
+        "key": "ctrl+e",
+        "command": "-workbench.action.quickOpen"
+    },
+    {
+        "key": "ctrl+up",
+        "command": "-search.action.focusSearchFromResults",
+        "when": "firstMatchFocus && searchViewletVisible"
+    },
+    {
+        "key": "ctrl+down",
+        "command": "-search.focus.nextInputBox",
+        "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible"
+    },
+    {
+        "key": "ctrl+up",
+        "command": "-search.focus.previousInputBox",
+        "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible && !searchInputBoxFocus"
+    },
+    {
+        "key": "ctrl+k ctrl+n",
+        "command": "-git.unstageSelectedRanges",
+        "when": "isInDiffEditor"
+    },
+    {
+        "key": "ctrl+k ctrl+alt+s",
+        "command": "-git.stageSelectedRanges",
+        "when": "isInDiffEditor"
+    },
+    {
+        "key": "ctrl+k ctrl+r",
+        "command": "-git.revertSelectedRanges",
+        "when": "isInDiffEditor"
+    },
+    {
+        "key": "ctrl+k v",
+        "command": "-markdown-preview-enhanced.openPreviewToTheSide",
+        "when": "editorLangId == 'markdown'"
+    },
+    {
+        "key": "ctrl+k v",
+        "command": "-markdown.showPreviewToSide",
+        "when": "!notebookEditorFocused && editorLangId == 'markdown'"
+    },
+    {
+        "key": "ctrl+r k",
+        "command": "-vscode-neovim.paste-register",
+        "when": "& !neovim.recording & neovim.ctrlKeysInsert && editorTextFocus && neovim.mode == 'insert'"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "-vscode-neovim.send",
+        "when": "editorTextFocus && neovim.ctrlKeysNormal && neovim.init && neovim.mode != 'insert'"
+    },
+    {
+        "key": "ctrl+k ctrl+k",
+        "command": "-editor.action.selectFromAnchorToCursor",
+        "when": "editorTextFocus && selectionAnchorSet"
+    },
+    {
+        "key": "ctrl+k e",
+        "command": "-workbench.files.action.focusOpenEditorsView",
+        "when": "workbench.explorer.openEditorsView.active"
+    },
+    {
+        "key": "ctrl+k ctrl+oem_2",
+        "command": "-editor.foldAllBlockComments",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+8",
+        "command": "-editor.foldAllMarkerRegions",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+9",
+        "command": "-editor.unfoldAllMarkerRegions",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+0",
+        "command": "-editor.foldAll",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+j",
+        "command": "-editor.unfoldAll",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+i",
+        "command": "-editor.debug.action.showDebugHover",
+        "when": "editorTextFocus && inDebugMode"
+    },
+    {
+        "key": "ctrl+k t",
+        "command": "-notebook.cell.collapseCellOutput",
+        "when": "notebookCellHasOutputs && notebookCellListFocused && !inputFocus && !notebookCellOutputIsCollapsed"
+    },
+    {
+        "key": "ctrl+k t",
+        "command": "-notebook.cell.expandCellOutput",
+        "when": "notebookCellListFocused && notebookCellOutputIsCollapsed"
+    },
+    {
+        "key": "ctrl+k ctrl+c",
+        "command": "-notebook.cell.collapseCellInput",
+        "when": "notebookCellListFocused && !inputFocus && !notebookCellInputIsCollapsed"
+    },
+    {
+        "key": "ctrl+k ctrl+c",
+        "command": "-notebook.cell.expandCellInput",
+        "when": "notebookCellInputIsCollapsed && notebookCellListFocused"
+    },
+    {
+        "key": "ctrl+k ctrl+shift+oem_5",
+        "command": "-notebook.cell.split",
+        "when": "notebookCellEditable && notebookEditable && notebookEditorFocused"
+    },
+    {
+        "key": "ctrl+k ctrl+shift+c",
+        "command": "-copyRelativeFilePath",
+        "when": "!editorFocus"
+    },
+    {
+        "key": "ctrl+k c",
+        "command": "-workbench.files.action.compareWithClipboard"
+    },
+    {
+        "key": "ctrl+k ctrl+shift+s",
+        "command": "-workbench.action.files.saveWithoutFormatting"
+    },
+    {
+        "key": "ctrl+k ctrl+o",
+        "command": "-workbench.action.files.openFolder",
+        "when": "openFolderWorkspaceSupport"
+    },
+    {
+        "key": "ctrl+k o",
+        "command": "-workbench.action.files.showOpenedFileInNewWindow",
+        "when": "emptyWorkspaceSupport"
+    },
+    {
+        "key": "ctrl+k d",
+        "command": "-workbench.files.action.compareWithSaved"
+    },
+    {
+        "key": "ctrl+k ctrl+r",
+        "command": "-workbench.action.keybindingsReference"
+    },
+    {
+        "key": "ctrl+k ctrl+i",
+        "command": "-editor.action.showHover",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+k ctrl+1",
+        "command": "-editor.foldLevel1",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+2",
+        "command": "-editor.foldLevel2",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+3",
+        "command": "-editor.foldLevel3",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+4",
+        "command": "-editor.foldLevel4",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+5",
+        "command": "-editor.foldLevel5",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+6",
+        "command": "-editor.foldLevel6",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+7",
+        "command": "-editor.foldLevel7",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k f",
+        "command": "-workbench.action.closeFolder",
+        "when": "emptyWorkspaceSupport && workbenchState != 'empty'"
+    },
+    {
+        "key": "ctrl+k ctrl+s",
+        "command": "-workbench.action.openGlobalKeybindings"
+    },
+    {
+        "key": "ctrl+k ctrl+t",
+        "command": "-workbench.action.selectTheme"
+    },
+    {
+        "key": "ctrl+k m",
+        "command": "-workbench.action.editor.changeLanguageMode",
+        "when": "!notebookEditorFocused"
+    },
+    {
+        "key": "ctrl+k ctrl+u",
+        "command": "-editor.action.removeCommentLine",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+k ctrl+c",
+        "command": "-editor.action.addCommentLine",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+k",
+        "command": "-editor.action.deleteLines",
+        "when": "textInputFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+k ctrl+oem_4",
+        "command": "-editor.foldRecursively",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+oem_6",
+        "command": "-editor.unfoldRecursively",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+d",
+        "command": "-editor.action.moveSelectionToNextFindMatch",
+        "when": "editorFocus"
+    },
+    {
+        "key": "ctrl+k ctrl+q",
+        "command": "-workbench.action.navigateToLastEditLocation"
+    },
+    {
+        "key": "ctrl+k ctrl+l",
+        "command": "-editor.toggleFold",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+b",
+        "command": "-editor.action.setSelectionAnchor",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+k ctrl+oem_minus",
+        "command": "-editor.foldAllExcept",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+oem_plus",
+        "command": "-editor.unfoldAllExcept",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        "key": "ctrl+k ctrl+f",
+        "command": "-editor.action.formatSelection",
+        "when": "editorHasDocumentSelectionFormattingProvider && editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+k f12",
+        "command": "-editor.action.revealDefinitionAside",
+        "when": "editorHasDefinitionProvider && editorTextFocus && !isInEmbeddedEditor"
+    },
+    {
+        "key": "ctrl+k z",
+        "command": "-workbench.action.toggleZenMode"
+    },
+    {
+        "key": "ctrl+k right",
+        "command": "-workbench.action.moveActiveEditorGroupRight"
+    },
+    {
+        "key": "ctrl+k down",
+        "command": "-workbench.action.moveActiveEditorGroupDown"
+    },
+    {
+        "key": "ctrl+k left",
+        "command": "-workbench.action.moveActiveEditorGroupLeft"
+    },
+    {
+        "key": "ctrl+k up",
+        "command": "-workbench.action.moveActiveEditorGroupUp"
+    },
+    {
+        "key": "ctrl+k shift+enter",
+        "command": "-workbench.action.unpinEditor",
+        "when": "activeEditorIsPinned"
+    },
+    {
+        "key": "ctrl+k shift+enter",
+        "command": "-workbench.action.pinEditor",
+        "when": "!activeEditorIsPinned"
+    },
+    {
+        "key": "ctrl+k enter",
+        "command": "-workbench.action.keepEditor"
+    },
+    {
+        "key": "ctrl+k ctrl+pagedown",
+        "command": "-workbench.action.nextEditorInGroup"
+    },
+    {
+        "key": "ctrl+k ctrl+pageup",
+        "command": "-workbench.action.previousEditorInGroup"
+    },
+    {
+        "key": "ctrl+k ctrl+shift+oem_5",
+        "command": "-workbench.action.joinEditorInGroup",
+        "when": "sideBySideEditorActive"
+    },
+    {
+        "key": "ctrl+k ctrl+shift+oem_5",
+        "command": "-workbench.action.splitEditorInGroup",
+        "when": "activeEditorCanSplitInGroup"
+    },
+    {
+        "key": "ctrl+k w",
+        "command": "-workbench.action.closeEditorsInGroup"
+    },
+    {
+        "key": "ctrl+k u",
+        "command": "-workbench.action.closeUnmodifiedEditors"
+    },
+    {
+        "key": "ctrl+k ctrl+shift+w",
+        "command": "-workbench.action.closeAllGroups"
+    },
+    {
+        "key": "ctrl+k ctrl+p",
+        "command": "-workbench.action.showAllEditors"
+    },
+    {
+        "key": "ctrl+k ctrl+w",
+        "command": "-workbench.action.closeAllEditors"
+    },
+    {
+        "key": "ctrl+k ctrl+right",
+        "command": "-workbench.action.focusRightGroup"
+    },
+    {
+        "key": "ctrl+k ctrl+down",
+        "command": "-workbench.action.focusBelowGroup"
+    },
+    {
+        "key": "ctrl+k ctrl+left",
+        "command": "-workbench.action.focusLeftGroup"
+    },
+    {
+        "key": "ctrl+k ctrl+up",
+        "command": "-workbench.action.focusAboveGroup"
+    },
+    {
+        "key": "ctrl+k ctrl+oem_5",
+        "command": "-workbench.action.splitEditorOrthogonal"
+    },
+    {
+        "key": "ctrl+k ctrl+x",
+        "command": "-editor.action.trimTrailingWhitespace",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+k ctrl+k",
+        "command": "-editor.action.defineKeybinding",
+        "when": "editorTextFocus && !editorReadonly && editorLangId == 'jsonc'"
+    },
+    {
+        "key": "ctrl+k ctrl+a",
+        "command": "-keybindings.editor.addKeybinding",
+        "when": "inKeybindings && keybindingFocus"
+    },
+    {
+        "key": "ctrl+k ctrl+e",
+        "command": "-keybindings.editor.defineWhenExpression",
+        "when": "inKeybindings && keybindingFocus"
+    },
+    {
+        "key": "ctrl+k v",
+        "command": "-markdown.extension.closePreviewToSide",
+        "when": "markdownPreviewFocus"
+    },
+    {
+        "key": "ctrl+k s",
+        "command": "-saveAll"
+    },
+    {
+        "key": "ctrl+k f2",
+        "command": "-togglePeekWidgetFocus",
+        "when": "inReferenceSearchEditor || referenceSearchVisible"
+    },
+    {
+        "key": "ctrl+k down",
+        "command": "-views.moveViewDown",
+        "when": "focusedView != ''"
+    },
+    {
+        "key": "ctrl+k left",
+        "command": "-views.moveViewLeft",
+        "when": "focusedView != ''"
+    },
+    {
+        "key": "ctrl+k right",
+        "command": "-views.moveViewRight",
+        "when": "focusedView != ''"
+    },
+    {
+        "key": "ctrl+k up",
+        "command": "-views.moveViewUp",
+        "when": "focusedView != ''"
+    },
+    {
+        "key": "ctrl+k p",
+        "command": "-workbench.action.files.copyPathOfActiveFile"
+    },
+    {
+        "key": "ctrl+k ctrl+o",
+        "command": "-workbench.action.files.openLocalFolder",
+        "when": "remoteFileDialogVisible"
+    },
+    {
+        "key": "ctrl+k r",
+        "command": "-workbench.action.files.revealActiveFileInWindows"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "-workbench.action.togglePanel"
+    },
+    {
+        "key": "ctrl+r",
+        "command": "-workbench.action.openRecent"
+    },
 ]

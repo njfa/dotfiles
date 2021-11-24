@@ -1,4 +1,5 @@
 
+
 " 移動
 nnoremap j gj
 nnoremap gj j
@@ -15,8 +16,12 @@ vmap ' <Plug>(easymotion-bd-f)
 vmap <leader>j <Plug>(easymotion-bd-w)
 vmap <leader>l <Plug>(easymotion-bd-jk)
 
+
 " 検索
 nnoremap <silent> <Esc> :noh<cr>
+nnoremap <expr> <leader>r ':<C-u>%s/' . expand('<cword>') . '/'
+nnoremap <expr> <leader>s ':<C-u>%s/'
+nnoremap <expr> <leader>S ':<C-u>%s/\v'
 
 " 改行
 nnoremap <cr> o<Esc>
@@ -34,8 +39,8 @@ vnoremap p "_s<Esc>p
 vnoremap P "_s<Esc>P
 
 " 選択範囲の拡大/縮小
-vmap v <Plug>(expand_region_expand)
-vmap V <Plug>(expand_region_shrink)
+vmap - <Plug>(expand_region_expand)
+vmap = <Plug>(expand_region_shrink)
 
 " EasyAlign
 " Start interactive EasyAlign in visual mode (e.g. vipga)
@@ -47,12 +52,23 @@ vmap <cr> <Plug>(EasyAlign)
 nmap R <Plug>(operator-replace)
 
 " vim-sandwitch
-nmap ga  <Plug>(operator-sandwich-add)
-nmap gab <Plug>(operator-sandwich-add)<Plug>(textobj-sandwich-auto-a)
-nmap gr  <Plug>(operator-sandwich-replace)<Plug>(textobj-sandwich-query-a)
-nmap grb <Plug>(operator-sandwich-replace)<Plug>(textobj-sandwich-auto-a)
-nmap gd  <Plug>(operator-sandwich-delete)<Plug>(textobj-sandwich-query-a)
-nmap gdb <Plug>(operator-sandwich-delete)<Plug>(textobj-sandwich-auto-a)
+nmap ys  <Plug>(operator-sandwich-add)
+nmap ysb <Plug>(operator-sandwich-add)<Plug>(textobj-sandwich-auto-a)
+nmap cs  <Plug>(operator-sandwich-replace)<Plug>(textobj-sandwich-query-a)
+nmap csb <Plug>(operator-sandwich-replace)<Plug>(textobj-sandwich-auto-a)
+nmap ds  <Plug>(operator-sandwich-delete)<Plug>(textobj-sandwich-query-a)
+nmap dsb <Plug>(operator-sandwich-delete)<Plug>(textobj-sandwich-auto-a)
+
+
+" vim-asterisk
+map *   <Plug>(asterisk-*)
+map #   <Plug>(asterisk-#)
+map g*  <Plug>(asterisk-g*)
+map g#  <Plug>(asterisk-g#)
+map z*  <Plug>(asterisk-z*)
+map gz* <Plug>(asterisk-gz*)
+map z#  <Plug>(asterisk-z#)
+map gz# <Plug>(asterisk-gz#)
 
 "よく使用する機能: <leader>
 " ウィンドウ操作系: <C-w>
@@ -78,7 +94,7 @@ if exists('g:vscode')
     nnoremap <leader>f <cmd>call VSCodeNotify('workbench.action.quickOpen')<cr>
     nnoremap <leader>w <cmd>call VSCodeNotify('workbench.action.files.save')<cr>
     nnoremap <leader>q <cmd>call VSCodeNotify('workbench.action.closeActiveEditor')<cr>
-    nnoremap <leader>r <cmd>call VSCodeNotify('workbench.action.openRecent')<cr>
+    nnoremap <leader>F <cmd>call VSCodeNotify('workbench.action.openRecent')<cr>
     nnoremap u <cmd>call VSCodeNotify('undo')<cr>
     nnoremap <C-r> <cmd>call VSCodeNotify('redo')<cr>
 
@@ -93,9 +109,9 @@ if exists('g:vscode')
     nnoremap <C-w>, <cmd>call VSCodeNotify('workbench.action.decreaseViewSize')<cr>
     nnoremap <C-w>r <cmd>call VSCodeNotify('workbench.action.reloadWindow')<cr>
     nnoremap <C-w>s <cmd>call VSCodeNotify('workbench.action.focusSideBar')<cr>
-    nnoremap <C-w>ta <cmd>call VSCodeNotify('workbench.action.toggleActivityBarVisibility')<cr>
-    nnoremap <C-w>ts <cmd>call VSCodeNotify('workbench.action.toggleSidebarVisibility')<cr>
-    nnoremap <C-w>tp <cmd>call VSCodeNotify('workbench.action.togglePanel')<cr>:sleep 100m<cr><cmd>call VSCodeNotify('workbench.action.focusActiveEditorGroup')<cr>
+    nnoremap <C-w>a <cmd>call VSCodeNotify('workbench.action.toggleActivityBarVisibility')<cr>
+    nnoremap <C-w>b <cmd>call VSCodeNotify('workbench.action.toggleSidebarVisibility')<cr>
+    nnoremap <C-w>p <cmd>call VSCodeNotify('workbench.action.togglePanel')<cr>:sleep 100m<cr><cmd>call VSCodeNotify('workbench.action.focusActiveEditorGroup')<cr>
 
     " 検索
     nnoremap <leader>g <cmd>call VSCodeNotify('workbench.action.findInFiles')<cr>
@@ -115,7 +131,7 @@ if exists('g:vscode')
 else
     " ファイル操作
     nnoremap <leader>f :Files<cr>
-    nnoremap <leader>r :History<cr>
+    nnoremap <leader>F :History<cr>
     nnoremap <leader>w :w<cr>
     nnoremap <leader>q :q<cr>
 
@@ -128,23 +144,11 @@ else
     nnoremap <C-w>\| :vsplit<cr>
     nnoremap <C-w>- :split<cr>
     nnoremap <C-w>s :Fern . -drawer<cr>
-    nnoremap <C-w>ts :Fern . -drawer -toggle -stay<cr>
+    nnoremap <C-w>b :Fern . -drawer -toggle -stay<cr>
 
     " 検索
     nnoremap <leader>g :Grepper<cr>
     nnoremap <leader>* :Grepper -cword -noprompt<cr>
-
-    " 移動
-    nmap <C-u> <C-u>zz
-    nmap <C-d> <C-d>zz
-    " nmap n nzz
-    " nmap N Nzz
-    " nmap * *zz
-    " nmap # #zz
-    nmap n <Plug>(anzu-n-with-echo)zz
-    nmap N <Plug>(anzu-N-with-echo)zz
-    nmap * <Plug>(anzu-star-with-echo)zz
-    nmap # <Plug>(anzu-sharp-with-echo)zz
 
     " インデント
     vnoremap > >gv

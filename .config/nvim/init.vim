@@ -1,7 +1,7 @@
 
 call plug#begin('~/.config/nvim/plugged')
 
-Plug 'tpope/vim-surround'
+" Plug 'tpope/vim-surround'
 Plug 'airblade/vim-gitgutter'
 Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-commentary'
@@ -11,6 +11,7 @@ Plug 'machakann/vim-sandwich'
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace'
 Plug 'tpope/vim-repeat'
+Plug 'haya14busa/vim-asterisk'
 
 if !exists('g:vscode')
     Plug 'easymotion/vim-easymotion'
@@ -24,11 +25,12 @@ if !exists('g:vscode')
     Plug 'vim-airline/vim-airline-themes'
     Plug 'joshdick/onedark.vim'
     Plug 'markonm/traces.vim'
-    Plug 'osyo-manga/vim-anzu'
     Plug 'mhinz/vim-grepper'
 
     Plug 'lambdalisue/fern.vim'
     Plug 'lambdalisue/fern-git-status.vim'
+    
+    Plug 'mhinz/vim-startify'
 else
     Plug 'asvetliakov/vim-easymotion', { 'as': 'vsc-easymotion' }
 endif
@@ -79,6 +81,7 @@ set noswapfile
 
 let mapleader = "\<SPACE>"
 
+"""""""""""""""""""""""""""""""""""""""
 " プラグインの設定
 " quick-scope
 let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
@@ -87,6 +90,10 @@ highlight QuickScopeSecondary guifg='#ff8f5f' gui=underline ctermfg=81 cterm=und
 
 " vim-sandwitch
 let g:sandwich_no_default_key_mappings = 1
+let g:operator_sandwich_no_default_key_mappings = 1
+
+" vim-asterisk
+let g:asterisk#keeppos = 1
 
 " vscodeで起動した場合に反映しない設定
 if !exists('g:vscode')
@@ -95,9 +102,6 @@ if !exists('g:vscode')
     let g:airline_powerline_fonts = 1
     let g:airline#extensions#tabline#enabled = 1
     let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
-
-    " vim-anzu
-    set statusline=%{anzu#search_status()}
 endif
 
 " ime off
