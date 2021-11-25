@@ -24,13 +24,18 @@ if !exists('g:vscode')
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
     Plug 'joshdick/onedark.vim'
+    Plug 'drewtempelmeyer/palenight.vim'
     Plug 'markonm/traces.vim'
     Plug 'mhinz/vim-grepper'
 
     Plug 'lambdalisue/fern.vim'
     Plug 'lambdalisue/fern-git-status.vim'
-    
+
     Plug 'mhinz/vim-startify'
+
+    Plug 'Yggdroot/indentLine'
+
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
 else
     Plug 'asvetliakov/vim-easymotion', { 'as': 'vsc-easymotion' }
 endif
@@ -44,13 +49,16 @@ syntax enable
 set number             "行番号を表示
 set laststatus=2       "ステータス行を常に表示する
 set splitright         "画面を縦分割する際に右に開く
+set list
+set listchars=space:·,tab:›\ ,eol:¬,trail:⋅
 
 if has('termguicolors')
     set termguicolors
 endif
 
 if !exists('g:vscode')
-    colorscheme onedark
+    " colorscheme onedark
+    colorscheme palenight
 endif
 
 " 文字コード
@@ -78,6 +86,10 @@ set smartcase          "検索時に大文字入力が入力されたらignoreca
 
 " スワップファイル
 set noswapfile
+set nobackup
+set nowritebackup
+
+set updatetime=300
 
 let mapleader = "\<SPACE>"
 
@@ -98,10 +110,40 @@ let g:asterisk#keeppos = 1
 " vscodeで起動した場合に反映しない設定
 if !exists('g:vscode')
     " airline
-    let g:airline_theme='deus'
+    let g:airline_theme='palenight'
     let g:airline_powerline_fonts = 1
     let g:airline#extensions#tabline#enabled = 1
     let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
+
+    let g:indentLine_char_list = ['┊', '┆', '¦', '|']
+
+    " coc.vim
+    if has("nvim-0.5.0") || has("patch-8.1.1564")
+        " Recently vim can merge signcolumn and number column into one
+        set signcolumn=number
+    else
+        set signcolumn=yes
+    endif
+
+    " Highlight the symbol and its references when holding the cursor.
+    autocmd CursorHold * silent call CocActionAsync('highlight')
+
+    augroup mygroup
+        autocmd!
+        " Setup formatexpr specified filetype(s).
+        autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+        " Update signature help on jump placeholder.
+        autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+    augroup end
+
+    " Add `:Format` command to format current buffer.
+    command! -nargs=0 Format :call CocAction('format')
+
+    " Add `:Fold` command to fold current buffer.
+    command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+
+    " Add `:OR` command for organize imports of the current buffer.
+    command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
 endif
 
 " ime off
