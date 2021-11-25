@@ -116,6 +116,7 @@ if exists('g:vscode')
     nnoremap <C-w>a <cmd>call VSCodeNotify('workbench.action.toggleActivityBarVisibility')<cr>
     nnoremap <C-w>b <cmd>call VSCodeNotify('workbench.action.toggleSidebarVisibility')<cr>
     nnoremap <C-w>p <cmd>call VSCodeNotify('workbench.action.togglePanel')<cr>:sleep 100m<cr><cmd>call VSCodeNotify('workbench.action.focusActiveEditorGroup')<cr>
+    nnoremap <C-w>: <cmd>call VSCodeNotify('terminal.focus')<cr>
 
     " 検索
     nnoremap <leader>g <cmd>call VSCodeNotify('workbench.action.findInFiles')<cr>
@@ -144,6 +145,7 @@ if exists('g:vscode')
     nmap <silent> gi <cmd>call VSCodeNotify('editor.action.goToImplementation')<cr>
     nmap <silent> gr <cmd>call VSCodeNotify('editor.action.goToReferences')<cr>
 
+    " 修正
     nmap <silent> mf <cmd>call VSCodeNotify('editor.action.quickFix')<cr>
 else
     " ファイル操作
