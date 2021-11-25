@@ -199,6 +199,9 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     if (-Not (Get-Command lsd -errorAction SilentlyContinue)) {
         cargo install lsd
     }
+    if (-Not (Get-Command delta -errorAction SilentlyContinue)) {
+        cargo install git-delta
+    }
 
     if (-Not (Test-Path ("$DOTFILES"))) {
         git config --global core.autoCRLF false
@@ -227,8 +230,6 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         7z x .\sarasa-gothic.7z -o"$env:USERPROFILE\font\sarasa-gothic"
         Remove-Item sarasa-gothic.7z
     }
-
-    Get-Content $env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions | ForEach-Object { code.cmd --install-extension $_ }
 
 } elseif (($mode -eq "nf") -Or ($mode -eq "nerd-fonts")) {
 
@@ -292,6 +293,11 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
     deployNewSettings $WINDOTFILES\vscode\settings.json $VSCODE_PATH settings.json
     deployNewSettings $WINDOTFILES\vscode\keybindings.json $VSCODE_PATH keybindings.json
+
+    # install extensions
+    if (Test-Path ("$env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions")) {
+        Get-Content $env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions | ForEach-Object { code.cmd --install-extension $_ }
+    }
 
 } elseif (($mode -eq "wc") -Or ($mode -eq "wsl-config")) {
 
