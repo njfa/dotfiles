@@ -128,6 +128,37 @@
         "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible"
     },
 
+
+    ///////////////////////////////////
+    // ファイル操作
+
+    {
+        "key": "space shift+;",
+        "command": "workbench.action.showCommands",
+        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen && !sideBarFocus"
+    },
+    {
+        "key": "space c",
+        "command": "workbench.action.files.newUntitledFile",
+        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen && !sideBarFocus",
+        "args": {"viewType": "default"}
+    },
+    {
+        "key": "space e",
+        "command": "workbench.action.files.openFile",
+        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen && !sideBarFocus"
+    },
+    {
+        "key": "space f",
+        "command": "workbench.action.quickOpen",
+        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen && !sideBarFocus"
+    },
+    {
+        "key": "space F",
+        "command": "workbench.action.openRecent",
+        "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen && !sideBarFocus"
+    },
+
     ///////////////////////////////////
     // キーバインド設定
 
