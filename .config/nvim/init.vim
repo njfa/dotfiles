@@ -1,7 +1,6 @@
 
 call plug#begin('~/.config/nvim/plugged')
 
-" Plug 'tpope/vim-surround'
 Plug 'airblade/vim-gitgutter'
 Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-commentary'
@@ -14,28 +13,29 @@ Plug 'tpope/vim-repeat'
 Plug 'haya14busa/vim-asterisk'
 
 if !exists('g:vscode')
-    Plug 'easymotion/vim-easymotion'
-
-    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-    Plug 'junegunn/fzf.vim'
-
-    Plug 'tpope/vim-fugitive'
-
-    Plug 'vim-airline/vim-airline'
-    Plug 'vim-airline/vim-airline-themes'
+    " 外観
     Plug 'joshdick/onedark.vim'
     Plug 'drewtempelmeyer/palenight.vim'
-    Plug 'markonm/traces.vim'
-    Plug 'mhinz/vim-grepper'
-
-    Plug 'lambdalisue/fern.vim'
-    Plug 'lambdalisue/fern-git-status.vim'
-
+    Plug 'relastle/bluewery.vim'
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
+    Plug 'Yggdroot/indentLine'
     Plug 'mhinz/vim-startify'
 
-    Plug 'Yggdroot/indentLine'
-
+    " ツール
+    Plug 'easymotion/vim-easymotion'
+    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf.vim'
+    Plug 'mhinz/vim-grepper'
+    Plug 'lambdalisue/fern.vim'
+    Plug 'lambdalisue/fern-git-status.vim'
+    Plug 'tpope/vim-fugitive'
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    Plug 'rust-lang/rust.vim'
+    Plug 'dhruvasagar/vim-table-mode'
+    Plug 'mbbill/undotree'
+    Plug 'tversteeg/registers.nvim'
+    Plug 'markonm/traces.vim' " vscodeで使用すると変更履歴がおかしくなる点に注意
 else
     Plug 'asvetliakov/vim-easymotion', { 'as': 'vsc-easymotion' }
 endif
@@ -58,7 +58,8 @@ endif
 
 if !exists('g:vscode')
     " colorscheme onedark
-    colorscheme palenight
+    " colorscheme palenight
+    colorscheme bluewery
 endif
 
 " 文字コード
@@ -83,11 +84,17 @@ set hls                "検索した文字をハイライトする
 set ignorecase         "検索時に大文字/小文字を区別しない
 set incsearch          "インクリメンタルサーチ
 set smartcase          "検索時に大文字入力が入力されたらignorecaseを無効化
+set inccommand=nosplit
 
 " スワップファイル
 set noswapfile
 set nobackup
 set nowritebackup
+
+if has('persistent_undo')
+  set undodir=~/.config/nvim/undo
+  set undofile
+endif
 
 set updatetime=300
 
@@ -107,15 +114,23 @@ let g:operator_sandwich_no_default_key_mappings = 1
 " vim-asterisk
 let g:asterisk#keeppos = 1
 
+" vim-table-move
+let g:table_mode_corner='|'
+
+" traces
+" highlight link TracesReplace String
+let g:traces_preserve_view_state=1
+
 " vscodeで起動した場合に反映しない設定
 if !exists('g:vscode')
     " airline
-    let g:airline_theme='palenight'
+    " let g:airline_theme='palenight'
+    let g:airline_theme='bluewery'
     let g:airline_powerline_fonts = 1
     let g:airline#extensions#tabline#enabled = 1
     let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 
-    let g:indentLine_char_list = ['┊', '┆', '¦', '|']
+    let g:indentLine_char_list = ['┊', '┆']
 
     " coc.vim
     if has("nvim-0.5.0") || has("patch-8.1.1564")

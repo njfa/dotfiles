@@ -3,35 +3,59 @@
     ///////////////////////////////////
     // 移動系
 
+    // neovimの挙動を修正
+    {
+        "key": "ctrl+u",
+        "command": "vscode-neovim.send",
+        "when": "editorTextFocus && neovim.ctrlKeysNormal && neovim.init && neovim.mode != 'insert'",
+        "args": "<c-u>"
+    },
+    {
+        "key": "ctrl+d",
+        "command": "vscode-neovim.send",
+        "when": "editorTextFocus && neovim.ctrlKeysNormal && neovim.init && neovim.mode != 'insert'",
+        "args": "<c-d>"
+    },
+    {
+        "key": "ctrl+u",
+        "command": "-vscode-neovim.ctrl-u",
+        "when": "editorTextFocus && neovim.ctrlKeysNormal && neovim.init && neovim.mode != 'insert'"
+    },
+    {
+        "key": "ctrl+d",
+        "command": "-vscode-neovim.ctrl-d",
+        "when": "editorTextFocus && neovim.ctrlKeysNormal && neovim.init && neovim.mode != 'insert'"
+    },
+
     // パネルにフォーカスする
     {
         "key": "ctrl+.",
         "command": "workbench.action.focusActiveEditorGroup",
-        "when": "!editorFocus"
+        // editorFocusを利用すると出力タブにフォーカスされている際にうまく動作しない
+        "when": "focusedView == 'workbench.panel.repl.view' || focusedView == 'workbench.panel.output' || focusedView == 'workbench.panel.markers.view' || terminalFocus"
     },
     {
         "key": "ctrl+.",
         "command": "workbench.action.focusPanel",
-        "when": "editorFocus"
+        // editorFocusを利用すると出力タブにフォーカスされている際にうまく動作しない
+        "when": "focusedView != 'workbench.panel.repl.view' && focusedView != 'workbench.panel.output' && focusedView != 'workbench.panel.markers.view' && !terminalFocus"
     },
 
     // エディタの移動
     {
+        "key": "ctrl+w l",
+        "command": "workbench.action.focusActiveEditorGroup",
+        "when": "sideBarFocus"
+    },
+    {
         "key": "ctrl+h",
         "command": "workbench.action.previousEditor",
-        "when": "!terminalFocus"
+        "when": "!terminalFocus && !editorFocus"
     },
     {
         "key": "ctrl+l",
         "command": "workbench.action.nextEditor",
-        "when": "!terminalFocus"
-    },
-
-    // sidebarにフォーカスがある状態のエディタグループ移動
-    {
-        "key": "ctrl+w l",
-        "command": "workbench.action.focusActiveEditorGroup",
-        "when": "sideBarFocus"
+        "when": "!terminalFocus && !editorFocus"
     },
 
     // neovimが使えない状態のエディタグループ移動
@@ -55,6 +79,36 @@
         "key": "ctrl+w s",
         "command": "workbench.action.focusSideBar",
         "when": "inSettingsSearch || inKeybindings || inSettingsEditor || activeEditorGroupEmpty"
+    },
+    {
+        "key": "j",
+        "command": "cursorDown",
+        "when": "focusedView == 'workbench.panel.output'"
+    },
+    {
+        "key": "k",
+        "command": "cursorUp",
+        "when": "focusedView == 'workbench.panel.output'"
+    },
+    {
+        "key": "h",
+        "command": "cursorLeft",
+        "when": "focusedView == 'workbench.panel.output'"
+    },
+    {
+        "key": "l",
+        "command": "cursorRight",
+        "when": "focusedView == 'workbench.panel.output'"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "macros.nvim.history.up",
+        "when": "inQuickOpen && neovim.mode == 'cmdline_normal'"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "macros.nvim.history.down",
+        "when": "neovim.mode == 'cmdline_normal'"
     },
 
     // vscodeのサイドバー、パネル移動
@@ -126,6 +180,16 @@
         "key": "ctrl+r",
         "command": "workbench.action.replaceInFiles",
         "when": "inSearchEditor && inputBoxFocus || inputBoxFocus && searchViewletVisible"
+    },
+    {
+        "key": "y",
+        "command": "search.action.replace",
+        "when": "matchFocus && replaceActive && searchViewletVisible"
+    },
+    {
+        "key": "y",
+        "command": "search.action.replaceAllInFile",
+        "when": "fileMatchFocus && replaceActive && searchViewletVisible"
     },
 
 
@@ -645,4 +709,14 @@
         "key": "ctrl+r",
         "command": "-workbench.action.openRecent"
     },
+    {
+        "key": "ctrl+shift+1",
+        "command": "-search.action.replace",
+        "when": "matchFocus && replaceActive && searchViewletVisible"
+    },
+    {
+        "key": "ctrl+shift+1",
+        "command": "-search.action.replaceAllInFile",
+        "when": "fileMatchFocus && replaceActive && searchViewletVisible"
+    }
 ]

@@ -4,8 +4,10 @@
     // ------------------------------------------------------------------------
     "workbench.colorTheme": "Noctis",
     "workbench.colorCustomizations": {
-        "editor.background": "#041d20",
-        "terminal.background": "#041d20"
+        "editor.background": "#041d20", // noctis theme
+        "terminal.background": "#041d20" // noctis theme
+        // "editor.background": "#181529", // palenight theme
+        // "terminal.background": "#181529" // palenight theme
     },
     "workbench.iconTheme": "material-icon-theme",
     "editor.matchBrackets": "always",
@@ -27,11 +29,13 @@
     // ------------------------------------------------------------------------
     // フォント
     // ------------------------------------------------------------------------
-    "editor.fontFamily": "更紗等幅ゴシック J",
+    "editor.fontFamily": "PlemolJP Console NF",
+    // "editor.fontFamily": "更紗等幅ゴシック J",
     "editor.fontLigatures": true,
     "editor.fontSize": 14,
-    "terminal.integrated.fontFamily": "更紗等幅ゴシック J",
-    "terminal.integrated.fontSize": 14,
+    "terminal.integrated.fontFamily": "PlemolJP Console NF",
+    // "terminal.integrated.fontFamily": "更紗等幅ゴシック J",
+    "terminal.integrated.fontSize": 16,
     "terminal.integrated.fontWeight": "400",
 
     // ------------------------------------------------------------------------
@@ -76,6 +80,20 @@
         ".tmpl": "html"
     },
     "workbench.editor.focusRecentEditorAfterClose": false,
+
+    // ------------------------------------------------------------------------
+    // マクロ
+    // ------------------------------------------------------------------------
+    "macros": {
+        "nvim.history.up": [
+            "vscode-neovim.delete-all-cmdline",
+            "vscode-neovim.history-up-cmdline"
+        ],
+        "nvim.history.down": [
+            "vscode-neovim.delete-all-cmdline",
+            "vscode-neovim.history-down-cmdline"
+        ]
+    },
 
     // ------------------------------------------------------------------------
     // 言語別設定
@@ -135,12 +153,10 @@
         "**/target/**": true,
         "**/.history/**": true
     },
-
-    // neovimの設定
-    "vscode-neovim.useWSL": true,
     "vscode-neovim.neovimInitVimPaths.linux": "~/.config/nvim/init.vim",
     "vscode-neovim.neovimExecutablePaths.linux": "/usr/bin/nvim",
 
-    "tabnine.experimentalAutoImports": true,
-    "workbench.editor.untitled.hint": "hidden"
+    "tabnine.experimentalAutoImports": false,
+    "workbench.editor.untitled.hint": "hidden",
+    "vscode-neovim.useWSL": true
 }

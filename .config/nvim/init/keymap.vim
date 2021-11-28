@@ -1,11 +1,5 @@
 
-
 " 移動
-nnoremap j gj
-nnoremap gj j
-nnoremap k gk
-nnoremap gk k
-
 noremap 0 ^
 noremap ^ 0
 
@@ -16,17 +10,25 @@ vmap ' <Plug>(easymotion-bd-f)
 vmap <leader>j <Plug>(easymotion-bd-w)
 vmap <leader>l <Plug>(easymotion-bd-jk)
 
+" 行を移動
+nnoremap <C-Up> "zdd<Up>"zP
+nnoremap <C-Down> "zdd"zp
+" 複数行を移動
+vnoremap <C-Up> "zx<Up>"zP`[V`]
+vnoremap <C-Down> "zx"zp`[V`]
 
 " 検索
 nnoremap <silent> <Esc> :noh<cr>
-nnoremap <expr> <leader>r ':<C-u>%s/' . expand('<cword>') . '/'
-nnoremap <expr> <leader>s ':<C-u>%s/'
-nnoremap <expr> <leader>S ':<C-u>%s/\v'
+nnoremap <expr> <leader>r ':<c-u>%s/' . expand('<cword>') . '/'
+nnoremap <expr> <leader>s ':<c-u>%s/'
+vnoremap <expr> <leader>s ":<c-u>'<,'>s/"
+nnoremap <expr> <leader>S ':<c-u>%s/\v'
+vnoremap <expr> <leader>S ":<c-u>'<,'>s/\\v"
 
 " 改行
-" nnoremap <cr> o<Esc>
+nnoremap <cr> o<Esc>
 " nnoremap <s-cr> O<Esc>
-nnoremap <c-j> o<Esc>
+nnoremap <c-j> <cr>
 
 " レジスタに入れずに文字削除
 nnoremap s "_s
@@ -50,6 +52,7 @@ xmap <leader>a <Plug>(EasyAlign)
 nmap <leader>a <Plug>(EasyAlign)
 vmap <cr> <Plug>(EasyAlign)
 
+" operator-replace
 nmap R <Plug>(operator-replace)
 
 " vim-sandwitch
@@ -69,7 +72,6 @@ map z*  <Plug>(asterisk-z*)
 map gz* <Plug>(asterisk-gz*)
 map z#  <Plug>(asterisk-z#)
 map gz# <Plug>(asterisk-gz#)
-
 
 " よく使用する機能: <leader>
 " ウィンドウ操作系: <C-w>
@@ -99,11 +101,14 @@ if exists('g:vscode')
     nnoremap <leader>w <cmd>call VSCodeNotify('workbench.action.files.save')<cr>
     nnoremap <leader>q <cmd>call VSCodeNotify('workbench.action.closeActiveEditor')<cr>
     nnoremap <leader>F <cmd>call VSCodeNotify('workbench.action.openRecent')<cr>
+    nnoremap <leader>u <cmd>call VSCodeNotify('treeLocalHistoryExplorer.focus')<cr>
     nnoremap u <cmd>call VSCodeNotify('undo')<cr>
     nnoremap <C-r> <cmd>call VSCodeNotify('redo')<cr>
 
     " タブ操作
     nnoremap <leader>c <cmd>call VSCodeNotify('workbench.action.files.newUntitledFile')<cr>
+    nnoremap <C-h> <cmd>Tabprevious<cr>
+    nnoremap <C-l> <cmd>Tabnext<cr>
 
     " ウィンドウ操作
     nnoremap <C-w>\| <cmd>call VSCodeNotify('workbench.action.splitEditor')<cr>
@@ -136,6 +141,9 @@ if exists('g:vscode')
     vnoremap > <cmd>call VSCodeNotifyVisual('editor.action.indentLines', 1)<cr>
 
     " 移動
+    " gj, gkが効かないので代替の処理に置き換え
+    nnoremap gj <cmd>call VSCodeNotify('cursorMove', { 'to': 'down', 'by': 'wrappedLine', 'value': v:count ? v:count : 1 })<cr>
+    nnoremap gk <cmd>call VSCodeNotify('cursorMove', { 'to': 'up', 'by': 'wrappedLine', 'value': v:count ? v:count : 1 })<cr>
     nmap <silent> gp <cmd>call VSCodeNotify('editor.action.marker.prev')<cr>
     nmap <silent> gn <cmd>call VSCodeNotify('editor.action.marker.next')<cr>
 
@@ -145,33 +153,42 @@ if exists('g:vscode')
     nmap <silent> gi <cmd>call VSCodeNotify('editor.action.goToImplementation')<cr>
     nmap <silent> gr <cmd>call VSCodeNotify('editor.action.goToReferences')<cr>
 
+    nnoremap <c-u> <cmd>call VSCodeNotify('cursorPageUp')<cr>
+    nnoremap <c-d> <cmd>call VSCodeNotify('cursorPageDown')<cr>
+    vnoremap <c-u> 25k
+    vnoremap <c-d> 25j
+    
     " 修正
     nmap <silent> mf <cmd>call VSCodeNotify('editor.action.quickFix')<cr>
+    nmap <silent> cn <cmd>call VSCodeNotify('editor.action.rename')<cr>
 else
     " ファイル操作
-    nnoremap <leader>f :Files<cr>
-    nnoremap <leader>F :History<cr>
-    nnoremap <leader>w :w<cr>
-    nnoremap <leader>q :q<cr>
+    nnoremap <leader>f <cmd>Files<cr>
+    nnoremap <leader>F <cmd>History<cr>
+    nnoremap <leader>w <cmd>w<cr>
+    nnoremap <leader>q <cmd>q<cr>
 
     " タブ操作
-    nnoremap <leader>c :tabnew<cr>
-    nnoremap <C-h> :tabp<cr>
-    nnoremap <C-l> :tabn<cr>
+    nnoremap <leader>c <cmd>tabnew<cr>
+    nnoremap <C-h> <cmd>tabp<cr>
+    nnoremap <C-l> <cmd>tabn<cr>
 
     " ウィンドウ操作
-    nnoremap <C-w>\| :vsplit<cr>
-    nnoremap <C-w>- :split<cr>
-    nnoremap <C-w>s :Fern . -drawer<cr>
-    nnoremap <C-w>b :Fern . -drawer -toggle -stay<cr>
+    nnoremap <C-w>\| <cmd>vsplit<cr>
+    nnoremap <C-w>-  <cmd>split<cr>
+    nnoremap <C-w>s  <cmd>Fern . -drawer<cr>
+    nnoremap <C-w>b  <cmd>Fern . -drawer -toggle -stay<cr>
 
     " 検索
-    nnoremap <leader>g :Grepper<cr>
-    nnoremap <leader>* :Grepper -cword -noprompt<cr>
+    nnoremap <leader>g <cmd>Grepper<cr>
+    nnoremap <leader>* <cmd>Grepper -cword -noprompt<cr>
 
     " インデント
     vnoremap > >gv
     vnoremap < <gv
+
+    " undotree
+    nnoremap <leader>u <cmd>UndotreeToggle<cr>
 
     " coc.vim
     " Map function and class text objects
@@ -199,7 +216,7 @@ else
     inoremap <silent><expr> <c-space> coc#refresh()
 
     inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
-                                \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+                                \: "\<C-g>u\<cr>\<c-r>=coc#on_enter()\<cr>"
     " Use `[g` and `]g` to navigate diagnostics
     " Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
     nmap <silent> gp <Plug>(coc-diagnostic-prev)
@@ -215,7 +232,7 @@ else
     nmap cn <Plug>(coc-rename)
 
     " Use K to show documentation in preview window.
-    nnoremap <silent> K :call <SID>show_documentation()<CR>
+    nnoremap <silent> K :call <SID>show_documentation()<cr>
 
     function! s:show_documentation()
         if (index(['vim','help'], &filetype) >= 0)
@@ -238,4 +255,10 @@ else
     endif
 
     nmap mf <Plug>(coc-fix-current)
+
+    nmap <silent> <c-q><c-q> <cmd>TableModeToggle<cr>
+    imap <silent> <c-q><c-q> <cmd>TableModeToggle<cr>
+
+    cnoremap <c-k> <Up>
+    cnoremap <c-j> <Down>
 endif

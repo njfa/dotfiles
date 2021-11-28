@@ -318,6 +318,8 @@ typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=8
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+alias vi='nvim'
+alias vim='nvim'
 alias code='code.sh'
 
 # lsに色を付ける
@@ -330,9 +332,9 @@ alias ssh='TERM=xterm ssh'
 alias ta='tmux-create-new-session'
 
 # rust製ツールを入れている場合はコマンドを置き換える
-# if [ ! -z "$(command -v lsd)" ]; then
-#     alias ls='lsd'
-# fi
+if [ ! -z "$(command -v lsd)" ]; then
+    alias tree='lsd --tree'
+fi
 # if [ ! -z "$(command -v exa)" ]; then
 #     alias es='exa'
 # fi
