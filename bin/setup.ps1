@@ -157,6 +157,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     }
 
     $UTILS = @(
+        "gcc"
         "aria2"
         "lessmsi"
         "dark"
@@ -226,9 +227,16 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic"))) {
         Write-Host "Download sarasa-gothic.7z"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/be5invis/Sarasa-Gothic/releases/download/v0.31.0/sarasa-gothic-ttc-0.31.0.7z", ".\sarasa-gothic.7z")
+        (New-Object Net.WebClient).DownloadFile("https://github.com/be5invis/Sarasa-Gothic/releases/download/v0.35.1/sarasa-gothic-ttc-0.35.1.7z", ".\sarasa-gothic.7z")
         7z x .\sarasa-gothic.7z -o"$env:USERPROFILE\font\sarasa-gothic"
         Remove-Item sarasa-gothic.7z
+    }
+
+    if (-Not (Test-Path ("$env:USERPROFILE\font\PlemolJP"))) {
+        Write-Host "Download PlemolJP.zip"
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/PlemolJP/releases/download/v1.2.1/PlemolJP_NF_v1.2.1.zip", ".\PlemolJP.zip")
+        7z x .\PlemolJP.zip -o"$env:USERPROFILE\font\PlemolJP"
+        Remove-Item PlemolJP.zip
     }
 
 } elseif (($mode -eq "nf") -Or ($mode -eq "nerd-fonts")) {
