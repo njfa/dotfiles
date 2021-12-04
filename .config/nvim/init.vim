@@ -36,6 +36,7 @@ if !exists('g:vscode')
     Plug 'mbbill/undotree'
     Plug 'tversteeg/registers.nvim'
     Plug 'markonm/traces.vim' " vscodeで使用すると変更履歴がおかしくなる点に注意
+    Plug 'rust-lang/rust.vim'
 else
     Plug 'asvetliakov/vim-easymotion', { 'as': 'vsc-easymotion' }
 endif
