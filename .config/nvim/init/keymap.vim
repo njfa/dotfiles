@@ -157,7 +157,7 @@ if exists('g:vscode')
     nnoremap <c-d> <cmd>call VSCodeNotify('cursorPageDown')<cr>
     vnoremap <c-u> 25k
     vnoremap <c-d> 25j
-    
+
     " 修正
     nmap <silent> mf <cmd>call VSCodeNotify('editor.action.quickFix')<cr>
     nmap <silent> cn <cmd>call VSCodeNotify('editor.action.rename')<cr>
@@ -167,6 +167,7 @@ else
     nnoremap <leader>F <cmd>History<cr>
     nnoremap <leader>w <cmd>w<cr>
     nnoremap <leader>q <cmd>q<cr>
+    nnoremap <leader>e <cmd>e<cr>
 
     " タブ操作
     nnoremap <leader>c <cmd>tabnew<cr>
