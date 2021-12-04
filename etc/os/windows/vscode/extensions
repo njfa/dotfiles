@@ -1,4 +1,4 @@
-asvetliakov.vscode-neovim
+﻿asvetliakov.vscode-neovim
 bungcip.better-toml
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
@@ -6,6 +6,8 @@ dracula-theme.theme-dracula
 liviuschera.noctis
 matklad.rust-analyzer
 medo64.render-crlf
+mitchdenny.ecdc
+ms-azuretools.vscode-docker
 MS-CEINTL.vscode-language-pack-ja
 ms-vscode-remote.remote-containers
 ms-vscode-remote.remote-ssh
@@ -13,7 +15,7 @@ ms-vscode-remote.remote-ssh-edit
 ms-vscode-remote.remote-wsl
 ms-vscode-remote.vscode-remote-extensionpack
 PKief.material-icon-theme
-rust-lang.rust
+ryu1kn.partial-diff
 serayuzgur.crates
 shd101wyy.markdown-preview-enhanced
 Swellaby.rust-pack
