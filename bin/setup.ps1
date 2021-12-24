@@ -42,7 +42,9 @@ function backup() {
 
     Write-Host "Back up $((Get-Item $SOURCE_PATH).Name)"
     Write-Host "  - Source directory: $((Get-Item $SOURCE_PATH).DirectoryName)"
-    Write-Host "  - Dest directory: $((Get-Item $DEST_PATH).DirectoryName)"
+    if (Test-Path $SOURCE_PATH) {
+        Write-Host "  - Dest directory: $((Get-Item $DEST_PATH).DirectoryName)"
+    }
     Write-Host -NoNewline "  - Dest filename: "
 
     if (-Not (Test-Path $DEST_PATH)) {
@@ -121,6 +123,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "$env:USERPROFILE\.dotfiles\bin"
         "$env:USERPROFILE\.cargo\bin"
         "$env:USERPROFILE\scoop\shims"
+        "$env:USERPROFILE\scoop\apps\vscode\current"
         "$env:USERPROFILE\scoop\apps\python\current"
         "$env:USERPROFILE\scoop\apps\python\current\Scripts"
         "$env:USERPROFILE\scoop\apps\nodejs-lts\current\bin"
@@ -170,7 +173,6 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     $PACKAGES = @(
         "bat"
         "fzf"
-        "corretto11"
         "googlechrome"
         "msys2"
         "neovim"
