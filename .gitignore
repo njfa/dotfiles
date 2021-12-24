@@ -32,3 +32,6 @@ $RECYCLE.BIN/
 
 # WindowsTerminal settings.json
 settings.*.json
+
+# Backup files
+*.backup
