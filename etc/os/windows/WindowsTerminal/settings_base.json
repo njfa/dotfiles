@@ -10,7 +10,7 @@
     "wordDelimiters": " ./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}~?\u2502",
     "profiles": {
         "defaults": {
-            "fontFace": "更紗等幅ゴシック J",
+            "fontFace": "PlemolJP Console NF",
             "fontSize": 12,
             "closeOnExit": true,
             "colorScheme": "Andromeda"
