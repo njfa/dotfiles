@@ -331,6 +331,15 @@ alias ssh='TERM=xterm ssh'
 # tmux開始用関数の文字数が多いのでエイリアスを設定
 alias ta='tmux-create-new-session'
 
+# wslのキャッシュをクリア
+alias rmcache='sudo sh -c "echo 3 >'/proc/sys/vm/drop_caches' && swapoff -a && swapon -a"'
+
+# dockerでnoneのイメージを全て削除
+if [ ! -z "$(command -v docker)" ]; then
+    alias rmi='docker rmi $(docker images -f "dangling=true" -q)'
+    alias rmp='docker rm $(docker ps -a -q)'
+fi
+
 # rust製ツールを入れている場合はコマンドを置き換える
 if [ ! -z "$(command -v lsd)" ]; then
     alias tree='lsd --tree'
