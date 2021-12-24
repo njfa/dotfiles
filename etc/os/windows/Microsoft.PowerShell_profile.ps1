@@ -2,7 +2,7 @@
 # if ($env:WT_PROFILE_ID) {
 Import-Module posh-git
 Import-Module oh-my-posh
-Set-PoshPrompt -Theme aliens
+Set-PoshPrompt -Theme bubbles
 # }
 
 # キーバインドをEmacs風に変更
