@@ -2,7 +2,9 @@
 bungcip.better-toml
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
+donjayamanne.githistory
 dracula-theme.theme-dracula
+eamodio.gitlens
 liviuschera.noctis
 matklad.rust-analyzer
 medo64.render-crlf
