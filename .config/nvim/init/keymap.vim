@@ -25,11 +25,6 @@ vnoremap <expr> <leader>s ":<c-u>'<,'>s/"
 nnoremap <expr> <leader>S ':<c-u>%s/\v'
 vnoremap <expr> <leader>S ":<c-u>'<,'>s/\\v"
 
-" 改行
-nnoremap <cr> o<Esc>
-" nnoremap <s-cr> O<Esc>
-nnoremap <c-j> <cr>
-
 " レジスタに入れずに文字削除
 nnoremap s "_s
 nnoremap x "_x
@@ -153,14 +148,18 @@ if exists('g:vscode')
     nmap <silent> gi <cmd>call VSCodeNotify('editor.action.goToImplementation')<cr>
     nmap <silent> gr <cmd>call VSCodeNotify('editor.action.goToReferences')<cr>
 
-    nnoremap <c-u> <cmd>call VSCodeNotify('cursorPageUp')<cr>
-    nnoremap <c-d> <cmd>call VSCodeNotify('cursorPageDown')<cr>
+    nnoremap <c-u> 25k
+    nnoremap <c-d> 25j
     vnoremap <c-u> 25k
     vnoremap <c-d> 25j
 
     " 修正
-    nmap <silent> mf <cmd>call VSCodeNotify('editor.action.quickFix')<cr>
+    nmap <silent> <leader><leader> <cmd>call VSCodeNotify('editor.action.quickFix')<cr>
     nmap <silent> cn <cmd>call VSCodeNotify('editor.action.rename')<cr>
+
+    " 改行
+    nnoremap <c-j> <cmd>call VSCodeNotify('editor.action.insertLineAfter')<cr>
+    nnoremap <c-k> <cmd>call VSCodeNotify('editor.action.insertLineBefore')<cr>
 else
     " ファイル操作
     nnoremap <leader>f <cmd>Files<cr>
@@ -255,11 +254,15 @@ else
         vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
     endif
 
-    nmap mf <Plug>(coc-fix-current)
+    nmap <leader><leader> <Plug>(coc-fix-current)
 
     nmap <silent> <c-q><c-q> <cmd>TableModeToggle<cr>
     imap <silent> <c-q><c-q> <cmd>TableModeToggle<cr>
 
     cnoremap <c-k> <Up>
     cnoremap <c-j> <Down>
+
+    " 改行
+    nnoremap <c-j> o<Esc>
+    nnoremap <c-k> O<Esc>
 endif

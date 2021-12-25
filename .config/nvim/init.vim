@@ -72,7 +72,8 @@ set fileformats=unix,dos,mac
 set mouse=a
 
 " クリップボードの設定
-set clipboard=unnamed
+set clipboard&
+set clipboard^=unnamedplus
 
 " インデント
 set autoindent         "改行時に自動でインデントする
