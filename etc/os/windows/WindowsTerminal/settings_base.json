@@ -15,7 +15,7 @@
             "closeOnExit": true,
             "colorScheme": "Andromeda"
         },
-        
+
         // pwsh.exeは下記のようにscoop以下の実行ファイルを指定しないとCtrl+Cで停止するときにpwsh.exeのプロセス自体が停止してしまう
         // {
         //     "guid":  "{<任意のGUID>}",
