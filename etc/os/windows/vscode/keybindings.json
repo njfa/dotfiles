@@ -718,5 +718,10 @@
         "key": "ctrl+shift+1",
         "command": "-search.action.replaceAllInFile",
         "when": "fileMatchFocus && replaceActive && searchViewletVisible"
+    },
+    {
+        "key": "ctrl+f",
+        "command": "-workbench.action.terminal.focusFind",
+        "when": "terminalFindFocused && terminalHasBeenCreated || terminalFindFocused && terminalProcessSupported || terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
     }
 ]
