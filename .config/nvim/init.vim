@@ -123,6 +123,12 @@ let g:table_mode_corner='|'
 " highlight link TracesReplace String
 let g:traces_preserve_view_state=1
 
+" Fern
+let g:fern#default_hidden=1
+
+" GitGutter
+let g:gitgutter_map_keys = 0
+
 " vscodeで起動した場合に反映しない設定
 if !exists('g:vscode')
     " airline

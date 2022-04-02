@@ -95,7 +95,7 @@ if exists('g:vscode')
     nnoremap <leader>e <cmd>call VSCodeNotify('workbench.action.files.openFile')<cr>
     nnoremap <leader>w <cmd>call VSCodeNotify('workbench.action.files.save')<cr>
     nnoremap <leader>q <cmd>call VSCodeNotify('workbench.action.closeActiveEditor')<cr>
-    nnoremap <leader>F <cmd>call VSCodeNotify('workbench.action.openRecent')<cr>
+    nnoremap <leader>h <cmd>call VSCodeNotify('workbench.action.openRecent')<cr>
     nnoremap <leader>u <cmd>call VSCodeNotify('treeLocalHistoryExplorer.focus')<cr>
     nnoremap u <cmd>call VSCodeNotify('undo')<cr>
     nnoremap <C-r> <cmd>call VSCodeNotify('redo')<cr>
@@ -163,7 +163,7 @@ if exists('g:vscode')
 else
     " ファイル操作
     nnoremap <leader>f <cmd>Files<cr>
-    nnoremap <leader>F <cmd>History<cr>
+    nnoremap <leader>h <cmd>History<cr>
     nnoremap <leader>w <cmd>w<cr>
     nnoremap <leader>q <cmd>q<cr>
     nnoremap <leader>e <cmd>e<cr>
