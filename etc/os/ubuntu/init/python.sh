@@ -10,14 +10,6 @@ if [ -z "$(command -v pyenv)" ]; then
     git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT
 fi
 
-if [ ! -z "$(command -v fish)" -a -z "$(fish -c 'echo $PYENV_ROOT')" ]; then
-    fish -c 'set -Ux PYENV_ROOT $HOME/.pyenv'
-fi
-
-if [ ! -z "$(command -v fish)" -a -z "$(fish -c 'echo $fish_user_paths' | grep .pyenv)" ]; then
-    fish -c 'set -Ux fish_user_paths $PYENV_ROOT/bin $fish_user_paths'
-fi
-
 eval "$(pyenv init -)"
 
 if [ -z "$(pyenv versions | grep $PYTHON_VERSION)" ]; then
@@ -27,6 +19,12 @@ if [ -z "$(pyenv versions | grep $PYTHON_VERSION)" ]; then
 
     pyenv install $PYTHON_VERSION
     pyenv global $PYTHON_VERSION
+fi
+
+if [ -z "$(command -v python)" ]; then
+    exit 1
+elif [ -z "$(command -v pip)" ]; then
+    exit 1
 fi
 
 if [ ! -z "$(pip list --outdated | grep pip)" ]; then
