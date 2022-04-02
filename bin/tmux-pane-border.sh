@@ -61,7 +61,7 @@ git_info() {
         fi
     fi
 
-    echo "#[fg=colour32,bg=#262a33]#[fg=colour255,bg=colour32] #{pane_pid} #[fg=colour32,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] #(whoami) #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $current_path #[bg=#262a33,fg=#363a43]$git_info#[fg=#262a33,bg=colour32]#[bg=#262a33,fg=colour32]#[default]"
+    echo "#[fg=#296873,bg=#262a33]#[fg=colour255,bg=#296873] #{pane_pid} #[fg=#296873,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] #(whoami) #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $current_path #[bg=#262a33,fg=#363a43]$git_info#[fg=#262a33,bg=#296873]#[bg=#262a33,fg=#296873]#[default]"
 }
 
 if [[ $1 = "ssh" ]]; then
@@ -99,7 +99,7 @@ if [[ $1 = "ssh" ]]; then
         done
     fi
     ssh_hostname=" ssh:$user@$host "
-    echo "#[fg=colour32,bg=#262a33]#[fg=colour255,bg=colour32] #{pane_pid} #[fg=colour32,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $user #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $host #[bg=#262a33,fg=#363a43]#[default]"
+    echo "#[fg=#296873,bg=#262a33]#[fg=colour255,bg=#296873] #{pane_pid} #[fg=#296873,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $user #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $host #[bg=#262a33,fg=#363a43]#[default]"
 else
     git_info $1
 fi
