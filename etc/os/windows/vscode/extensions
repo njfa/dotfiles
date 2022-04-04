@@ -1,4 +1,5 @@
 ﻿asvetliakov.vscode-neovim
+bierner.markdown-preview-github-styles
 bungcip.better-toml
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
@@ -6,6 +7,7 @@ donjayamanne.githistory
 dracula-theme.theme-dracula
 eamodio.gitlens
 liviuschera.noctis
+marp-team.marp-vscode
 matklad.rust-analyzer
 medo64.render-crlf
 mitchdenny.ecdc
@@ -19,12 +21,10 @@ ms-vscode-remote.vscode-remote-extensionpack
 PKief.material-icon-theme
 ryu1kn.partial-diff
 serayuzgur.crates
-shd101wyy.markdown-preview-enhanced
 Swellaby.rust-pack
 TabNine.tabnine-vscode
 vadimcn.vscode-lldb
 VisualStudioExptTeam.vscodeintellicode
 XadillaX.viml
-xyz.local-history
 yzane.markdown-pdf
 yzhang.markdown-all-in-one
