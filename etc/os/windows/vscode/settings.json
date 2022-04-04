@@ -1,3 +1,4 @@
+
 {
     // ------------------------------------------------------------------------
     // 外観
@@ -29,12 +30,14 @@
     // ------------------------------------------------------------------------
     // フォント
     // ------------------------------------------------------------------------
-    "editor.fontFamily": "PlemolJP Console NF",
+    "editor.fontFamily": "UDEV Gothic JPDOC",
+    // "editor.fontFamily": "PlemolJP Console NF",
     // "editor.fontFamily": "更紗等幅ゴシック J",
     "editor.fontLigatures": true,
     "editor.fontSize": 14,
-    "terminal.integrated.fontFamily": "PlemolJP Console NF",
+    // "terminal.integrated.fontFamily": "PlemolJP Console NF",
     // "terminal.integrated.fontFamily": "更紗等幅ゴシック J",
+    "terminal.integrated.fontFamily": "UDEV Gothic NF",
     "terminal.integrated.fontSize": 16,
     "terminal.integrated.fontWeight": "400",
 

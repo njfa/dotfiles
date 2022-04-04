@@ -288,23 +288,23 @@ zinit load romkatv/powerlevel10k
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-typeset -g POWERLEVEL9K_DIR_BACKGROUND='#243a47'
+typeset -g POWERLEVEL9K_DIR_BACKGROUND='#062e32'
 typeset -g POWERLEVEL9K_DIR_FOREGROUND='#e7e8e9'
 typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND='#e7e8e9'
 typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND='#e7e8e9'
 
 typeset -g POWERLEVEL9K_STATUS_OK_FOREGROUND=2
-typeset -g POWERLEVEL9K_STATUS_OK_BACKGROUND='#243a47'
+typeset -g POWERLEVEL9K_STATUS_OK_BACKGROUND='#d67f33'
 typeset -g POWERLEVEL9K_STATUS_OK_PIPE_FOREGROUND=2
-typeset -g POWERLEVEL9K_STATUS_OK_PIPE_BACKGROUND='#243a47'
+typeset -g POWERLEVEL9K_STATUS_OK_PIPE_BACKGROUND='#062e32'
 
-typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND=0
+typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND='#062e32'
 typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND='#f7df68'
 
 typeset -g POWERLEVEL9K_TIME_BACKGROUND='#ffffff'
 
 typeset -g POWERLEVEL9K_VCS_CLEAN_BACKGROUND='#00e8c6'
-typeset -g POWERLEVEL9K_VCS_MODIFIED_BACKGROUND='#eaa64d'
+typeset -g POWERLEVEL9K_VCS_MODIFIED_BACKGROUND='#be983e'
 typeset -g POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND='#9772fd'
 typeset -g POWERLEVEL9K_VCS_CONFLICTED_BACKGROUND=3
 typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=8
@@ -344,18 +344,6 @@ fi
 if [ ! -z "$(command -v lsd)" ]; then
     alias tree='lsd --tree'
 fi
-# if [ ! -z "$(command -v exa)" ]; then
-#     alias es='exa'
-# fi
-
-# if [ ! -z "$(command -v bat)" ]; then
-#     alias cat='bat'
-#     alias cap='bat -p'
-# fi
-# 
-# if [ ! -z "$(command -v fselect)" ]; then
-#     alias fs='fselect'
-# fi
 
 # インタラクティブにjqを使用できるプラグイン (jq依存)
 if [ ! -z "$(command -v jq)" ]; then
