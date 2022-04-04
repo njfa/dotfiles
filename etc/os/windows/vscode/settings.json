@@ -19,8 +19,8 @@
     "editor.renderWhitespace": "all",
     "editor.renderControlCharacters": true,
     "code-eol.newlineCharacter": "¬",
-    "code-eol.returnCharacter" : "¤",
-    "code-eol.crlfCharacter"   : "¤¬",
+    "code-eol.returnCharacter" : "⇠",
+    "code-eol.crlfCharacter"   : "↵",
     "code-eol.highlightExtraWhitespace": true,
     "code-eol.decorateBeforeEol": true,
     "workbench.editor.enablePreview": false,
@@ -161,5 +161,6 @@
 
     "tabnine.experimentalAutoImports": false,
     "workbench.editor.untitled.hint": "hidden",
-    "vscode-neovim.useWSL": true
+    "vscode-neovim.useWSL": true,
+    "markdown-preview-github-styles.colorTheme": "light"
 }
