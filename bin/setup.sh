@@ -125,11 +125,11 @@ install() {
     INIT_PATH=$1
 
     TARGET_PATH=""
-    if [ ! -z "${2:-}" ]; then
+    if [ -n "${2:-}" ]; then
         TARGET_PATH="$INIT_PATH/$2.sh"
     fi
 
-    if [ ! -z "$TARGET_PATH" -a -f "$TARGET_PATH" ]; then
+    if [ -n "$TARGET_PATH" -a -f "$TARGET_PATH" ]; then
         exec_cmd $TARGET_PATH
     elif [ -z "$TARGET_PATH" ]; then
         for f in $(find $INIT_PATH -regex ".*/[a-zA-Z0-9]+\.sh" | sort)
