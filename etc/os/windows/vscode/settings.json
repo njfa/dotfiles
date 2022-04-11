@@ -162,5 +162,8 @@
     "tabnine.experimentalAutoImports": false,
     "workbench.editor.untitled.hint": "hidden",
     "vscode-neovim.useWSL": true,
-    "markdown-preview-github-styles.colorTheme": "light"
+    "markdown-preview-github-styles.colorTheme": "light",
+    "MarkdownPaste.path": "${fileDirname}/images",
+    "MarkdownPaste.silence": true,
+    "hediet.vscode-drawio.theme": "Kennedy"
 }
