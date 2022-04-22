@@ -36,8 +36,7 @@ function backup() {
     $DEST_PATH = $args[1]
 
     if (-Not (Test-Path $SOURCE_PATH)) {
-        Write-Host "${SOURCE_PATH} doesn't exist"
-        return
+        return $(Write-Host "${SOURCE_PATH} doesn't exist")
     }
 
     Write-Host "Back up $((Get-Item $SOURCE_PATH).Name)"
@@ -68,14 +67,12 @@ function backup() {
 
     Write-Host ""
     Write-Host "Result: Backup failed`r`n"
-    return
 }
 
 
 function deployNewSettings() {
     if ($args.Length -lt 3) {
-        Write-Host "deployNewSettings SourceFilePath DestinationPath FileName"
-        exit
+        return $(Write-Host "deployNewSettings SourceFilePath DestinationPath FileName")
     }
 
     $SOURCE_PATH = $args[0]
@@ -83,31 +80,28 @@ function deployNewSettings() {
     $DEST_FILENAME = $args[2]
 
     if (-Not (Test-Path $SOURCE_PATH)) {
-        Write-Host "Error: $SOURCE_PATH doesn't exits`r`n"
-        return
+        return $(Write-Host "Error: $SOURCE_PATH doesn't exits`r`n")
     } elseif (-Not (Test-Path "$DEST_PATH")) {
-        Write-Host "Error: $DEST_PATH doesn't exits`r`n"
-        return
-    }
-
-    if (isSymbolicLink "${DEST_PATH}\${DEST_FILENAME}") {
-        Write-Host "Error: ${DEST_PATH}\${DEST_FILENAME} is already deployed`r`n"
-        return
-    } elseif (Test-Path "${DEST_PATH}\${DEST_FILENAME}") {
-        backup "${DEST_PATH}\${DEST_FILENAME}" "$SOURCE_PATH.$env:COMPUTERNAME.backup" | Out-Null
-    }
-
-    Write-Host "Deploy $((Get-Item $SOURCE_PATH).Name)"
-    Write-Host "  - Source directory: $((Get-Item $SOURCE_PATH).DirectoryName)"
-    Write-Host "  - Dest directory: $DEST_PATH"
-    Write-Host "  - Dest filename: $DEST_FILENAME"
-
-    if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-        Write-Host "Administrator mode`r`n"
-        New-Item -ItemType SymbolicLink -Path $DEST_PATH -Name $DEST_FILENAME -Value $SOURCE_PATH
+        return $(Write-Host "Error: $DEST_PATH doesn't exits`r`n")
+    } elseif (isSymbolicLink "${DEST_PATH}\${DEST_FILENAME}") {
+        return $(Write-Host "Error: ${DEST_PATH}\${DEST_FILENAME} is already deployed`r`n")
     } else {
-        Write-Host ""
-        Copy-Item -Path $SOURCE_PATH -Destination "$DEST_PATH\$DEST_FILENAME"
+        if (Test-Path "${DEST_PATH}\${DEST_FILENAME}") {
+            backup "${DEST_PATH}\${DEST_FILENAME}" "$SOURCE_PATH.$env:COMPUTERNAME.backup" | Out-Null
+        }
+
+        Write-Host "Deploy $((Get-Item $SOURCE_PATH).Name)"
+        Write-Host "  - Source directory: $((Get-Item $SOURCE_PATH).DirectoryName)"
+        Write-Host "  - Dest directory: $DEST_PATH"
+        Write-Host "  - Dest filename: $DEST_FILENAME"
+
+        if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+            Write-Host "Administrator mode`r`n"
+            New-Item -ItemType SymbolicLink -Path $DEST_PATH -Name $DEST_FILENAME -Value $SOURCE_PATH
+        } else {
+            Write-Host ""
+            Copy-Item -Path $SOURCE_PATH -Destination "$DEST_PATH\$DEST_FILENAME"
+        }
     }
 }
 
@@ -300,9 +294,13 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 } elseif (($mode -eq "vc") -Or ($mode -eq "vscode")) {
 
     $VSCODE_PATH = "$env:USERPROFILE\AppData\Roaming\Code\User"
+    $SCOOP_VSCODE_PATH = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User"
 
     deployNewSettings $WINDOTFILES\vscode\settings.json $VSCODE_PATH settings.json
     deployNewSettings $WINDOTFILES\vscode\keybindings.json $VSCODE_PATH keybindings.json
+
+    deployNewSettings $WINDOTFILES\vscode\settings.json $SCOOP_VSCODE_PATH settings.json
+    deployNewSettings $WINDOTFILES\vscode\keybindings.json $SCOOP_VSCODE_PATH keybindings.json
 
     # install extensions
     if (Test-Path ("$env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions")) {
