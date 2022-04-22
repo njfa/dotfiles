@@ -148,8 +148,8 @@ if exists('g:vscode')
     nmap <silent> gi <cmd>call VSCodeNotify('editor.action.goToImplementation')<cr>
     nmap <silent> gr <cmd>call VSCodeNotify('editor.action.goToReferences')<cr>
 
-    nnoremap <c-u> 25k
-    nnoremap <c-d> 25j
+    nnoremap <c-u> <cmd>call VSCodeNotify('cursorPageUp')<cr>
+    nnoremap <c-d> <cmd>call VSCodeNotify('cursorPageDown')<cr>
     vnoremap <c-u> 25k
     vnoremap <c-d> 25j
 
