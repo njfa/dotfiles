@@ -224,7 +224,7 @@
         "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen && !sideBarFocus"
     },
     {
-        "key": "space F",
+        "key": "space h",
         "command": "workbench.action.openRecent",
         "when": "activeEditorGroupEmpty && !terminalFocus && !inQuickOpen && !sideBarFocus"
     },
