@@ -741,13 +741,8 @@
         "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly"
     },
     {
-        "key": "space",
+        "key": "shift+space",
         "command": "hideSuggestWidget",
-        "when": "suggestWidgetVisible && textInputFocus"
-    },
-    {
-        "key": "escape",
-        "command": "-hideSuggestWidget",
         "when": "suggestWidgetVisible && textInputFocus"
     }
 ]

@@ -30,7 +30,7 @@
     // ------------------------------------------------------------------------
     // フォント
     // ------------------------------------------------------------------------
-    "editor.fontFamily": "UDEV Gothic JPDOC",
+    "editor.fontFamily": "UDEV Gothic NF",
     // "editor.fontFamily": "PlemolJP Console NF",
     // "editor.fontFamily": "更紗等幅ゴシック J",
     "editor.fontLigatures": true,
