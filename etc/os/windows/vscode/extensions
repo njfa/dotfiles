@@ -1,6 +1,5 @@
 ﻿asvetliakov.vscode-neovim
 bierner.markdown-checkbox
-bierner.markdown-emoji
 bierner.markdown-mermaid
 bierner.markdown-preview-github-styles
 bpruitt-goddard.mermaid-markdown-syntax-highlighting
@@ -8,12 +7,9 @@ bungcip.better-toml
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
 donjayamanne.githistory
-dracula-theme.theme-dracula
 eamodio.gitlens
 hediet.vscode-drawio
 liviuschera.noctis
-marp-team.marp-vscode
-matklad.rust-analyzer
 medo64.render-crlf
 mikestead.dotenv
 mitchdenny.ecdc
