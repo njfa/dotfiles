@@ -204,8 +204,13 @@ deploy() {
 title
 
 if [ $# -eq 0 ]; then
-    deploy
-    initialize
+    echo """Usage: setup.sh [command]
+
+Commands:
+    init        Initialize commands.
+    deploy      Deploy dotfiles.
+    list        List information about dotfiles.
+"""
 elif [ "$1" = "deploy" -o "$1" = "d" ]; then
     deploy
 elif [ "$1" = "init" -o "$1" = "i" ]; then
