@@ -165,5 +165,6 @@
     "markdown-preview-github-styles.colorTheme": "light",
     "MarkdownPaste.path": "${fileDirname}/images",
     "MarkdownPaste.silence": true,
-    "hediet.vscode-drawio.theme": "Kennedy"
+    "hediet.vscode-drawio.theme": "Kennedy",
+    "editor.experimental.stickyScroll.enabled": true
 }
