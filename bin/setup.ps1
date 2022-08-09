@@ -150,7 +150,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Get-Command -Name scoop -ErrorAction $ErrorActionPreference 
     }
     catch [System.Management.Automation.CommandNotFoundException] {
-        Invoke-Expression (new-object net.webclient).downloadstring("https://get.scoop.sh")
+        Invoke-Expression (New-Object System.Net.WebClient).downloadstring("https://get.scoop.sh")
     }
 
     $UTILS = @(
@@ -235,14 +235,20 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Remove-Item PlemolJP.zip
     }
 
+    if (-Not (Test-Path ("$env:USERPROFILE\font\UDEV"))) {
+        Write-Host "Download UDEV.zip"
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.0.0/UDEVGothic_NF_v1.0.0.zip", ".\UDEV.zip")
+        7z x .\UDEV.zip -o"$env:USERPROFILE\font\UDEV"
+        Remove-Item UDEV.zip
+    }
+
+
 } elseif (($mode -eq "nf") -Or ($mode -eq "nerd-fonts")) {
 
     Write-Host "Install nerd-fonts"
 
-    scoop install "fontforge"
-
     if (-Not (Test-Path ("$env:USERPROFILE\bin\unitettc"))) {
-        (New-Object Net.WebClient).DownloadFile("http://yozvox.web.fc2.com/unitettc.zip", ".\unitettc.zip")
+        (New-Object System.Net.WebClient).DownloadFile("http://yozvox.web.fc2.com/unitettc.zip", ".\unitettc.zip")
         unzip unitettc.zip -d $env:USERPROFILE\bin
         Move-Item $env:USERPROFILE\bin\unitettc\unitettc64.exe $env:USERPROFILE\bin
         Remove-Item unitettc.zip
@@ -259,6 +265,8 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Move-Item $env:USERPROFILE\font\sarasa-gothic\*017.ttf $env:USERPROFILE\font\sarasa-gothic-ttf
         Remove-Item $env:USERPROFILE\font\sarasa-gothic\*.ttf
     }
+
+    scoop install "fontforge"
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic-nerd"))) {
         Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w --fontlogos --fontawesome --powerline --powerlineextra -l -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
@@ -320,5 +328,18 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 } elseif (($mode -eq "dt") -Or ($mode -eq "dev-tools")) {
 
     cargo install hexyl tokei
+
+} else {
+
+    Write-Host "Usage: setup.ps1 [command]"
+    Write-Host ""
+    Write-Host "Commands:"
+    Write-Host "    init        Initialize commands."
+    Write-Host "    nf          Install nerd-fonts"
+    Write-Host "    vc          Deploy vscode settings"
+    Write-Host "    wt          Deploy windows terminal settings"
+    Write-Host "    wc          Deploy .wslconfig"
+    Write-Host "    pf          Initialize posh-profile"
+    Write-Host "    dt          Install dev-tools"
 
 }
