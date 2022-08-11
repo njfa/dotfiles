@@ -1,7 +1,8 @@
 
 call plug#begin('~/.config/nvim/plugged')
 
-Plug 'airblade/vim-gitgutter'
+" Plug 'airblade/vim-gitgutter'
+Plug 'lewis6991/gitsigns.nvim'
 Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-commentary'
 Plug 'unblevable/quick-scope'
@@ -20,23 +21,36 @@ if !exists('g:vscode')
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
     Plug 'Yggdroot/indentLine'
-    Plug 'mhinz/vim-startify'
+    Plug 'goolord/alpha-nvim'
+    Plug 'kyazdani42/nvim-web-devicons'
 
-    " ツール
+    " 移動/検索
     Plug 'easymotion/vim-easymotion'
     Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
     Plug 'junegunn/fzf.vim'
     Plug 'mhinz/vim-grepper'
-    Plug 'lambdalisue/fern.vim'
-    Plug 'lambdalisue/fern-git-status.vim'
-    Plug 'tpope/vim-fugitive'
+
+    " 編集
+    " 入力補助全般
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
     Plug 'rust-lang/rust.vim'
+    " テーブルの入力補助
     Plug 'dhruvasagar/vim-table-mode'
+    " undo/redo補助
     Plug 'mbbill/undotree'
-    Plug 'tversteeg/registers.nvim'
+    " Gitの状態可視化
+    Plug 'tpope/vim-fugitive'
+    " 置換時の変更後プレビュー
     Plug 'markonm/traces.vim' " vscodeで使用すると変更履歴がおかしくなる点に注意
-    Plug 'rust-lang/rust.vim'
+
+    " 便利ツール
+    " キーマップを可視化する
+    Plug 'folke/which-key.nvim'
+    " レジスター可視化
+    Plug 'tversteeg/registers.nvim'
+    " ファイラー
+    Plug 'lambdalisue/fern.vim'
+    Plug 'lambdalisue/fern-git-status.vim'
 else
     Plug 'asvetliakov/vim-easymotion', { 'as': 'vsc-easymotion' }
 endif
@@ -179,6 +193,59 @@ if !exists('g:vscode')
 
     " Add `:OR` command for organize imports of the current buffer.
     command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
+
+lua << EOF
+    require("which-key").setup {
+    }
+
+    require'alpha'.setup(require'alpha.themes.startify'.config)
+
+    require('gitsigns').setup {
+        signs = {
+            add          = {hl = 'GitSignsAdd'   , text = '+', numhl='GitSignsAddNr'   , linehl='GitSignsAddLn'},
+            change       = {hl = 'GitSignsChange', text = '*', numhl='GitSignsChangeNr', linehl='GitSignsChangeLn'},
+            delete       = {hl = 'GitSignsDelete', text = '_', numhl='GitSignsDeleteNr', linehl='GitSignsDeleteLn'},
+            topdelete    = {hl = 'GitSignsDelete', text = '‾', numhl='GitSignsDeleteNr', linehl='GitSignsDeleteLn'},
+            changedelete = {hl = 'GitSignsChange', text = '~', numhl='GitSignsChangeNr', linehl='GitSignsChangeLn'},
+        },
+
+        on_attach = function(bufnr)
+            local gs = package.loaded.gitsigns
+
+            local function map(mode, l, r, opts)
+                opts = opts or {}
+                opts.buffer = bufnr
+                vim.keymap.set(mode, l, r, opts)
+            end
+
+            map('n', '<leader>hj', function()
+                if vim.wo.diff then return '<leader>hj' end
+                vim.schedule(function() gs.next_hunk() end)
+                return '<Ignore>'
+            end, {expr=true})
+
+            map('n', '<leader>hk', function()
+            if vim.wo.diff then return '<leader>hk' end
+            vim.schedule(function() gs.prev_hunk() end)
+            return '<Ignore>'
+            end, {expr=true})
+
+            map('v', '<leader>hs', ':Gitsigns stage_hunk<CR>')
+            map('v', '<leader>hr', ':Gitsigns reset_hunk<CR>')
+            map('n', '<leader>hs', gs.stage_buffer)
+            map('n', '<leader>hr', gs.reset_buffer)
+            map('n', '<leader>hu', gs.undo_stage_hunk)
+            map('n', '<leader>hp', gs.preview_hunk)
+            map('n', '<leader>hb', function() gs.blame_line{full=true} end)
+            map('n', '<leader>tb', gs.toggle_current_line_blame)
+            map('n', '<leader>hd', function() gs.diffthis('~') end)
+            map('n', '<leader>td', gs.toggle_deleted)
+
+            map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+        end
+    }
+EOF
+
 endif
 
 " ime off

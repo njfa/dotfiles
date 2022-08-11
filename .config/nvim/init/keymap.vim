@@ -19,7 +19,7 @@ vnoremap <C-Down> "zx"zp`[V`]
 
 " 検索
 nnoremap <silent> <Esc> :noh<cr>
-nnoremap <expr> <leader>r ':<c-u>%s/' . expand('<cword>') . '/'
+" nnoremap <expr> <leader>r ':<c-u>%s/' . expand('<cword>') . '/'
 nnoremap <expr> <leader>s ':<c-u>%s/'
 vnoremap <expr> <leader>s ":<c-u>'<,'>s/"
 nnoremap <expr> <leader>S ':<c-u>%s/\v'
@@ -70,6 +70,7 @@ map gz# <Plug>(asterisk-gz#)
 
 " よく使用する機能: <leader>
 " ウィンドウ操作系: <C-w>
+" Git操作系: <C-g>
 " 移動(goto): g
 " 変更(change): c
 " 編集(modify): m
@@ -95,7 +96,7 @@ if exists('g:vscode')
     nnoremap <leader>e <cmd>call VSCodeNotify('workbench.action.files.openFile')<cr>
     nnoremap <leader>w <cmd>call VSCodeNotify('workbench.action.files.save')<cr>
     nnoremap <leader>q <cmd>call VSCodeNotify('workbench.action.closeActiveEditor')<cr>
-    nnoremap <leader>h <cmd>call VSCodeNotify('workbench.action.openRecent')<cr>
+    nnoremap <leader>r <cmd>call VSCodeNotify('workbench.action.openRecent')<cr>
     nnoremap <leader>u <cmd>call VSCodeNotify('timeline.focus')<cr>
     nnoremap u <cmd>call VSCodeNotify('undo')<cr>
     nnoremap <C-r> <cmd>call VSCodeNotify('redo')<cr>
@@ -125,7 +126,7 @@ if exists('g:vscode')
     " vscode特有の操作
     nnoremap <leader>: <cmd>call VSCodeNotify('workbench.action.showCommands')<cr>
     nnoremap cl <cmd>call VSCodeNotify('workbench.action.editor.changeLanguageMode')<cr>
-    nnoremap ci <cmd>call VSCodeNotify('changeEditorIndentation')<cr>
+    nnoremap c<tab> <cmd>call VSCodeNotify('changeEditorIndentation')<cr>
     nnoremap ce <cmd>call VSCodeNotify('workbench.action.editor.changeEncoding')<cr>
     nnoremap c<cr> <cmd>call VSCodeNotify('workbench.action.editor.changeEOL')<cr>
 
@@ -148,6 +149,13 @@ if exists('g:vscode')
     nmap <silent> gi <cmd>call VSCodeNotify('editor.action.goToImplementation')<cr>
     nmap <silent> gr <cmd>call VSCodeNotify('editor.action.goToReferences')<cr>
 
+    nmap <silent> <leader>hs <cmd>call VSCodeNotify('git.stageAll')<cr>
+    nmap <silent> <leader>hu <cmd>call VSCodeNotify('git.unstage')<cr>
+    vmap <silent> <leader>hs <cmd>call VSCodeNotify('git.stageSelectedRanges')<cr>
+    vmap <silent> <leader>hu <cmd>call VSCodeNotify('git.unstageSelectedRanges')<cr>
+    nmap <silent> <leader>hr <cmd>call VSCodeNotify('git.clean')<cr>
+    nmap <silent> <leader>hd <cmd>call VSCodeNotify('git.openChange')<cr>
+
     nnoremap <c-u> <cmd>call VSCodeNotify('cursorPageUp')<cr>
     nnoremap <c-d> <cmd>call VSCodeNotify('cursorPageDown')<cr>
     vnoremap <c-u> 25k
@@ -161,9 +169,22 @@ if exists('g:vscode')
     nnoremap <c-j> <cmd>call VSCodeNotify('editor.action.insertLineAfter')<cr>
     nnoremap <c-k> <cmd>call VSCodeNotify('editor.action.insertLineBefore')<cr>
 else
+    " fzf
+    " git管理されていれば:GFiles、そうでなければ:Filesを実行する
+    function! FzfOmniFiles()
+        let is_git = system('git status')
+        if v:shell_error
+            :Files
+        else
+            :GFiles
+        endif
+    endfun
+
     " ファイル操作
-    nnoremap <leader>f <cmd>Files<cr>
-    nnoremap <leader>h <cmd>History<cr>
+    nnoremap <leader>f <cmd>call FzfOmniFiles()<cr>
+    nnoremap <leader>r <cmd>History<cr>
+    nnoremap <leader>: <cmd>History:<cr>
+    nnoremap <leader>/ <cmd>History/<cr>
     nnoremap <leader>w <cmd>w<cr>
     nnoremap <leader>q <cmd>q<cr>
     nnoremap <expr> <leader>e ':<c-u>e ' . expand('%:p:h')
