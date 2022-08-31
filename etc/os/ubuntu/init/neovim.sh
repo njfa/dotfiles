@@ -12,7 +12,7 @@ fi
 if [ -z "$(command -v nvim)" ]; then
     sudo add-apt-repository ppa:neovim-ppa/stable
     sudo apt update
-    sudo apt install -y neovim
+    sudo apt install -y neovim ripgrep fd-find
 fi
 
 if [ ! -z "$(command -v python)" -a ! -z "$(command -v pip)" -a -z "$(pip list | grep pynvim)" ]; then
