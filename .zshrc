@@ -321,6 +321,7 @@ alias ....='cd ../../..'
 alias vi='nvim'
 alias vim='nvim'
 alias code='code.sh'
+alias fd='fdfind'
 
 # lsに色を付ける
 alias ls='ls --color=auto'
