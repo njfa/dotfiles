@@ -47,11 +47,16 @@ map("x", "P", 'Pgvy')
 
 if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
-    if vim.fn.executable('fd') == 1 then
-        map("n", "<leader>f", "<cmd>Telescope fd<cr>", {silent = true})
-    else
-        map("n", "<leader>f", "<cmd>Telescope find_files<cr>", {silent = true})
-    end
+    -- vim.keymap.set("n", "<leader>f", function()
+    --     if vim.fn.executable('fdfind') == 1 then
+    --         vim.api.nvim_exec('Telescope fd', false)
+    --     else
+    --         vim.api.nvim_exec('Telescope find_files', false)
+    --     end
+    -- end, {silent = true})
+
+    -- 隠しファイルも検索対象に含めるためにrgを利用する
+    map("n", "<leader>f", "<Cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>", {silent = true})
     map("n", "<leader>e", "<cmd>Fern . -reveal=% -drawer -toggle<cr>", {silent = true})
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>", {silent = true})
     map("n", "<leader>b", "<Cmd>Telescope buffers<CR>", {silent = true})
@@ -59,6 +64,7 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>p", "<Cmd>Trouble<CR>", {silent = true})
     map("n", "<leader>g", "<Cmd>Telescope live_grep<CR>", {silent = true})
     map("n", "<leader>:", "<Cmd>Telescope command_history<CR>", {silent = true})
+    map("n", "<leader>/", "<Cmd>Telescope current_buffer_fuzzy_find<CR>", {silent = true})
     map("n", "<leader>s", "<cmd>SidebarNvimToggle<cr>", {silent = true})
 
     -- タブ、バッファ操作
@@ -84,11 +90,21 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
     map("n", "<C-w>i", "<cmd>split<cr>")
 
-    -- インデント
-    map("n", ">", ">>")
-    map("n", "<", "<<")
-    map("v", ">", ">gv")
-    map("v", "<", "<gv")
+    -- インデント時の選択範囲を維持
+    map("x", ">", ">gv")
+    map("x", "<", "<gv")
+
+    -- C-a、C-x時の選択範囲を維持
+    map("x", "<C-a>", "<C-a>gv")
+    map("x", "<C-x>", "<C-x>gv")
+
+    -- Align
+    map("n", "ga", "<Plug>(EasyAlign)")
+    map("x", "ga", "<Plug>(EasyAlign)")
+
+    -- Switch
+    map("n", "gs", "<cmd>Switch<cr>")
+    map("x", "gs", "<cmd>Switch<cr>")
 
     -- 検索
     map('n', '*', [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]])
@@ -151,35 +167,38 @@ if vim.fn.exists("g:vscode") == 0 then
     -- float terminal
     map("n", "<A-d>", "<cmd>Lspsaga open_floaterm<cr>", {})
     map("t", "<A-d>", "<C-\\><C-n>:Lspsaga close_floaterm<cr>", {})
+    if vim.fn.executable('lazygit') == 1 then
+        map("n", "<A-g>", "<cmd>Lspsaga open_floaterm lazygit<cr>", {})
+        map("t", "<A-g>", "<C-\\><C-n>:Lspsaga close_floaterm<cr>", {})
+    end
 
     -- lspsaga
-    vim.api.nvim_create_autocmd({"FileType"}, {
-        pattern = {"LspsagaFinder"},
-        callback = function()
-            buf_map(0, 'n', "<Esc>", "<cmd>lua require'lspsaga.provider'.close_lsp_finder_window()<cr>", { noremap = true })
-        end,
-    })
-    vim.api.nvim_create_autocmd({"FileType"}, {
-        pattern = {"LspsagaHover"},
-        callback = function()
-            buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
-            buf_map(0, 'n', "q", "<cmd>q<cr>", { noremap = true })
-        end,
-    })
     my_lsp_on_attach = function(client, bufnr)
-        buf_map(0, "n", "gh", "<cmd>Lspsaga lsp_finder<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "gd", "<cmd>Lspsaga preview_definition<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "gs", "<cmd>Lspsaga signature_help<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "gr", "<cmd>Lspsaga rename<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "gx", "<cmd>Lspsaga code_action<cr>", {silent = true, noremap = true})
-        buf_map(0, "x", "gx", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "K",  "<cmd>Lspsaga hover_doc<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "gj", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "gk", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {silent = true, noremap = true})
-        buf_map(0, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
-        buf_map(0, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
+        buf_map(bufnr, "n", "gd", "<cmd>Lspsaga lsp_finder<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gh", "<cmd>Lspsaga signature_help<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gr", "<cmd>Lspsaga rename<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gx", "<cmd>Lspsaga code_action<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "x", "gx", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gj", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gk", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gp", "<cmd>Lspsaga preview_definition<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
+        buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
         require("aerial").on_attach(client, bufnr)
+        require("nvim-navic").attach(client, bufnr)
+    end
+
+    my_aerial_on_attach = function(bufnr)
+        -- Toggle the aerial window with <leader>a
+        buf_map(bufnr, 'n', '<leader>a', '<cmd>AerialToggle!<CR>', {})
+        -- Jump forwards/backwards with '{' and '}'
+        buf_map(bufnr, 'n', '}', '<cmd>AerialPrev<CR>', {})
+        buf_map(bufnr, 'n', '{', '<cmd>AerialNext<CR>', {})
+        -- Jump up the tree with '[[' or ']]'
+        buf_map(bufnr, 'n', ']]', '<cmd>AerialPrevUp<CR>', {})
+        buf_map(bufnr, 'n', '[[', '<cmd>AerialNextUp<CR>', {})
     end
 
 end
