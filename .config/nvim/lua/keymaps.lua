@@ -8,7 +8,7 @@ function map(mode, lhs, rhs, opts)
 end
 
 function buf_map(num, mode, lhs, rhs, opts)
-    local options = { noremap = true }
+    local options = { noremap = true, silent = true }
     if opts then
         options = vim.tbl_extend("force", options, opts)
     end
@@ -20,15 +20,15 @@ map("n", "0", "^")
 map("n", "^", "0")
 
 -- 現在の行を上下に移動
-map("n", "<C-Up>", '"zdd<Up>"zP', {silent = true})
-map("n", "<C-Down>", '"zdd"zp', {silent = true})
+map("n", "<C-Up>", '"zdd<Up>"zP')
+map("n", "<C-Down>", '"zdd"zp')
 
 -- 複数行を移動
-map("v", "<C-Up>", '"zx<Up>"zP`[V`]', {silent = true})
-map("v", "<C-Down>", '"zx"zp`[V`]', {silent = true})
+map("v", "<C-Up>", '"zx<Up>"zP`[V`]')
+map("v", "<C-Down>", '"zx"zp`[V`]')
 
 -- " 検索
-map("n", "<Esc>", ':noh<cr>', {silent = true})
+map("n", "<Esc>", ':noh<cr>')
 -- nnoremap <expr> <leader>r ':<c-u>%s/' . expand('<cword>') . '/'
 -- nnoremap <expr> <leader>s ':<c-u>%s/'
 -- vnoremap <expr> <leader>s ":<c-u>'<,'>s/"
@@ -53,38 +53,44 @@ if vim.fn.exists("g:vscode") == 0 then
     --     else
     --         vim.api.nvim_exec('Telescope find_files', false)
     --     end
-    -- end, {silent = true})
+    -- end)
 
     -- 隠しファイルも検索対象に含めるためにrgを利用する
-    map("n", "<leader>f", "<Cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>", {silent = true})
-    map("n", "<leader>e", "<cmd>Fern . -reveal=% -drawer -toggle<cr>", {silent = true})
-    map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>", {silent = true})
-    map("n", "<leader>b", "<Cmd>Telescope buffers<CR>", {silent = true})
-    -- map("n", "<leader>p", "<Cmd>Telescope registers<CR>", {silent = true})
-    map("n", "<leader>p", "<Cmd>Trouble<CR>", {silent = true})
-    map("n", "<leader>g", "<Cmd>Telescope live_grep<CR>", {silent = true})
-    map("n", "<leader>:", "<Cmd>Telescope command_history<CR>", {silent = true})
-    map("n", "<leader>/", "<Cmd>Telescope current_buffer_fuzzy_find<CR>", {silent = true})
-    map("n", "<leader>s", "<cmd>SidebarNvimToggle<cr>", {silent = true})
+    map("n", "<leader>f", "<Cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>")
+    map("n", "<leader>e", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
+    map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
+    map("n", "<leader>b", "<Cmd>Telescope buffers<CR>")
+    -- map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
+    map("n", "<leader>p", "<Cmd>Trouble<CR>")
+    map("n", "<leader>t", "<Cmd>TodoTelescope<CR>")
+    map("n", "<leader>g", "<Cmd>Telescope live_grep<CR>")
+    map("n", "<leader>:", "<Cmd>Telescope command_history<CR>")
+    map("n", "<leader>/", "<Cmd>Telescope current_buffer_fuzzy_find<CR>")
+    -- map("n", "<leader>s", "<cmd>SidebarNvimToggle<cr>")
 
     -- タブ、バッファ操作
-    map("n", "<leader>w", "<cmd>w<cr>", {silent = true})
-    map("n", "<leader>q", "<cmd>q<cr>", {silent = true})
-    map("n", "<leader>d", "<cmd>bd<cr>", {silent = true})
-    map("n", "<leader>x", "<Cmd>tabclose<CR>", {silent = true})
-    map("n", "<leader>c", '<cmd>enew<cr>', {silent = true})
-    map("n", "<leader>t", '<cmd>tabnew<cr>', {silent = true})
-    map("n", "<C-p>", '<cmd>tabp<cr>', {silent = true})
-    map("n", "<C-n>", '<cmd>tabn<cr>', {silent = true})
-    map("n", "<C-h>", "<cmd>bp<cr>", {silent = true})
-    map("n", "<C-l>", "<cmd>bn<cr>", {silent = true})
+    map("n", "<leader>w", "<cmd>w<cr>", { silent = true })
+    map("n", "<leader>q", "<cmd>q<cr>", { silent = true })
+    map("n", "<leader>d", "<cmd>bd<cr>", { silent = true })
+    map("n", "<leader>x", "<Cmd>tabclose<CR>", { silent = true })
+    map("n", "<leader>c", '<cmd>enew<cr>', { silent = true })
+    map("n", "<leader>s", '<cmd>tabnew<cr>', { silent = true })
+    map("n", "<C-p>", '<cmd>tabp<cr>', { silent = true })
+    map("n", "<C-n>", '<cmd>tabn<cr>', { silent = true })
+    map("n", "<C-h>", "<cmd>bp<cr>", { silent = true })
+    map("n", "<C-l>", "<cmd>bn<cr>", { silent = true })
+
+    -- テキストオブジェクトの操作
+    map("n", "ys", [[<Plug>(operator-sandwich-add)]])
+    map("n", "ds", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]])
+    map("n", "cs", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]])
 
     -- undotree
-    map("n", "<leader>u", "<cmd>UndotreeToggle<cr>", {silent = true})
+    map("n", "<leader>u", "<cmd>UndotreeToggle<cr>")
 
     -- 改行
-    map("n", "<c-j>", "o<Esc>", {silent = true})
-    map("n", "<c-k>", "O<Esc>", {silent = true})
+    map("n", "<c-j>", "o<Esc>")
+    map("n", "<c-k>", "O<Esc>")
 
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
@@ -132,6 +138,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map('x', 'gl', "<cmd>HopLineStart<cr>", {})
     map('n', 'g/', "<cmd>HopPattern<cr>", {})
     map('x', 'g/', "<cmd>HopPattern<cr>", {})
+    map('o', 'm', "<cmd>lua require('tsht').nodes()<cr>", {})
+    map('x', 'm', ":lua require('tsht').nodes()<cr>", {})
 
     -- 編集
     map("n", "R", "<cmd>lua require'substitute'.operator()<cr>", { noremap = true })
@@ -164,12 +172,30 @@ if vim.fn.exists("g:vscode") == 0 then
         end,
     })
 
-    -- float terminal
-    map("n", "<A-d>", "<cmd>Lspsaga open_floaterm<cr>", {})
-    map("t", "<A-d>", "<C-\\><C-n>:Lspsaga close_floaterm<cr>", {})
+    local Terminal  = require('toggleterm.terminal').Terminal
+    local floatterm = Terminal:new({
+        direction = "float",
+        hidden = true
+    })
+
+    function term_toggle()
+        floatterm:toggle()
+    end
+    map("n", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
+    map("t", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
+
     if vim.fn.executable('lazygit') == 1 then
-        map("n", "<A-g>", "<cmd>Lspsaga open_floaterm lazygit<cr>", {})
-        map("t", "<A-g>", "<C-\\><C-n>:Lspsaga close_floaterm<cr>", {})
+        local lazygit = Terminal:new({
+            cmd = "lazygit",
+            direction = "float",
+            hidden = true
+        })
+
+        function lazygit_toggle()
+            lazygit:toggle()
+        end
+        map("n", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
+        map("t", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
     end
 
     -- lspsaga

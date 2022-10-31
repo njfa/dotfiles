@@ -133,40 +133,40 @@ return require('packer').startup(function(use)
         end
     }
     -- サイドバーを表示する
-    use {
-        "sidebar-nvim/sidebar.nvim",
-        branch = 'dev', -- optional but strongly recommended
-        config = function()
-            require('sidebar-nvim').setup({
-                bindings = {
-                    ['q'] = function()
-                        require('sidebar-nvim').close()
-                    end,
-                    ['<Esc>'] = function()
-                        require('sidebar-nvim').close()
-                    end
-                },
-                open = false,
-                initial_width = 30,
-                hide_statusline = true,
-                section_separator = '',
-                sections = {'buffers', 'git', 'todos'},
-                todos = {
-                    icon = "",
-                    ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
-                    initially_closed = true, -- whether the groups should be initially closed on start. You can manually open/close groups later.
-                },
-                buffers = {
-                    icon = "",
-                    ignored_buffers = {}, -- ignore buffers by regex
-                    sorting = "id", -- alternatively set it to "name" to sort by buffer name instead of buf id
-                    show_numbers = true, -- whether to also show the buffer numbers
-                    ignore_not_loaded = true, -- whether to ignore not loaded buffers
-                    ignore_terminal = true, -- whether to show terminal buffers in the list
-                }
-            })
-        end
-    }
+    -- use {
+    --     "sidebar-nvim/sidebar.nvim",
+    --     branch = 'dev', -- optional but strongly recommended
+    --     config = function()
+    --         require('sidebar-nvim').setup({
+    --             bindings = {
+    --                 ['q'] = function()
+    --                     require('sidebar-nvim').close()
+    --                 end,
+    --                 ['<Esc>'] = function()
+    --                     require('sidebar-nvim').close()
+    --                 end
+    --             },
+    --             open = false,
+    --             initial_width = 30,
+    --             hide_statusline = true,
+    --             section_separator = '',
+    --             sections = {'buffers', 'git', 'todos'},
+    --             todos = {
+    --                 icon = "",
+    --                 ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
+    --                 initially_closed = true, -- whether the groups should be initially closed on start. You can manually open/close groups later.
+    --             },
+    --             buffers = {
+    --                 icon = "",
+    --                 ignored_buffers = {}, -- ignore buffers by regex
+    --                 sorting = "id", -- alternatively set it to "name" to sort by buffer name instead of buf id
+    --                 show_numbers = true, -- whether to also show the buffer numbers
+    --                 ignore_not_loaded = true, -- whether to ignore not loaded buffers
+    --                 ignore_terminal = true, -- whether to show terminal buffers in the list
+    --             }
+    --         })
+    --     end
+    -- }
     -- 通知をリッチな見た目にする
     use 'rcarriga/nvim-notify'
     -- nvim-lspの進捗の表示を変更する
@@ -225,10 +225,13 @@ return require('packer').startup(function(use)
     -- "."の高機能化
     use 'tpope/vim-repeat'
     -- align機能の追加
-    -- use 'Vonr/align.nvim'
     use 'junegunn/vim-easy-align'
     -- 単語や演算子を反対の意味に切り替える
     use  'AndrewRadev/switch.vim'
+    -- ターミナル表示用機能。Lspsagaにも同様の機能があるが、こちらのほうが挙動が良い
+    use {"akinsho/toggleterm.nvim", tag = '*', config = function()
+        require("toggleterm").setup()
+    end}
     -- ファジーファインダー
     use {
         'nvim-telescope/telescope.nvim', tag = '0.1.0',
@@ -330,6 +333,8 @@ return require('packer').startup(function(use)
             require'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
         end
     }
+    -- hop.nvimの移動先の選択肢を絞る
+    use 'mfussenegger/nvim-treehopper'
     use({
         "gbprod/substitute.nvim",
         config = function()
@@ -340,6 +345,14 @@ return require('packer').startup(function(use)
             })
         end
     })
+    -- 括弧やクォートの置換機能
+    use {
+        'machakann/vim-sandwich',
+        config = function()
+            vim.g.sandwich_no_default_key_mappings = 1
+            vim.g.operator_sandwich_no_default_key_mappings = 1
+        end
+    }
     -- treesitter
     use {
         'nvim-treesitter/nvim-treesitter',
@@ -425,7 +438,7 @@ return require('packer').startup(function(use)
             }
         end
     }
-    use 'nvim-treesitter/nvim-treesitter-textobjects'
+    -- use 'nvim-treesitter/nvim-treesitter-textobjects' -- これを追加するとLSPの挙動がおかしくなったので無効化
     -- 自動補完
     use {
         'hrsh7th/nvim-cmp',
@@ -443,6 +456,10 @@ return require('packer').startup(function(use)
             'onsails/lspkind.nvim'
         }
     }
+    -- treesitter unitをテキストオブジェクトに追加
+    use 'David-Kunz/treesitter-unit'
+    -- 色定義の追加
+    use 'folke/lsp-colors.nvim'
     use {'tzachar/cmp-tabnine', run='./install.sh', requires = 'hrsh7th/nvim-cmp'}
     use 'ray-x/cmp-treesitter'
     -- Linter & Formatter
@@ -472,6 +489,18 @@ return require('packer').startup(function(use)
         requires = "kyazdani42/nvim-web-devicons",
         config = function()
             require("trouble").setup {
+                -- your configuration comes here
+                -- or leave it empty to use the default settings
+                -- refer to the configuration section below
+            }
+        end
+    }
+    -- TODOコメントの管理
+    use {
+        "folke/todo-comments.nvim",
+        requires = "nvim-lua/plenary.nvim",
+        config = function()
+            require("todo-comments").setup {
                 -- your configuration comes here
                 -- or leave it empty to use the default settings
                 -- refer to the configuration section below
@@ -522,6 +551,21 @@ return require('packer').startup(function(use)
     }
     -- LSP周りの設定を別ファイルで実施
     require('lsp-setup')
+
+    -- 特定言語のための拡張機能
+    -- Markdown入力時の補助
+    use {
+        'preservim/vim-markdown',
+        ft = {'txt', 'markdown'},
+        requires = {
+            'godlygeek/tabular'
+        },
+        config =function ()
+            vim.g.vim_markdown_folding_disabled = 1
+            vim.g.vim_markdown_no_default_key_mappings = 1
+            vim.g.vim_markdown_toc_autofit = 1
+        end
+    }
 
 end)
 
