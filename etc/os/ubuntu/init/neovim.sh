@@ -12,14 +12,21 @@ fi
 if [ -z "$(command -v nvim)" ]; then
     sudo add-apt-repository ppa:neovim-ppa/stable
     sudo apt update
-    sudo apt install -y neovim ripgrep fd-find
+    sudo apt install -y neovim
+fi
+
+if [ -z "$(command -v rg)" ]; then
+    sudo apt install -y ripgrep
+fi
+
+if [ -z "$(command -v fdfind)" ]; then
+    sudo apt install -y fd-find
 fi
 
 if [ ! -z "$(command -v python)" -a ! -z "$(command -v pip)" -a -z "$(pip list | grep pynvim)" ]; then
     pip install pynvim
 fi
 
-if [ ! -f "${XDG_DATA_HOME:-$HOME}/.local/share/nvim/site/autoload/plug.vim" ]; then
-    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+if [ ! -f "${XDG_DATA_HOME:-$HOME}/.local/share/nvim/site/pack/packer/start/packer.nvim" ]; then
+    git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 fi
