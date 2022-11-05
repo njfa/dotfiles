@@ -10,7 +10,7 @@ if [ -z "$(command -v pip)" ]; then
 fi
 
 if [ -z "$(command -v nvim)" ]; then
-    sudo add-apt-repository ppa:neovim-ppa/stable
+    sudo add-apt-repository ppa:neovim-ppa/unstable
     sudo apt update
     sudo apt install -y neovim
 fi
@@ -27,6 +27,6 @@ if [ ! -z "$(command -v python)" -a ! -z "$(command -v pip)" -a -z "$(pip list |
     pip install pynvim
 fi
 
-if [ ! -f "${XDG_DATA_HOME:-$HOME}/.local/share/nvim/site/pack/packer/start/packer.nvim" ]; then
+if [ ! -d "${XDG_DATA_HOME:-$HOME}/.local/share/nvim/site/pack/packer/start/packer.nvim" ]; then
     git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 fi
