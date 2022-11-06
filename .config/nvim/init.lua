@@ -13,19 +13,6 @@ vim.opt.listchars   = {
     trail = ' ',
 }
 
-if vim.fn.has('termguicolors') == 0 then
-    vim.opt.termguicolors = true
-end
-
-if vim.fn.exists('g:vscode') == 0 then
-    -- colorscheme onedark
-    -- colorscheme palenight
-    -- vim.cmd("colorscheme bluewery")
-    -- vim.cmd("colorscheme nightfox")
-    vim.g.tokyonight_style = "storm"
-    vim.cmd("colorscheme tokyonight")
-end
-
 -- インデント
 vim.opt.autoindent = true        --改行時に自動でインデントする
 vim.opt.tabstop    = 4           --タブを何文字の空白に変換するか
@@ -73,10 +60,17 @@ vim.g.cursorhold_updatetime = 100
 
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
--- キーマップの設定
-require('keymaps')
 -- プラグインの読み込み
 require('plugins')
+-- キーマップの設定
+require('keymaps')
 -- autocmdの設定
 require('autocmd')
+
+if vim.fn.has('termguicolors') == 0 then
+    vim.opt.termguicolors = true
+end
+
+if vim.fn.exists('g:vscode') == 0 then
+end
 

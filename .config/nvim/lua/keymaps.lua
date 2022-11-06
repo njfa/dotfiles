@@ -47,17 +47,9 @@ map("x", "P", 'Pgvy')
 
 if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
-    -- vim.keymap.set("n", "<leader>f", function()
-    --     if vim.fn.executable('fdfind') == 1 then
-    --         vim.api.nvim_exec('Telescope fd', false)
-    --     else
-    --         vim.api.nvim_exec('Telescope find_files', false)
-    --     end
-    -- end)
-
     -- 隠しファイルも検索対象に含めるためにrgを利用する
     map("n", "<leader>f", "<Cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>")
-    map("n", "<leader>e", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
+    map("n", "<leader>s", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
     map("n", "<leader>b", "<Cmd>Telescope buffers<CR>")
     -- map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
@@ -71,12 +63,14 @@ if vim.fn.exists("g:vscode") == 0 then
     -- タブ、バッファ操作
     map("n", "<leader>w", "<cmd>w<cr>", { silent = true })
     map("n", "<leader>q", "<cmd>q<cr>", { silent = true })
-    map("n", "<leader>d", "<cmd>bd<cr>", { silent = true })
-    map("n", "<leader>x", "<Cmd>tabclose<CR>", { silent = true })
+    map("n", "<leader>Q", "<cmd>qa<cr>", { silent = true })
+    -- 単にbdeleteを実行すると、タブ中の空バッファを閉じたときにタブも一緒に閉じられてしまう
+    map("n", "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd<cr>", { silent = true })
+    map("n", "<leader>D", "<Cmd>tabclose<CR>", { silent = true })
     map("n", "<leader>c", '<cmd>enew<cr>', { silent = true })
-    map("n", "<leader>s", '<cmd>tabnew<cr>', { silent = true })
-    map("n", "<C-p>", '<cmd>tabp<cr>', { silent = true })
-    map("n", "<C-n>", '<cmd>tabn<cr>', { silent = true })
+    map("n", "<leader>C", '<cmd>tabnew<cr>', { silent = true })
+    map("n", "<C-j>", '<cmd>tabp<cr>', { silent = true })
+    map("n", "<C-k>", '<cmd>tabn<cr>', { silent = true })
     map("n", "<C-h>", "<cmd>bp<cr>", { silent = true })
     map("n", "<C-l>", "<cmd>bn<cr>", { silent = true })
 
@@ -89,8 +83,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>u", "<cmd>UndotreeToggle<cr>")
 
     -- 改行
-    map("n", "<c-j>", "o<Esc>")
-    map("n", "<c-k>", "O<Esc>")
+    map("n", "<cr>", "o<Esc>")
+    map("n", "<leader><cr>", "O<Esc>")
 
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
@@ -172,32 +166,6 @@ if vim.fn.exists("g:vscode") == 0 then
         end,
     })
 
-    local Terminal  = require('toggleterm.terminal').Terminal
-    local floatterm = Terminal:new({
-        direction = "float",
-        hidden = true
-    })
-
-    function term_toggle()
-        floatterm:toggle()
-    end
-    map("n", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
-    map("t", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
-
-    if vim.fn.executable('lazygit') == 1 then
-        local lazygit = Terminal:new({
-            cmd = "lazygit",
-            direction = "float",
-            hidden = true
-        })
-
-        function lazygit_toggle()
-            lazygit:toggle()
-        end
-        map("n", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
-        map("t", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
-    end
-
     -- lspsaga
     my_lsp_on_attach = function(client, bufnr)
         buf_map(bufnr, "n", "gd", "<cmd>Lspsaga lsp_finder<cr>", {silent = true, noremap = true})
@@ -212,7 +180,7 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, "n", "gp", "<cmd>Lspsaga preview_definition<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
         buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
-        require("aerial").on_attach(client, bufnr)
+        -- require("aerial").on_attach(client, bufnr)
         require("nvim-navic").attach(client, bufnr)
     end
 

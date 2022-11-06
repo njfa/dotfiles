@@ -19,7 +19,7 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
     pattern = { "plugins.lua" },
     callback = function()
-        vim.api.nvim_exec('PackerClean', false)
+        vim.api.nvim_exec('source <afile>', false)
         vim.api.nvim_exec('PackerCompile', false)
     end,
 })

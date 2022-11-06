@@ -1,4 +1,15 @@
-vim.cmd [[packadd packer.nvim]]
+local ensure_packer = function()
+    local fn = vim.fn
+    local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+    if fn.empty(fn.glob(install_path)) > 0 then
+        fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+        vim.cmd [[packadd packer.nvim]]
+        return true
+    end
+    return false
+end
+
+local packer_bootstrap = ensure_packer()
 
 return require('packer').startup(function(use)
     -- Packer can manage itself
@@ -11,29 +22,53 @@ return require('packer').startup(function(use)
     -- カラースキーム
     use 'relastle/bluewery.vim'
     use "EdenEast/nightfox.nvim"
-    use 'folke/tokyonight.nvim'
+    use {
+        'folke/tokyonight.nvim',
+        config = function()
+            vim.g.tokyonight_style = "storm"
+            vim.cmd("colorscheme tokyonight")
+        end
+    }
     -- ファイラー
     use {
         'lambdalisue/fern.vim',
         requires = {
             'antoinemadec/FixCursorHold.nvim',
-            -- fernでnerdfontを使用
-            'lambdalisue/nerdfont.vim',
-            'lambdalisue/fern-renderer-nerdfont.vim',
-            -- fernでGitのステータスを表示
-            'lambdalisue/fern-git-status.vim',
-            -- nvimの標準をファイラーを置き換え
-            'lambdalisue/fern-hijack.vim',
-            -- fernでファイルのプレビューを表示
-            'yuki-yano/fern-preview.vim'
         },
         config = function()
             vim.g['fern#default_hidden'] = 1
+        end
+    }
+    use {
+        'lambdalisue/fern-renderer-nerdfont.vim',
+        opt = true,
+        requires = {
+            'lambdalisue/fern.vim',
+            'lambdalisue/nerdfont.vim'
+        },
+        config = function()
             vim.g['fern#renderer'] = 'nerdfont'
+        end
+    }
+    use {
+        'yuki-yano/fern-preview.vim',
+        opt = true,
+        requires = {
+            'lambdalisue/fern.vim',
+        },
+        config = function()
             -- fernでファイルにカーソルがあたった際に自動でプレビューする
             vim.g['fern_auto_preview'] = false
         end
     }
+    use {
+        -- fernでGitのステータスを表示
+        'lambdalisue/fern-git-status.vim',
+        -- nvimの標準をファイラーを置き換え
+        'lambdalisue/fern-hijack.vim',
+        opt = true,
+    }
+
     -- 現在カーソルがあたっている関数を表示する
     use {
         "SmiteshP/nvim-navic",
@@ -184,7 +219,14 @@ return require('packer').startup(function(use)
         end
     }
     -- 対応する括弧をわかりやすくする
-    use 'haringsrob/nvim_context_vt'
+    use {
+        'haringsrob/nvim_context_vt',
+        requires = 'nvim-treesitter/nvim-treesitter',
+        setup = function()
+            require("nvim-treesitter.parsers")
+            -- require('nvim_context_vt').setup()
+        end
+    }
     -- キーバインドをわかりやすくする
     use {
         "folke/which-key.nvim",
@@ -194,23 +236,23 @@ return require('packer').startup(function(use)
             local wk = require("which-key")
             wk.register({
                 ["<leader>"] = {
-                    f = { name = "Find File" },
-                    x = { name = "Close Tab" },
-                    w = { name = "Save File" },
-                    u = { name = "Toggle Undotree" },
-                    c = { name = "Create Buffer" },
-                    r = { name = "Open Recent File" },
-                    q = { name = "Close Window" },
-                    p = { name = "Toggle Diagnostics" },
-                    g = { name = "Live Grep" },
-                    e = { name = "Open Fern" },
-                    d = { name = "Close Buffer" },
-                    b = { name = "Find Buffer" },
-                    a = { name = "Toggle Aerial" },
-                    s = { name = "Toggle Sidebar" },
-                    t = { name = "Create Tab" },
-                    ["/"] = { name = "Search Current Buffer" },
-                    [":"] = { name = "Command History" },
+                    a = { name = "Toggle aerial" },
+                    b = { name = "[T] buffers" },
+                    g = { name = "[T] live_grep" },
+                    f = { name = "[T] find_files" },
+                    w = { name = "Save buffer" },
+                    u = { name = "Toggle undotree" },
+                    c = { name = "New buffer" },
+                    C = { name = "New tab" },
+                    d = { name = "Close buffer" },
+                    D = { name = "Close tab" },
+                    p = { name = "Open Trouble" },
+                    q = { name = "Close window" },
+                    Q = { name = "Close all window" },
+                    r = { name = "[T] frecency" },
+                    s = { name = "Toggle sidebar" },
+                    ["/"] = { name = "[T] search current buffer" },
+                    [":"] = { name = "[T] command history" },
                 },
             })
             wk.setup {
@@ -229,12 +271,42 @@ return require('packer').startup(function(use)
     -- 単語や演算子を反対の意味に切り替える
     use  'AndrewRadev/switch.vim'
     -- ターミナル表示用機能。Lspsagaにも同様の機能があるが、こちらのほうが挙動が良い
-    use {"akinsho/toggleterm.nvim", tag = '*', config = function()
-        require("toggleterm").setup()
-    end}
+    use {
+        "akinsho/toggleterm.nvim",
+        tag = '*',
+        config = function()
+            require("toggleterm").setup()
+
+        local Terminal  = require('toggleterm.terminal').Terminal
+        local floatterm = Terminal:new({
+            direction = "float",
+            hidden = true
+        })
+
+        function term_toggle()
+            floatterm:toggle()
+        end
+        map("n", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
+        map("t", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
+
+        if vim.fn.executable('lazygit') == 1 then
+            local lazygit = Terminal:new({
+                cmd = "lazygit",
+                direction = "float",
+                hidden = true
+            })
+
+            function lazygit_toggle()
+                lazygit:toggle()
+            end
+            map("n", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
+            map("t", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
+        end
+        end
+    }
     -- ファジーファインダー
     use {
-        'nvim-telescope/telescope.nvim', tag = '0.1.0',
+        'nvim-telescope/telescope.nvim', branch = 'master',
         requires = {
             'nvim-lua/plenary.nvim',
             'nvim-telescope/telescope-frecency.nvim',
@@ -295,7 +367,12 @@ return require('packer').startup(function(use)
         end
     }
     -- 検索結果の表示を拡張
-    use 'kevinhwang91/nvim-hlslens'
+    use {
+        'kevinhwang91/nvim-hlslens',
+        config = function()
+            require('hlslens').setup()
+        end
+    }
     -- hlslensと組み合わせて使うスクロールバー
     use {
         'petertriho/nvim-scrollbar',
@@ -356,9 +433,12 @@ return require('packer').startup(function(use)
     -- treesitter
     use {
         'nvim-treesitter/nvim-treesitter',
-        run = ':TSUpdate',
+        run = function()
+            local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+            ts_update()
+        end,
         config = function()
-            require'nvim-treesitter.configs'.setup {
+            require('nvim-treesitter.configs').setup {
                 -- A list of parser names, or "all"
                 ensure_installed = { "lua", "rust" },
 
@@ -397,7 +477,7 @@ return require('packer').startup(function(use)
         'nvim-treesitter/nvim-treesitter-context',
         requires = 'nvim-treesitter/nvim-treesitter',
         config = function()
-            require'treesitter-context'.setup{
+            require('treesitter-context').setup{
                 enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
                 max_lines = 0, -- How many lines the window should span. Values <= 0 mean no limit.
                 trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
@@ -454,13 +534,140 @@ return require('packer').startup(function(use)
             'hrsh7th/cmp-nvim-lsp-signature-help',
             'petertriho/cmp-git',
             'onsails/lspkind.nvim'
-        }
+        },
+        config = function()
+            -- nvim-cmpの設定
+            local cmp = require("cmp")
+            local lspkind = require('lspkind')
+            local source_mapping = {
+                buffer = "[Buf]",
+                nvim_lsp = "[LSP]",
+                luasnip = "[Snip]",
+                treesitter = "[TS]",
+                cmp_tabnine = "[TN]",
+                path = "[Path]",
+            }
+
+            local has_words_before = function()
+                if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then return false end
+                local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+                return col ~= 0 and vim.api.nvim_buf_get_text(0, line-1, 0, line-1, col, {})[1]:match("^%s*$") == nil
+            end
+
+            cmp.setup({
+                snippet = {
+                    -- REQUIRED - you must specify a snippet engine
+                    expand = function(args)
+                        require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+                    end,
+                },
+                window = {
+                    -- completion = cmp.config.window.bordered(),
+                    -- documentation = cmp.config.window.bordered(),
+                },
+                mapping = cmp.mapping.preset.insert({
+                    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+                    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+                    ['<C-Space>'] = cmp.mapping.complete(),
+                    ['<C-e>'] = cmp.mapping.abort(),
+                    ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+                    ['<Tab>'] = vim.schedule_wrap(function(fallback)
+                        if cmp.visible() and has_words_before() then
+                            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+                        else
+                            fallback()
+                        end
+                    end),
+                }),
+                sources = cmp.config.sources({
+                    { name = 'nvim_lsp' },
+                    { name = 'luasnip' }, -- For luasnip users.
+                    { name = 'cmp_tabnine' },
+                    { name = 'treesitter' }
+                }, {
+                    { name = 'buffer' },
+                }),
+                formatting = {
+                    format = lspkind.cmp_format({
+                        mode = 'symbol_text',
+                        maxwidth = 50, -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+
+                        before = function(entry, vim_item)
+                            vim_item.kind = lspkind.presets.default[vim_item.kind]
+                            local menu = source_mapping[entry.source.name]
+                            if entry.source.name == "cmp_tabnine" then
+                                if entry.completion_item.data ~= nil and entry.completion_item.data.detail ~= nil then
+                                    menu = entry.completion_item.data.detail .. " " .. menu
+                                end
+                                vim_item.kind = ""
+                            end
+                            vim_item.menu = menu
+                            return vim_item
+                        end,
+                    })
+                },
+                sorting = {
+                    priority_weight = 2,
+                },
+            })
+
+            -- Set configuration for specific filetype.
+            cmp.setup.filetype('gitcommit', {
+                sources = cmp.config.sources({
+                    { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
+                }, {
+                    { name = 'buffer' },
+                })
+            })
+
+            -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
+            cmp.setup.cmdline('/', {
+                mapping = cmp.mapping.preset.cmdline(),
+                sources = {
+                    { name = 'buffer' }
+                }
+            })
+
+            -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+            cmp.setup.cmdline(':', {
+                mapping = cmp.mapping.preset.cmdline(),
+                sources = cmp.config.sources({
+                    { name = 'path' }
+                }, {
+                    {
+                        name = 'cmdline',
+                        -- !を入力するとフリーズするので暫定的な対策を追加。
+                        -- "!  "のような入力内容だと相変わらずフリーズする
+                        keyword_pattern=[=[[^[:blank:]\!]*]=]
+                    }
+                })
+            })
+        end
     }
     -- treesitter unitをテキストオブジェクトに追加
     use 'David-Kunz/treesitter-unit'
     -- 色定義の追加
     use 'folke/lsp-colors.nvim'
-    use {'tzachar/cmp-tabnine', run='./install.sh', requires = 'hrsh7th/nvim-cmp'}
+    use {
+        'tzachar/cmp-tabnine',
+        run='./install.sh',
+        requires = 'hrsh7th/nvim-cmp',
+        config = function()
+            require('cmp_tabnine.config').setup({
+                max_lines = 1000,
+                max_num_results = 20,
+                sort = true,
+                run_on_every_keystroke = true,
+                snippet_placeholder = '..',
+                ignored_file_types = {
+                    -- default is not to ignore
+                    -- uncomment to ignore in lua:
+                    -- lua = true
+                },
+                show_prediction_strength = false
+            })
+        end
+    }
     use 'ray-x/cmp-treesitter'
     -- Linter & Formatter
     use {
@@ -544,13 +751,28 @@ return require('packer').startup(function(use)
     use {
         'williamboman/mason.nvim',
         requires = {
-            'williamboman/mason-lspconfig.nvim',
+            'hrsh7th/cmp-nvim-lsp',
             'neovim/nvim-lspconfig',
+            'williamboman/mason-lspconfig.nvim',
             'kkharji/lspsaga.nvim',
-        }
+        },
+        config = function()
+            require('lspsaga').setup()
+
+            -- mason
+            require('mason').setup()
+            require('mason-lspconfig').setup()
+            require("mason-lspconfig").setup_handlers {
+                function (server_name)
+                    -- Setup lspconfig.
+                    require("lspconfig")[server_name].setup {
+                        on_attach = my_lsp_on_attach,
+                        capabiritty = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+                    }
+                end,
+            }
+        end
     }
-    -- LSP周りの設定を別ファイルで実施
-    require('lsp-setup')
 
     -- 特定言語のための拡張機能
     -- Markdown入力時の補助
@@ -567,5 +789,8 @@ return require('packer').startup(function(use)
         end
     }
 
+    if packer_bootstrap then
+        require('packer').sync()
+    end
 end)
 
