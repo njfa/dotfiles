@@ -26,7 +26,3 @@ fi
 if [ ! -z "$(command -v python)" -a ! -z "$(command -v pip)" -a -z "$(pip list | grep pynvim)" ]; then
     pip install pynvim
 fi
-
-if [ ! -d "${XDG_DATA_HOME:-$HOME}/.local/share/nvim/site/pack/packer/start/packer.nvim" ]; then
-    git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
-fi
