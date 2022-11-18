@@ -360,3 +360,6 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 # 一番最後に読み込むと良いらしい
 zinit load zsh-users/zsh-syntax-highlighting #"ssh"と入力する際にフリーズする
+
+# 環境固有の情報を読む
+[ -f ~/.zshrc_local ] && source ~/.zshrc_local
