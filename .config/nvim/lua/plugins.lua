@@ -41,7 +41,7 @@ return require('packer').startup(function(use)
     }
     use {
         'lambdalisue/fern-renderer-nerdfont.vim',
-        opt = true,
+        cond = function() return packer_plugins["fern.vim"] end,
         requires = {
             'lambdalisue/fern.vim',
             'lambdalisue/nerdfont.vim'
@@ -52,7 +52,7 @@ return require('packer').startup(function(use)
     }
     use {
         'yuki-yano/fern-preview.vim',
-        opt = true,
+        cond = function() return packer_plugins["fern.vim"] end,
         requires = {
             'lambdalisue/fern.vim',
         },
@@ -66,7 +66,7 @@ return require('packer').startup(function(use)
         'lambdalisue/fern-git-status.vim',
         -- nvimの標準をファイラーを置き換え
         'lambdalisue/fern-hijack.vim',
-        opt = true,
+        cond = function() return packer_plugins["fern.vim"] end,
     }
 
     -- 現在カーソルがあたっている関数を表示する
@@ -81,7 +81,7 @@ return require('packer').startup(function(use)
             'folke/tokyonight.nvim',
             -- ステータスラインに関数名を表示する
             'SmiteshP/nvim-navic',
-            'kyazdani42/nvim-web-devicons', opt = true
+            'kyazdani42/nvim-web-devicons'
         },
         config = function()
             local navic = require("nvim-navic")
@@ -230,6 +230,7 @@ return require('packer').startup(function(use)
     -- キーバインドをわかりやすくする
     use {
         "folke/which-key.nvim",
+        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             -- which-key.nvimの表示間隔を狭める
             vim.opt.timeoutlen = 200
@@ -253,6 +254,9 @@ return require('packer').startup(function(use)
                     s = { name = "Toggle sidebar" },
                     ["/"] = { name = "[T] search current buffer" },
                     [":"] = { name = "[T] command history" },
+                },
+                ["g"] = {
+                    x = { name = "Lspsaga code_action" },
                 },
             })
             wk.setup {
@@ -405,6 +409,7 @@ return require('packer').startup(function(use)
     use {
         'phaazon/hop.nvim',
         branch = 'v2', -- optional but strongly recommended
+        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             -- you can configure Hop the way you like here; see :h hop-config
             require'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
