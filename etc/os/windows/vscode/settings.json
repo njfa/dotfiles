@@ -156,7 +156,7 @@
         "**/target/**": true,
         "**/.history/**": true
     },
-    "vscode-neovim.neovimInitVimPaths.linux": "~/.config/nvim/init.vim",
+    "vscode-neovim.neovimInitVimPaths.linux": "~/.config/nvim/init.lua",
     "vscode-neovim.neovimExecutablePaths.linux": "/usr/bin/nvim",
 
     "tabnine.experimentalAutoImports": false,
@@ -165,6 +165,5 @@
     "markdown-preview-github-styles.colorTheme": "light",
     "MarkdownPaste.path": "${fileDirname}/images",
     "MarkdownPaste.silence": true,
-    "hediet.vscode-drawio.theme": "Kennedy",
-    "editor.experimental.stickyScroll.enabled": true
+    "hediet.vscode-drawio.theme": "Kennedy"
 }

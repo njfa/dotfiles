@@ -134,6 +134,14 @@
         "key": "alt+k",
         "command": "workbench.action.previousSideBarView"
     },
+    {
+        "key": "alt+d",
+        "command": "workbench.action.terminal.toggleTerminal"
+    },
+    {
+        "key": "alt+s",
+        "command": "workbench.action.toggleSidebarVisibility"
+    },
 
     ///////////////////////////////////
     // ウィンドウ操作

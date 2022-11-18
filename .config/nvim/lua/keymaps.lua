@@ -45,11 +45,25 @@ map("v", "x", '"_x')
 map("x", "p", 'pgvy')
 map("x", "P", 'Pgvy')
 
+-- テキストオブジェクトの操作
+map("n", "ys", [[<Plug>(operator-sandwich-add)]])
+map("n", "ds", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]])
+map("n", "cs", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]])
+
+-- インデント時の選択範囲を維持
+map("x", ">", ">gv")
+map("x", "<", "<gv")
+
+-- C-a、C-x時の選択範囲を維持
+map("x", "<C-a>", "<C-a>gv")
+map("x", "<C-x>", "<C-x>gv")
+
 if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
     -- 隠しファイルも検索対象に含めるためにrgを利用する
     map("n", "<leader>f", "<Cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>")
     map("n", "<leader>s", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
+    map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
     map("n", "<leader>b", "<Cmd>Telescope buffers<CR>")
     -- map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
@@ -74,11 +88,6 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<C-h>", "<cmd>bp<cr>", { silent = true })
     map("n", "<C-l>", "<cmd>bn<cr>", { silent = true })
 
-    -- テキストオブジェクトの操作
-    map("n", "ys", [[<Plug>(operator-sandwich-add)]])
-    map("n", "ds", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]])
-    map("n", "cs", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]])
-
     -- undotree
     map("n", "<leader>u", "<cmd>UndotreeToggle<cr>")
 
@@ -89,14 +98,6 @@ if vim.fn.exists("g:vscode") == 0 then
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
     map("n", "<C-w>i", "<cmd>split<cr>")
-
-    -- インデント時の選択範囲を維持
-    map("x", ">", ">gv")
-    map("x", "<", "<gv")
-
-    -- C-a、C-x時の選択範囲を維持
-    map("x", "<C-a>", "<C-a>gv")
-    map("x", "<C-x>", "<C-x>gv")
 
     -- Align
     map("n", "ga", "<Plug>(EasyAlign)")
@@ -168,18 +169,20 @@ if vim.fn.exists("g:vscode") == 0 then
 
     -- lspsaga
     my_lsp_on_attach = function(client, bufnr)
-        buf_map(bufnr, "n", "gd", "<cmd>Lspsaga lsp_finder<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gh", "<cmd>Lspsaga signature_help<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gr", "<cmd>Lspsaga rename<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gx", "<cmd>Lspsaga code_action<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gh", "<cmd>lua require('lspsaga.provider').lsp_finder()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gs", "<cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gr", "<cmd>lua require('lspsaga.rename').rename()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gx", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "x", "gx", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gj", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gk", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gp", "<cmd>Lspsaga preview_definition<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gp", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gd", "<cmd>lua require('lspsaga.provider').preview_definition()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
         buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
+
         -- require("aerial").on_attach(client, bufnr)
         require("nvim-navic").attach(client, bufnr)
     end
@@ -194,5 +197,55 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, 'n', ']]', '<cmd>AerialPrevUp<CR>', {})
         buf_map(bufnr, 'n', '[[', '<cmd>AerialNextUp<CR>', {})
     end
+else
+    -- 移動
+    map("n", "gj", "<cmd>call VSCodeNotify('cursorMove', { 'to': 'down', 'by': 'wrappedLine', 'value': v:count ? v:count : 1 })<cr>")
+    map("n", "gk", "<cmd>call VSCodeNotify('cursorMove', { 'to': 'up', 'by': 'wrappedLine', 'value': v:count ? v:count : 1 })<cr>")
+    map("n", "gn", "<cmd>call VSCodeNotify('editor.action.marker.next')<cr>")
+    map("n", "gp", "<cmd>call VSCodeNotify('editor.action.marker.prev')<cr>")
+
+    map("n", "gh", "<cmd>call VSCodeNotify('editor.action.goToReferences')<cr>")
+    map("n", "gi", "<cmd>call VSCodeNotify('editor.action.peekImplementation')<cr>")
+    map("n", "gd", "<cmd>call VSCodeNotify('editor.action.peekDefinition')<cr>")
+    map("n", "gs", "<cmd>call VSCodeNotify('editor.action.peekTypeDefinition')<cr>")
+    map("n", "gr", "<cmd>call VSCodeNotify('editor.action.rename')<cr>")
+
+    -- インデント
+    map("n", "<", "<cmd>call VSCodeNotify('editor.action.outdentLines')<cr>")
+    map("n", ">", "<cmd>call VSCodeNotify('editor.action.indentLines')<cr>")
+    map("x", "<", "<cmd>call VSCodeNotifyVisual('editor.action.outdentLines', 1)<cr>")
+    map("x", ">", "<cmd>call VSCodeNotifyVisual('editor.action.indentLines', 1)<cr>")
+
+    -- ファイル操作
+    map("n", "<leader>f", "<cmd>call VSCodeNotify('workbench.action.quickOpen')<cr>")
+    map("n", "<leader>w", "<cmd>call VSCodeNotify('workbench.action.files.save')<cr>")
+    map("n", "<leader>q", "<cmd>call VSCodeNotify('workbench.action.closeActiveEditor')<cr>")
+    map("n", "<leader>r", "<cmd>call VSCodeNotify('workbench.action.openRecent')<cr>")
+    map("n", "<leader>u", "<cmd>call VSCodeNotify('timeline.focus')<cr>")
+    map("n", "<leader>c", "<cmd>call VSCodeNotify('workbench.action.files.newUntitledFile')<cr>")
+    map("n", "<C-h>", "<cmd>Tabprevious<cr>")
+    map("n", "<C-l>", "<cmd>Tabnext<cr>")
+
+    map("n", "u", "<cmd>call VSCodeNotify('undo')<cr>")
+    map("n", "<C-r>", "<cmd>call VSCodeNotify('redo')<cr>")
+
+    map("n", "<leader>:", "<cmd>call VSCodeNotify('workbench.action.showCommands')<cr>")
+    map("n", "<leader>/", "<cmd>call VSCodeNotify('workbench.action.findInFiles')<cr>")
+
+    -- ウィンドウ操作
+    map("n", "<C-w>e","<cmd>call VSCodeNotify('workbench.action.splitEditor')<cr>")
+    map("n", "<C-w>i", "<cmd>call VSCodeNotify('workbench.action.splitEditorOrthogonal')<cr>")
+    map("n", "<C-w>=", "<cmd>call VSCodeNotify('workbench.action.evenEditorWidths')<cr>")
+    map("n", "<C-w>.", "<cmd>call VSCodeNotify('workbench.action.increaseViewSize')<cr>")
+    map("n", "<C-w>,", "<cmd>call VSCodeNotify('workbench.action.decreaseViewSize')<cr>")
+    map("n", "<C-w>r", "<cmd>call VSCodeNotify('workbench.action.reloadWindow')<cr>")
+    map("n", "<C-w>a", "<cmd>call VSCodeNotify('workbench.action.toggleActivityBarVisibility')<cr>")
+    map("n", "<C-w>b", "<cmd>call VSCodeNotify('workbench.action.toggleSidebarVisibility')<cr>")
+
+    -- サイドバー操作
+    map("n", "<leader>s", "<cmd>call VSCodeNotify('workbench.action.focusSideBar')<cr>")
+
+    -- パネル操作
+    map("n", "<C-w>p", "<cmd>call VSCodeNotify('workbench.action.togglePanel')<cr>:sleep 100m<cr><cmd>call VSCodeNotify('workbench.action.focusActiveEditorGroup')<cr>")
 
 end
