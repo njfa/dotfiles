@@ -24,6 +24,7 @@ return require('packer').startup(function(use)
     use "EdenEast/nightfox.nvim"
     use {
         'folke/tokyonight.nvim',
+        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             vim.g.tokyonight_style = "storm"
             vim.cmd("colorscheme tokyonight")
@@ -83,6 +84,7 @@ return require('packer').startup(function(use)
             'SmiteshP/nvim-navic',
             'kyazdani42/nvim-web-devicons'
         },
+        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             local navic = require("nvim-navic")
             navic.setup {
@@ -222,6 +224,7 @@ return require('packer').startup(function(use)
     use {
         'haringsrob/nvim_context_vt',
         requires = 'nvim-treesitter/nvim-treesitter',
+        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         setup = function()
             require("nvim-treesitter.parsers")
             -- require('nvim_context_vt').setup()
@@ -281,31 +284,31 @@ return require('packer').startup(function(use)
         config = function()
             require("toggleterm").setup()
 
-        local Terminal  = require('toggleterm.terminal').Terminal
-        local floatterm = Terminal:new({
-            direction = "float",
-            hidden = true
-        })
-
-        function term_toggle()
-            floatterm:toggle()
-        end
-        map("n", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
-        map("t", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
-
-        if vim.fn.executable('lazygit') == 1 then
-            local lazygit = Terminal:new({
-                cmd = "lazygit",
+            local Terminal  = require('toggleterm.terminal').Terminal
+            local floatterm = Terminal:new({
                 direction = "float",
                 hidden = true
             })
 
-            function lazygit_toggle()
-                lazygit:toggle()
+            function term_toggle()
+                floatterm:toggle()
             end
-            map("n", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
-            map("t", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
-        end
+            map("n", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
+            map("t", "<A-d>", "<cmd>lua term_toggle()<cr>", {})
+
+            if vim.fn.executable('lazygit') == 1 then
+                local lazygit = Terminal:new({
+                    cmd = "lazygit",
+                    direction = "float",
+                    hidden = true
+                })
+
+                function lazygit_toggle()
+                    lazygit:toggle()
+                end
+                map("n", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
+                map("t", "<A-g>", "<cmd>lua lazygit_toggle()<cr>", {})
+            end
         end
     }
     -- ファジーファインダー
@@ -362,6 +365,7 @@ return require('packer').startup(function(use)
     -- undoの拡張
     use {
         'mbbill/undotree',
+        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             -- バックアップファイルの保存場所
             if vim.fn.has('persistent_undo') ~= 0 then
@@ -384,6 +388,7 @@ return require('packer').startup(function(use)
             'folke/tokyonight.nvim',
             'kevinhwang91/nvim-hlslens'
         },
+        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             local colors = require("tokyonight.colors").setup()
 
