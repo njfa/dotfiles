@@ -98,7 +98,8 @@ if vim.fn.exists("g:vscode") == 0 then
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
     map("n", "<C-w>i", "<cmd>split<cr>")
-    map("n", "<C-w>.", "<cmd>lcd %:h<cr>")
+    map("n", "<C-w>.", "<cmd>lcd %:h | exec 'lcd' fnameescape(fnamemodify(finddir('.git', escape(expand('%:h'), ' ') . ';'), ':h'))<cr>", { silent = true })
+    map("n", "<C-w>r", "<cmd>lua require('reload').reload()<cr>")
 
     -- Align
     map("n", "ga", "<Plug>(EasyAlign)")

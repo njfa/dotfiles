@@ -60,6 +60,8 @@ vim.g.cursorhold_updatetime = 100
 
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
+-- Util関数の読み込み
+require('utils')
 -- プラグインの読み込み
 require('plugins')
 -- キーマップの設定
@@ -73,4 +75,3 @@ end
 
 if vim.fn.exists('g:vscode') == 0 then
 end
-
