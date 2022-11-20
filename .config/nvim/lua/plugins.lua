@@ -164,7 +164,17 @@ return require('packer').startup(function(use)
                             s = s .. sym .. n
                         end
                         return s
-                    end
+                    end,
+                    offsets = {
+                        {
+                            filetype = "fern",
+                            text = function()
+                                return vim.fn.getcwd()
+                            end,
+                            highlight = "Directory",
+                            text_align = "left"
+                        }
+                    }
                 }
             }
         end

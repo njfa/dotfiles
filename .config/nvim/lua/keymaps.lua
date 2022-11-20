@@ -98,6 +98,7 @@ if vim.fn.exists("g:vscode") == 0 then
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
     map("n", "<C-w>i", "<cmd>split<cr>")
+    map("n", "<C-w>.", "<cmd>lcd %:h<cr>")
 
     -- Align
     map("n", "ga", "<Plug>(EasyAlign)")
