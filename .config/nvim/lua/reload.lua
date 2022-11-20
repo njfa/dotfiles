@@ -30,7 +30,7 @@ function M.reload()
                 -- call the helper method to reload the module
                 -- and give some feedback
                 R(name)
-                P(name .. " RELOADED!!!")
+                P("Reload module: '" .. name .."'", " Success!!")
             end)
 
             return true
