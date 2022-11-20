@@ -1,5 +1,5 @@
 P = function(t, v)
-    require("notify")(v, nil, { title = t })
+    require("notify")(v, nil, { title = t, timeout = 500, animate = false })
     return v
 end
 
