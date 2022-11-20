@@ -194,8 +194,8 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, 'n', '}', '<cmd>AerialPrev<CR>', {})
         buf_map(bufnr, 'n', '{', '<cmd>AerialNext<CR>', {})
         -- Jump up the tree with '[[' or ']]'
-        buf_map(bufnr, 'n', ']]', '<cmd>AerialPrevUp<CR>', {})
-        buf_map(bufnr, 'n', '[[', '<cmd>AerialNextUp<CR>', {})
+        buf_map(bufnr, 'n', ']]', '<cmd>lua require("aerial").prev_up()<CR>', {})
+        buf_map(bufnr, 'n', '[[', '<cmd>lua require("aerial").next_up()<CR>', {})
     end
 else
     -- 移動
