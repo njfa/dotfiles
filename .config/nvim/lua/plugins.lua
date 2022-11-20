@@ -215,15 +215,7 @@ return require('packer').startup(function(use)
     --     end
     -- }
     -- 通知をリッチな見た目にする
-    use {
-        'rcarriga/nvim-notify',
-        config = function()
-            require("notify").setup({
-                timeout = 100,
-                top_down = false
-            })
-        end
-    }
+    use 'rcarriga/nvim-notify'
     -- nvim-lspの進捗の表示を変更する
     use {
         'j-hui/fidget.nvim',
