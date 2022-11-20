@@ -166,6 +166,9 @@ if vim.fn.exists("g:vscode") == 0 then
             buf_map(0, 'n', [[<Plug>(fern-preview-up-or-page-up)]], [[fern_preview#smart_preview("<Plug>(fern-action-preview:scroll:up:half)", "<C-u>")]], { noremap = true, expr = true })
             buf_map(0, 'n', '<C-d>', [[<Plug>(fern-preview-down-or-page-down)]], { noremap = true, silent = true })
             buf_map(0, 'n', '<C-u>', [[<Plug>(fern-preview-up-or-page-up)]], { noremap = true, silent = true })
+
+            buf_map(0, "n", "<C-j>", '<cmd>tabp<cr>', { silent = true })
+            buf_map(0, "n", "<C-k>", '<cmd>tabn<cr>', { silent = true })
         end,
     })
 
