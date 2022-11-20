@@ -379,7 +379,7 @@ return require('packer').startup(function(use)
         config = function()
             -- バックアップファイルの保存場所
             if vim.fn.has('persistent_undo') ~= 0 then
-                vim.opt.undodir = vim.fn.expand('~/.config/nvim/undo')
+                vim.opt.undodir = vim.fn.expand('~/.undo')
                 vim.opt.undofile = true
             end
         end
