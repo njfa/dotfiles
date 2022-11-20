@@ -1,5 +1,5 @@
-P = function(v)
-    print(vim.inspect(v))
+P = function(t, v)
+    require("notify")(v, nil, { title = t })
     return v
 end
 
