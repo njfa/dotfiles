@@ -106,8 +106,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map("x", "ga", "<Plug>(EasyAlign)")
 
     -- Switch
-    map("n", "gs", "<cmd>Switch<cr>")
-    map("x", "gs", "<cmd>Switch<cr>")
+    map("n", "gt", "<cmd>Switch<cr>")
+    map("x", "gt", "<cmd>Switch<cr>")
 
     -- 検索
     map('n', '*', [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]])
@@ -141,6 +141,8 @@ if vim.fn.exists("g:vscode") == 0 then
     -- 編集
     map("n", "R", "<cmd>lua require'substitute'.operator()<cr>", { noremap = true })
     map("x", "R", "<cmd>lua require'substitute'.visual()<cr>", { noremap = true })
+    map('n', 'g<Tab>', "<cmd>TableFormat<cr>", {})
+    map('x', 'g<Tab>', "<cmd>TableFormat<cr>", {})
 
     -- fern
     vim.api.nvim_create_autocmd({"FileType"}, {
@@ -174,9 +176,9 @@ if vim.fn.exists("g:vscode") == 0 then
 
     -- lspsaga
     my_lsp_on_attach = function(client, bufnr)
-        buf_map(bufnr, "n", "gh", "<cmd>lua require('lspsaga.provider').lsp_finder()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gs", "<cmd>lua require('lspsaga.provider').lsp_finder()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gs", "<cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gh", "<cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gr", "<cmd>lua require('lspsaga.rename').rename()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gx", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "x", "gx", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
