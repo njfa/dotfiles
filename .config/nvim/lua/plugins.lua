@@ -309,6 +309,7 @@ return require('packer').startup(function(use)
             if vim.fn.executable('lazygit') == 1 then
                 local lazygit = Terminal:new({
                     cmd = "lazygit",
+                    dir = ".",
                     direction = "float",
                     hidden = true
                 })
@@ -700,7 +701,9 @@ return require('packer').startup(function(use)
                     null_ls.builtins.diagnostics.eslint,
                     null_ls.builtins.completion.spell,
                     null_ls.builtins.formatting.prettier,
-                    null_ls.builtins.diagnostics.markdownlint
+                    null_ls.builtins.diagnostics.markdownlint.with({
+                        extra_args = { "--disable", "MD007" }
+                    })
                 },
             })
         end
@@ -806,6 +809,7 @@ return require('packer').startup(function(use)
             vim.g.vim_markdown_folding_disabled = 1
             vim.g.vim_markdown_no_default_key_mappings = 1
             vim.g.vim_markdown_toc_autofit = 1
+            vim.g.vim_markdown_new_list_item_indent = 0
         end
     }
 
