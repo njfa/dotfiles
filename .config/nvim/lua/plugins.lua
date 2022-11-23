@@ -296,6 +296,8 @@ return require('packer').startup(function(use)
 
             local Terminal  = require('toggleterm.terminal').Terminal
             local floatterm = Terminal:new({
+                dir = ".",
+                autochdir = true,
                 direction = "float",
                 hidden = true
             })
@@ -310,6 +312,7 @@ return require('packer').startup(function(use)
                 local lazygit = Terminal:new({
                     cmd = "lazygit",
                     dir = ".",
+                    autochdir = true,
                     direction = "float",
                     hidden = true
                 })
@@ -702,7 +705,7 @@ return require('packer').startup(function(use)
                     null_ls.builtins.completion.spell,
                     null_ls.builtins.formatting.prettier,
                     null_ls.builtins.diagnostics.markdownlint.with({
-                        extra_args = { "--disable", "MD007" }
+                        extra_args = { "--disable", "MD007", "MD012" }
                     })
                 },
             })
