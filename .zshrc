@@ -46,7 +46,7 @@ export HISTSIZE=1000
 # 履歴ファイルに保存される履歴の件数
 export SAVEHIST=10000
 
-export BROWSER=wsl_browser.sh
+export BROWSER=browser.sh
 
 # -------------------------------------------------------------------
 # pyenv
