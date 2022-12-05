@@ -15,10 +15,4 @@ else
     TARGET="$HOME"
 fi
 
-# if need file URI pattern
-if echo $0 | grep -q "browser.sh"; then
-  "$BROWSER" "$TARGET"
-  exit 0
-fi
-
 "$BROWSER" $TARGET
