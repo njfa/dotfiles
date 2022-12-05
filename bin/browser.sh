@@ -16,7 +16,7 @@ else
 fi
 
 # if need file URI pattern
-if echo $0 | grep -q "wsl_browser.sh"; then
+if echo $0 | grep -q "browser.sh"; then
   "$BROWSER" "file:////wsl$/$WSL_DISTRO_NAME$TARGET"
   exit 0
 fi
