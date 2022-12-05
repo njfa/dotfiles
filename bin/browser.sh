@@ -10,14 +10,14 @@
 BROWSER="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
 
 if [ -n "$1" ]; then
-    TARGET=$(readlink -f $1)
+    TARGET=$(wslpath -w $(readlink -f $1))
 else
     TARGET="$HOME"
 fi
 
 # if need file URI pattern
 if echo $0 | grep -q "browser.sh"; then
-  "$BROWSER" "file:////wsl$/$WSL_DISTRO_NAME$TARGET"
+  "$BROWSER" "$TARGET"
   exit 0
 fi
 
