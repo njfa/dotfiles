@@ -15,6 +15,17 @@ function buf_map(num, mode, lhs, rhs, opts)
     vim.api.nvim_buf_set_keymap(num, mode, lhs, rhs, options)
 end
 
+function lcd_current_workspace()
+    if vim.bo.filetype ~= 'fern' and vim.bo.filetype ~= '' then
+        vim.api.nvim_exec("lcd %:h | exec 'lcd' fnameescape(fnamemodify(finddir('.git', escape(expand('%:h'), ' ') . ';'), ':h')) | pwd", false)
+
+        -- Fern導入済みの場合は表示を最新化
+        if packer_plugins["fern.vim"] then
+            vim.api.nvim_exec("Fern . -drawer -stay", false)
+        end
+    end
+end
+
 -- 行頭への移動を先頭の文字に変更
 map("n", "0", "^")
 map("n", "^", "0")
@@ -31,9 +42,10 @@ map("v", "<C-Down>", '"zx"zp`[V`]')
 map("n", "<Esc>", ':noh<cr>')
 -- nnoremap <expr> <leader>r ':<c-u>%s/' . expand('<cword>') . '/'
 -- nnoremap <expr> <leader>s ':<c-u>%s/'
--- vnoremap <expr> <leader>s ":<c-u>'<,'>s/"
--- nnoremap <expr> <leader>S ':<c-u>%s/\v'
--- vnoremap <expr> <leader>S ":<c-u>'<,'>s/\\v"
+map("n", "<leader>s", [[:<c-u>%s/]])
+map("x", "<leader>s", [[:<c-u>'<,'>s/]])
+map("n", "<leader>S", [[:<c-u>%s/\v]])
+map("x", "<leader>S", [[:<c-u>'<,'>s/\v]])
 
 -- " レジスタに入れずに文字削除
 map("n", "s", '"_s')
@@ -62,7 +74,7 @@ if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
     -- 隠しファイルも検索対象に含めるためにrgを利用する
     map("n", "<leader>f", "<Cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>")
-    map("n", "<leader>s", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
+    -- map("n", "<leader>s", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
     map("n", "<leader>b", "<Cmd>Telescope buffers<CR>")
@@ -98,7 +110,10 @@ if vim.fn.exists("g:vscode") == 0 then
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
     map("n", "<C-w>i", "<cmd>split<cr>")
-    map("n", "<C-w>.", "<cmd>lcd %:h | exec 'lcd' fnameescape(fnamemodify(finddir('.git', escape(expand('%:h'), ' ') . ';'), ':h'))<cr>", { silent = true })
+
+    -- ローカルのディレクトリを変更
+    map("n", "<C-w>.", "<cmd>lua lcd_current_workspace()<cr>", { silent = true })
+
     map("n", "<C-w>r", "<cmd>lua require('reload').reload()<cr>")
 
     -- Align
@@ -144,10 +159,14 @@ if vim.fn.exists("g:vscode") == 0 then
     map('n', 'g<Tab>', "<cmd>TableFormat<cr>", {})
     map('x', 'g<Tab>', "<cmd>TableFormat<cr>", {})
 
+
     -- fern
     vim.api.nvim_create_autocmd({"FileType"}, {
         pattern = {"fern"},
         callback = function()
+            buf_map(0, 'n', 'r', [[<Plug>(fern-action-rename)]], { noremap = true })
+            buf_map(0, 'n', 'R', [[<Plug>(fern-action-remove)]], { noremap = true })
+
             -- Fern上のディレクトリ移動時にルートディレクトリを変更する
             buf_map(0, 'n', [[<Plug>(fern-my-enter-and-tcd)]], [[<Plug>(fern-action-open-or-enter)<Plug>(fern-wait)<Plug>(fern-action-tcd:root)]], { noremap = true })
             buf_map(0, 'n', [[<Plug>(fern-my-leave-and-tcd)]], [[<Plug>(fern-action-leave)<Plug>(fern-wait)<Plug>(fern-action-tcd:root)]], { noremap = true })
