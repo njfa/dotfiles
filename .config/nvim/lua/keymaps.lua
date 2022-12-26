@@ -104,8 +104,10 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>u", "<cmd>UndotreeToggle<cr>")
 
     -- 改行
-    map("n", "<cr>", "o<Esc>")
-    map("n", "<leader><cr>", "O<Esc>")
+    map("n", "<cr>", "o<Esc>0D")
+
+    map("n", "<leader>j", "o<Esc>0D")
+    map("n", "<leader>k", "O<Esc>0D")
 
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
@@ -115,6 +117,9 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<C-w>.", "<cmd>lua lcd_current_workspace()<cr>", { silent = true })
 
     map("n", "<C-w>r", "<cmd>lua require('reload').reload()<cr>")
+
+    map("n", "<C-w>p", "<cmd>MarkdownPreview<cr>")
+    map("n", "<C-w>d", "<cmd>DiffviewFileHistory<cr>")
 
     -- Align
     map("n", "ga", "<Plug>(EasyAlign)")
@@ -199,8 +204,8 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gh", "<cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gr", "<cmd>lua require('lspsaga.rename').rename()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gx", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "x", "gx", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "<Tab>", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "x", "<Tab>", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
@@ -220,8 +225,8 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, 'n', '}', '<cmd>AerialPrev<CR>', {})
         buf_map(bufnr, 'n', '{', '<cmd>AerialNext<CR>', {})
         -- Jump up the tree with '[[' or ']]'
-        buf_map(bufnr, 'n', ']]', '<cmd>lua require("aerial").prev_up()<CR>', {})
-        buf_map(bufnr, 'n', '[[', '<cmd>lua require("aerial").next_up()<CR>', {})
+        -- buf_map(bufnr, 'n', ']]', '<cmd>lua require("aerial").prev_up()<CR>', {})
+        -- buf_map(bufnr, 'n', '[[', '<cmd>lua require("aerial").next_up()<CR>', {})
     end
 else
     -- 移動

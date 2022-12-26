@@ -134,7 +134,7 @@ return require('packer').startup(function(use)
     -- バッファーライン
     use {
         'akinsho/bufferline.nvim',
-        tag = "v2.*",
+        tag = "v3.*",
         requires = {
             'kyazdani42/nvim-web-devicons',
             -- bufferline.nvimのタブにバッファを紐づける
@@ -147,6 +147,10 @@ return require('packer').startup(function(use)
             require("bufferline").setup {
                 highlights = {
                     buffer_selected = {
+                        bold = true,
+                        italic = true,
+                    },
+                    tab_selected = {
                         bold = true,
                         italic = true,
                     },
@@ -269,7 +273,7 @@ return require('packer').startup(function(use)
                     [":"] = { name = "[T] command history" },
                 },
                 ["g"] = {
-                    x = { name = "Lspsaga code_action" },
+                    ["<Tab>"] = { name = "Lspsaga code_action" },
                 },
             })
             wk.setup {
@@ -473,7 +477,7 @@ return require('packer').startup(function(use)
                 auto_install = true,
 
                 -- List of parsers to ignore installing (for "all")
-                -- ignore_install = { "javascript" },
+                ignore_install = { "gitignore" },
 
                 ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
                 -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
@@ -487,6 +491,7 @@ return require('packer').startup(function(use)
                     -- the name of the parser)
                     -- list of language that will be disabled
                     -- disable = { "c", "rust" },
+                    disable = { "vim", "help" },
 
                     -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
                     -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
@@ -800,6 +805,8 @@ return require('packer').startup(function(use)
         end
     }
 
+    use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
+
     -- 特定言語のための拡張機能
     -- Markdown入力時の補助
     use {
@@ -814,6 +821,13 @@ return require('packer').startup(function(use)
             vim.g.vim_markdown_toc_autofit = 1
             vim.g.vim_markdown_new_list_item_indent = 0
         end
+    }
+
+    use {
+        "iamcco/markdown-preview.nvim",
+        run = "cd app && npm install",
+        setup = function() vim.g.mkdp_filetypes = { "markdown" } end,
+        ft = { "markdown" },
     }
 
     if packer_bootstrap then

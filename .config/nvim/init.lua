@@ -2,11 +2,12 @@
 vim.g.mapleader = " "
 
 -- 見栄え
-vim.opt.number      = true        --行番号を表示
-vim.opt.laststatus  = 3           --ステータスバーにウィンドウ毎のステータスを表示する
-vim.opt.splitright  = true        --画面を縦分割する際に右に開く
-vim.opt.list        = true
-vim.opt.listchars   = {
+vim.opt.termguicolors = true
+vim.opt.number        = true        --行番号を表示
+vim.opt.laststatus    = 3           --ステータスバーにウィンドウ毎のステータスを表示する
+vim.opt.splitright    = true        --画面を縦分割する際に右に開く
+vim.opt.list          = true
+vim.opt.listchars     = {
     space = '·',
     tab   = '› ',
     eol   = '¬',
@@ -14,10 +15,11 @@ vim.opt.listchars   = {
 }
 
 -- インデント
-vim.opt.autoindent = true        --改行時に自動でインデントする
-vim.opt.tabstop    = 4           --タブを何文字の空白に変換するか
-vim.opt.shiftwidth = 4           --自動インデント時に入力する空白の数
-vim.opt.expandtab  = true        --タブ入力を空白に変換
+vim.opt.autoindent  = true        --改行時に自動でインデントする
+vim.opt.smartindent = true        --改行時に自動でインデントする
+vim.opt.tabstop     = 4           --タブを何文字の空白に変換するか
+vim.opt.shiftwidth  = 4           --自動インデント時に入力する空白の数
+vim.opt.expandtab   = true        --タブ入力を空白に変換
 
 -- 検索系の設定
 vim.opt.hls        = true        --検索した文字をハイライトする
@@ -69,9 +71,8 @@ require('keymaps')
 -- autocmdの設定
 require('autocmd')
 
-if vim.fn.has('termguicolors') == 0 then
-    vim.opt.termguicolors = true
-end
-
 if vim.fn.exists('g:vscode') == 0 then
 end
+
+vim.api.nvim_exec("PackerCompile", false)
+
