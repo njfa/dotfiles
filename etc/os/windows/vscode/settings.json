@@ -165,5 +165,7 @@
     "markdown-preview-github-styles.colorTheme": "light",
     "MarkdownPaste.path": "${fileDirname}/images",
     "MarkdownPaste.silence": true,
-    "hediet.vscode-drawio.theme": "Kennedy"
+    "hediet.vscode-drawio.theme": "Kennedy",
+    "plantuml.commandArgs": ["-Dfile.encoding=UTF-8"],
+    "plantuml.jarArgs": ["-charset", "UTF-8"]
 }
