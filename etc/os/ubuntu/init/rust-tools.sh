@@ -6,4 +6,4 @@ if [ -z "$(command -v cargo)" ]; then
     source $HOME/.cargo/env
 fi
 
-cargo install ripgrep exa bat tokei tree-sitter-cli
+cargo install ripgrep exa bat tokei tree-sitter-cli sqlx-cli git-delta
