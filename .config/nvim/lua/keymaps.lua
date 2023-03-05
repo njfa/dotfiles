@@ -116,7 +116,7 @@ if vim.fn.exists("g:vscode") == 0 then
     -- ローカルのディレクトリを変更
     map("n", "<C-w>.", "<cmd>lua lcd_current_workspace()<cr>", { silent = true })
 
-    map("n", "<C-w>r", "<cmd>lua require('reload').reload()<cr>")
+    map("n", "<leader>.", "<cmd>lua require('reload').reload()<cr>")
 
     map("n", "<C-w>p", "<cmd>MarkdownPreview<cr>")
     map("n", "<C-w>d", "<cmd>DiffviewFileHistory<cr>")
