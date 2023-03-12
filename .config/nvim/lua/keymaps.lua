@@ -39,7 +39,6 @@ map("v", "<C-Up>", '"zx<Up>"zP`[V`]')
 map("v", "<C-Down>", '"zx"zp`[V`]')
 
 -- " 検索
-map("n", "<Esc>", ':noh<cr>')
 -- nnoremap <expr> <leader>r ':<c-u>%s/' . expand('<cword>') . '/'
 -- nnoremap <expr> <leader>s ':<c-u>%s/'
 map("n", "<leader>s", [[:<c-u>%s/]])
@@ -139,6 +138,9 @@ if vim.fn.exists("g:vscode") == 0 then
     map('x', '#', [[<Plug>(asterisk-z#)<Cmd>lua require('hlslens').start()<CR>]])
     map('x', 'g*', [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>]])
     map('x', 'g#', [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]])
+
+    -- Escで検索結果のハイライトを削除
+    map("n", "<Esc>", ':noh<cr>')
 
     -- 移動
     map('n', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
