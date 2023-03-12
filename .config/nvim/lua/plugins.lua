@@ -239,10 +239,14 @@ return require('packer').startup(function(use)
         'haringsrob/nvim_context_vt',
         requires = 'nvim-treesitter/nvim-treesitter',
         cond = function() return vim.fn.exists('g:vscode') == 0 end,
-        ft = {'rs', 'lua', 'sh'},
         setup = function()
             require("nvim-treesitter.parsers")
-            -- require('nvim_context_vt').setup()
+        end,
+        config = function()
+            require('nvim_context_vt').setup({
+                -- disable_ft = {'yml', 'py'},
+                disable_virtual_lines = true,
+            })
         end
     }
     -- キーバインドをわかりやすくする
