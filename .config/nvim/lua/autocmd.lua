@@ -39,3 +39,10 @@ vim.api.nvim_create_autocmd({"FileType"}, {
         buf_map(0, 'n', "q", "<cmd>q<cr>", { noremap = true })
     end,
 })
+
+vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
+    pattern = { "*.pu" },
+    callback = function()
+        vim.api.nvim_exec('set filetype=plantuml', false)
+    end,
+})
