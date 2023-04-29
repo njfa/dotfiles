@@ -219,7 +219,10 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
 
         -- require("aerial").on_attach(client, bufnr)
-        require("nvim-navic").attach(client, bufnr)
+        -- require("nvim-navic").attach(client, bufnr)
+        if client.server_capabilities.documentSymbolProvider then
+            require("nvim-navic").attach(client, bufnr)
+        end
     end
 
     my_aerial_on_attach = function(bufnr)

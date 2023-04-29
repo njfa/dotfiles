@@ -74,5 +74,3 @@ require('autocmd')
 if vim.fn.exists('g:vscode') == 0 then
 end
 
-vim.api.nvim_exec("PackerCompile", false)
-
