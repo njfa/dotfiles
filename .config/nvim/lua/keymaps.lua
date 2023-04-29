@@ -206,11 +206,13 @@ if vim.fn.exists("g:vscode") == 0 then
     my_lsp_on_attach = function(client, bufnr)
         buf_map(bufnr, "n", "gs", "<cmd>lua require('lspsaga.provider').lsp_finder()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gh", "<cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>", {silent = true, noremap = true})
+        -- buf_map(bufnr, "n", "gh", "<cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gh", "<cmd>lua vim.lsp.buf.signature_help()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gr", "<cmd>lua require('lspsaga.rename').rename()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "<Tab>", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "x", "<Tab>", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<cr>", {silent = true, noremap = true})
+        -- buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "K", "<cmd>lua require('lsp_signature').toggle_float_win()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gp", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {silent = true, noremap = true})
@@ -220,6 +222,13 @@ if vim.fn.exists("g:vscode") == 0 then
 
         -- require("aerial").on_attach(client, bufnr)
         -- require("nvim-navic").attach(client, bufnr)
+        require("lsp_signature").on_attach({
+            bind = true, -- This is mandatory, otherwise border config won't get registered.
+            handler_opts = {
+                border = "rounded"
+            }
+        }, bufnr)
+
         if client.server_capabilities.documentSymbolProvider then
             require("nvim-navic").attach(client, bufnr)
         end
