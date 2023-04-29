@@ -24,7 +24,6 @@ return require('packer').startup(function(use)
     use "EdenEast/nightfox.nvim"
     use {
         'folke/tokyonight.nvim',
-        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             vim.g.tokyonight_style = "storm"
             vim.cmd("colorscheme tokyonight")
@@ -73,18 +72,7 @@ return require('packer').startup(function(use)
     -- 現在カーソルがあたっている関数を表示する
     use {
         "SmiteshP/nvim-navic",
-        requires = "neovim/nvim-lspconfig"
-    }
-    -- ステータスラインをリッチな見た目にする
-    use {
-        'nvim-lualine/lualine.nvim',
-        requires = {
-            'folke/tokyonight.nvim',
-            -- ステータスラインに関数名を表示する
-            'SmiteshP/nvim-navic',
-            'kyazdani42/nvim-web-devicons'
-        },
-        cond = function() return vim.fn.exists('g:vscode') == 0 end,
+        requires = "neovim/nvim-lspconfig",
         config = function()
             local navic = require("nvim-navic")
             navic.setup {
@@ -116,25 +104,394 @@ return require('packer').startup(function(use)
                     Operator      = " ",
                     TypeParameter = " ",
                 },
-                highlight = false,
-                separator = " > ",
+                highlight = true,
+                separator = "  ",
                 depth_limit = 0,
                 depth_limit_indicator = "..",
             }
-            require('lualine').setup {
-                theme = 'tokyonight',
-                sections = {
-                    lualine_c = {
-                        { navic.get_location, cond = navic.is_available },
-                    }
-                }
-            }
+
+            vim.o.winbar = "    %{%v:lua.require'nvim-navic'.get_location()%}"
         end
     }
+    -- ステータスラインをリッチな見た目にする
+    use({
+        "rebelot/heirline.nvim",
+        config = function()
+            local conditions = require("heirline.conditions")
+            local utils = require("heirline.utils")
+            local colors = require("tokyonight.colors").setup()
+
+            local Separator = {
+                provider  = function()
+                    return "%="
+                end,
+            }
+
+            local ViMode = {
+                -- get vim current mode, this information will be required by the provider
+                -- and the highlight functions, so we compute it only once per component
+                -- evaluation and store it as a component attribute
+                init = function(self)
+                    self.mode = vim.fn.mode(1) -- :h mode()
+                end,
+                -- Now we define some dictionaries to map the output of mode() to the
+                -- corresponding string and color. We can put these into `static` to compute
+                -- them at initialisation time.
+                static = {
+                    mode_names = { -- change the strings if you like it vvvvverbose!
+                        n = "NORMAL",
+                        no = "NORMAL?",
+                        nov = "NORMAL?",
+                        noV = "NORMAL?",
+                        ["no\22"] = "NORMAL?",
+                        niI = "NORMALi",
+                        niR = "NORMALr",
+                        niV = "NORMALv",
+                        nt = "NORMALt",
+                        v = "VISUAL",
+                        vs = "VISUALs",
+                        V = "VISUAL LINE",
+                        Vs = "lISUALs",
+                        ["\22"] = "VISUAL BLOCK",
+                        ["\22s"] = "VISUAL BLOCK",
+                        s = "S",
+                        S = "S_",
+                        ["\19"] = "^S",
+                        i = "INSERT",
+                        ic = "INSERTc",
+                        ix = "INSERTx",
+                        R = "R",
+                        Rc = "Rc",
+                        Rx = "Rx",
+                        Rv = "Rv",
+                        Rvc = "Rv",
+                        Rvx = "Rv",
+                        c = "COMMAND",
+                        cv = "Ex",
+                        r = "...",
+                        rm = "M",
+                        ["r?"] = "?",
+                        ["!"] = "!",
+                        t = "TERMINAL",
+                    },
+                    mode_colors = {
+                        n = "blue" ,
+                        i = "green2",
+                        v = "yellow",
+                        V =  "orange",
+                        ["\22"] =  "red",
+                        c =  "purple",
+                        s =  "purple",
+                        S =  "purple",
+                        ["\19"] =  "purple",
+                        R =  "red1",
+                        r =  "red1",
+                        ["!"] =  "red1",
+                        t =  "blue2",
+                    },
+                },
+
+                update = {
+                    "ModeChanged",
+                    pattern = "*:*",
+                    callback = vim.schedule_wrap(function()
+                        vim.cmd("redrawstatus")
+                    end),
+                },
+
+                {
+                    -- We can now access the value of mode() that, by now, would have been
+                    -- computed by `init()` and use it to index our strings dictionary.
+                    -- note how `static` fields become just regular attributes once the
+                    -- component is instantiated.
+                    -- To be extra meticulous, we can also add some vim statusline syntax to
+                    -- control the padding and make sure our string is always at least 2
+                    -- characters long. Plus a nice Icon.
+                    provider = function(self)
+                        return " %2("..self.mode_names[self.mode].."%) "
+                    end,
+                    -- Same goes for the highlight. Now the foreground will change according to the current mode.
+                    hl = function(self)
+                        local mode = self.mode:sub(1, 1) -- get only the first mode character
+                        return {
+                            fg = "black",
+                            bg = self.mode_colors[mode],
+                            bold = true,
+                        }
+                    end,
+                    -- Re-evaluate the component only on ModeChanged event!
+                    -- Also allows the statusline to be re-evaluated when entering operator-pending mode
+                },
+                {
+                    provider = function()
+                        return ""
+                    end,
+                    -- Same goes for the highlight. Now the foreground will change according to the current mode.
+                    hl = function(self)
+                        local mode = self.mode:sub(1, 1) -- get only the first mode character
+                        return {
+                            fg = self.mode_colors[mode],
+                            bg = "bg",
+                            bold = true,
+                        }
+                    end,
+                }
+            }
+
+            local FileNameBlock = {
+                -- let's first set up some attributes needed by this component and it's children
+                init = function(self)
+                    self.filename = vim.api.nvim_buf_get_name(0)
+                end,
+            }
+            -- We can now define some children separately and add them later
+
+            local WorkDir = {
+                provider = function()
+                    local cwd = vim.fn.getcwd(0)
+                    cwd = vim.fn.fnamemodify(cwd, ":~")
+                    if not conditions.width_percent_below(#cwd, 0.25) then
+                        cwd = vim.fn.pathshorten(cwd)
+                    end
+                    local trail = cwd:sub(-1) == '/' and '' or "/"
+                    return  "  " .. cwd  .. trail
+                end,
+                hl = { fg = "gray", bg = "bg_dark", bold = true },
+            }
+
+            local FileName = {
+                provider = function(self)
+                    -- first, trim the pattern relative to the current directory. For other
+                    -- options, see :h filename-modifers
+                    local filename = vim.fn.fnamemodify(self.filename, ":.")
+                    if filename == "" then return "[New Buffer]" end
+                    -- now, if the filename would occupy more than 1/4th of the available
+                    -- space, we trim the file path to its initials
+                    -- See Flexible Components section below for dynamic truncation
+                    if not conditions.width_percent_below(#filename, 0.25) then
+                        filename = vim.fn.pathshorten(filename)
+                    end
+                    return filename
+                end,
+                hl = { fg = "fg", bg = "bg_dark" },
+            }
+
+            local FileFlags = {
+                {
+                    condition = function()
+                        return vim.bo.modified
+                    end,
+                    provider = " ●",
+                    hl = { fg = "green", bg = "bg_dark" },
+                },
+                {
+                    condition = function()
+                        return not vim.bo.modifiable or vim.bo.readonly
+                    end,
+                    provider = " ",
+                    hl = { fg = "red", bg = "bg_dark" },
+                },
+            }
+
+            -- Now, let's say that we want the filename color to change if the buffer is
+            -- modified. Of course, we could do that directly using the FileName.hl field,
+            -- but we'll see how easy it is to alter existing components using a "modifier"
+            -- component
+
+            local FileNameModifer = {
+                hl = function()
+                    if vim.bo.modified then
+                        -- use `force` because we need to override the child's hl foreground
+                        return { fg = "fg", bg = "bg_dark", bold = true, force=true }
+                    end
+                end,
+            }
+
+            -- let's add the children to our FileNameBlock component
+            FileNameBlock = utils.insert(
+            FileNameBlock,
+            utils.insert(FileNameModifer, FileName), -- a new table where FileName is a child of FileNameModifier
+            FileFlags,
+            { provider = '%<'} -- this means that the statusline is cut here when there's not enough space
+            )
+
+            local FileType = {
+                provider = function()
+                    return "  " .. string.upper(vim.bo.filetype)
+                end,
+                hl = { fg = "black", bg = "teal", bold = true },
+            }
+
+            local FileEncoding = {
+                {
+                    provider = function()
+                        return ""
+                    end,
+                    hl = { fg = "teal", bg = "bg", bold = true },
+                },
+                {
+                    provider = function()
+                        local enc = (vim.bo.fenc ~= '' and vim.bo.fenc) or vim.o.enc -- :h 'enc'
+                        return " " .. enc:upper()
+                    end,
+                    hl = { fg = "black", bg = "teal", bold = true },
+                }
+            }
+
+            local FileFormat = {
+                provider = function()
+                    local fmt = vim.bo.fileformat
+                    return "  " .. fmt:upper() .. " "
+                end,
+                hl = { fg = "black", bg = "teal", bold = true },
+            }
+
+            local FileSize = {
+                provider = function()
+                    -- stackoverflow, compute human readable file size
+                    local suffix = { 'B', 'k', 'M', 'G', 'T', 'P', 'E' }
+                    local fsize = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
+                    fsize = (fsize < 0 and 0) or fsize
+                    if fsize < 1024 then
+                        return " (" .. fsize..suffix[1] .. ") "
+                    end
+                    local i = math.floor((math.log(fsize) / math.log(1024)))
+                    return " (" .. string.format("%.2g%s", fsize / math.pow(1024, i), suffix[i + 1]) .. ") "
+                end,
+                hl = { fg = "fg", bg = "bg_dark" },
+            }
+
+            -- We're getting minimalists here!
+            local Ruler = {
+                -- %l = current line number
+                -- %L = number of lines in the buffer
+                -- %c = column number
+                -- %P = percentage through file of displayed window
+                provider = "ROW:%7(%l/%3L%) (%P)  COL:%2c ",
+            }
+
+            local LSPActive = {
+                condition = conditions.lsp_attached,
+                update = {'LspAttach', 'LspDetach'},
+
+                -- You can keep it simple,
+                -- provider = " [LSP]",
+
+                -- Or complicate things a bit and get the servers names
+                provider  = function()
+                    local names = {}
+                    for i, server in pairs(vim.lsp.get_active_clients({ bufnr = 0 })) do
+                        table.insert(names, server.name)
+                    end
+                    return "  LSP:[" .. table.concat(names, ", ") .. "] "
+                end,
+                hl = { fg = "orange", bg = "bg_dark", bold = true },
+            }
+            local Git = {
+                condition = conditions.is_git_repo,
+
+                init = function(self)
+                    self.status_dict = vim.b.gitsigns_status_dict
+                    self.has_changes = self.status_dict.added ~= 0 or self.status_dict.removed ~= 0 or self.status_dict.changed ~= 0
+                end,
+
+                hl = { fg = "fg", bg = "bg_dark" },
+
+
+                {   -- git branch name
+                    provider = function(self)
+                        return "   " .. self.status_dict.head
+                    end,
+                    hl = { bold = true }
+                },
+                -- You could handle delimiters, icons and counts similar to Diagnostics
+                {
+                    condition = function(self)
+                        return self.has_changes
+                    end,
+                    provider = " ("
+                },
+                {
+                    provider = function(self)
+                        local count = self.status_dict.added or 0
+                        return count > 0 and ("+" .. count)
+                    end,
+                    hl = { fg = "teal" },
+                },
+                {
+                    provider = function(self)
+                        local count = self.status_dict.removed or 0
+                        return count > 0 and ("-" .. count)
+                    end,
+                    hl = { fg = "red" },
+                },
+                {
+                    provider = function(self)
+                        local count = self.status_dict.changed or 0
+                        return count > 0 and ("~" .. count)
+                    end,
+                    hl = { fg = "orange" },
+                },
+                {
+                    condition = function(self)
+                        return self.has_changes
+                    end,
+                    provider = ") ",
+                },
+                {
+                    provider = function()
+                        return " "
+                    end,
+                    hl = { fg = "fg", bold = false },
+                }
+            }
+
+            local DAPMessages = {
+                condition = function()
+                    local session = require("dap").session()
+                    return session ~= nil
+                end,
+                provider = function()
+                    return " " .. require("dap").status()
+                end,
+                hl = "Debug"
+                -- see Click-it! section for clickable actions
+            }
+            local StatusLine = {
+                {
+                    ViMode,
+                    Git,
+                    WorkDir,
+                    FileNameBlock,
+                    FileSize,
+                },
+                {
+                    Separator,
+                    LSPActive,
+                    DAPMessages,
+                },
+                {
+                    Separator,
+                    Ruler,
+                    FileEncoding,
+                    FileType,
+                    FileFormat,
+                },
+            }
+
+            require("heirline").setup({
+                statusline = StatusLine,
+                opts = {
+                    colors = require("tokyonight.colors").setup(),
+                },
+            })
+        end
+    })
+
     -- バッファーライン
     use {
         'akinsho/bufferline.nvim',
-        tag = "v3.*",
+        tag = "*",
         requires = {
             'kyazdani42/nvim-web-devicons',
             -- bufferline.nvimのタブにバッファを紐づける
@@ -156,16 +513,23 @@ return require('packer').startup(function(use)
                     },
                 },
                 options = {
+                    numbers = "buffer_id",
+                    buffer_close_icon = '',
+                    max_name_length = 100,
+                    max_prefix_length = 15, -- prefix used when a buffer is de-duplicated
+                    truncate_names = true, -- whether or not tab names should be truncated
+                    tab_size = 0,
                     indicator = {
+                        icon = '▎', -- this should be omitted if indicator style is not 'icon'
                         -- style = 'underline'
                     },
                     diagnostics = "nvim_lsp",
                     diagnostics_indicator = function(count, level, diagnostics_dict, context)
                         local s = " "
                         for e, n in pairs(diagnostics_dict) do
-                            local sym = e == "error" and " "
-                            or (e == "warning" and " " or e == "info" and " " or " " )
-                            s = s .. sym .. n
+                            local sym = e == "error" and ""
+                            or (e == "warning" and "" or e == "info" and "" or "" )
+                            s = s .. sym .. n .. ' '
                         end
                         return s
                     end,
@@ -178,46 +542,12 @@ return require('packer').startup(function(use)
                             highlight = "Directory",
                             text_align = "left"
                         }
-                    }
+                    },
+                    -- sort_by = 'insert_after_current'
                 }
             }
         end
     }
-    -- サイドバーを表示する
-    -- use {
-    --     "sidebar-nvim/sidebar.nvim",
-    --     branch = 'dev', -- optional but strongly recommended
-    --     config = function()
-    --         require('sidebar-nvim').setup({
-    --             bindings = {
-    --                 ['q'] = function()
-    --                     require('sidebar-nvim').close()
-    --                 end,
-    --                 ['<Esc>'] = function()
-    --                     require('sidebar-nvim').close()
-    --                 end
-    --             },
-    --             open = false,
-    --             initial_width = 30,
-    --             hide_statusline = true,
-    --             section_separator = '',
-    --             sections = {'buffers', 'git', 'todos'},
-    --             todos = {
-    --                 icon = "",
-    --                 ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
-    --                 initially_closed = true, -- whether the groups should be initially closed on start. You can manually open/close groups later.
-    --             },
-    --             buffers = {
-    --                 icon = "",
-    --                 ignored_buffers = {}, -- ignore buffers by regex
-    --                 sorting = "id", -- alternatively set it to "name" to sort by buffer name instead of buf id
-    --                 show_numbers = true, -- whether to also show the buffer numbers
-    --                 ignore_not_loaded = true, -- whether to ignore not loaded buffers
-    --                 ignore_terminal = true, -- whether to show terminal buffers in the list
-    --             }
-    --         })
-    --     end
-    -- }
     -- 通知をリッチな見た目にする
     use 'rcarriga/nvim-notify'
     -- nvim-lspの進捗の表示を変更する
@@ -238,7 +568,6 @@ return require('packer').startup(function(use)
     use {
         'haringsrob/nvim_context_vt',
         requires = 'nvim-treesitter/nvim-treesitter',
-        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         setup = function()
             require("nvim-treesitter.parsers")
         end,
@@ -252,7 +581,6 @@ return require('packer').startup(function(use)
     -- キーバインドをわかりやすくする
     use {
         "folke/which-key.nvim",
-        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             -- which-key.nvimの表示間隔を狭める
             vim.opt.timeoutlen = 200
@@ -348,6 +676,21 @@ return require('packer').startup(function(use)
             local actions = require("telescope.actions")
             require('telescope').setup {
                 defaults = {
+                    layout_strategy = "vertical",
+                    layout_config = {
+                        horizontal = {
+                            height = 0.99,
+                            preview_cutoff = 40,
+                            prompt_position = "bottom",
+                            width = 0.99
+                        },
+                        vertical = {
+                            height = 0.99,
+                            preview_cutoff = 40,
+                            prompt_position = "bottom",
+                            width = 0.99
+                        }
+                    },
                     mappings = {
                         i = {
                             ["<esc>"] = actions.close
@@ -388,7 +731,6 @@ return require('packer').startup(function(use)
     -- undoの拡張
     use {
         'mbbill/undotree',
-        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             -- バックアップファイルの保存場所
             if vim.fn.has('persistent_undo') ~= 0 then
@@ -411,7 +753,6 @@ return require('packer').startup(function(use)
             'folke/tokyonight.nvim',
             'kevinhwang91/nvim-hlslens'
         },
-        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             local colors = require("tokyonight.colors").setup()
 
@@ -437,7 +778,6 @@ return require('packer').startup(function(use)
     use {
         'phaazon/hop.nvim',
         branch = 'v2', -- optional but strongly recommended
-        cond = function() return vim.fn.exists('g:vscode') == 0 end,
         config = function()
             -- you can configure Hop the way you like here; see :h hop-config
             require'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
@@ -724,7 +1064,10 @@ return require('packer').startup(function(use)
     -- Git
     use {
         'lewis6991/gitsigns.nvim',
-        tag = 'release' -- To use the latest release
+        tag = 'v0.6', -- To use the latest release
+        config = function()
+            require('gitsigns').setup()
+        end
     }
     -- trouble
     use {
@@ -752,6 +1095,21 @@ return require('packer').startup(function(use)
     }
     -- debugger
     use 'mfussenegger/nvim-dap'
+    -- use {
+    --     "rcarriga/nvim-dap-ui", requires = {"mfussenegger/nvim-dap"},
+    --     config = function()
+    --         require("dapui").setup()
+    --     end
+    -- }
+    -- use {
+    --     "folke/neodev.nvim",
+    --     config = function()
+    --         require("neodev").setup({
+    --             library = { plugins = { "nvim-dap-ui" }, types = true },
+    --         })
+    --     end
+    -- }
+
 
     -- アウトライン
     use {
