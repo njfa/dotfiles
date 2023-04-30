@@ -1,30 +1,4 @@
--- Functional wrapper for mapping custom keybindings
-function map(mode, lhs, rhs, opts)
-    local options = { noremap = true }
-    if opts then
-        options = vim.tbl_extend("force", options, opts)
-    end
-    vim.api.nvim_set_keymap(mode, lhs, rhs, options)
-end
-
-function buf_map(num, mode, lhs, rhs, opts)
-    local options = { noremap = true, silent = true }
-    if opts then
-        options = vim.tbl_extend("force", options, opts)
-    end
-    vim.api.nvim_buf_set_keymap(num, mode, lhs, rhs, options)
-end
-
-function lcd_current_workspace()
-    if vim.bo.filetype ~= 'fern' and vim.bo.filetype ~= '' then
-        vim.api.nvim_exec("lcd %:h | exec 'lcd' fnameescape(fnamemodify(finddir('.git', escape(expand('%:h'), ' ') . ';'), ':h')) | pwd", false)
-
-        -- Fern導入済みの場合は表示を最新化
-        if packer_plugins["fern.vim"] then
-            vim.api.nvim_exec("Fern . -drawer -stay", false)
-        end
-    end
-end
+require('utils')
 
 -- 行頭への移動を先頭の文字に変更
 map("n", "0", "^")
@@ -85,6 +59,7 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>G", "<Cmd>Telescope live_grep find_command=rg,--no-ignore,--hidden,--files<CR>")
     map("n", "<leader>:", "<Cmd>Telescope command_history<CR>")
     map("n", "<leader>/", "<Cmd>Telescope current_buffer_fuzzy_find<CR>")
+    map("n", "<leader>e", "<Cmd>Telescope projects<CR>")
     -- map("n", "<leader>s", "<cmd>SidebarNvimToggle<cr>")
 
     -- タブ、バッファ操作
@@ -206,12 +181,10 @@ if vim.fn.exists("g:vscode") == 0 then
     my_lsp_on_attach = function(client, bufnr)
         buf_map(bufnr, "n", "gs", "<cmd>lua require('lspsaga.provider').lsp_finder()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", {silent = true, noremap = true})
-        -- buf_map(bufnr, "n", "gh", "<cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gh", "<cmd>lua vim.lsp.buf.signature_help()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gr", "<cmd>lua require('lspsaga.rename').rename()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "<Tab>", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "x", "<Tab>", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
-        -- buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "K", "<cmd>lua require('lsp_signature').toggle_float_win()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
@@ -220,10 +193,8 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
         buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
 
-        -- require("aerial").on_attach(client, bufnr)
-        -- require("nvim-navic").attach(client, bufnr)
         require("lsp_signature").on_attach({
-            bind = true, -- This is mandatory, otherwise border config won't get registered.
+            bind = true,
             handler_opts = {
                 border = "rounded"
             }
@@ -244,6 +215,17 @@ if vim.fn.exists("g:vscode") == 0 then
         -- buf_map(bufnr, 'n', ']]', '<cmd>lua require("aerial").prev_up()<CR>', {})
         -- buf_map(bufnr, 'n', '[[', '<cmd>lua require("aerial").next_up()<CR>', {})
     end
+
+    -- Debugger
+    map('n', '<F1>', "<cmd>lua require('dap').repl_open()<CR>", {})
+    map('n', '<F2>', "<cmd>lua require('dap').set_breakpoint()<CR>", {})
+    map('n', '<F3>', "<cmd>lua require('dap').toggle_breakpoint()<CR>", {})
+    map('n', '<F4>', "<cmd>lua require('dap').continue()<CR>", {})
+    map('n', '<F5>', "<cmd>lua require('dap').step_over()<CR>", {})
+    map('n', '<F6>', "<cmd>lua require('dap').step_into()<CR>", {})
+    map('n', '<F7>', "<cmd>lua require('dap').step_out()<CR>", {})
+    map('n', '<F8>', "<cmd>lua require('dap').run_last()<CR>", {})
+    map('n', '<F12>', "<cmd>lua require('dapui').toggle()<CR>", {})
 else
     -- 移動
     map("n", "gj", "<cmd>call VSCodeNotify('cursorMove', { 'to': 'down', 'by': 'wrappedLine', 'value': v:count ? v:count : 1 })<cr>")
