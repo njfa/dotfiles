@@ -1,4 +1,3 @@
-
 -- IMEの自動OFF
 if vim.fn.executable('zenhan.exe') == 1 then
     vim.api.nvim_create_autocmd({"InsertLeave", "CmdlineLeave"}, {
@@ -15,11 +14,20 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
     end,
 })
 
+
 -- plugins.luaに記載した設定を反映
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
     pattern = { "plugins.lua" },
     callback = function()
-        vim.api.nvim_exec('source <afile>', false)
+        -- local fn = vim.fn
+        -- local config_path = fn.stdpath('config') .. "/lua/plugins/**/*.lua"
+
+        -- for _, file in ipairs(vim.split(fn.glob(config_path), '\n')) do
+        --     vim.api.nvim_exec("source " .. file, false)
+        --     P("Reload module: '" .. file .."'", " Success!!")
+        -- end
+
+        vim.api.nvim_exec("source <afile>", false)
         vim.api.nvim_exec('PackerCompile', false)
     end,
 })
