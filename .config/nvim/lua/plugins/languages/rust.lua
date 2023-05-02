@@ -7,6 +7,9 @@ function M.load(use)
             'neovim/nvim-lspconfig',
             'williamboman/mason.nvim',
         },
+        ft = {
+            "rust"
+        },
         config = function ()
             -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
             local codelldb_path = vim.fn.stdpath('data') .. "/mason/packages/codelldb/extension"
@@ -36,6 +39,17 @@ function M.load(use)
             rt.setup(cfg)
 
             require('dap.ext.vscode').load_launchjs(nil, {rt_lldb={'rust'}})
+
+            -- require('dap').configurations.rust = {
+            --     {
+            --         type = 'rt_lldb';
+            --         request = 'launch';
+            --         name = "Debug (Attach)";
+            --         cwd = "${workspaceFolder}",
+            --         program = "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
+            --         stopAtEntry = true,
+            --     },
+            -- }
         end
     }
 end
