@@ -116,7 +116,7 @@ if vim.fn.exists("g:vscode") == 0 then
     map('x', 'g#', [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]])
 
     -- Escで検索結果のハイライトを削除
-    map("n", "<Esc>", ':noh<cr>')
+    map("n", "<Esc>", ':noh<cr>', { silent = true })
 
     -- 移動
     map('n', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
