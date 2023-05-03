@@ -25,6 +25,8 @@ return require('packer').startup(function(use)
     use 'junegunn/vim-easy-align'
     -- 単語や演算子を反対の意味に切り替える
     use  'AndrewRadev/switch.vim'
+    -- 様々ものをincrement/decrementする
+    use 'monaqa/dial.nvim'
     -- コメント機能の拡張
     use 'tpope/vim-commentary'
     -- textobjectの拡張
