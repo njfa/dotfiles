@@ -103,6 +103,14 @@ if vim.fn.exists("g:vscode") == 0 then
     -- Switch
     map("n", "gt", "<cmd>Switch<cr>")
     map("x", "gt", "<cmd>Switch<cr>")
+    map("n", "<C-a>", require("dial.map").inc_normal(),   {silent = true})
+    map("n", "<C-x>", require("dial.map").dec_normal(),   {silent = true})
+    map("n", "g<C-a>", require("dial.map").inc_gnormal(), {silent = true})
+    map("n", "g<C-x>", require("dial.map").dec_gnormal(), {silent = true})
+    map("v", "<C-a>", require("dial.map").inc_visual(),   {silent = true})
+    map("v", "<C-x>", require("dial.map").dec_visual(),   {silent = true})
+    map("v", "g<C-a>", require("dial.map").inc_gvisual(), {silent = true})
+    map("v", "g<C-x>", require("dial.map").dec_gvisual(), {silent = true})
 
     -- 検索
     map('n', '*', [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]])
