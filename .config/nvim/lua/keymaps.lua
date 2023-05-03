@@ -71,8 +71,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>D", "<Cmd>tabclose<CR>", { silent = true })
     map("n", "<leader>c", '<cmd>enew<cr>', { silent = true })
     map("n", "<leader>C", '<cmd>tabnew<cr>', { silent = true })
-    map("n", "<C-j>", '<cmd>tabp<cr>', { silent = true })
-    map("n", "<C-k>", '<cmd>tabn<cr>', { silent = true })
+    map("n", "<C-p>", '<cmd>tabp<cr>', { silent = true })
+    map("n", "<C-n>", '<cmd>tabn<cr>', { silent = true })
     map("n", "<C-h>", "<cmd>bp<cr>", { silent = true })
     map("n", "<C-l>", "<cmd>bn<cr>", { silent = true })
 
@@ -80,10 +80,9 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>u", "<cmd>UndotreeToggle<cr>")
 
     -- 改行
-    map("n", "<cr>", "o<Esc>0D")
-
-    map("n", "<leader>j", "o<Esc>0D")
-    map("n", "<leader>k", "O<Esc>0D")
+    -- map("n", "<cr>", "o<Esc>0D")
+    map("n", "<C-j>", "o<Esc>0D")
+    map("n", "<C-k>", "O<Esc>0D")
 
     -- ウィンドウ操作
     map("n", "<C-w>e", "<cmd>vsplit<cr>")
@@ -189,7 +188,7 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "gp", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gd", "<cmd>lua require('lspsaga.provider').preview_definition()<CR>", {silent = true, noremap = true})
+        -- buf_map(bufnr, "n", "gd", "<cmd>lua require('lspsaga.provider').preview_definition()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
         buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
 
@@ -217,14 +216,17 @@ if vim.fn.exists("g:vscode") == 0 then
     end
 
     -- Debugger
-    map('n', '<F1>', "<cmd>lua require('dap').repl_open()<CR>", {})
-    map('n', '<F2>', "<cmd>lua require('dap').set_breakpoint()<CR>", {})
-    map('n', '<F3>', "<cmd>lua require('dap').toggle_breakpoint()<CR>", {})
-    map('n', '<F4>', "<cmd>lua require('dap').continue()<CR>", {})
-    map('n', '<F5>', "<cmd>lua require('dap').step_over()<CR>", {})
+    map('n', '<F1>', "<cmd>lua require'telescope'.extensions.dap.configurations{}<CR>", {})
+    map('n', '<F2>', "<cmd>lua require('telescope').extensions.dap.commands{}<CR>", {})
+    map('n', '<F3>', "<cmd>lua require'telescope'.extensions.dap.list_breakpoints{}<CR>", {})
+    map('n', '<F4>', "<cmd>lua require('dap').set_breakpoint()<CR>", {})
+    map('n', '<F5>', "<cmd>lua require('dap').toggle_breakpoint()<CR>", {})
+
     map('n', '<F6>', "<cmd>lua require('dap').step_into()<CR>", {})
-    map('n', '<F7>', "<cmd>lua require('dap').step_out()<CR>", {})
-    map('n', '<F8>', "<cmd>lua require('dap').run_last()<CR>", {})
+    map('n', '<F7>', "<cmd>lua require('dap').continue()<CR>", {})
+    map('n', '<F8>', "<cmd>lua require('dap').step_over()<CR>", {})
+    map('n', '<F9>', "<cmd>lua require('dap').step_out()<CR>", {})
+
     map('n', '<F12>', "<cmd>lua require('dapui').toggle()<CR>", {})
 else
     -- 移動
