@@ -71,6 +71,3 @@ require('keymaps')
 -- autocmdの設定
 require('autocmd')
 
-if vim.fn.exists('g:vscode') == 0 then
-end
-
