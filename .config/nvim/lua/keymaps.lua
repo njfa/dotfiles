@@ -65,9 +65,9 @@ if vim.fn.exists("g:vscode") == 0 then
     -- タブ、バッファ操作
     map("n", "<leader>w", "<cmd>w<cr>", { silent = true })
     map("n", "<leader>q", "<cmd>q<cr>", { silent = true })
-    map("n", "<leader>Q", "<cmd>qa<cr>", { silent = true })
+    map("n", "<leader>Q", "<cmd>qa!<cr>", { silent = true })
     -- 単にbdeleteを実行すると、タブ中の空バッファを閉じたときにタブも一緒に閉じられてしまう
-    map("n", "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd<cr>", { silent = true })
+    map("n", "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", { silent = true })
     map("n", "<leader>D", "<Cmd>tabclose<CR>", { silent = true })
     map("n", "<leader>c", '<cmd>enew<cr>', { silent = true })
     map("n", "<leader>C", '<cmd>tabnew<cr>', { silent = true })
