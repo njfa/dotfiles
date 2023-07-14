@@ -30,6 +30,10 @@
                 "action": "prevTab"
             },
             "keys": "ctrl+shift+tab"
+        },
+        {
+            "command": "unbound",
+            "keys": "alt+enter"
         }
     ],
     "copyOnSelect": true,
