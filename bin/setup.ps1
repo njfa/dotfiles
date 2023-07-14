@@ -4,7 +4,8 @@ $MAJOR_VERSION = (Get-Host).Version.Major
 
 $DOTFILES = "$env:USERPROFILE\.dotfiles"
 $WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
-$WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal*_*\LocalState\
+$WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\
+$WINDOWS_TERMINAL_PREVIEW = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreView_*\LocalState\
 
 $HTTPS_PROXY = [System.Environment]::GetEnvironmentVariable("HTTPS_PROXY", "User")
 $HTTP_PROXY = [System.Environment]::GetEnvironmentVariable("HTTP_PROXY", "User")
@@ -41,14 +42,11 @@ function backup() {
 
     Write-Host "Back up $((Get-Item $SOURCE_PATH).Name)"
     Write-Host "  - Source directory: $((Get-Item $SOURCE_PATH).DirectoryName)"
-    if (Test-Path $SOURCE_PATH) {
-        Write-Host "  - Dest directory: $((Get-Item $DEST_PATH).DirectoryName)"
-    }
-    Write-Host -NoNewline "  - Dest filename: "
 
     if (-Not (Test-Path $DEST_PATH)) {
         Move-Item $SOURCE_PATH $DEST_PATH
-        Write-Host "$((Get-Item $DEST_PATH).Name)`r`n"
+        Write-Host "  - Dest directory: $((Get-Item $DEST_PATH).DirectoryName)"
+        Write-Host "  - Dest filename: $((Get-Item $DEST_PATH).Name)`r`n"
         return $DEST_PATH
     }
 
@@ -60,7 +58,8 @@ function backup() {
         $DEST_PATH = "${DEST_DIR}\${BASENAME}.${i}${EXT}"
         if (-Not (Test-Path $DEST_PATH)) {
             Move-Item $SOURCE_PATH $DEST_PATH
-            Write-Host "$((Get-Item $DEST_PATH).Name)`r`n"
+            Write-Host "  - Dest directory: $((Get-Item $DEST_PATH).DirectoryName)"
+            Write-Host "  - Dest filename: $((Get-Item $DEST_PATH).Name)`r`n"
             return $DEST_PATH
         }
     }
@@ -278,8 +277,8 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 } elseif (($mode -eq "wt") -Or ($mode -eq "windows-terminal")) {
 
     $SETTINGS = "$WINDOWS_TERMINAL\settings.json"
+    $PREVIEW_SETTINGS = "$WINDOWS_TERMINAL\settings.json"
     $NEW_SETTINGS = "$WINDOTFILES\WindowsTerminal\settings.$env:COMPUTERNAME.json"
-    $BACKUP = "$WINDOTFILES\WindowsTerminal\settings.$env:COMPUTERNAME.backup.json"
 
     if (-Not (isInstalledWindowsTerminal)) {
         Write-Host "Please install WindowsTerminal"
@@ -287,20 +286,31 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     } elseif (isSymbolicLink $SETTINGS) {
         Write-Host "$SETTINGS is already deployed"
         exit
-    } elseif (-Not (Test-Path $SETTINGS)) {
-        Write-Host "$SETTINGS doesn't exist"
+    } elseif ((-Not (Test-Path $SETTINGS)) -And (-Not (Test-Path $PREVIEW_SETTINGS))) {
+        Write-Host "$SETTINGS and $PREVIEW_SETTINGS doesn't exist"
         Write-Host "Please start WindowsTerminal"
         exit
     }
 
-    Write-Host "Deploy WindowsTerminal settings"
+    if (Test-Path $SETTINGS) {
+        Write-Host "Deploy WindowsTerminal settings"
+        $BACKUP = (backup $SETTINGS "$WINDOTFILES\WindowsTerminal\settings.$env:COMPUTERNAME.backup.json")
 
-    $BACKUP = (backup $SETTINGS $BACKUP)
+        $PROFILES = (Get-Content "${BACKUP}" -Encoding UTF8 | Select-String "\s*//" -NotMatch | ConvertFrom-Json).profiles.list | ConvertTo-Json
+        Get-Content $WINDOTFILES\WindowsTerminal\settings_base.json -Encoding UTF8 | ForEach-Object { $_ -replace """list"": \[\]", """list"": $PROFILES" } | Out-File -Encoding utf8 $NEW_SETTINGS
 
-    $PROFILES = (Get-Content "${BACKUP}" -Encoding UTF8 | Select-String "\s*//" -NotMatch | ConvertFrom-Json).profiles.list | ConvertTo-Json
-    Get-Content $WINDOTFILES\WindowsTerminal\settings_base.json -Encoding UTF8 | ForEach-Object { $_ -replace """list"": \[\]", """list"": $PROFILES" } | Out-File -Encoding utf8 $NEW_SETTINGS
+        deployNewSettings $NEW_SETTINGS $WINDOWS_TERMINAL settings.json
+    }
 
-    deployNewSettings $NEW_SETTINGS $WINDOWS_TERMINAL settings.json
+    if (Test-Path $PREVIEW_SETTINGS) {
+        Write-Host "Deploy WindowsTerminalPreview settings"
+        $BACKUP = (backup $PREVIEW_SETTINGS "$WINDOTFILES\WindowsTerminal\settings.preview.$env:COMPUTERNAME.backup.json")
+
+        $PROFILES = (Get-Content "${BACKUP}" -Encoding UTF8 | Select-String "\s*//" -NotMatch | ConvertFrom-Json).profiles.list | ConvertTo-Json
+        Get-Content $WINDOTFILES\WindowsTerminal\settings_base.json -Encoding UTF8 | ForEach-Object { $_ -replace """list"": \[\]", """list"": $PROFILES" } | Out-File -Encoding utf8 $NEW_SETTINGS
+
+        deployNewSettings $NEW_SETTINGS $WINDOWS_TERMINAL_PREVIEW settings.json
+    }
 
 } elseif (($mode -eq "vc") -Or ($mode -eq "vscode")) {
 
