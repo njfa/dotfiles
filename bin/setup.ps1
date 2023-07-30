@@ -166,10 +166,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     $PACKAGES = @(
         "bat"
         "fzf"
-        "googlechrome"
-        "msys2"
         "neovim"
-        "nodejs-lts"
         "vscode"
         "powertoys"
         "jq"
