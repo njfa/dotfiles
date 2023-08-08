@@ -23,4 +23,4 @@ fi
 
 python --version || exit 1
 pip --version || exit 1
-pip list --outdated | grep pip || pip install --upgrade pip
+pip install --upgrade pip
