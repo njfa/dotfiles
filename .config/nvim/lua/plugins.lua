@@ -66,7 +66,14 @@ return require('packer').startup(function(use)
         use {
             'folke/tokyonight.nvim',
             config = function()
-                vim.g.tokyonight_style = "storm"
+                require("tokyonight").setup({
+                  style = "night",
+                  styles = {
+                    functions = {}
+                  },
+                  sidebars = { "qf", "vista_kind", "terminal", "packer" },
+                })
+
                 vim.cmd("colorscheme tokyonight")
             end
         }
