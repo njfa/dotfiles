@@ -11,11 +11,11 @@ $HTTPS_PROXY = [System.Environment]::GetEnvironmentVariable("HTTPS_PROXY", "User
 $HTTP_PROXY = [System.Environment]::GetEnvironmentVariable("HTTP_PROXY", "User")
 
 if (-not [string]::IsNullOrEmpty($HTTPS_PROXY)) {
-    $proxy = New-Object System.Net.WebProxy $HTTPS_PROXY, $True
-    [System.Net.WebRequest]::DefaultWebProxy = $proxy
+    $myproxy = New-Object System.Net.WebProxy $HTTPS_PROXY, $True
+    [System.Net.WebRequest]::DefaultWebProxy = $myproxy
 } elseif (-not [string]::IsNullOrEmpty($HTTP_PROXY)) {
-    $proxy = New-Object System.Net.WebProxy $HTTP_PROXY, $True
-    [System.Net.WebRequest]::DefaultWebProxy = $proxy
+    $myproxy = New-Object System.Net.WebProxy $HTTP_PROXY, $True
+    [System.Net.WebRequest]::DefaultWebProxy = $myproxy
 }
 
 function isInstalledWindowsTerminal() {
@@ -189,12 +189,12 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     python -m pip install --upgrade $PIP3PACKAGES
 
     # rust
-    if (-Not (Get-Command lsd -errorAction SilentlyContinue)) {
-        cargo install lsd
-    }
-    if (-Not (Get-Command delta -errorAction SilentlyContinue)) {
-        cargo install git-delta
-    }
+    # if (-Not (Get-Command lsd -errorAction SilentlyContinue)) {
+    #     cargo install lsd
+    # }
+    # if (-Not (Get-Command delta -errorAction SilentlyContinue)) {
+    #     cargo install git-delta
+    # }
 
     if (-Not (Test-Path ("$DOTFILES"))) {
         git config --global core.autoCRLF false
@@ -268,7 +268,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         # Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
         # Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -l -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
         # Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w --fontlogos --fontawesome --powerline --powerlineextra -l -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
-        Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -l --careful -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
+        Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -c -l --careful -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
     }
 
 } elseif (($mode -eq "wt") -Or ($mode -eq "windows-terminal")) {
@@ -289,7 +289,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         exit
     }
 
-    if (Test-Path $SETTINGS) {
+    if ((Test-Path "$SETTINGS") -And (Test-Path "$WINDOWS_TERMINAL")) {
         Write-Host "Deploy WindowsTerminal settings"
         $BACKUP = (backup $SETTINGS "$WINDOTFILES\WindowsTerminal\settings.$env:COMPUTERNAME.backup.json")
 
@@ -299,14 +299,14 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         deployNewSettings $NEW_SETTINGS $WINDOWS_TERMINAL settings.json
     }
 
-    if (Test-Path $PREVIEW_SETTINGS) {
+    if ((Test-Path "$PREVIEW_SETTINGS") -And (Test-Path "$WINDOWS_TERMINAL_PREVIEW")) {
         Write-Host "Deploy WindowsTerminalPreview settings"
         $BACKUP = (backup $PREVIEW_SETTINGS "$WINDOTFILES\WindowsTerminal\settings.preview.$env:COMPUTERNAME.backup.json")
 
         $PROFILES = (Get-Content "${BACKUP}" -Encoding UTF8 | Select-String "\s*//" -NotMatch | ConvertFrom-Json).profiles.list | ConvertTo-Json
         Get-Content $WINDOTFILES\WindowsTerminal\settings_base.json -Encoding UTF8 | ForEach-Object { $_ -replace """list"": \[\]", """list"": $PROFILES" } | Out-File -Encoding utf8 $NEW_SETTINGS
 
-        deployNewSettings $NEW_SETTINGS $WINDOWS_TERMINAL_PREVIEW settings.json
+        deployNewSettings $NEW_SETTINGS "$WINDOWS_TERMINAL_PREVIEW" settings.json
     }
 
 } elseif (($mode -eq "vc") -Or ($mode -eq "vscode")) {
@@ -331,9 +331,8 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
 } elseif (($mode -eq "pf") -Or ($mode -eq "posh-profile")) {
 
-    $DEST_PATH = (dirname $PROFILE)
-
-    deployNewSettings "$WINDOTFILES\Microsoft.PowerShell_profile.ps1" $DEST_PATH Microsoft.PowerShell_profile.ps1
+    $DEST_PATH = (dirname "$PROFILE")
+    deployNewSettings "$WINDOTFILES\Microsoft.PowerShell_profile.ps1" "$DEST_PATH" Microsoft.PowerShell_profile.ps1
 
 } elseif (($mode -eq "dt") -Or ($mode -eq "dev-tools")) {
 
