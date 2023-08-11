@@ -1,15 +1,15 @@
-# # Windows Terminalで起動した時のみ適用する
-# if ($env:WT_PROFILE_ID) {
 Import-Module posh-git
-Import-Module oh-my-posh
-# Set-PoshPrompt -Theme bubbles
-# }
 
 # キーバインドをEmacs風に変更
 Set-PSReadlineOption -EditMode Emacs
 
 # インストールしたコマンドのエイリアスを設定
-if ($MAJOR_VERSION -gt 5) {
+if ($PSVersionTable.PSVersion.Major -gt 5) {
+    # fzfを使用する
+    Import-Module PSFzf
+    Enable-PsFzfAliases
+    Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+
     # Set-Alias ls lsd
     Set-Alias cat bat
 } else {
@@ -17,4 +17,4 @@ if ($MAJOR_VERSION -gt 5) {
     Set-Alias cat bat -O AllScope
 }
 
-Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradox.omp.json" | Invoke-Expression
