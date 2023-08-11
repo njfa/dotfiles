@@ -199,6 +199,10 @@ deploy() {
             symlink_cmd $DOTFILES_PATH/wsl.conf /etc/wsl.conf
         fi
     fi
+
+    header "Update git config"
+    git config --global core.editor "vim"
+    git config --global core.autoCRLF false
 }
 
 title
