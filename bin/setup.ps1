@@ -156,18 +156,21 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "gcc"
         "aria2"
         "lessmsi"
+        "vcredist2022"
         "dark"
         "7zip"
         "git"
         "python"
         "rust"
+        "ripgrep"
+        "pwsh"
+        "delta"
 )
 
     $PACKAGES = @(
         "bat"
         "fzf"
         "neovim"
-        "vscode"
         "powertoys"
         "jq"
         "zenhan"
@@ -197,25 +200,35 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     # }
 
     if (-Not (Test-Path ("$DOTFILES"))) {
+        git config --global core.editor "vim"
         git config --global core.autoCRLF false
+        git config --global core.pager delta
+        git config --global interactive.diffFilter "delta --color-only"
+        git config --global delta.side-by-side true
+        git config --global delta.line-numbers true
+        git config --global delta.navigate true
+        git config --global delta.light false
+        git config --global delta.true-color always
+        git config --global delta.syntax-theme Dracula
+        git config --global merge.conflictstyle diff3
+        git config --global diff.colorMoved default
+
         git clone https://github.com/njfa/dotfiles.git $DOTFILES
     }
 
     if (-Not (Get-Module -ListAvailable -Name PSFzf)) {
-        Install-Module PSFzf -Scope CurrentUser
+        Install-Module PSFzf -Scope CurrentUser -Force -SkipPublisherCheck
     }
 
     if (-Not (Get-Module -ListAvailable -Name posh-git)) {
-        Install-Module posh-git -Scope CurrentUser
+        Install-Module posh-git -Scope CurrentUser -Force -SkipPublisherCheck
     }
 
-    if (-Not (Get-Module -ListAvailable -Name oh-my-posh)) {
-        if ($MAJOR_VERSION -gt 2000 -Or $MAJOR_VERSION -le 5) {
-            Install-Module oh-my-posh -Scope CurrentUser
-        } else {
-            Install-Module oh-my-posh -Scope CurrentUser -AllowPrerelease
-        }
+    if (-Not (Get-Module -ListAvailable -Name PSReadLine)) {
+        Install-Module PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
     }
+
+    winget install JanDeDobbeleer.OhMyPosh -s winget
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic"))) {
         Write-Host "Download sarasa-gothic.7z"
@@ -226,20 +239,20 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\PlemolJP"))) {
         Write-Host "Download PlemolJP.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/PlemolJP/releases/download/v1.2.1/PlemolJP_NF_v1.2.1.zip", ".\PlemolJP.zip")
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/PlemolJP/releases/download/v1.2.1/PlemolJP_fonts_v1.2.1.zip", ".\PlemolJP.zip")
         7z x .\PlemolJP.zip -o"$env:USERPROFILE\font\PlemolJP"
         Remove-Item PlemolJP.zip
     }
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\UDEV"))) {
         Write-Host "Download UDEV.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.0.0/UDEVGothic_NF_v1.0.0.zip", ".\UDEV.zip")
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.0.0/UDEVGothic_fonts_v1.0.0.zip", ".\UDEV.zip")
         7z x .\UDEV.zip -o"$env:USERPROFILE\font\UDEV"
         Remove-Item UDEV.zip
     }
 
 
-} elseif (($mode -eq "nf") -Or ($mode -eq "nerd-fonts")) {
+} elseif ($mode -eq "fonts") {
 
     Write-Host "Install nerd-fonts"
 
@@ -271,7 +284,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -c -l --careful -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
     }
 
-} elseif (($mode -eq "wt") -Or ($mode -eq "windows-terminal")) {
+} elseif ($mode -eq "terminal") {
 
     $SETTINGS = "$WINDOWS_TERMINAL\settings.json"
     $PREVIEW_SETTINGS = "$WINDOWS_TERMINAL\settings.json"
@@ -309,7 +322,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         deployNewSettings $NEW_SETTINGS "$WINDOWS_TERMINAL_PREVIEW" settings.json
     }
 
-} elseif (($mode -eq "vc") -Or ($mode -eq "vscode")) {
+} elseif ($mode -eq "vscode") {
 
     $VSCODE_PATH = "$env:USERPROFILE\AppData\Roaming\Code\User"
     $SCOOP_VSCODE_PATH = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User"
@@ -325,16 +338,16 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Get-Content $env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions | ForEach-Object { code.cmd --install-extension $_ }
     }
 
-} elseif (($mode -eq "wc") -Or ($mode -eq "wsl-config")) {
+} elseif ($mode -eq "wslconfig") {
 
-    deployNewSettings $WINDOTFILES\.wslconfig $env:USERPROFILE .wslconfig
+    deployNewSettings $WINDOTFILES\.wslcofontsig $env:USERPROFILE .wslconfig
 
-} elseif (($mode -eq "pf") -Or ($mode -eq "posh-profile")) {
+} elseif ($mode -eq "profile") {
 
-    $DEST_PATH = (dirname "$PROFILE")
-    deployNewSettings "$WINDOTFILES\Microsoft.PowerShell_profile.ps1" "$DEST_PATH" Microsoft.PowerShell_profile.ps1
+    $DEST_PATH = (Split-Path $PROFILE -Parent)
+    deployNewSettings "$WINDOTFILES\Microsoft.PowerShell_profile.ps1" $DEST_PATH Microsoft.PowerShell_profile.ps1
 
-} elseif (($mode -eq "dt") -Or ($mode -eq "dev-tools")) {
+} elseif ($mode -eq "tools") {
 
     cargo install hexyl tokei
 
@@ -343,12 +356,12 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     Write-Host "Usage: setup.ps1 [command]"
     Write-Host ""
     Write-Host "Commands:"
-    Write-Host "    init        Initialize commands."
-    Write-Host "    nf          Install nerd-fonts"
-    Write-Host "    vc          Deploy vscode settings"
-    Write-Host "    wt          Deploy windows terminal settings"
-    Write-Host "    wc          Deploy .wslconfig"
-    Write-Host "    pf          Initialize posh-profile"
-    Write-Host "    dt          Install dev-tools"
+    Write-Host "    init            Initialize commands."
+    Write-Host "    fonts           Install nerd-fonts"
+    Write-Host "    vscode          Deploy vscode settings"
+    Write-Host "    terminal        Deploy windows terminal settings"
+    Write-Host "    wslconfig       Deploy .wslconfig"
+    Write-Host "    profile         Initialize posh-profile"
+    Write-Host "    tools           Install dev-tools"
 
 }
