@@ -6,7 +6,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 autoload -Uz add-zsh-hook
-autoload -Uz compinit && compinit
 
 # emacs風キーバインド
 bindkey -e
@@ -371,3 +370,7 @@ zinit load zsh-users/zsh-syntax-highlighting #"ssh"と入力する際にフリ�
 
 # 環境固有の情報を読む
 [ -f ~/.zshrc_local ] && source ~/.zshrc_local
+
+fpath=($HOME/.zsh/completions $fpath)
+
+autoload -Uz compinit && compinit
