@@ -7,6 +7,8 @@ if [ -n "$(command -v zsh)" ]; then
     echo "zsh is installed. required version: $ZSH_VERSION. now version: $version"
 
     [ "$version" = "$ZSH_VERSION" ] && is_installed=true
+else
+    echo "zsh is not installed. required version: $ZSH_VERSION."
 fi
 
 # zshのインストール
