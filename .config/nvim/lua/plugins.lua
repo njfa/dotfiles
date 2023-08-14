@@ -26,7 +26,19 @@ return require('packer').startup(function(use)
     -- 単語や演算子を反対の意味に切り替える
     use  'AndrewRadev/switch.vim'
     -- 様々ものをincrement/decrementする
-    use 'monaqa/dial.nvim'
+    use {
+        'monaqa/dial.nvim',
+        config = function()
+            map("n", "<C-a>", require("dial.map").inc_normal(),   {silent = true})
+            map("n", "<C-x>", require("dial.map").dec_normal(),   {silent = true})
+            map("n", "g<C-a>", require("dial.map").inc_gnormal(), {silent = true})
+            map("n", "g<C-x>", require("dial.map").dec_gnormal(), {silent = true})
+            map("v", "<C-a>", require("dial.map").inc_visual(),   {silent = true})
+            map("v", "<C-x>", require("dial.map").dec_visual(),   {silent = true})
+            map("v", "g<C-a>", require("dial.map").inc_gvisual(), {silent = true})
+            map("v", "g<C-x>", require("dial.map").dec_gvisual(), {silent = true})
+        end
+    }
     -- コメント機能の拡張
     use 'tpope/vim-commentary'
     -- textobjectの拡張
@@ -554,6 +566,14 @@ return require('packer').startup(function(use)
         }
     end
 
+    use {
+        'mattn/vim-sonictemplate',
+        config = function ()
+            vim.g.sonictemplate_vim_template_dir = (
+                "$HOME/.config/nvim/template"
+            )
+        end
+    }
 
     -- 補完の設定
     local complete = require('plugins/complete')

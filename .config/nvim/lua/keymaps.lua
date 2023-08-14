@@ -102,14 +102,6 @@ if vim.fn.exists("g:vscode") == 0 then
     -- Switch
     map("n", "gt", "<cmd>Switch<cr>")
     map("x", "gt", "<cmd>Switch<cr>")
-    map("n", "<C-a>", require("dial.map").inc_normal(),   {silent = true})
-    map("n", "<C-x>", require("dial.map").dec_normal(),   {silent = true})
-    map("n", "g<C-a>", require("dial.map").inc_gnormal(), {silent = true})
-    map("n", "g<C-x>", require("dial.map").dec_gnormal(), {silent = true})
-    map("v", "<C-a>", require("dial.map").inc_visual(),   {silent = true})
-    map("v", "<C-x>", require("dial.map").dec_visual(),   {silent = true})
-    map("v", "g<C-a>", require("dial.map").inc_gvisual(), {silent = true})
-    map("v", "g<C-x>", require("dial.map").dec_gvisual(), {silent = true})
 
     -- 検索
     map('n', '*', [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]])
@@ -185,10 +177,10 @@ if vim.fn.exists("g:vscode") == 0 then
 
     -- lspsaga
     my_lsp_on_attach = function(client, bufnr)
-        buf_map(bufnr, "n", "gs", "<cmd>lua require('lspsaga.provider').lsp_finder()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gh", "<cmd>lua vim.lsp.buf.signature_help()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gr", "<cmd>lua require('lspsaga.rename').rename()<CR>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gs", "<cmd>Lspsaga lsp_finder<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gh", "<cmd>lua vim.lsp.buf.signature_help()<cr>", {silent = true, noremap = true})
+        buf_map(bufnr, "n", "gr", "<cmd>lua Lspsaga rename<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "<Tab>", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
         buf_map(bufnr, "x", "<Tab>", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
         buf_map(bufnr, "n", "K", "<cmd>lua require('lsp_signature').toggle_float_win()<CR>", {silent = true, noremap = true})
