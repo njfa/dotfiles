@@ -32,6 +32,3 @@ git config --global delta.syntax-theme Dracula
 git config --global merge.conflictstyle diff3
 git config --global diff.colorMoved default
 
-if [ -n "$(command -v zsh)" ]; then
-    echo "Please exec \`sed -i \"s|'delta'.*|'delta' '_delta'|g\" ~/.zcompdump && autoload -Uz compinit && compinit\`"
-fi
