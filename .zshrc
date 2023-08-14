@@ -373,4 +373,7 @@ zinit load zsh-users/zsh-syntax-highlighting #"ssh"と入力する際にフリ�
 
 fpath=($HOME/.zsh/completions $fpath)
 
+# deltaコマンドで使用する補完関数が_deltaであることを明示しないと_sccsになってしまう
+[ -f $HOME/.zsh/completions/_delta ] && (( ${+_comps} )) && _comps[delta]=_delta
+
 autoload -Uz compinit && compinit
