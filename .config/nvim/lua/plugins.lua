@@ -33,7 +33,8 @@ return require('packer').startup(function(use)
     use 'wellle/targets.vim'
     -- アスタリスクを拡張
     use 'haya14busa/vim-asterisk'
-    use({
+
+    use {
         "gbprod/substitute.nvim",
         config = function()
             require("substitute").setup({
@@ -42,7 +43,7 @@ return require('packer').startup(function(use)
                 -- refer to the configuration section below
             })
         end
-    })
+    }
     -- 括弧やクォートの置換機能
     use {
         'machakann/vim-sandwich',
@@ -162,13 +163,12 @@ return require('packer').startup(function(use)
             end
         }
         -- ステータスラインをリッチな見た目にする
-        use({
+        use {
             "rebelot/heirline.nvim",
             config = function()
-                local mod = require('plugins/heirline')
-                mod.load()
+                require('plugins/heirline').load()
             end
-        })
+        }
 
         -- バッファーライン
         use {
@@ -180,8 +180,7 @@ return require('packer').startup(function(use)
                 'tiagovla/scope.nvim'
             },
             config = function()
-                local mod = require('plugins/bufferline')
-                mod.load()
+                require('plugins/bufferline').load()
             end
         }
         -- 通知をリッチな見た目にする
@@ -204,8 +203,7 @@ return require('packer').startup(function(use)
         use {
             "folke/which-key.nvim",
             config = function()
-                local mod = require('plugins/which-key')
-                mod.load()
+                require('plugins/which-key').load()
             end
         }
 
@@ -299,7 +297,7 @@ return require('packer').startup(function(use)
                     },
                     extensions = {
                         frecency = {
-                            show_scores = false,
+                            show_scores = true,
                             ignore_patterns = {
                                 "node_modules",
                                 ".git",
@@ -546,6 +544,14 @@ return require('packer').startup(function(use)
         -- Debuggerの設定
         local dap = require('plugins/dap')
         dap.load(use)
+
+        -- テーブル作成用のモードを追加
+        use {
+            'dhruvasagar/vim-table-mode',
+            config = function ()
+                vim.g.table_mode_corner='|'
+            end
+        }
     end
 
 
