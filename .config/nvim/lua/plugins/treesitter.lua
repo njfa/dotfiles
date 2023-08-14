@@ -111,6 +111,18 @@ function M.load(use)
             })
         end
     }
+
+    -- -- タグ入力時の補助
+    use {
+        "windwp/nvim-ts-autotag",
+        opt = true,
+        requires = 'nvim-treesitter/nvim-treesitter',
+        config = function()
+            require("nvim-ts-autotag").setup({
+                filetypes = { "html" , "xml", "markdown" },
+            })
+        end
+    }
 end
 
 return M;
