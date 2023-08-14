@@ -594,6 +594,8 @@ return require('packer').startup(function(use)
     local html = require('plugins/languages/html')
     html.load(use)
 
+    use 'hashivim/vim-terraform'
+
     -- local java = require('plugins/languages/java')
     -- java.load(use)
 
