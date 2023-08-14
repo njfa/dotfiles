@@ -2,39 +2,26 @@ local M = {}
 
 function M.load()
     -- which-key.nvimの表示間隔を狭める
+    vim.opt.timeout = true
     vim.opt.timeoutlen = 200
     local wk = require("which-key")
     wk.register({
         ["<leader>"] = {
-            a = { name = "Toggle aerial" },
-            b = { name = "Telescope buffers" },
-            g = { name = "Telescope live_grep ignore" },
-            G = { name = "Telescope live_grep no-ingnore" },
-            f = { name = "Telescope find_files ignore" },
-            F = { name = "Telescope find_files no-ignore" },
-            w = { name = "Save buffer" },
-            u = { name = "UndoTree" },
-            c = { name = "Create buffer" },
-            C = { name = "Create tab" },
-            d = { name = "Close buffer" },
-            D = { name = "Close tab" },
-            p = { name = "Trouble" },
-            q = { name = "Close window" },
-            Q = { name = "Close all window" },
-            r = { name = "Telescope frecency" },
-            s = { name = "Toggle sidebar" },
-            ["/"] = { name = "Telescope search current buffer" },
-            [":"] = { name = "Telescope command history" },
-        },
-        ["g"] = {
-            ["<Tab>"] = { name = "Lspsaga code_action" },
-        },
+            f = { "<Cmd>Telescope find_files find_command=rg,--no-ignore,--hidden,--files<CR>", "Telescope find_files" },
+            F = { ":Telescope find_files find_command=rg,--no-ignore,--hidden,--files search_file=", ":Telescope find_files search_file=" },
+            g = { "<Cmd>Telescope live_grep find_command=rg,--no-ignore,--hidden,--files<CR>", "Telescope live_grep" },
+            G = { ":Telescope live_grep find_command=rg,--no-ignore,--hidden,--files glob_pattern=", ":Telescope live_grep glob_pattern=" },
+            c = { '<cmd>enew<cr>', "New Buffer" },
+            C = { '<cmd>tabnew<cr>', "New Tab" },
+            d = { "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", "Close buffer" },
+            D = { "<Cmd>tabclose<CR>", "Close Tab" },
+        }
     })
-    wk.setup {
-        -- your configuration comes here
-        -- or leave it empty to use the default settings
-        -- refer to the configuration section below
-    }
+    -- wk.setup {
+    --     -- your configuration comes here
+    --     -- or leave it empty to use the default settings
+    --     -- refer to the configuration section below
+    -- }
 end
 
 return M;
