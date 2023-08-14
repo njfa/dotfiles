@@ -36,8 +36,5 @@ settings.*.json
 # Backup files
 *.backup
 
-# Temp dir
-tmp
-
 # nvim diagnostics
 .luarc.json
