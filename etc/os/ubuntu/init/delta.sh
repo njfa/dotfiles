@@ -15,7 +15,7 @@ fi
 # deltaのインストール
 if ! $is_installed; then
     arch=$(dpkg --print-architecture)
-    curl -Lo git-delta.deb "https://github.com/dandavison/delta/releases/download/$DELTA_VERSION/git-delta_$DELTA_VERSION_$arch.deb"
+    curl -Lo git-delta.deb "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/git-delta_${DELTA_VERSION}_${arch}.deb"
     sudo dpkg -i git-delta.deb
     rm git-delta.deb
 fi
