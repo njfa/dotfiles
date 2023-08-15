@@ -301,7 +301,8 @@ return require('packer').startup(function(use)
                             '--column',
                             '--smart-case',
                             '--no-ignore',
-                            '--hidden'
+                            '--hidden',
+                            '--trim'
                         },
                         file_ignore_patterns = {
                             "node_modules",
