@@ -334,6 +334,8 @@ alias ....='cd ../../..'
 
 alias vi='nvim'
 alias vim='nvim'
+alias vimdiff='nvim -d'
+alias view='nvim -R'
 alias code='code.sh'
 alias fd='fdfind'
 
