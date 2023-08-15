@@ -46,9 +46,9 @@ map("x", "<C-x>", "<C-x>gv")
 if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
     -- 隠しファイルも検索対象に含めるためにrgを利用する
-    map("n", "<leader>f", "<Cmd>lua find_files_from_project_git_root( { find_command={\"rg,--no-ignore,--hidden,--files\"} )<CR>")
+    map("n", "<leader>f", "<Cmd>lua find_files_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"} } )<CR>")
     map("n", "<leader>F", ":lua find_files_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"}, search_file=\"\"})<left><left><left>")
-    map("n", "<leader>g", "<Cmd>lua live_grep_from_project_git_root( { find_command={\"rg,--no-ignore,--hidden,--files\"} )<CR>")
+    map("n", "<leader>g", "<Cmd>lua live_grep_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"} } )<CR>")
     map("n", "<leader>G", ":lua live_grep_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"}, glob_pattern=\"\"})<left><left><left>")
 
     map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")

@@ -7,10 +7,11 @@ function M.load()
     local wk = require("which-key")
     wk.register({
         ["<leader>"] = {
-            f = { "<Cmd>Telescope find_files find_command=rg,--no-ignore,--hidden,--files<CR>", "Telescope find_files" },
-            F = { ":Telescope find_files find_command=rg,--no-ignore,--hidden,--files search_file=", ":Telescope find_files search_file=" },
-            g = { "<Cmd>Telescope live_grep find_command=rg,--no-ignore,--hidden,--files<CR>", "Telescope live_grep" },
-            G = { ":Telescope live_grep find_command=rg,--no-ignore,--hidden,--files glob_pattern=", ":Telescope live_grep glob_pattern=" },
+            f = "Telescope find_files",
+            F = "Telescope find_files search_file=<input>",
+            g = "Telescope live_grep",
+            G = "Telescope live_grep search_file=<input>",
+            r = "Telescope frecency",
             c = { '<cmd>enew<cr>', "New Buffer" },
             C = { '<cmd>tabnew<cr>', "New Tab" },
             d = { "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", "Close buffer" },
