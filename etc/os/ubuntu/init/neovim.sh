@@ -34,7 +34,6 @@ else
 fi
 
 is_installed=false
-is_downloaded=false
 
 # ダウンロード先のディレクトリを生成
 [ ! -d "$HOME/.nvim" ] && mkdir ~/.nvim
