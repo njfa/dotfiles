@@ -200,6 +200,7 @@ return require('packer').startup(function(use)
         -- nvim-lspの進捗の表示を変更する
         use {
             'j-hui/fidget.nvim',
+            tag = 'legacy',
             config = function()
                 require('fidget').setup()
             end
