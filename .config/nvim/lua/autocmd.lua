@@ -34,17 +34,16 @@ vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 
 -- lspsagaのUI上でESCを使えるようにする
 vim.api.nvim_create_autocmd({"FileType"}, {
-    pattern = {"LspsagaFinder"},
+    pattern = {"sagafinder"},
     callback = function()
-        buf_map(0, 'n', "<Esc>", "<cmd>lua require'lspsaga.provider'.close_lsp_finder_window()<cr>", { noremap = true })
+        buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
     end,
 })
 
 vim.api.nvim_create_autocmd({"FileType"}, {
-    pattern = {"LspsagaHover", "LspsagaCodeAction", "LspsagaRename" },
+    pattern = {"saga_codeaction", "sagarename" },
     callback = function()
         buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
-        buf_map(0, 'n', "q", "<cmd>q<cr>", { noremap = true })
     end,
 })
 
