@@ -18,15 +18,17 @@ function map(mode, lhs, rhs, opts)
     if opts then
         options = vim.tbl_extend("force", options, opts)
     end
-    vim.api.nvim_set_keymap(mode, lhs, rhs, options)
+    vim.keymap.set(mode, lhs, rhs, options)
+    -- vim.api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
 function buf_map(num, mode, lhs, rhs, opts)
-    local options = { noremap = true, silent = true }
+    local options = { noremap = true, silent = true, buffer = num }
     if opts then
         options = vim.tbl_extend("force", options, opts)
     end
-    vim.api.nvim_buf_set_keymap(num, mode, lhs, rhs, options)
+    vim.keymap.set(mode, lhs, rhs, options)
+    -- vim.api.nvim_buf_set_keymap(num, mode, lhs, rhs, options)
 end
 
 function lcd_current_workspace()
