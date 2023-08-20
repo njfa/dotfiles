@@ -53,7 +53,8 @@ if vim.fn.exists("g:vscode") == 0 then
 
     map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
-    map("n", "<leader>b", "<Cmd>Telescope buffers<CR>")
+    map("n", "<leader>b", "<Cmd>BufferLinePick<CR>")
+    map("n", "<leader>B", "<Cmd>Telescope buffers<CR>")
     -- map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
     map("n", "<leader>p", "<Cmd>Trouble<CR>")
     map("n", "<leader>td", "<Cmd>TodoTelescope<CR>")
@@ -64,8 +65,10 @@ if vim.fn.exists("g:vscode") == 0 then
 
     -- タブ、バッファ操作
     map("n", "<leader>w", "<cmd>w<cr>", { silent = true })
-    map("n", "<leader>q", "<cmd>q<cr>", { silent = true })
-    map("n", "<leader>Q", "<cmd>qa!<cr>", { silent = true })
+    map("n", "<leader>qq", "<cmd>q<cr>", { silent = true })
+    map("n", "<leader>qh", "<cmd>BufferLineCloseLeft<cr>", { silent = true })
+    map("n", "<leader>ql", "<cmd>BufferLineCloseRight<cr>", { silent = true })
+    map("n", "<leader>qa", "<cmd>qa!<cr>", { silent = true })
     -- 単にbdeleteを実行すると、タブ中の空バッファを閉じたときにタブも一緒に閉じられてしまう
     map("n", "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", { silent = true })
     map("n", "<leader>D", "<Cmd>tabclose<CR>", { silent = true })
@@ -73,8 +76,10 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>C", '<cmd>tabnew<cr>', { silent = true })
     map("n", "<C-p>", '<cmd>tabp<cr>', { silent = true })
     map("n", "<C-n>", '<cmd>tabn<cr>', { silent = true })
-    map("n", "<C-h>", "<cmd>bp<cr>", { silent = true })
-    map("n", "<C-l>", "<cmd>bn<cr>", { silent = true })
+    -- map("n", "<C-h>", "<cmd>bp<cr>", { silent = true })
+    -- map("n", "<C-l>", "<cmd>bn<cr>", { silent = true })
+    map("n", "<C-h>", "<cmd>BufferLineCyclePrev<cr>", { silent = true })
+    map("n", "<C-l>", "<cmd>BufferLineCycleNext<cr>", { silent = true })
 
     -- undotree
     map("n", "<leader>u", "<cmd>UndotreeToggle<cr>")
@@ -137,8 +142,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map('x', 'm', ":lua require('tsht').nodes()<cr>", {})
 
     -- 編集
-    map("n", "R", "<cmd>lua require'substitute'.operator()<cr>", { noremap = true })
-    map("x", "R", "<cmd>lua require'substitute'.visual()<cr>", { noremap = true })
+    map("n", "R", "<cmd>lua require'substitute'.operator()<cr>", {})
+    map("x", "R", "<cmd>lua require'substitute'.visual()<cr>", {})
     map('n', 'g<Tab>', "<cmd>TableFormat<cr>", {})
     map('x', 'g<Tab>', "<cmd>TableFormat<cr>", {})
 
@@ -147,50 +152,55 @@ if vim.fn.exists("g:vscode") == 0 then
     vim.api.nvim_create_autocmd({"FileType"}, {
         pattern = {"fern"},
         callback = function()
-            buf_map(0, 'n', 'r', [[<Plug>(fern-action-rename)]], { noremap = true })
-            buf_map(0, 'n', 'R', [[<Plug>(fern-action-remove)]], { noremap = true })
+            buf_map(0, 'n', 'r', [[<Plug>(fern-action-rename)]], {})
+            buf_map(0, 'n', 'R', [[<Plug>(fern-action-remove)]], {})
 
             -- Fern上のディレクトリ移動時にルートディレクトリを変更する
-            buf_map(0, 'n', [[<Plug>(fern-my-enter-and-tcd)]], [[<Plug>(fern-action-open-or-enter)<Plug>(fern-wait)<Plug>(fern-action-tcd:root)]], { noremap = true })
-            buf_map(0, 'n', [[<Plug>(fern-my-leave-and-tcd)]], [[<Plug>(fern-action-leave)<Plug>(fern-wait)<Plug>(fern-action-tcd:root)]], { noremap = true })
-            buf_map(0, 'n', '<CR>', [[<Plug>(fern-my-enter-and-tcd)]], { noremap = true })
-            buf_map(0, 'n', '<BS>', [[<Plug>(fern-my-leave-and-tcd)]], { noremap = true })
-            buf_map(0, 'n', '<C-H>', [[<Plug>(fern-my-leave-and-tcd)]], { noremap = true })
+            buf_map(0, 'n', [[<Plug>(fern-my-enter-and-tcd)]], [[<Plug>(fern-action-open-or-enter)<Plug>(fern-wait)<Plug>(fern-action-tcd:root)]], {})
+            buf_map(0, 'n', [[<Plug>(fern-my-leave-and-tcd)]], [[<Plug>(fern-action-leave)<Plug>(fern-wait)<Plug>(fern-action-tcd:root)]], {})
+            buf_map(0, 'n', '<CR>', [[<Plug>(fern-my-enter-and-tcd)]], {})
+            buf_map(0, 'n', '<BS>', [[<Plug>(fern-my-leave-and-tcd)]], {})
+            buf_map(0, 'n', '<C-H>', [[<Plug>(fern-my-leave-and-tcd)]], {})
 
             -- プレビューする
-            -- buf_map(0, 'n', [[<Plug>(fern-my-preview-or-nop)]], [[fern#smart#leaf("<Plug>(fern-action-open:edit)<C-w>p", "")]], { noremap = true, expr = true })
-            -- buf_map(0, 'n', 'j', [[fern#smart#drawer("j<Plug>(fern-my-preview-or-nop)", "j")]], { noremap = true, expr = true })
-            -- buf_map(0, 'n', 'k', [[fern#smart#drawer("k<Plug>(fern-my-preview-or-nop)", "k")]], { noremap = true, expr = true })
-            buf_map(0, 'n', [[<Plug>(fern-quit-or-close-preview)]], [[fern_preview#smart_preview("<Plug>(fern-action-preview:close)", ":q<CR>")]], { noremap = true, expr = true })
-            buf_map(0, 'n', 'q', [[<Plug>(fern-quit-or-close-preview)]], { noremap = true })
-            buf_map(0, 'n', '<Esc>', [[<Plug>(fern-quit-or-close-preview)]], { noremap = true })
-            buf_map(0, 'n', 'p', [[<Plug>(fern-action-preview:auto:toggle)]], { noremap = true, silent = true })
+            -- buf_map(0, 'n', [[<Plug>(fern-my-preview-or-nop)]], [[fern#smart#leaf("<Plug>(fern-action-open:edit)<C-w>p", "")]], { expr = true })
+            -- buf_map(0, 'n', 'j', [[fern#smart#drawer("j<Plug>(fern-my-preview-or-nop)", "j")]], { expr = true })
+            -- buf_map(0, 'n', 'k', [[fern#smart#drawer("k<Plug>(fern-my-preview-or-nop)", "k")]], { expr = true })
+            buf_map(0, 'n', [[<Plug>(fern-quit-or-close-preview)]], [[fern_preview#smart_preview("<Plug>(fern-action-preview:close)", ":q<CR>")]], { expr = true })
+            buf_map(0, 'n', 'q', [[<Plug>(fern-quit-or-close-preview)]], {})
+            buf_map(0, 'n', '<Esc>', [[<Plug>(fern-quit-or-close-preview)]], {})
+            buf_map(0, 'n', 'p', [[<Plug>(fern-action-preview:auto:toggle)]], {})
 
-            buf_map(0, 'n', [[<Plug>(fern-preview-down-or-page-down)]], [[fern_preview#smart_preview("<Plug>(fern-action-preview:scroll:down:half)", "<C-d>")]], { noremap = true, expr = true })
-            buf_map(0, 'n', [[<Plug>(fern-preview-up-or-page-up)]], [[fern_preview#smart_preview("<Plug>(fern-action-preview:scroll:up:half)", "<C-u>")]], { noremap = true, expr = true })
-            buf_map(0, 'n', '<C-d>', [[<Plug>(fern-preview-down-or-page-down)]], { noremap = true, silent = true })
-            buf_map(0, 'n', '<C-u>', [[<Plug>(fern-preview-up-or-page-up)]], { noremap = true, silent = true })
+            buf_map(0, 'n', [[<Plug>(fern-preview-down-or-page-down)]], [[fern_preview#smart_preview("<Plug>(fern-action-preview:scroll:down:half)", "<C-d>")]], { expr = true })
+            buf_map(0, 'n', [[<Plug>(fern-preview-up-or-page-up)]], [[fern_preview#smart_preview("<Plug>(fern-action-preview:scroll:up:half)", "<C-u>")]], { expr = true })
+            buf_map(0, 'n', '<C-d>', [[<Plug>(fern-preview-down-or-page-down)]], {})
+            buf_map(0, 'n', '<C-u>', [[<Plug>(fern-preview-up-or-page-up)]], {})
 
-            buf_map(0, "n", "<C-j>", '<cmd>tabp<cr>', { silent = true })
-            buf_map(0, "n", "<C-k>", '<cmd>tabn<cr>', { silent = true })
+            buf_map(0, "n", "<C-j>", '<cmd>tabp<cr>', {})
+            buf_map(0, "n", "<C-k>", '<cmd>tabn<cr>', {})
         end,
     })
 
     -- lspsaga
-    my_lsp_on_attach = function(client, bufnr)
-        buf_map(bufnr, "n", "gs", "<cmd>Lspsaga lsp_finder<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gi", "<cmd>lua vim.lsp.buf.implementation()<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gh", "<cmd>lua vim.lsp.buf.signature_help()<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gr", "<cmd>lua Lspsaga rename<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "<Tab>", "<cmd>lua require('lspsaga.codeaction').code_action()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "x", "<Tab>", "<cmd>Lspsaga range_code_action<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "K", "<cmd>lua require('lsp_signature').toggle_float_win()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "gp", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {silent = true, noremap = true})
+    on_attach_lsp = function(_, bufnr)
+        buf_map(bufnr, "n", "gf", "<cmd>Lspsaga finder<cr>", {})
+        buf_map(bufnr, "n", "gi", "<cmd>Lspsaga show_buf_diagnostics<cr>", {})
+        buf_map(bufnr, "n", "gd", "<cmd>Lspsaga peek_definition<cr>", {})
+        buf_map(bufnr, "n", "gD", "<cmd>Lspsaga goto_definition<cr>", {})
+        buf_map(bufnr, "n", "go", "<cmd>Lspsaga outline<cr>", {})
+        buf_map(bufnr, "n", "gt", "<cmd>Lspsaga peek_type_definition<cr>", {})
+        buf_map(bufnr, "n", "gT", "<cmd>Lspsaga goto_type_definition<cr>", {})
+        buf_map(bufnr, "n", "gh", "<cmd>lua require('lsp_signature').toggle_float_win()<cr>", {})
+        buf_map(bufnr, "n", "gr", "<cmd>Lspsaga rename<cr>", {})
+        buf_map(bufnr, "n", "<Tab>", "<cmd>Lspsaga code_action<cr>", {})
+        buf_map(bufnr, "x", "<Tab>", "<cmd>Lspsaga range_code_action<cr>", {})
+        buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<CR>", {})
+        -- buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {})
+        buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {})
+        buf_map(bufnr, "n", "gp", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {})
         -- buf_map(bufnr, "n", "gd", "<cmd>lua require('lspsaga.provider').preview_definition()<CR>", {silent = true, noremap = true})
-        buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
-        buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
+        -- buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
+        -- buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
 
         require("lsp_signature").on_attach({
             bind = true,
@@ -199,12 +209,12 @@ if vim.fn.exists("g:vscode") == 0 then
             }
         }, bufnr)
 
-        if client.server_capabilities.documentSymbolProvider then
-            require("nvim-navic").attach(client, bufnr)
-        end
+        -- if client.server_capabilities.documentSymbolProvider then
+        --     require("nvim-navic").attach(client, bufnr)
+        -- end
     end
 
-    my_aerial_on_attach = function(bufnr)
+    on_attach_aerial = function(bufnr)
         -- Toggle the aerial window with <leader>a
         buf_map(bufnr, 'n', '<leader>a', '<cmd>AerialToggle!<CR>', {})
         -- Jump forwards/backwards with '{' and '}'

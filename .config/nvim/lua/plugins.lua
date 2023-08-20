@@ -74,10 +74,20 @@ return require('packer').startup(function(use)
         -- 外観
         -- カラースキーム
 
-        use 'relastle/bluewery.vim'
-        use "EdenEast/nightfox.nvim"
+        use {
+            'petertriho/nvim-scrollbar',
+            'kevinhwang91/nvim-hlslens',
+            'nvimdev/indentmini.nvim'
+        }
         use {
             'folke/tokyonight.nvim',
+            requires = {
+                'petertriho/nvim-scrollbar',
+                'kevinhwang91/nvim-hlslens',
+                'nvimdev/indentmini.nvim',
+                'akinsho/bufferline.nvim',
+            },
+            opt = false,
             config = function()
                 require("tokyonight").setup({
                   style = "night",
@@ -87,13 +97,26 @@ return require('packer').startup(function(use)
                   sidebars = { "qf", "vista_kind", "terminal", "packer" },
                 })
 
-                vim.cmd("colorscheme tokyonight")
-            end
-        }
+                local colors = require("tokyonight.colors").setup()
 
-        use {
-            'nvimdev/indentmini.nvim',
-            config = function()
+                require("scrollbar").setup({
+                    handle = {
+                        color = colors.bg_highlight,
+                    },
+                    marks = {
+                        Search = { color = colors.orange },
+                        Error = { color = colors.error },
+                        Warn = { color = colors.warning },
+                        Info = { color = colors.info },
+                        Hint = { color = colors.hint },
+                        Misc = { color = colors.purple },
+                    }
+                })
+
+                -- scrollbarに検索がヒットした箇所を表示する
+                require("scrollbar.handlers.search").setup()
+
+                -- インデントラインの色を設定する
                 require("indentmini").setup({
                     char = "|",
                     exclude = {
@@ -102,9 +125,10 @@ return require('packer').startup(function(use)
                     }
                 })
 
+                vim.cmd.colorscheme("tokyonight")
                 -- 薄い色に変更
                 vim.cmd.highlight("IndentLine guifg=#2b3251")
-            end
+            end,
         }
 
         -- ファイラー
@@ -148,49 +172,49 @@ return require('packer').startup(function(use)
         }
 
         -- 現在カーソルがあたっている関数を表示する
-        use {
-            "SmiteshP/nvim-navic",
-            requires = "neovim/nvim-lspconfig",
-            config = function()
-                local navic = require("nvim-navic")
-                navic.setup {
-                    icons = {
-                        File          = " ",
-                        Module        = " ",
-                        Namespace     = " ",
-                        Package       = " ",
-                        Class         = " ",
-                        Method        = " ",
-                        Property      = " ",
-                        Field         = " ",
-                        Constructor   = " ",
-                        Enum          = "練",
-                        Interface     = "練",
-                        Function      = " ",
-                        Variable      = " ",
-                        Constant      = " ",
-                        String        = " ",
-                        Number        = " ",
-                        Boolean       = "◩ ",
-                        Array         = " ",
-                        Object        = " ",
-                        Key           = " ",
-                        Null          = "ﳠ ",
-                        EnumMember    = " ",
-                        Struct        = " ",
-                        Event         = " ",
-                        Operator      = " ",
-                        TypeParameter = " ",
-                    },
-                    highlight = true,
-                    separator = "  ",
-                    depth_limit = 0,
-                    depth_limit_indicator = "..",
-                }
+        -- use {
+        --     "SmiteshP/nvim-navic",
+        --     requires = "neovim/nvim-lspconfig",
+        --     config = function()
+        --         local navic = require("nvim-navic")
+        --         navic.setup {
+        --             icons = {
+        --                 File          = " ",
+        --                 Module        = " ",
+        --                 Namespace     = " ",
+        --                 Package       = " ",
+        --                 Class         = " ",
+        --                 Method        = " ",
+        --                 Property      = " ",
+        --                 Field         = " ",
+        --                 Constructor   = " ",
+        --                 Enum          = "練",
+        --                 Interface     = "練",
+        --                 Function      = " ",
+        --                 Variable      = " ",
+        --                 Constant      = " ",
+        --                 String        = " ",
+        --                 Number        = " ",
+        --                 Boolean       = "◩ ",
+        --                 Array         = " ",
+        --                 Object        = " ",
+        --                 Key           = " ",
+        --                 Null          = "ﳠ ",
+        --                 EnumMember    = " ",
+        --                 Struct        = " ",
+        --                 Event         = " ",
+        --                 Operator      = " ",
+        --                 TypeParameter = " ",
+        --             },
+        --             highlight = true,
+        --             separator = "  ",
+        --             depth_limit = 0,
+        --             depth_limit_indicator = "..",
+        --         }
 
-                vim.o.winbar = "    %{%v:lua.require'nvim-navic'.get_location()%}"
-            end
-        }
+        --         vim.o.winbar = "    %{%v:lua.require'nvim-navic'.get_location()%}"
+        --     end
+        -- }
         -- ステータスラインをリッチな見た目にする
         use {
             "rebelot/heirline.nvim",
@@ -359,33 +383,6 @@ return require('packer').startup(function(use)
             end
         }
 
-        -- hlslensと組み合わせて使うスクロールバー
-        use {
-            'petertriho/nvim-scrollbar',
-            requires = {
-                'folke/tokyonight.nvim',
-                'kevinhwang91/nvim-hlslens'
-            },
-            config = function()
-                local colors = require("tokyonight.colors").setup()
-
-                require("scrollbar").setup({
-                    handle = {
-                        color = colors.bg_highlight,
-                    },
-                    marks = {
-                        Search = { color = colors.orange },
-                        Error = { color = colors.error },
-                        Warn = { color = colors.warning },
-                        Info = { color = colors.info },
-                        Hint = { color = colors.hint },
-                        Misc = { color = colors.purple },
-                    }
-                })
-                require("scrollbar.handlers.search").setup()
-            end
-        }
-
         -- Git
         use {
             'lewis6991/gitsigns.nvim',
@@ -432,21 +429,21 @@ return require('packer').startup(function(use)
                     -- max_width = {40, 0.2} means "the lesser of 40 columns or 20% of total"
                     max_width = { 40, 0.2 },
                     width = nil,
-                    min_width = 10,
+                    min_width = 20,
 
                     -- Enum: prefer_right, prefer_left, right, left, float
                     -- Determines the default direction to open the aerial window. The 'prefer'
                     -- options will open the window in the other direction *if* there is a
                     -- different buffer in the way of the preferred direction
-                    default_direction = "prefer_left",
+                    default_direction = "right",
 
                     -- Enum: edge, group, window
                     --   edge   - open aerial at the far right/left of the editor
                     --   group  - open aerial to the right/left of the group of windows containing the current buffer
                     --   window - open aerial to the right/left of the current window
-                    placement = "window",
+                    placement = "group",
                 },
-                on_attach = my_aerial_on_attach
+                on_attach = on_attach_aerial
             }) end
         }
 

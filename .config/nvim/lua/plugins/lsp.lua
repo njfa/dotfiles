@@ -8,14 +8,11 @@ function M.load(use)
     use {
         'williamboman/mason.nvim',
         requires = {
-            'hrsh7th/cmp-nvim-lsp',
             'neovim/nvim-lspconfig',
             'williamboman/mason-lspconfig.nvim',
-            'kkharji/lspsaga.nvim',
+            'hrsh7th/cmp-nvim-lsp',
         },
         config = function()
-            require('lspsaga').setup()
-
             -- mason
             require('mason').setup()
             require('mason-lspconfig').setup()
@@ -23,12 +20,44 @@ function M.load(use)
                 function (server_name)
                     -- Setup lspconfig.
                     require("lspconfig")[server_name].setup {
-                        on_attach = my_lsp_on_attach,
+                        on_attach = on_attach_lsp,
                         capabiritty = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
                     }
                 end,
             }
         end
+    }
+
+    use {
+        'nvimdev/lspsaga.nvim',
+        requires = 'nvim-lspconfig',
+        config = function()
+            require('lspsaga').setup({
+                finder = {
+                    max_height = 0.6,
+                    keys = {
+                        vsplit = 'e',
+                        toggle_or_open = '<cr>',
+                    },
+                    methods = {
+                        tyd = 'textDocument/typeDefinition'
+                    },
+                    default = 'def+ref+imp+tyd'
+                },
+                hover = {
+                    open_cmd = '!browser.sh'
+                },
+                outline = {
+                    auto_preview = false,
+                    auto_close = false,
+                    detail = true,
+                    win_position = 'left',
+                    keys = {
+                        jump = '<cr>'
+                    }
+                }
+            })
+        end,
     }
 
     use {
