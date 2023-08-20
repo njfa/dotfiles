@@ -14,7 +14,7 @@ function M.reload()
     local prompt_title = "neovim modules"
 
     -- sets the path to the lua folder
-    local path = "~/.dotfiles/.config/nvim/lua"
+    local path = "~/.dotfiles/.config/nvim/"
 
     local opts = {
         prompt_title = prompt_title,
