@@ -90,6 +90,23 @@ return require('packer').startup(function(use)
                 vim.cmd("colorscheme tokyonight")
             end
         }
+
+        use {
+            'nvimdev/indentmini.nvim',
+            config = function()
+                require("indentmini").setup({
+                    char = "|",
+                    exclude = {
+                        "erlang",
+                        "markdown",
+                    }
+                })
+
+                -- 薄い色に変更
+                vim.cmd.highlight("IndentLine guifg=#2b3251")
+            end
+        }
+
         -- ファイラー
         use {
             'lambdalisue/fern.vim',
