@@ -5,6 +5,7 @@ function M.reload()
         local module_name;
 
         module_name = s:gsub("%.lua", "")
+        module_name = module_name:gsub("lua/", "")
         module_name = module_name:gsub("%/", ".")
         module_name = module_name:gsub("%.init", "")
 
