@@ -77,24 +77,24 @@ return require('packer').startup(function(use)
         use {
             'petertriho/nvim-scrollbar',
             'kevinhwang91/nvim-hlslens',
-            'nvimdev/indentmini.nvim'
+            'lukas-reineke/indent-blankline.nvim'
         }
         use {
             'folke/tokyonight.nvim',
             requires = {
                 'petertriho/nvim-scrollbar',
                 'kevinhwang91/nvim-hlslens',
-                'nvimdev/indentmini.nvim',
+                'lukas-reineke/indent-blankline.nvim',
                 'akinsho/bufferline.nvim',
             },
             opt = false,
             config = function()
                 require("tokyonight").setup({
-                  style = "night",
-                  styles = {
-                    functions = {}
-                  },
-                  sidebars = { "qf", "vista_kind", "terminal", "packer", "fern", "sagaoutline", "aerial" },
+                    style = "night",
+                    styles = {
+                        functions = {}
+                    },
+                    sidebars = { "qf", "vista_kind", "terminal", "packer", "fern", "sagaoutline", "aerial" },
                 })
 
                 local colors = require("tokyonight.colors").setup()
@@ -117,17 +117,14 @@ return require('packer').startup(function(use)
                 require("scrollbar.handlers.search").setup()
 
                 -- インデントラインの色を設定する
-                require("indentmini").setup({
-                    char = "|",
-                    exclude = {
-                        "erlang",
-                        "markdown",
-                    }
-                })
+                require("indent_blankline").setup {
+                    show_end_of_line = true,
+                    space_char_blankline = " ",
+                    show_current_context = true,
+                    show_current_context_start = true,
+                }
 
                 vim.cmd.colorscheme("tokyonight")
-                -- 薄い色に変更
-                vim.cmd.highlight("IndentLine guifg=#2b3251")
             end,
         }
 
@@ -171,50 +168,6 @@ return require('packer').startup(function(use)
             cond = function() return packer_plugins["fern.vim"] end,
         }
 
-        -- 現在カーソルがあたっている関数を表示する
-        -- use {
-        --     "SmiteshP/nvim-navic",
-        --     requires = "neovim/nvim-lspconfig",
-        --     config = function()
-        --         local navic = require("nvim-navic")
-        --         navic.setup {
-        --             icons = {
-        --                 File          = " ",
-        --                 Module        = " ",
-        --                 Namespace     = " ",
-        --                 Package       = " ",
-        --                 Class         = " ",
-        --                 Method        = " ",
-        --                 Property      = " ",
-        --                 Field         = " ",
-        --                 Constructor   = " ",
-        --                 Enum          = "練",
-        --                 Interface     = "練",
-        --                 Function      = " ",
-        --                 Variable      = " ",
-        --                 Constant      = " ",
-        --                 String        = " ",
-        --                 Number        = " ",
-        --                 Boolean       = "◩ ",
-        --                 Array         = " ",
-        --                 Object        = " ",
-        --                 Key           = " ",
-        --                 Null          = "ﳠ ",
-        --                 EnumMember    = " ",
-        --                 Struct        = " ",
-        --                 Event         = " ",
-        --                 Operator      = " ",
-        --                 TypeParameter = " ",
-        --             },
-        --             highlight = true,
-        --             separator = "  ",
-        --             depth_limit = 0,
-        --             depth_limit_indicator = "..",
-        --         }
-
-        --         vim.o.winbar = "    %{%v:lua.require'nvim-navic'.get_location()%}"
-        --     end
-        -- }
         -- ステータスラインをリッチな見た目にする
         use {
             "rebelot/heirline.nvim",
@@ -348,6 +301,7 @@ return require('packer').startup(function(use)
                         file_ignore_patterns = {
                             "node_modules",
                             ".git",
+                            "*.class"
                         }
                     },
                     extensions = {
@@ -356,6 +310,7 @@ return require('packer').startup(function(use)
                             ignore_patterns = {
                                 "node_modules",
                                 ".git",
+                                "*.class"
                             },
                         }
                     },
