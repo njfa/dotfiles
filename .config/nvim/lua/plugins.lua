@@ -94,7 +94,7 @@ return require('packer').startup(function(use)
                   styles = {
                     functions = {}
                   },
-                  sidebars = { "qf", "vista_kind", "terminal", "packer" },
+                  sidebars = { "qf", "vista_kind", "terminal", "packer", "fern", "sagaoutline", "aerial" },
                 })
 
                 local colors = require("tokyonight.colors").setup()

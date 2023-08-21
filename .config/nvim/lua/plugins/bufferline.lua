@@ -57,7 +57,7 @@ function M.load()
                 },
                 {
                     filetype = "sagaoutline",
-                    text = "LspSaga Outline",
+                    text = "Lspsaga Outline",
                     text_align = "center",
                     highlight = "MatchParen",
                     separator = true
