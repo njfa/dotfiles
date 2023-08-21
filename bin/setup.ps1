@@ -232,25 +232,24 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic"))) {
         Write-Host "Download sarasa-gothic.7z"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/be5invis/Sarasa-Gothic/releases/download/v0.35.1/sarasa-gothic-ttc-0.35.1.7z", ".\sarasa-gothic.7z")
+        (New-Object Net.WebClient).DownloadFile("https://github.com/be5invis/Sarasa-Gothic/releases/download/v0.41.7/sarasa-gothic-super-ttc-0.41.7.7z", ".\sarasa-gothic.7z")
         7z x .\sarasa-gothic.7z -o"$env:USERPROFILE\font\sarasa-gothic"
         Remove-Item sarasa-gothic.7z
     }
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\PlemolJP"))) {
         Write-Host "Download PlemolJP.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/PlemolJP/releases/download/v1.2.1/PlemolJP_fonts_v1.2.1.zip", ".\PlemolJP.zip")
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/PlemolJP/releases/download/v1.6.0/PlemolJP_NF_v1.6.0.zip", ".\PlemolJP.zip")
         7z x .\PlemolJP.zip -o"$env:USERPROFILE\font\PlemolJP"
         Remove-Item PlemolJP.zip
     }
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\UDEV"))) {
         Write-Host "Download UDEV.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.0.0/UDEVGothic_fonts_v1.0.0.zip", ".\UDEV.zip")
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.3.1/UDEVGothic_NF_v1.3.1.zip", ".\UDEV.zip")
         7z x .\UDEV.zip -o"$env:USERPROFILE\font\UDEV"
         Remove-Item UDEV.zip
     }
-
 
 } elseif ($mode -eq "fonts") {
 
