@@ -301,7 +301,7 @@ return require('packer').startup(function(use)
                         file_ignore_patterns = {
                             "node_modules",
                             ".git",
-                            "*.class"
+                            "target"
                         }
                     },
                     extensions = {
@@ -310,7 +310,7 @@ return require('packer').startup(function(use)
                             ignore_patterns = {
                                 "node_modules",
                                 ".git",
-                                "*.class"
+                                "target"
                             },
                         }
                     },
