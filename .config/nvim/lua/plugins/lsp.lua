@@ -55,7 +55,12 @@ function M.load(use)
                     keys = {
                         jump = '<cr>'
                     }
-                }
+                },
+                lightbulb = {
+                    enable = false,
+                    sign = false,
+                    enable_in_insert = false,
+                },
             })
         end,
     }
