@@ -47,7 +47,7 @@ if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
     -- 隠しファイルも検索対象に含めるためにrgを利用する
     map("n", "<leader>f", "<Cmd>lua find_files_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"} } )<CR>")
-    map("n", "<leader>F", ":lua find_files_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"}, search_file=\"\"})<left><left><left>")
+    map("n", "<leader>F", ":lua find_files_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"}, search_dirs={\"\"}, search_file=\"\"})<left><left><left>")
     map("n", "<leader>g", "<Cmd>lua live_grep_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"} } )<CR>")
     map("n", "<leader>G", ":lua live_grep_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"}, glob_pattern=\"\"})<left><left><left>")
 
@@ -55,8 +55,10 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
     map("n", "<leader>b", "<Cmd>BufferLinePick<CR>")
     map("n", "<leader>B", "<Cmd>Telescope buffers<CR>")
-    -- map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
-    map("n", "<leader>p", "<Cmd>Trouble<CR>")
+    map("n", "<leader>i", "<Cmd>lua require('telescope.builtin').diagnostics({ bufnr=0 })<CR>")
+    map("n", "<leader>I", "<Cmd>lua require('telescope.builtin').diagnostics({})<CR>")
+    map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
+    -- map("n", "<leader>p", "<Cmd>Trouble<CR>")
     map("n", "<leader>td", "<Cmd>TodoTelescope<CR>")
     map("n", "<leader>:", "<Cmd>Telescope command_history<CR>")
     map("n", "<leader>/", "<Cmd>Telescope current_buffer_fuzzy_find<CR>")
