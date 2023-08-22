@@ -14,21 +14,33 @@ function M.load()
                 bold = true,
                 italic = false,
             },
+            diagnostic_selected = {
+                bold = true,
+                italic = false,
+            },
+            hint_selected = {
+                bold = true,
+                italic = false,
+            },
+            hint_diagnostic_selected = {
+                bold = true,
+                italic = false,
+            },
         },
         options = {
             -- numbers = "buffer_id",
             numbers = "none",
             buffer_close_icon = '',
-            max_name_length = 15,
+            max_name_length = 20,
             max_prefix_length = 10, -- prefix used when a buffer is de-duplicated
-            truncate_names = false, -- whether or not tab names should be truncated
+            truncate_names = true, -- whether or not tab names should be truncated
             tab_size = 10,
             color_icons = true,
             sort_by = 'insert_after_current',
             always_show_bufferline = true,
+            -- separator_style = "thick",
             indicator = {
-                icon = '▎', -- this should be omitted if indicator style is not 'icon'
-                style = 'icon'
+                style = 'underline'
             },
             diagnostics = "nvim_lsp",
             diagnostics_indicator = function(count, level, diagnostics_dict, context)
