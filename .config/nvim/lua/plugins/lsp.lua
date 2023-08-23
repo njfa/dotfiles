@@ -33,6 +33,11 @@ function M.load(use)
         requires = 'nvim-lspconfig',
         config = function()
             require('lspsaga').setup({
+                code_action = {
+                    keys = {
+                        quit = {'<esc>', 'q'}
+                    }
+                },
                 finder = {
                     max_height = 0.6,
                     keys = {
@@ -47,6 +52,11 @@ function M.load(use)
                 hover = {
                     open_cmd = '!browser.sh'
                 },
+                lightbulb = {
+                    enable = true,
+                    sign = false,
+                    enable_in_insert = false,
+                },
                 outline = {
                     auto_preview = false,
                     auto_close = false,
@@ -56,11 +66,11 @@ function M.load(use)
                         jump = '<cr>'
                     }
                 },
-                lightbulb = {
-                    enable = false,
-                    sign = false,
-                    enable_in_insert = false,
-                },
+                rename = {
+                    keys = {
+                        quit = '<esc>'
+                    }
+                }
             })
         end,
     }
