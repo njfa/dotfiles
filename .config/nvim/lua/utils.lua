@@ -43,6 +43,14 @@ function lcd_current_workspace()
 end
 
 function find_files_from_project_git_root(opts)
+    local utils = require('telescope.utils')
+    local make_entry = require('telescope.make_entry')
+    local entry_display = require('telescope.pickers.entry_display')
+    local devicons = require('nvim-web-devicons')
+    local def_icon = devicons.get_icon('fname', { default = true })
+    local strings = require('plenary.strings')
+    local iconwidth = strings.strdisplaywidth(def_icon)
+
     local function is_git_repo()
         vim.fn.system("git rev-parse --is-inside-work-tree")
 
@@ -58,8 +66,41 @@ function find_files_from_project_git_root(opts)
     if is_git_repo() then
         opts = vim.tbl_extend("force", opts, {
             cwd = get_git_root(),
+            find_command = {
+                "rg",
+                "--no-ignore",
+                "--hidden",
+                "--files"
+            }
         })
     end
+
+    local entry_make = make_entry.gen_from_file(opts)
+    opts.entry_maker = function(line)
+        local entry = entry_make(line)
+        local displayer = entry_display.create({
+            separator = ' ',
+            items = {
+                { width = iconwidth },
+                { width = nil },
+                { remaining = true },
+            },
+        })
+        entry.display = function(et)
+            -- https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/make_entry.lua
+            local tail_raw, path_to_display = require('picker').get_path_and_tail(et.value)
+            local tail = tail_raw .. ' '
+            local icon, iconhl = utils.get_devicons(tail_raw)
+
+            return displayer({
+                { icon, iconhl },
+                tail,
+                { path_to_display, 'TelescopeResultsComment' },
+            })
+        end
+        return entry
+    end
+
     require("telescope.builtin").find_files(opts)
 end
 
@@ -77,7 +118,17 @@ function live_grep_from_project_git_root(opts)
 
     if is_git_repo() then
         opts = vim.tbl_extend("force", opts, {
-            cwd = get_git_root()
+            cwd = get_git_root(),
+            find_command = {
+                'rg',
+                '--with-filename',
+                '--line-number',
+                '--column',
+                '--smart-case',
+                '--no-ignore',
+                '--hidden',
+                '--trim'
+            }
         })
     end
 
