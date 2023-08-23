@@ -14,6 +14,14 @@ function M.load()
                 bold = true,
                 italic = false,
             },
+            tab_separator = {
+              fg = '#ffffff',
+              bg = '#000000',
+            },
+            tab_separator_selected = {
+              fg = '#ffffff',
+              bg = '#000000',
+            },
             diagnostic_selected = {
                 bold = true,
                 italic = false,
@@ -38,9 +46,11 @@ function M.load()
             color_icons = true,
             sort_by = 'insert_after_current',
             always_show_bufferline = true,
-            -- separator_style = "thick",
+            separator_style = { '┊ ', '┊ ' },
+            show_tab_indicators = false,
             indicator = {
-                style = 'underline'
+                icon = "▌",
+                style = 'icon'
             },
             diagnostics = "nvim_lsp",
             diagnostics_indicator = function(count, level, diagnostics_dict, context)
@@ -48,7 +58,7 @@ function M.load()
                 for e, n in pairs(diagnostics_dict) do
                     local sym = e == "error" and " "
                     or (e == "warning" and " " or e == "info" and " " or " " )
-                    s = s .. sym .. n .. ' '
+                    s = s .. sym .. n .. ''
                 end
                 return s
             end,
