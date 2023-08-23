@@ -338,18 +338,7 @@ return require('packer').startup(function(use)
                 require('gitsigns').setup()
             end
         }
-        -- trouble
-        -- use {
-        --     "folke/trouble.nvim",
-        --     requires = "kyazdani42/nvim-web-devicons",
-        --     config = function()
-        --         require("trouble").setup {
-        --             -- your configuration comes here
-        --             -- or leave it empty to use the default settings
-        --             -- refer to the configuration section below
-        --         }
-        --     end
-        -- }
+
         -- TODOコメントの管理
         use {
             "folke/todo-comments.nvim",
@@ -427,44 +416,44 @@ return require('packer').startup(function(use)
             end
         }
 
-        use {
-            'mfussenegger/nvim-jdtls',
-            requires = {
-                'williamboman/mason.nvim',
-            },
-            ft = {
-                "java"
-            },
-            config = function ()
-                local jdtls_path = vim.fn.stdpath('data') .. "/mason/packages/jdtls/bin/jdtls"
-                local java_debugger_path = vim.fn.stdpath('data') .. "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
+        -- use {
+        --     'mfussenegger/nvim-jdtls',
+        --     requires = {
+        --         'williamboman/mason.nvim',
+        --     },
+        --     ft = {
+        --         "java"
+        --     },
+        --     config = function ()
+        --         local jdtls_path = vim.fn.stdpath('data') .. "/mason/packages/jdtls/bin/jdtls"
+        --         local java_debugger_path = vim.fn.stdpath('data') .. "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
 
-                local cfg = {
-                    cmd = { jdtls_path },
-                    root_dir = vim.fs.dirname(vim.fs.find({'gradlew', '.git', 'mvnw'}, { upward = true })[1]),
-                    init_options = {
-                        bundles = {
-                            vim.fn.glob(java_debugger_path, 1)
-                        };
-                    },
-                    on_attach = function(client, bufnr)
-                        require('jdtls').setup_dap({ hotcodereplace = 'auto' })
-                    end
-                }
+        --         local cfg = {
+        --             cmd = { jdtls_path },
+        --             root_dir = vim.fs.dirname(vim.fs.find({'gradlew', '.git', 'mvnw'}, { upward = true })[1]),
+        --             init_options = {
+        --                 bundles = {
+        --                     vim.fn.glob(java_debugger_path, 1)
+        --                 };
+        --             },
+        --             on_attach = function(client, bufnr)
+        --                 require('jdtls').setup_dap({ hotcodereplace = 'auto' })
+        --             end
+        --         }
 
-                require('jdtls').start_or_attach(cfg)
+        --         require('jdtls').start_or_attach(cfg)
 
-                require('dap').configurations.java = {
-                    {
-                        type = 'java';
-                        request = 'launch';
-                        name = "Debug (Attach) - Remote";
-                        hostName = '127.0.0.1';
-                        port = 5005;
-                    },
-                }
-            end
-        }
+        --         require('dap').configurations.java = {
+        --             {
+        --                 type = 'java';
+        --                 request = 'launch';
+        --                 name = "Debug (Attach) - Remote";
+        --                 hostName = '127.0.0.1';
+        --                 port = 5005;
+        --             },
+        --         }
+        --     end
+        -- }
 
         use {
             'simrat39/rust-tools.nvim',
