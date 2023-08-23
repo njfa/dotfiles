@@ -8,10 +8,11 @@ vim.opt.laststatus    = 3           --ステータスバーにウィンドウ毎
 vim.opt.splitright    = true        --画面を縦分割する際に右に開く
 vim.opt.list          = true
 vim.opt.listchars     = {
-    space = ' ',
+    space = '‸',
     tab   = '› ',
     eol   = '¬',
-    trail = ' ',
+    trail = '█',
+    nbsp  = '%',
 }
 
 -- インデント

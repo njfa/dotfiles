@@ -77,14 +77,12 @@ return require('packer').startup(function(use)
         use {
             'petertriho/nvim-scrollbar',
             'kevinhwang91/nvim-hlslens',
-            'lukas-reineke/indent-blankline.nvim'
         }
         use {
             'folke/tokyonight.nvim',
             requires = {
                 'petertriho/nvim-scrollbar',
                 'kevinhwang91/nvim-hlslens',
-                'lukas-reineke/indent-blankline.nvim',
                 'akinsho/bufferline.nvim',
             },
             opt = false,
@@ -115,14 +113,6 @@ return require('packer').startup(function(use)
 
                 -- scrollbarに検索がヒットした箇所を表示する
                 require("scrollbar.handlers.search").setup()
-
-                -- インデントラインの色を設定する
-                require("indent_blankline").setup {
-                    show_end_of_line = true,
-                    space_char_blankline = " ",
-                    show_current_context = true,
-                    show_current_context_start = true,
-                }
 
                 vim.cmd.colorscheme("tokyonight")
             end,
