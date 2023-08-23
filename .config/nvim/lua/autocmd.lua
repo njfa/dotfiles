@@ -40,10 +40,17 @@ vim.api.nvim_create_autocmd({"FileType"}, {
     end,
 })
 
-vim.api.nvim_create_autocmd({"FileType"}, {
-    pattern = {"saga_codeaction", "sagarename" },
-    callback = function()
-        buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
-    end,
-})
+-- vim.api.nvim_create_autocmd({"FileType"}, {
+--     pattern = {"saga_codeaction" },
+--     callback = function()
+--         buf_map(0, 'n', "<Esc>", require('lspsaga').config.code_action.keys.quit, { noremap = true })
+--     end,
+-- })
+
+-- vim.api.nvim_create_autocmd({"FileType"}, {
+--     pattern = {"saga_codeaction", "sagarename" },
+--     callback = function()
+--         buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
+--     end,
+-- })
 
