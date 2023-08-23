@@ -46,10 +46,10 @@ map("x", "<C-x>", "<C-x>gv")
 if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
     -- 隠しファイルも検索対象に含めるためにrgを利用する
-    map("n", "<leader>f", "<Cmd>lua find_files_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"} } )<CR>")
-    map("n", "<leader>F", ":lua find_files_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"}, search_dirs={\"\"}, search_file=\"\"})<left><left><left>")
-    map("n", "<leader>g", "<Cmd>lua live_grep_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"} } )<CR>")
-    map("n", "<leader>G", ":lua live_grep_from_project_git_root( { find_command = {\"rg\", \"--no-ignore\", \"--hidden\", \"--files\"}, glob_pattern=\"\"})<left><left><left>")
+    map("n", "<leader>f", "<Cmd>lua find_files_from_project_git_root({})<CR>")
+    map("n", "<leader>F", ":lua find_files_from_project_git_root( { search_file=\"\" })<left><left><left><left>")
+    map("n", "<leader>g", "<Cmd>lua live_grep_from_project_git_root({})<CR>")
+    map("n", "<leader>G", ":lua live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>")
 
     map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
@@ -60,7 +60,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
     -- map("n", "<leader>p", "<Cmd>Trouble<CR>")
     map("n", "<leader>td", "<Cmd>TodoTelescope<CR>")
-    map("n", "<leader>:", "<Cmd>Telescope command_history<CR>")
+    map("n", "<leader>:", "<Cmd>lua require('picker').command_history()<CR>")
+    -- map("n", "<leader>:", "<Cmd>Telescope command_history<CR>")
     map("n", "<leader>/", "<Cmd>Telescope current_buffer_fuzzy_find<CR>")
     map("n", "<leader>e", "<Cmd>Telescope projects<CR>")
     -- map("n", "<leader>s", "<cmd>SidebarNvimToggle<cr>")
