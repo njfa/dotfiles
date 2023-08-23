@@ -330,14 +330,6 @@ return require('packer').startup(function(use)
             end
         }
 
-        -- 検索結果の表示を拡張
-        use {
-            'kevinhwang91/nvim-hlslens',
-            config = function()
-                require('hlslens').setup()
-            end
-        }
-
         -- Git
         use {
             'lewis6991/gitsigns.nvim',
