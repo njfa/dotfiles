@@ -12,6 +12,7 @@ function M.load(use)
             'hrsh7th/cmp-cmdline',
             'hrsh7th/cmp-vsnip',
             'hrsh7th/vim-vsnip',
+            'ray-x/cmp-treesitter',
             'hrsh7th/cmp-nvim-lsp-document-symbol',
             'hrsh7th/cmp-nvim-lsp-signature-help',
             'petertriho/cmp-git',
