@@ -17,6 +17,9 @@ return require('packer').startup(function(use)
 
     -- 他プラグインの依存プラグイン
     use 'nvim-lua/popup.nvim'
+    use 'nvim-lua/plenary.nvim'
+    use 'tami5/sqlite.lua'
+    use 'kyazdani42/nvim-web-devicons'
 
     -- 機能拡張
     -- "."の高機能化
@@ -65,57 +68,67 @@ return require('packer').startup(function(use)
         end
     }
     -- Treesitterの設定
-    local treesitter = require('plugins/treesitter')
-    treesitter.load(use)
+    require('plugins.treesitter').load(use)
 
     -- vscode無効化時にのみ読み込むプラグイン
     if vim.fn.exists('g:vscode') == 0 then
 
         -- 外観
-        -- カラースキーム
-
         use {
-            'petertriho/nvim-scrollbar',
             'kevinhwang91/nvim-hlslens',
-        }
-        use {
-            'folke/tokyonight.nvim',
-            requires = {
-                'petertriho/nvim-scrollbar',
-                'kevinhwang91/nvim-hlslens',
-                'akinsho/bufferline.nvim',
+            'petertriho/nvim-scrollbar',
+            -- 通知をリッチな見た目にする
+            'rcarriga/nvim-notify',
+            -- nvim-lspの進捗の表示を変更する
+            {
+                'j-hui/fidget.nvim',
+                tag = 'legacy',
+                config = function()
+                    require('fidget').setup()
+                end
             },
-            opt = false,
-            config = function()
-                require("tokyonight").setup({
-                    style = "night",
-                    styles = {
-                        functions = {}
-                    },
-                    sidebars = { "qf", "vista_kind", "terminal", "packer", "fern", "sagaoutline", "aerial" },
-                })
+            {
+                'akinsho/bufferline.nvim',
+                requires = {
+                    'kyazdani42/nvim-web-devicons',
+                    'tiagovla/scope.nvim',
+                }
+            },
+            {
+                'folke/tokyonight.nvim',
+                config = function()
+                    require("tokyonight").setup({
+                        style = "night",
+                        styles = {
+                            functions = {}
+                        },
+                        sidebars = { "qf", "vista_kind", "terminal", "packer", "fern", "sagaoutline", "aerial" },
+                    })
 
-                local colors = require("tokyonight.colors").setup()
+                    local colors = require("tokyonight.colors").setup() -- pass in any of the config options as explained above
 
-                require("scrollbar").setup({
-                    handle = {
-                        color = colors.bg_highlight,
-                    },
-                    marks = {
-                        Search = { color = colors.orange },
-                        Error = { color = colors.error },
-                        Warn = { color = colors.warning },
-                        Info = { color = colors.info },
-                        Hint = { color = colors.hint },
-                        Misc = { color = colors.purple },
-                    }
-                })
+                    require("scrollbar").setup({
+                        handle = {
+                            color = colors.bg_highlight,
+                        },
+                        marks = {
+                            Search = { color = colors.orange },
+                            Error = { color = colors.error },
+                            Warn = { color = colors.warning },
+                            Info = { color = colors.info },
+                            Hint = { color = colors.hint },
+                            Misc = { color = colors.purple },
+                        }
+                    })
 
-                -- scrollbarに検索がヒットした箇所を表示する
-                require("scrollbar.handlers.search").setup()
+                    -- scrollbarに検索がヒットした箇所を表示する
+                    require("scrollbar.handlers.search").setup()
 
-                vim.cmd.colorscheme("tokyonight")
-            end,
+                    require("plugins.bufferline").setup()
+
+                    vim.cmd.colorscheme("tokyonight")
+                end
+            },
         }
 
         -- ファイラー
@@ -162,33 +175,10 @@ return require('packer').startup(function(use)
         use {
             "rebelot/heirline.nvim",
             config = function()
-                require('plugins/heirline').load()
+                require('plugins.heirline').load()
             end
         }
 
-        -- バッファーライン
-        use {
-            'akinsho/bufferline.nvim',
-            tag = "*",
-            requires = {
-                'kyazdani42/nvim-web-devicons',
-                -- bufferline.nvimのタブにバッファを紐づける
-                'tiagovla/scope.nvim'
-            },
-            config = function()
-                require('plugins/bufferline').load()
-            end
-        }
-        -- 通知をリッチな見た目にする
-        use 'rcarriga/nvim-notify'
-        -- nvim-lspの進捗の表示を変更する
-        use {
-            'j-hui/fidget.nvim',
-            tag = 'legacy',
-            config = function()
-                require('fidget').setup()
-            end
-        }
         use {
             'goolord/alpha-nvim',
             requires = { 'kyazdani42/nvim-web-devicons' },
@@ -200,7 +190,7 @@ return require('packer').startup(function(use)
         use {
             "folke/which-key.nvim",
             config = function()
-                require('plugins/which-key').load()
+                require('plugins.which-key').load()
             end
         }
 
@@ -244,68 +234,91 @@ return require('packer').startup(function(use)
         }
         -- ファジーファインダー
         use {
-            'nvim-telescope/telescope.nvim', branch = 'master',
-            requires = {
-                'nvim-lua/plenary.nvim',
+            "ahmedkhalf/project.nvim",
+            'nvim-telescope/telescope-dap.nvim',
+            {
                 'nvim-telescope/telescope-frecency.nvim',
-                'nvim-telescope/telescope-dap.nvim',
-                'tami5/sqlite.lua'
+                requires = {
+                    'kyazdani42/nvim-web-devicons',
+                    'tami5/sqlite.lua'
+                },
             },
-            config = function()
-                require('telescope').load_extension('dap')
-
-                local actions = require("telescope.actions")
-                require('telescope').setup {
-                    defaults = {
-                        layout_strategy = "vertical",
-                        layout_config = {
-                            horizontal = {
-                                height = 0.99,
-                                preview_cutoff = 40,
-                                prompt_position = "bottom",
-                                width = 0.99
+            {
+                'nvim-telescope/telescope.nvim',
+                branch = 'master',
+                requires = {
+                    'nvim-lua/plenary.nvim',
+                    'nvim-telescope/telescope-frecency.nvim',
+                    'nvim-telescope/telescope-dap.nvim',
+                    'tami5/sqlite.lua'
+                },
+                config = function()
+                    local actions = require("telescope.actions")
+                    require('telescope').setup {
+                        defaults = {
+                            layout_strategy = "vertical",
+                            layout_config = {
+                                horizontal = {
+                                    height = 0.99,
+                                    preview_cutoff = 40,
+                                    prompt_position = "bottom",
+                                    width = 0.99
+                                },
+                                vertical = {
+                                    height = 0.99,
+                                    preview_cutoff = 40,
+                                    prompt_position = "bottom",
+                                    width = 0.99
+                                }
                             },
-                            vertical = {
-                                height = 0.99,
-                                preview_cutoff = 40,
-                                prompt_position = "bottom",
-                                width = 0.99
-                            }
-                        },
-                        mappings = {
-                            i = {
-                                ["<esc>"] = actions.close
-                            },
+                            mappings = {
+                                i = {
+                                    ["<esc>"] = actions.close
+                                },
 
-                        },
-                        vimgrep_arguments = {
-                            'rg',
-                            '--with-filename',
-                            '--line-number',
-                            '--column',
-                            '--smart-case',
-                            '--no-ignore',
-                            '--hidden',
-                            '--trim'
-                        },
-                        file_ignore_patterns = {
-                            "node_modules",
-                            ".git",
-                            "target"
-                        }
-                    },
-                    extensions = {
-                        frecency = {
-                            show_scores = true,
-                            ignore_patterns = {
+                            },
+                            vimgrep_arguments = {
+                                'rg',
+                                '--with-filename',
+                                '--line-number',
+                                '--column',
+                                '--smart-case',
+                                '--no-ignore',
+                                '--hidden',
+                                '--trim'
+                            },
+                            file_ignore_patterns = {
                                 "node_modules",
                                 ".git",
                                 "target"
-                            },
-                        }
-                    },
-                }
-            end
+                            }
+                        },
+                        extensions = {
+                            frecency = {
+                                show_scores = true
+                            }
+                        },
+                    }
+
+                    require("project_nvim").setup {
+                        -- Methods of detecting the root directory. **"lsp"** uses the native neovim
+                        -- lsp, while **"pattern"** uses vim-rooter like glob pattern matching. Here
+                        -- order matters: if one is not detected, the other is used as fallback. You
+                        -- can also delete or rearangne the detection methods.
+                        detection_methods = { "pattern", "lsp" },
+
+                        -- All the patterns used to detect root dir, when **"pattern"** is in
+                        -- detection_methods
+                        patterns = { ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json", ".env", ".gitlab-ci.yml" },
+
+                        scope_chdir = 'tab',
+                    }
+
+                    require('telescope').load_extension('dap')
+                    require('telescope').load_extension('projects')
+                    require('telescope').load_extension("frecency")
+                end
+            },
         }
 
         -- undoの拡張
@@ -367,7 +380,7 @@ return require('packer').startup(function(use)
                     --   edge   - open aerial at the far right/left of the editor
                     --   group  - open aerial to the right/left of the group of windows containing the current buffer
                     --   window - open aerial to the right/left of the current window
-                    placement = "group",
+                    placement = "window",
                 },
                 on_attach = on_attach_aerial
             }) end
@@ -407,7 +420,7 @@ return require('packer').startup(function(use)
         }
 
         -- Debuggerの設定
-        local dap = require('plugins/dap')
+        local dap = require('plugins.dap')
         dap.load(use)
 
         -- テーブル作成用のモードを追加
@@ -419,32 +432,19 @@ return require('packer').startup(function(use)
         }
     end
 
-    use {
-        'mattn/vim-sonictemplate',
-        config = function ()
-            vim.g.sonictemplate_vim_template_dir = (
-                "$HOME/.config/nvim/template"
-            )
-        end
-    }
-
     -- 補完の設定
-    local complete = require('plugins/complete')
+    local complete = require('plugins.complete')
     complete.load(use)
 
     -- LSPの設定
-    local lsp = require('plugins/lsp')
+    local lsp = require('plugins.lsp')
     lsp.load(use)
 
-    -- プロジェクト管理
-    local project = require('plugins/project')
-    project.load(use)
-
     -- 特定言語のための拡張機能
-    local markdown = require('plugins/languages/markdown')
+    local markdown = require('plugins.languages.markdown')
     markdown.load(use)
 
-    local html = require('plugins/languages/html')
+    local html = require('plugins.languages.html')
     html.load(use)
 
     use 'hashivim/vim-terraform'
