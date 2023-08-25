@@ -1,26 +1,51 @@
 local M = {}
 
-function M.load()
+function M.setup()
+    local colors = require("tokyonight.colors").setup() -- pass in any of the config options as explained above
+
     require("scope").setup()
 
-    -- ' ' ' ' ' ' ' '
     require("bufferline").setup {
         highlights = {
+            fill = {
+                fg = colors.fg,
+                bg = colors.bg_highlight,
+            },
+            separator = {
+                fg = colors.fg,
+            },
+            separator_selected = {
+                fg = colors.fg,
+            },
+            indicator_visible = {
+                fg = colors.fg,
+            },
+            indicator_selected = {
+                fg = colors.fg,
+            },
+            background = {
+                fg = colors.dark5,
+                bg = colors.bg,
+            },
             buffer_selected = {
-                bold = true,
+                fg = colors.fg,
+            },
+            tab = {
+                fg = colors.fg,
+                bold = false,
                 italic = false,
             },
             tab_selected = {
+                fg = colors.bg_dark,
+                bg = colors.purple,
                 bold = true,
-                italic = false,
+                italic = true,
             },
             tab_separator = {
-              fg = '#ffffff',
-              bg = '#000000',
+                fg = colors.bg_dark,
             },
             tab_separator_selected = {
-              fg = '#ffffff',
-              bg = '#000000',
+                fg = colors.purple,
             },
             diagnostic_selected = {
                 bold = true,
@@ -47,7 +72,7 @@ function M.load()
             sort_by = 'insert_after_current',
             always_show_bufferline = true,
             separator_style = { '┊ ', '┊ ' },
-            show_tab_indicators = false,
+            show_tab_indicators = true,
             indicator = {
                 icon = "▌",
                 style = 'icon'
@@ -84,14 +109,6 @@ function M.load()
                     highlight = "MatchParen",
                     separator = true
                 }
-                -- {
-                --     filetype = "fern",
-                --     text = function()
-                --         return vim.fn.getcwd()
-                --     end,
-                --     highlight = "Directory",
-                --     text_align = "left"
-                -- }
             },
             hover = {
                 enabled = true,
