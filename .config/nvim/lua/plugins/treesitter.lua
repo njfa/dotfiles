@@ -95,8 +95,6 @@ function M.load(use)
     -- treesitter unitをテキストオブジェクトに追加
     use 'David-Kunz/treesitter-unit'
 
-    use 'ray-x/cmp-treesitter'
-
     -- 対応する括弧をわかりやすくする
     use {
         'haringsrob/nvim_context_vt',
