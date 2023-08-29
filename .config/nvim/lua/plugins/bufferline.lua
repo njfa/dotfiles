@@ -13,15 +13,27 @@ function M.setup()
             },
             separator = {
                 fg = colors.fg,
+                bg = colors.bg,
             },
             separator_selected = {
                 fg = colors.fg,
+                bg = colors.bg,
+            },
+            separator_visible = {
+                fg = colors.fg,
+                bg = colors.bg,
+            },
+            offset_separator = {
+                fg = colors.bg_dark,
+                bg = colors.bg,
             },
             indicator_visible = {
                 fg = colors.fg,
+                bg = colors.bg,
             },
             indicator_selected = {
                 fg = colors.fg,
+                bg = colors.bg,
             },
             background = {
                 fg = colors.dark5,
@@ -90,21 +102,21 @@ function M.setup()
             offsets = {
                 {
                     filetype = "fern",
-                    text = "File Explorer",
+                    text = "EXPLORER",
                     text_align = "center",
                     highlight = "MatchParen",
                     separator = true
                 },
                 {
                     filetype = "aerial",
-                    text = "Outline",
+                    text = "OUTLINE",
                     text_align = "center",
                     highlight = "MatchParen",
                     separator = true
                 },
                 {
                     filetype = "sagaoutline",
-                    text = "Lspsaga Outline",
+                    text = "OUTLINE",
                     text_align = "center",
                     highlight = "MatchParen",
                     separator = true
