@@ -133,42 +133,33 @@ return require('packer').startup(function(use)
 
         -- ファイラー
         use {
-            'lambdalisue/fern.vim',
-            requires = {
-                'antoinemadec/FixCursorHold.nvim',
-            },
-            config = function()
-                vim.g['fern#default_hidden'] = 1
-            end
-        }
-        use {
+            'lambdalisue/nerdfont.vim',
             'lambdalisue/fern-renderer-nerdfont.vim',
-            cond = function() return packer_plugins["fern.vim"] end,
-            requires = {
-                'lambdalisue/fern.vim',
-                'lambdalisue/nerdfont.vim'
-            },
-            config = function()
-                vim.g['fern#renderer'] = 'nerdfont'
-            end
-        }
-        use {
             'yuki-yano/fern-preview.vim',
-            cond = function() return packer_plugins["fern.vim"] end,
-            requires = {
-                'lambdalisue/fern.vim',
-            },
-            config = function()
-                -- fernでファイルにカーソルがあたった際に自動でプレビューする
-                vim.g['fern_auto_preview'] = false
-            end
-        }
-        use {
             -- fernでGitのステータスを表示
             'lambdalisue/fern-git-status.vim',
             -- nvimの標準をファイラーを置き換え
             'lambdalisue/fern-hijack.vim',
-            cond = function() return packer_plugins["fern.vim"] end,
+            'antoinemadec/FixCursorHold.nvim',
+            {
+                'lambdalisue/fern.vim',
+                requires = {
+                    'antoinemadec/FixCursorHold.nvim',
+                    'lambdalisue/nerdfont.vim',
+                    'lambdalisue/fern-renderer-nerdfont.vim',
+                    'yuki-yano/fern-preview.vim',
+                    'lambdalisue/fern-git-status.vim',
+                    'lambdalisue/fern-hijack.vim',
+                },
+                config = function()
+                    vim.g['fern#default_hidden'] = 1
+
+                    vim.g['fern#renderer'] = 'nerdfont'
+
+                    -- fernでファイルにカーソルがあたった際に自動でプレビューする
+                    vim.g['fern_auto_preview'] = false
+                end
+            },
         }
 
         -- ステータスラインをリッチな見た目にする
