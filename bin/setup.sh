@@ -73,11 +73,11 @@ printcmd() {
 }
 
 success() {
-    printf "    \033[32;1m%s\033[m\`%s\` is success \n" "✔  " "$*"
+    printf "    \033[32;1m%s\033[m\`%s\` is success \n" "✓ " "$*"
 }
 
 failure() {
-    printf "    \033[31;1m%s\033[m\`%s\` is failure \n" "✖  " "$*" 1>&2
+    printf "    \033[31;1m%s\033[m\`%s\` is failure \n" "✗ " "$*" 1>&2
 }
 
 error() {
