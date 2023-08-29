@@ -2,3 +2,6 @@ gui:
   language: 'ja'
   showIcons: true
 
+os:
+  copyToClipboardCmd: 'echo {{text}} | win32yank.exe -i --crlf'
+
