@@ -46,10 +46,12 @@ map("x", "<C-x>", "<C-x>gv")
 if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
     -- 隠しファイルも検索対象に含めるためにrgを利用する
-    map("n", "<leader>f", "<Cmd>lua find_files_from_project_git_root({})<CR>")
-    map("n", "<leader>F", ":lua find_files_from_project_git_root( { search_file=\"\" })<left><left><left><left>")
-    map("n", "<leader>g", "<Cmd>lua live_grep_from_project_git_root({})<CR>")
-    map("n", "<leader>G", ":lua live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>")
+    map("n", "<leader>f", "<Cmd>lua require('picker').find_files_from_project_git_root()<CR>")
+    map("n", "<leader>F", ":lua require('picker').find_files_from_project_git_root( { search_file=\"\" })<left><left><left><left>")
+    map("n", "<leader>g", "<Cmd>lua require('picker').live_grep_from_project_git_root()<CR>")
+    map("n", "<leader>G", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>")
+    map("x", "<leader>g", "<Cmd>lua require('picker').grep_string_visual()<CR>")
+    map("n", "<leader>h", "<Cmd>lua require('picker').find_files_from_project_git_root({oldfiles=true})<CR>")
 
     map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
