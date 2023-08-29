@@ -12,116 +12,232 @@ M.get_path_and_tail = function(filename)
   return bufname_tail, path_to_display
 end
 
-local use_find_files_instead_of_git = true
+-- local use_find_files_instead_of_git = true
 
-M.project_files_toggle_between_git_and_fd = function()
-  use_find_files_instead_of_git = not use_find_files_instead_of_git
+-- M.project_files_toggle_between_git_and_fd = function()
+--   use_find_files_instead_of_git = not use_find_files_instead_of_git
+-- end
+
+local function is_git_repo()
+    vim.fn.system("git rev-parse --is-inside-work-tree")
+
+    return vim.v.shell_error == 0
 end
 
-M.project_files = function(opts)
-  local action_state = require('telescope.actions.state')
-  local make_entry = require('telescope.make_entry')
-  local strings = require('plenary.strings')
-  local utils = require('telescope.utils')
-  local entry_display = require('telescope.pickers.entry_display')
-  local devicons = require('nvim-web-devicons')
-  local def_icon = devicons.get_icon('fname', { default = true })
-  local iconwidth = strings.strdisplaywidth(def_icon)
-  local level_up = vim.v.count
+local function get_git_root()
+    local dot_git_path = vim.fn.finddir(".git", ".;")
 
-  local map_i_actions = function(_, map)
-    map('i', '<C-o>', function(prompt_bufnr)
-      require('userlib.telescope.picker_keymaps').open_selected_in_window(prompt_bufnr)
-    end, { noremap = true, silent = true })
-    --- not working.
-    --- https://github.com/nvim-telescope/telescope-file-browser.nvim/blob/master/lua/telescope/_extensions/file_browser/actions.lua#L598
-    map('i', '<C-g>', function(prompt_bufnr)
-      local current_picker = action_state.get_current_picker(prompt_bufnr)
-      local finder = current_picker.finder
-      finder.path = vim.cfg.runtime__starts_cwd
-      finder.cwd = finder.path
-      current_picker:refresh(finder, {
-        reset_prompt = true,
-        multi = current_picker._multi,
-      })
-    end, {
-      desc = 'Go to home dir',
-    })
-  end
-
-  opts = opts or {}
-  if not opts.cwd then
-    -- opts.cwd = require('userlib.telescope.helpers').get_cwd_relative_to_buf(0, level_up)
-    -- opts.cwd = vim.uv.cwd()
-    opts.cwd = vim.fn.getcwd()
-  end
-  opts.hidden = true
-
-  opts.prompt_title = opts.prompt_title or vim.fn.getcwd()
-
-  opts.attach_mappings = function(_, map)
-    map_i_actions(_, map)
-    return true
-  end
-
-  --- //////// item stylish.
-  local entry_make = make_entry.gen_from_file(opts)
-  opts.entry_maker = function(line)
-    local entry = entry_make(line)
-    local displayer = entry_display.create({
-      separator = ' ',
-      items = {
-        { width = iconwidth },
-        { width = nil },
-        { remaining = true },
-      },
-    })
-    entry.display = function(et)
-      -- https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/make_entry.lua
-      local tail_raw, path_to_display = M.get_path_and_tail(et.value)
-      local tail = tail_raw .. ' '
-      local icon, iconhl = utils.get_devicons(tail_raw)
-
-      return displayer({
-        { icon, iconhl },
-        tail,
-        { path_to_display, 'TelescopeResultsComment' },
-      })
-    end
-    return entry
-  end
-  ---/// end item stylish
-
-  if opts and opts.oldfiles then
-    opts.results_title = '  Recent files: '
-    opts.include_current_session = true
-    --- we want recent files inside monorepo root folder, not a sub project root.
-    --- see https://github.com/nvim-telescope/telescope.nvim/blob/276362a8020c6e94c7a76d49aa00d4923b0c02f3/lua/telescope/builtin/__internal.lua#L533C61-L533C61
-    if opts.cwd then
-      opts.cwd_only = false
-    end
-    require('telescope.builtin').oldfiles(opts)
-    return
-  end
-
-  -- use find_files or git_files.
-  local use_all_files = opts.use_all_files or false
-  if (opts and opts.no_gitfiles) or use_find_files_instead_of_git then
-    use_all_files = true
-  end
-
-
-  local ok = (function()
-    if use_all_files then return false end
-    opts.results_title = '  Git Files: '
-    local is_git_ok = pcall(require('telescope.builtin').git_files, opts)
-    return is_git_ok
-  end)()
-  if not ok then
-    opts.results_title = '  All Files: '
-    require('telescope.builtin').find_files(opts)
-  end
+    return vim.fn.fnamemodify(dot_git_path, ":h")
 end
+
+local function getcwd()
+    local cwd = get_git_root()
+    if cwd == '.' then
+        cwd = vim.fn.getcwd()
+    end
+    return cwd
+end
+
+M.find_files_from_project_git_root = function(opts)
+    local utils = require('telescope.utils')
+    local make_entry = require('telescope.make_entry')
+    local entry_display = require('telescope.pickers.entry_display')
+    local devicons = require('nvim-web-devicons')
+    local def_icon = devicons.get_icon('fname', { default = true })
+    local strings = require('plenary.strings')
+    local iconwidth = strings.strdisplaywidth(def_icon)
+
+    opts = opts or {}
+    if is_git_repo() then
+        opts.results_title = '  Project Files: '
+        opts.cwd = get_git_root()
+        opts.prompt_title = getcwd()
+    else
+        opts.results_title = '  All Files: '
+        opts.prompt_title = vim.fn.getcwd()
+        opts.cmd = vim.fn.getcwd()
+    end
+
+    opts.find_command = {
+        "rg",
+        "--no-ignore",
+        "--hidden",
+        "--files"
+    }
+
+    local entry_make = make_entry.gen_from_file(opts)
+    opts.entry_maker = function(line)
+        local entry = entry_make(line)
+        local displayer = entry_display.create({
+            separator = ' ',
+            items = {
+                { width = iconwidth },
+                { width = nil },
+                { remaining = true },
+            },
+        })
+        entry.display = function(et)
+            -- https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/make_entry.lua
+            local tail_raw, path_to_display = require('picker').get_path_and_tail(et.value)
+            local tail = tail_raw .. ' '
+            local icon, iconhl = utils.get_devicons(tail_raw)
+
+            return displayer({
+                { icon, iconhl },
+                tail,
+                { path_to_display, 'TelescopeResultsComment' },
+            })
+        end
+        return entry
+    end
+
+    if opts.oldfiles then
+        opts.results_title = '  Recent files: '
+        opts.include_current_session = true
+        --- we want recent files inside monorepo root folder, not a sub project root.
+        --- see https://github.com/nvim-telescope/telescope.nvim/blob/276362a8020c6e94c7a76d49aa00d4923b0c02f3/lua/telescope/builtin/__internal.lua#L533C61-L533C61
+        if opts.cwd then
+            opts.cwd_only = false
+        end
+        require('telescope.builtin').oldfiles(opts)
+        return
+    end
+
+    require("telescope.builtin").find_files(opts)
+end
+
+M.live_grep_from_project_git_root = function(opts)
+
+    opts = opts or {}
+    if is_git_repo() then
+        opts.results_title = '  Project Files: '
+        opts.cwd = get_git_root()
+        opts.prompt_title = getcwd()
+    else
+        opts.results_title = '  All Files: '
+        opts.prompt_title = vim.fn.getcwd()
+        opts.cmd = vim.fn.getcwd()
+    end
+
+    opts.find_command = {
+        'rg',
+        '--with-filename',
+        '--line-number',
+        '--column',
+        '--smart-case',
+        '--no-ignore',
+        '--hidden',
+        '--trim'
+    }
+
+    require("telescope.builtin").live_grep(opts)
+end
+
+
+--M.project_files = function(opts)
+--  local action_state = require('telescope.actions.state')
+--  local make_entry = require('telescope.make_entry')
+--  local strings = require('plenary.strings')
+--  local utils = require('telescope.utils')
+--  local entry_display = require('telescope.pickers.entry_display')
+--  local devicons = require('nvim-web-devicons')
+--  local def_icon = devicons.get_icon('fname', { default = true })
+--  local iconwidth = strings.strdisplaywidth(def_icon)
+--  local level_up = vim.v.count
+
+--  local map_i_actions = function(_, map)
+--    map('i', '<C-o>', function(prompt_bufnr)
+--      require('userlib.telescope.picker_keymaps').open_selected_in_window(prompt_bufnr)
+--    end, { noremap = true, silent = true })
+--    --- not working.
+--    --- https://github.com/nvim-telescope/telescope-file-browser.nvim/blob/master/lua/telescope/_extensions/file_browser/actions.lua#L598
+--    map('i', '<C-g>', function(prompt_bufnr)
+--      local current_picker = action_state.get_current_picker(prompt_bufnr)
+--      local finder = current_picker.finder
+--      finder.path = vim.cfg.runtime__starts_cwd
+--      finder.cwd = finder.path
+--      current_picker:refresh(finder, {
+--        reset_prompt = true,
+--        multi = current_picker._multi,
+--      })
+--    end, {
+--      desc = 'Go to home dir',
+--    })
+--  end
+
+--  opts = opts or {}
+--  if not opts.cwd then
+--    -- opts.cwd = require('userlib.telescope.helpers').get_cwd_relative_to_buf(0, level_up)
+--    -- opts.cwd = vim.uv.cwd()
+--    opts.cwd = vim.fn.getcwd()
+--  end
+--  opts.hidden = true
+
+--  opts.prompt_title = opts.prompt_title or vim.fn.getcwd()
+
+--  opts.attach_mappings = function(_, map)
+--    map_i_actions(_, map)
+--    return true
+--  end
+
+--  --- //////// item stylish.
+--  local entry_make = make_entry.gen_from_file(opts)
+--  opts.entry_maker = function(line)
+--    local entry = entry_make(line)
+--    local displayer = entry_display.create({
+--      separator = ' ',
+--      items = {
+--        { width = iconwidth },
+--        { width = nil },
+--        { remaining = true },
+--      },
+--    })
+--    entry.display = function(et)
+--      -- https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/make_entry.lua
+--      local tail_raw, path_to_display = M.get_path_and_tail(et.value)
+--      local tail = tail_raw .. ' '
+--      local icon, iconhl = utils.get_devicons(tail_raw)
+
+--      return displayer({
+--        { icon, iconhl },
+--        tail,
+--        { path_to_display, 'TelescopeResultsComment' },
+--      })
+--    end
+--    return entry
+--  end
+--  ---/// end item stylish
+
+--  if opts and opts.oldfiles then
+--    opts.results_title = '  Recent files: '
+--    opts.include_current_session = true
+--    --- we want recent files inside monorepo root folder, not a sub project root.
+--    --- see https://github.com/nvim-telescope/telescope.nvim/blob/276362a8020c6e94c7a76d49aa00d4923b0c02f3/lua/telescope/builtin/__internal.lua#L533C61-L533C61
+--    if opts.cwd then
+--      opts.cwd_only = false
+--    end
+--    require('telescope.builtin').oldfiles(opts)
+--    return
+--  end
+
+--  -- use find_files or git_files.
+--  local use_all_files = opts.use_all_files or false
+--  if (opts and opts.no_gitfiles) or use_find_files_instead_of_git then
+--    use_all_files = true
+--  end
+
+
+--  local ok = (function()
+--    if use_all_files then return false end
+--    opts.results_title = '  Git Files: '
+--    local is_git_ok = pcall(require('telescope.builtin').git_files, opts)
+--    return is_git_ok
+--  end)()
+--  if not ok then
+--    opts.results_title = '  All Files: '
+--    require('telescope.builtin').find_files(opts)
+--  end
+--end
 
 --- - <C-e>: open the command line with the text of the selected.
 M.command_history = function()
@@ -182,7 +298,7 @@ function M.curbuf()
     winblend = 10,
     previewer = true,
     shorten_path = false,
-    borderchars = require('userlib.telescope.borderchars').dropdown_borderchars_default,
+    -- borderchars = require('userlib.telescope.borderchars').dropdown_borderchars_default,
     border = true,
     layout_config = {
       width = 0.55,
