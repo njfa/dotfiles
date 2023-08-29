@@ -161,7 +161,7 @@ function M.load(use)
                     auto_preview = false,
                     auto_close = false,
                     detail = true,
-                    win_position = 'left',
+                    win_position = 'right',
                     keys = {
                         jump = '<cr>'
                     }
