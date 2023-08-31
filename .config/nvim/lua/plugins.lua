@@ -170,6 +170,7 @@ return require('packer').startup(function(use)
             end
         }
 
+        -- 起動時の画面をカスタマイズする
         use {
             'goolord/alpha-nvim',
             requires = { 'kyazdani42/nvim-web-devicons' },
@@ -223,6 +224,7 @@ return require('packer').startup(function(use)
                 end
             end
         }
+
         -- ファジーファインダー
         use {
             "ahmedkhalf/project.nvim",
@@ -303,6 +305,8 @@ return require('packer').startup(function(use)
                         patterns = { ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json", ".env", ".gitlab-ci.yml" },
 
                         scope_chdir = 'tab',
+
+                        datapath = vim.fn.stdpath("data")
                     }
 
                     require('telescope').load_extension('dap')
@@ -350,7 +354,7 @@ return require('packer').startup(function(use)
         use {
             'stevearc/aerial.nvim',
             config = function() require('aerial').setup({
-                backends = { "treesitter", "lsp", "markdown" },
+                backends = { "lsp", "treesitter", "markdown", "man" },
 
                 layout = {
                     -- These control the width of the aerial window.
@@ -373,8 +377,28 @@ return require('packer').startup(function(use)
                     --   window - open aerial to the right/left of the current window
                     placement = "window",
                 },
+                filter_kind = false,
+                -- Show box drawing characters for the tree hierarchy
+                show_guides = true,
+
                 on_attach = on_attach_aerial
             }) end
+        }
+
+        -- 同じ変数をハイライトする
+        use {
+            'RRethy/vim-illuminate',
+            config = function()
+                require('illuminate').configure()
+            end
+        }
+
+        -- 色を可視化する
+        use {
+            'NvChad/nvim-colorizer.lua',
+            config = function ()
+                require('colorizer').setup()
+            end
         }
 
         -- easymotion likeな見た目のジャンプ機能
@@ -403,7 +427,7 @@ return require('packer').startup(function(use)
                         null_ls.builtins.completion.spell,
                         null_ls.builtins.formatting.prettier,
                         null_ls.builtins.diagnostics.markdownlint.with({
-                            extra_args = { "--disable", "MD007", "MD012" }
+                            extra_args = { "--disable", "MD007", "MD012", "MD013" }
                         })
                     },
                 })
