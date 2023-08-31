@@ -48,6 +48,7 @@ if vim.fn.exists("g:vscode") == 0 then
     -- 隠しファイルも検索対象に含めるためにrgを利用する
     map("n", "<leader>f", "<Cmd>lua require('picker').find_files_from_project_git_root()<CR>")
     map("n", "<leader>F", ":lua require('picker').find_files_from_project_git_root( { search_file=\"\" })<left><left><left><left>")
+    map("x", "<leader>f", "<Cmd>lua require('picker').find_files_string_visual()<CR>")
     map("n", "<leader>g", "<Cmd>lua require('picker').live_grep_from_project_git_root()<CR>")
     map("n", "<leader>G", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>")
     map("x", "<leader>g", "<Cmd>lua require('picker').grep_string_visual()<CR>")
@@ -141,6 +142,10 @@ if vim.fn.exists("g:vscode") == 0 then
     map('x', 'gw', "<cmd>HopWord<cr>", {})
     map('n', 'gl', "<cmd>HopLineStart<cr>", {})
     map('x', 'gl', "<cmd>HopLineStart<cr>", {})
+    map('n', 'gk', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false })<cr>", {})
+    map('n', 'gj', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
+    map('x', 'gk', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false })<cr>", {})
+    map('x', 'gj', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
     map('n', 'g/', "<cmd>HopPattern<cr>", {})
     map('x', 'g/', "<cmd>HopPattern<cr>", {})
     map('o', 'm', "<cmd>lua require('tsht').nodes()<cr>", {})
@@ -149,9 +154,6 @@ if vim.fn.exists("g:vscode") == 0 then
     -- 編集
     map("n", "R", "<cmd>lua require'substitute'.operator()<cr>", {})
     map("x", "R", "<cmd>lua require'substitute'.visual()<cr>", {})
-    map('n', 'g<Tab>', "<cmd>TableFormat<cr>", {})
-    map('x', 'g<Tab>', "<cmd>TableFormat<cr>", {})
-
 
     -- fern
     vim.api.nvim_create_autocmd({"FileType"}, {
@@ -192,7 +194,7 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, "n", "gi", "<cmd>Lspsaga show_buf_diagnostics<cr>", {})
         buf_map(bufnr, "n", "gd", "<cmd>Lspsaga peek_definition<cr>", {})
         buf_map(bufnr, "n", "gD", "<cmd>Lspsaga goto_definition<cr>", {})
-        buf_map(bufnr, "n", "go", "<cmd>Lspsaga outline<cr>", {})
+        -- buf_map(bufnr, "n", "go", "<cmd>Lspsaga outline<cr>", {})
         buf_map(bufnr, "n", "gt", "<cmd>Lspsaga peek_type_definition<cr>", {})
         buf_map(bufnr, "n", "gT", "<cmd>Lspsaga goto_type_definition<cr>", {})
         buf_map(bufnr, "n", "gh", "<cmd>lua require('lsp_signature').toggle_float_win()<cr>", {})
@@ -220,14 +222,13 @@ if vim.fn.exists("g:vscode") == 0 then
     end
 
     on_attach_aerial = function(bufnr)
-        -- Toggle the aerial window with <leader>a
-        buf_map(bufnr, 'n', '<leader>a', '<cmd>AerialToggle!<CR>', {})
+        -- Toggle the aerial window with <leader>o
         -- Jump forwards/backwards with '{' and '}'
         buf_map(bufnr, 'n', '}', '<cmd>AerialPrev<CR>', {})
         buf_map(bufnr, 'n', '{', '<cmd>AerialNext<CR>', {})
-        -- Jump up the tree with '[[' or ']]'
-        -- buf_map(bufnr, 'n', ']]', '<cmd>lua require("aerial").prev_up()<CR>', {})
-        -- buf_map(bufnr, 'n', '[[', '<cmd>lua require("aerial").next_up()<CR>', {})
+        -- Jump up the tree with '[' or ']'
+        -- buf_map(bufnr, 'n', ']', '<cmd>lua require("aerial").prev_up()<CR>', {})
+        -- buf_map(bufnr, 'n', '[', '<cmd>lua require("aerial").next_up()<CR>', {})
     end
 
     -- Debugger
