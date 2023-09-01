@@ -31,7 +31,7 @@ function M.load(use)
                 nvim_lsp = "[LSP]",
                 vsnip = "[Sni]",
                 treesitter = "[TS]",
-                cmp_tabnine = "[TAB]",
+                -- cmp_tabnine = "[TAB]",
                 path = "[Path]",
             }
 
@@ -99,7 +99,7 @@ function M.load(use)
                     sources = cmp.config.sources({
                         { name = 'nvim_lsp' },
                         { name = 'vsnip' }, -- For vsnip users.
-                        { name = 'cmp_tabnine' },
+                        -- { name = 'cmp_tabnine' },
                         { name = 'treesitter' },
                         { name = 'nvim_lsp_signature_help' },
                     }, {
@@ -166,26 +166,26 @@ function M.load(use)
             end
         }
 
-        use {
-            'tzachar/cmp-tabnine',
-            run='./install.sh',
-            requires = 'hrsh7th/nvim-cmp',
-            config = function()
-                require('cmp_tabnine.config'):setup({
-                    max_lines = 1000,
-                    max_num_results = 20,
-                    sort = true,
-                    run_on_every_keystroke = true,
-                    snippet_placeholder = '..',
-                    ignored_file_types = {
-                        -- default is not to ignore
-                        -- uncomment to ignore in lua:
-                        -- lua = true
-                    },
-                    show_prediction_strength = false
-                })
-            end
-        }
+        -- use {
+        --     'tzachar/cmp-tabnine',
+        --     run='./install.sh',
+        --     requires = 'hrsh7th/nvim-cmp',
+        --     config = function()
+        --         require('cmp_tabnine.config'):setup({
+        --             max_lines = 1000,
+        --             max_num_results = 20,
+        --             sort = true,
+        --             run_on_every_keystroke = true,
+        --             snippet_placeholder = '..',
+        --             ignored_file_types = {
+        --                 -- default is not to ignore
+        --                 -- uncomment to ignore in lua:
+        --                 -- lua = true
+        --             },
+        --             show_prediction_strength = false
+        --         })
+        --     end
+        -- }
 
         -- 対応する括弧を自動挿入する
         use {
