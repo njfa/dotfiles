@@ -134,28 +134,39 @@ return require('packer').startup(function(use)
         -- ファイラー
         use {
             'lambdalisue/nerdfont.vim',
-            'lambdalisue/fern-renderer-nerdfont.vim',
-            'yuki-yano/fern-preview.vim',
             -- fernでGitのステータスを表示
             'lambdalisue/fern-git-status.vim',
             -- nvimの標準をファイラーを置き換え
             'lambdalisue/fern-hijack.vim',
-            'antoinemadec/FixCursorHold.nvim',
+            -- required nvim < 0.8
+            -- 'antoinemadec/FixCursorHold.nvim',
             {
                 'lambdalisue/fern.vim',
                 requires = {
-                    'antoinemadec/FixCursorHold.nvim',
+                    -- 'antoinemadec/FixCursorHold.nvim',
                     'lambdalisue/nerdfont.vim',
-                    'lambdalisue/fern-renderer-nerdfont.vim',
-                    'yuki-yano/fern-preview.vim',
                     'lambdalisue/fern-git-status.vim',
                     'lambdalisue/fern-hijack.vim',
                 },
                 config = function()
                     vim.g['fern#default_hidden'] = 1
 
-                    vim.g['fern#renderer'] = 'nerdfont'
 
+                end
+            },
+            {
+                'lambdalisue/fern-renderer-nerdfont.vim',
+                -- afterを使用しないと初回起動時にエラーが発生する
+                after = 'fern.vim',
+                config = function ()
+                    vim.g['fern#renderer'] = 'nerdfont'
+                end
+            },
+            {
+                'yuki-yano/fern-preview.vim',
+                -- afterを使用しないと初回起動時にエラーが発生する
+                after = 'fern.vim',
+                config = function ()
                     -- fernでファイルにカーソルがあたった際に自動でプレビューする
                     vim.g['fern_auto_preview'] = false
                 end
