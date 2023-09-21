@@ -1,6 +1,7 @@
 local M = {}
 
 function M.load(use)
+    -- treesitter.luaに移動
     -- -- HTML入力時の補助
     -- use {
     --     "windwp/nvim-ts-autotag",
