@@ -71,6 +71,7 @@ if vim.fn.exists("g:vscode") == 0 then
 
     -- タブ、バッファ操作
     map("n", "<leader>w", "<cmd>w<cr>", { silent = true })
+    map("n", "<C-q>", "<cmd>q<cr>", { silent = true })
     map("n", "<leader>qq", "<cmd>q<cr>", { silent = true })
     map("n", "<leader>qh", "<cmd>BufferLineCloseLeft<cr>", { silent = true })
     map("n", "<leader>ql", "<cmd>BufferLineCloseRight<cr>", { silent = true })
