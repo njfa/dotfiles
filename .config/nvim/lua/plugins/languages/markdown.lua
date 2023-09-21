@@ -15,12 +15,13 @@ function M.load(use)
         end
     }
 
-    use {
-        "iamcco/markdown-preview.nvim",
-        run = "cd app && npm install",
-        setup = function() vim.g.mkdp_filetypes = { "markdown", "plantuml" } end,
-        ft = { "markdown", "plantuml" },
-    }
+    -- plugins.luaに移動
+    -- use {
+    --     "iamcco/markdown-preview.nvim",
+    --     run = "cd app && npm install",
+    --     setup = function() vim.g.mkdp_filetypes = { "markdown", "plantuml" } end,
+    --     ft = { "markdown", "plantuml" },
+    -- }
 end
 
 return M;
