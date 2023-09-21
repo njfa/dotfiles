@@ -429,7 +429,7 @@ return require('packer').startup(function(use)
                 require'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
             end
         }
-        -- hop.nvimの移動先の選択肢を絞る
+        -- visualモードでhop.nvimを利用して選択範囲を変更する
         use 'mfussenegger/nvim-treehopper'
 
         use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
@@ -464,6 +464,20 @@ return require('packer').startup(function(use)
                 vim.g.table_mode_corner='|'
             end
         }
+
+        use {
+            "iamcco/markdown-preview.nvim",
+            run = "cd app && npm install",
+            setup = function() vim.g.mkdp_filetypes = { "markdown", "plantuml" } end,
+            ft = { "markdown", "plantuml" },
+        }
+
+        use {
+            'hashivim/vim-terraform',
+            setup = function ()
+                vim.g.terraform_fmt_on_save = 1
+            end
+        }
     end
 
     -- 補完の設定
@@ -480,8 +494,6 @@ return require('packer').startup(function(use)
 
     local html = require('plugins.languages.html')
     html.load(use)
-
-    use 'hashivim/vim-terraform'
 
     if packer_bootstrap then
         require('packer').sync()
