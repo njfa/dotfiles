@@ -94,6 +94,7 @@ exec_cmd() {
         export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs); $EXEC_CMD $EXEC_OPTS $1
     ) || {
         failure $EXEC_CMD $EXEC_OPTS $1
+        sudo apt --fix-broken install -y
         exit 1
     }
     success $EXEC_CMD $EXEC_OPTS $1
@@ -122,37 +123,33 @@ sudo_symlink_cmd() {
 }
 
 install() {
-    INIT_PATH=$1
-
-    TARGET_PATH=""
-    if [ -n "${2:-}" ]; then
-        TARGET_PATH="$INIT_PATH/$2.sh"
+    scripts=${@:1}
+    if [ $# -eq 0 ]; then
+        # 全スクリプトの一覧を作成する
+        scripts=$(find "$DOTFILES_PATH/etc/os/" -type f -name "*.sh" -not -name "dependencies.sh" -path "$DOTFILES_PATH/etc/os/${OS,,}/*" -o -path "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/*" | xargs basename -s .sh | sort | uniq)
     fi
 
-    if [ -n "$TARGET_PATH" -a -f "$TARGET_PATH" ]; then
-        exec_cmd $TARGET_PATH
-    elif [ -z "$TARGET_PATH" ]; then
-        for f in $(find $INIT_PATH -regex ".*/[a-zA-Z0-9]+\.sh" | sort)
-        do
-            exec_cmd $f
-        done
-    fi
+    for script in $scripts; do
+        TARGET_OS_VERSION="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}.sh"
+        TARGET_OS="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}.sh"
+
+        # バージョンが明示されたディレクトリのスクリプトを優先して適用する
+        if [ -f "$TARGET_OS_VERSION" ]; then
+            exec_cmd $TARGET_OS_VERSION
+        elif [ -f "$TARGET_OS" ]; then
+            exec_cmd $TARGET_OS
+        fi
+    done
 }
 
 initialize() {
     header "Start initializing dotfiles ..."
 
-    INIT_PATH="$DOTFILES_PATH/etc/init"
+    # 必須の依存パッケージをインストール
+    install dependencies
 
-    if [ -d "$DOTFILES_PATH/etc/os/${OS,,}/init" ]; then
-        INIT_PATH="$DOTFILES_PATH/etc/os/${OS,,}/init"
-        install $INIT_PATH ${1:-}
-    fi
-
-    if [ -d "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init" ]; then
-        INIT_PATH="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init"
-        install $INIT_PATH ${1:-}
-    fi
+    # 指定のパッケージをインストール
+    install ${@:1}
 }
 
 list() {
@@ -218,7 +215,7 @@ Commands:
 elif [ "$1" = "deploy" -o "$1" = "d" ]; then
     deploy
 elif [ "$1" = "init" -o "$1" = "i" ]; then
-    TARGET=${2:-}
+    TARGET="${@:2}"
     initialize $TARGET
 elif [ "$1" = "list" -o "$1" = "l" ]; then
     list
