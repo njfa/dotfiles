@@ -16,8 +16,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install required packages
-      run: sudo apt-get update && sudo apt-get install -y git curl wget
     - name: change permission
       run: chmod +x bin/setup.sh
     - name: Initialize dotfiles
@@ -30,8 +28,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install required packages
-      run: sudo apt-get update && sudo apt-get install -y git curl wget
+    - name: change permission
+      run: chmod +x bin/setup.sh
+    - name: Initialize dotfiles
+      run: bin/setup.sh init
+    - name: Deploy dotfiles
+      run: bin/setup.sh deploy
+
+  build-ubuntu-22_04:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v2
     - name: change permission
       run: chmod +x bin/setup.sh
     - name: Initialize dotfiles
