@@ -16,7 +16,7 @@ docker version || if [ -z "$(command -v docker)" ]; then
         sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 
     sudo groupadd docker
     sudo usermod -aG docker $USER
@@ -26,12 +26,7 @@ docker version || if [ -z "$(command -v docker)" ]; then
 fi
 
 
-# docker compose version || if [ -n "$(command -v docker)" ]; then
-#     DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-#     mkdir -p $DOCKER_CONFIG/cli-plugins
-#     curl -SL https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
-
-#     chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
-
-#     docker compose version
-# fi
+if [ "$(docker compose version 2>/dev/null)" ]; then
+    sudo apt-get install -y docker-compose-plugin
+    docker compose version
+fi

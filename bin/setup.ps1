@@ -129,6 +129,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "$env:USERPROFILE\scoop\apps\fontforge\current\bin"
         "$env:USERPROFILE\AppData\Local\Programs\Python\Launcher"
         "$env:USERPROFILE\AppData\Local\Microsoft\WindowsApps"
+        "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\bin"
         "$env:USERPROFILE\.nerd-fonts"
     ) -join ";"
 
@@ -156,15 +157,17 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "gcc"
         "aria2"
         "lessmsi"
-        "vcredist2022"
+        # "vcredist2022"
         "dark"
         "7zip"
         "git"
         "python"
-        "rust"
+        # "rust"
         "ripgrep"
         "pwsh"
         "delta"
+        "PSFzf"
+        "posh-git"
 )
 
     $PACKAGES = @(
@@ -216,13 +219,13 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         git clone https://github.com/njfa/dotfiles.git $DOTFILES
     }
 
-    if (-Not (Get-Module -ListAvailable -Name PSFzf)) {
-        Install-Module PSFzf -Scope CurrentUser -Force -SkipPublisherCheck
-    }
+    # if (-Not (Get-Module -ListAvailable -Name PSFzf)) {
+    #     Install-Module PSFzf -Scope CurrentUser -Force -SkipPublisherCheck
+    # }
 
-    if (-Not (Get-Module -ListAvailable -Name posh-git)) {
-        Install-Module posh-git -Scope CurrentUser -Force -SkipPublisherCheck
-    }
+    # if (-Not (Get-Module -ListAvailable -Name posh-git)) {
+    #     Install-Module posh-git -Scope CurrentUser -Force -SkipPublisherCheck
+    # }
 
     if (-Not (Get-Module -ListAvailable -Name PSReadLine)) {
         Install-Module PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
