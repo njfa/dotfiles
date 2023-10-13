@@ -404,14 +404,6 @@ return require('packer').startup(function(use)
             end
         }
 
-        -- 同じ変数をハイライトする
-        use {
-            'RRethy/vim-illuminate',
-            config = function()
-                require('illuminate').configure()
-            end
-        }
-
         -- 色を可視化する
         use {
             'NvChad/nvim-colorizer.lua',

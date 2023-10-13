@@ -34,7 +34,11 @@ function M.load(use)
                     -- the name of the parser)
                     -- list of language that will be disabled
                     -- disable = { "c", "rust" },
-                    disable = { "vim", "help" },
+                    disable = function(_, bufnr)
+                        local buf_name = vim.api.nvim_buf_get_name(bufnr)
+                        local file_size = vim.api.nvim_call_function("getfsize", { buf_name })
+                        return file_size > 256 * 1024
+                    end,
 
                     -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
                     -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
