@@ -168,7 +168,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "delta"
         "PSFzf"
         "posh-git"
-)
+    )
 
     $PACKAGES = @(
         "bat"
