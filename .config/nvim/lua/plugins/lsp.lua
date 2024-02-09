@@ -19,13 +19,17 @@ function M.load(use)
         'williamboman/mason.nvim',
         'neovim/nvim-lspconfig',
         'hrsh7th/cmp-nvim-lsp',
+        'jose-elias-alvarez/null-ls.nvim',
         {
             'williamboman/mason-lspconfig.nvim',
             requires = {
                 'williamboman/mason.nvim',
                 'hrsh7th/cmp-nvim-lsp',
+                'jose-elias-alvarez/null-ls.nvim',
+                'mfussenegger/nvim-jdtls',
+                'simrat39/rust-tools.nvim',
             },
-            ft = {'sh', 'zsh', 'bash', 'html', 'markdown', 'vim', 'lua', 'yaml', 'env', 'json', 'javascript'},
+            -- ft = {'sh', 'zsh', 'bash', 'html', 'markdown', 'vim', 'lua', 'yaml', 'env', 'json', 'javascript'},
             config = function()
                 -- mason
                 require('mason').setup()
@@ -38,97 +42,211 @@ function M.load(use)
                             capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
                         }
                     end,
-                }
-            end
-        },
-        {
-            -- JavaのLSPについては専用のものを利用する
-            'mfussenegger/nvim-jdtls',
-            requires = {
-                'williamboman/mason.nvim',
-            },
-            ft = { "java" },
-            config = function ()
-                local jdtls_path = vim.fn.stdpath('data') .. "/mason/packages/jdtls/bin/jdtls"
-                local java_debugger_path = vim.fn.stdpath('data') .. "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
 
-                local cfg = {
-                    cmd = { jdtls_path },
-                    root_dir = vim.fs.dirname(vim.fs.find({'gradlew', '.git', 'mvnw'}, { upward = true })[1]),
-                    init_options = {
-                        bundles = {
-                            vim.fn.glob(java_debugger_path, true)
-                        };
-                    },
-                    on_attach = function(client, bufnr)
-                        -- require('jdtls').setup_dap({ hotcodereplace = 'auto' })
-                        on_attach_lsp(client, bufnr)
+                    ["jdtls"] = function()
+                        local jdtls_path = vim.fn.stdpath('data') .. "/mason/packages/jdtls/bin/jdtls"
+                        local java_debugger_path = vim.fn.stdpath('data') .. "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
+
+                        local cfg = {
+                            cmd = { jdtls_path },
+                            root_dir = vim.fs.dirname(vim.fs.find({'gradlew', '.git', 'mvnw'}, { upward = true })[1]),
+                            init_options = {
+                                bundles = {
+                                    vim.fn.glob(java_debugger_path, true)
+                                };
+                            },
+                            on_attach = function(client, bufnr)
+                                -- require('jdtls').setup_dap({ hotcodereplace = 'auto' })
+                                on_attach_lsp(client, bufnr)
+                            end
+                        }
+
+                        require('jdtls').start_or_attach(cfg)
+
+                        -- require('dap').configurations.java = {
+                        --     {
+                        --         type = 'java';
+                        --         request = 'launch';
+                        --         name = "Debug (Attach) - Remote";
+                        --         hostName = '127.0.0.1';
+                        --         port = 5005;
+                        --     },
+                        -- }
+                    end,
+
+                    ["rust_analyzer"] = function ()
+                        -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
+                        local codelldb_path = vim.fn.stdpath('data') .. "/mason/packages/codelldb/extension"
+                        local codelldb_bin = codelldb_path .. "/adapter/codelldb"
+                        local liblldb_bin = codelldb_path .. "/lldb/lib/liblldb.so"
+
+                        local rt = require('rust-tools')
+
+                        local cfg = {
+                            server = {
+                                settings = {
+                                    ['rust-analyzer'] = {
+                                        cargo = {
+                                            autoReload = true
+                                        }
+                                    }
+                                },
+                            },
+                            dap = {
+                                adapter = require('rust-tools.dap').get_codelldb_adapter(
+                                    codelldb_bin,
+                                    liblldb_bin
+                                )
+                            }
+                        }
+
+                        rt.setup(cfg)
+
+                        -- require('dap.ext.vscode').load_launchjs(nil, {rt_lldb={'rust'}})
+                        require('dap').configurations.rust = {
+                            {
+                                type = 'rt_lldb';
+                                request = 'launch';
+                                name = "Debug (Attach)";
+                                cwd = "${workspaceFolder}",
+                                program = "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
+                                stopAtEntry = true,
+                            },
+                        }
+                    end,
+
+                    ["pylsp"] = function()
+                        require("lspconfig").pylsp.setup {
+                            settings = {
+                                pylsp = {
+                                    plugins = {
+                                        pycodestyle = {
+                                            ignore = {'E501'}
+                                        }
+                                    }
+                                }
+                            },
+                            on_attach = on_attach_lsp,
+                            capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        }
                     end
                 }
 
-                require('jdtls').start_or_attach(cfg)
+                -- Formatterのセットアップ
+                local mason = require("mason")
+                local mason_package = require("mason-core.package")
+                local mason_registry = require("mason-registry")
+                local null_ls = require("null-ls")
 
-                -- require('dap').configurations.java = {
-                --     {
-                --         type = 'java';
-                --         request = 'launch';
-                --         name = "Debug (Attach) - Remote";
-                --         hostName = '127.0.0.1';
-                --         port = 5005;
-                --     },
-                -- }
+                local null_sources = {
+                    null_ls.builtins.diagnostics.markdownlint.with({
+                        extra_args = { "--disable", "MD007", "MD012", "MD013" }
+                    })
+                }
+
+                for _, package in ipairs(mason_registry.get_installed_packages()) do
+                    local package_categories = package.spec.categories[1]
+                    if package_categories == mason_package.Cat.Formatter then
+                        table.insert(null_sources, null_ls.builtins.formatting[package.name])
+                    end
+                    if package_categories == mason_package.Cat.Linter then
+                        table.insert(null_sources, null_ls.builtins.diagnostics[package.name])
+                    end
+                end
+
+                null_ls.setup({
+                    sources = null_sources,
+                })
             end
         },
-        {
-            'simrat39/rust-tools.nvim',
-            requires = {
-                'neovim/nvim-lspconfig',
-                'williamboman/mason.nvim',
-            },
-            ft = {
-                "rust"
-            },
-            config = function ()
-                -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
-                local codelldb_path = vim.fn.stdpath('data') .. "/mason/packages/codelldb/extension"
-                local codelldb_bin = codelldb_path .. "/adapter/codelldb"
-                local liblldb_bin = codelldb_path .. "/lldb/lib/liblldb.so"
+        -- {
+        --     -- JavaのLSPについては専用のものを利用する
+        --     'mfussenegger/nvim-jdtls',
+        --     requires = {
+        --         'williamboman/mason.nvim',
+        --     },
+        --     ft = { "java" },
+        --     config = function ()
+        --         local jdtls_path = vim.fn.stdpath('data') .. "/mason/packages/jdtls/bin/jdtls"
+        --         local java_debugger_path = vim.fn.stdpath('data') .. "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
 
-                local rt = require('rust-tools')
+        --         local cfg = {
+        --             cmd = { jdtls_path },
+        --             root_dir = vim.fs.dirname(vim.fs.find({'gradlew', '.git', 'mvnw'}, { upward = true })[1]),
+        --             init_options = {
+        --                 bundles = {
+        --                     vim.fn.glob(java_debugger_path, true)
+        --                 };
+        --             },
+        --             on_attach = function(client, bufnr)
+        --                 -- require('jdtls').setup_dap({ hotcodereplace = 'auto' })
+        --                 on_attach_lsp(client, bufnr)
+        --             end
+        --         }
 
-                local cfg = {
-                    server = {
-                        settings = {
-                            ['rust-analyzer'] = {
-                                cargo = {
-                                    autoReload = true
-                                }
-                            }
-                        },
-                    },
-                    dap = {
-                        adapter = require('rust-tools.dap').get_codelldb_adapter(
-                            codelldb_bin,
-                            liblldb_bin
-                        )
-                    }
-                }
+        --         require('jdtls').start_or_attach(cfg)
 
-                rt.setup(cfg)
+        --         -- require('dap').configurations.java = {
+        --         --     {
+        --         --         type = 'java';
+        --         --         request = 'launch';
+        --         --         name = "Debug (Attach) - Remote";
+        --         --         hostName = '127.0.0.1';
+        --         --         port = 5005;
+        --         --     },
+        --         -- }
+        --     end
+        -- },
+        -- {
+        --     'simrat39/rust-tools.nvim',
+        --     requires = {
+        --         'neovim/nvim-lspconfig',
+        --         'williamboman/mason.nvim',
+        --     },
+        --     ft = {
+        --         "rust"
+        --     },
+        --     config = function ()
+        --         -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
+        --         local codelldb_path = vim.fn.stdpath('data') .. "/mason/packages/codelldb/extension"
+        --         local codelldb_bin = codelldb_path .. "/adapter/codelldb"
+        --         local liblldb_bin = codelldb_path .. "/lldb/lib/liblldb.so"
 
-                -- require('dap.ext.vscode').load_launchjs(nil, {rt_lldb={'rust'}})
-                require('dap').configurations.rust = {
-                    {
-                        type = 'rt_lldb';
-                        request = 'launch';
-                        name = "Debug (Attach)";
-                        cwd = "${workspaceFolder}",
-                        program = "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
-                        stopAtEntry = true,
-                    },
-                }
-            end
-        }
+        --         local rt = require('rust-tools')
+
+        --         local cfg = {
+        --             server = {
+        --                 settings = {
+        --                     ['rust-analyzer'] = {
+        --                         cargo = {
+        --                             autoReload = true
+        --                         }
+        --                     }
+        --                 },
+        --             },
+        --             dap = {
+        --                 adapter = require('rust-tools.dap').get_codelldb_adapter(
+        --                     codelldb_bin,
+        --                     liblldb_bin
+        --                 )
+        --             }
+        --         }
+
+        --         rt.setup(cfg)
+
+        --         -- require('dap.ext.vscode').load_launchjs(nil, {rt_lldb={'rust'}})
+        --         require('dap').configurations.rust = {
+        --             {
+        --                 type = 'rt_lldb';
+        --                 request = 'launch';
+        --                 name = "Debug (Attach)";
+        --                 cwd = "${workspaceFolder}",
+        --                 program = "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
+        --                 stopAtEntry = true,
+        --             },
+        --         }
+        --     end
+        -- }
     }
 
     use {
