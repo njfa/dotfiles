@@ -82,7 +82,7 @@ return require('packer').startup(function(use)
             -- nvim-lspの進捗の表示を変更する
             {
                 'j-hui/fidget.nvim',
-                tag = 'legacy',
+                tag = 'v1.1.0',
                 config = function()
                     require('fidget').setup()
                 end
@@ -427,23 +427,23 @@ return require('packer').startup(function(use)
         use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
 
         -- Linter & Formatter
-        use {
-            'jose-elias-alvarez/null-ls.nvim',
-            config = function()
-                local null_ls = require("null-ls")
-                null_ls.setup({
-                    sources = {
-                        null_ls.builtins.formatting.stylua,
-                        null_ls.builtins.diagnostics.eslint,
-                        null_ls.builtins.completion.spell,
-                        null_ls.builtins.formatting.prettier,
-                        null_ls.builtins.diagnostics.markdownlint.with({
-                            extra_args = { "--disable", "MD007", "MD012", "MD013" }
-                        })
-                    },
-                })
-            end
-        }
+        -- use {
+        --     'jose-elias-alvarez/null-ls.nvim',
+        --     config = function()
+        --         local null_ls = require("null-ls")
+        --         null_ls.setup({
+        --             sources = {
+        --                 null_ls.builtins.formatting.stylua,
+        --                 null_ls.builtins.diagnostics.eslint,
+        --                 null_ls.builtins.completion.spell,
+        --                 null_ls.builtins.formatting.prettier,
+        --                 null_ls.builtins.diagnostics.markdownlint.with({
+        --                     extra_args = { "--disable", "MD007", "MD012", "MD013" }
+        --                 })
+        --             },
+        --         })
+        --     end
+        -- }
 
         -- Debuggerの設定
         local dap = require('plugins.dap')
