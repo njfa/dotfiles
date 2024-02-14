@@ -59,6 +59,7 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>rr", "[[<Plug>RestNvim]]")
     map("n", "<leader>rp", "[[<Plug>RestNvimPreview]]")
     map("n", "<leader>r.", "[[<Plug>RestNvimLast]]")
+    map("n", "<leader>re", ":RestSelectEnv ")
     map("n", "<leader>b", "<Cmd>BufferLinePick<CR>")
     map("n", "<leader>B", "<Cmd>Telescope buffers<CR>")
     map("n", "<leader>i", "<Cmd>lua require('telescope.builtin').diagnostics({ bufnr=0 })<CR>")
