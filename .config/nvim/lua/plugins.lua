@@ -198,6 +198,16 @@ return require('packer').startup(function(use)
         }
 
         -- ターミナル表示用機能。Lspsagaにも同様の機能があるが、こちらのほうが挙動が良い
+        use({
+            "kdheepak/lazygit.nvim",
+            -- optional for floating window border decoration
+            requires = {
+                "nvim-lua/plenary.nvim",
+            },
+            config = function()
+                map("n", "<A-g>", "<cmd>LazyGitCurrentFile<cr>", {})
+            end
+        })
         use {
             "akinsho/toggleterm.nvim",
             tag = '*',
@@ -218,21 +228,21 @@ return require('packer').startup(function(use)
                 map("n", "<A-d>", "<cmd>lua TermToggle()<cr>", {})
                 map("t", "<A-d>", "<cmd>lua TermToggle()<cr>", {})
 
-                if vim.fn.executable('lazygit') == 1 then
-                    local lazygit = Terminal:new({
-                        cmd = "lazygit",
-                        dir = ".",
-                        autochdir = true,
-                        direction = "float",
-                        hidden = true
-                    })
+                -- if vim.fn.executable('lazygit') == 1 then
+                --     local lazygit = Terminal:new({
+                --         cmd = "lazygit",
+                --         dir = ".",
+                --         autochdir = true,
+                --         direction = "float",
+                --         hidden = true
+                --     })
 
-                    function LazygitToggle()
-                        lazygit:toggle()
-                    end
-                    map("n", "<A-g>", "<cmd>lua LazygitToggle()<cr>", {})
-                    map("t", "<A-g>", "<cmd>lua LazygitToggle()<cr>", {})
-                end
+                --     function LazygitToggle()
+                --         lazygit:toggle()
+                --     end
+                --     map("n", "<A-g>", "<cmd>lua LazygitToggle()<cr>", {})
+                --     map("t", "<A-g>", "<cmd>lua LazygitToggle()<cr>", {})
+                -- end
             end
         }
 
