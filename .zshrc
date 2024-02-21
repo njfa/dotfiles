@@ -332,8 +332,11 @@ typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=8
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
-alias vi='nvim'
-alias vim='nvim'
+alias vi='nvim --listen /tmp/nvim-server.pipe'
+alias vim='nvim --listen /tmp/nvim-server.pipe'
+alias nvim='nvim --listen /tmp/nvim-server.pipe'
+# alias vi='nvim'
+# alias vim='nvim'
 alias vimdiff='nvim -d'
 alias view='nvim -R'
 alias code='code.sh'
