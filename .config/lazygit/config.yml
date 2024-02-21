@@ -3,5 +3,7 @@ gui:
   showIcons: true
 
 os:
+  editCommand: 'nvim'
+  editCommandTemplate: '{{editor}} --server /tmp/nvim-server.pipe --remote-tab "$(pwd)/{{filename}}"'
   copyToClipboardCmd: 'echo {{text}} | win32yank.exe -i --crlf'
 
