@@ -40,6 +40,14 @@ vim.api.nvim_create_autocmd({"FileType"}, {
     end,
 })
 
+-- bufferlineのタブ名にcwdを設定する
+vim.api.nvim_create_autocmd({ "BufReadPost" }, {
+    pattern = { "*" },
+    callback = function()
+        vim.cmd("BufferLineTabRename " .. require('picker').get_cwd())
+    end,
+})
+
 -- vim.api.nvim_create_autocmd({"FileType"}, {
 --     pattern = {"saga_codeaction" },
 --     callback = function()
