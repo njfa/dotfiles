@@ -19,7 +19,7 @@ return require('packer').startup(function(use)
     use 'nvim-lua/popup.nvim'
     use 'nvim-lua/plenary.nvim'
     use 'tami5/sqlite.lua'
-    use 'kyazdani42/nvim-web-devicons'
+    use 'nvim-tree/nvim-web-devicons'
 
     -- 機能拡張
     -- "."の高機能化
@@ -79,6 +79,8 @@ return require('packer').startup(function(use)
             'petertriho/nvim-scrollbar',
             -- 通知をリッチな見た目にする
             'rcarriga/nvim-notify',
+            -- ステータスラインをリッチな見た目にする
+            "rebelot/heirline.nvim",
             -- nvim-lspの進捗の表示を変更する
             {
                 'j-hui/fidget.nvim',
@@ -90,7 +92,7 @@ return require('packer').startup(function(use)
             {
                 'akinsho/bufferline.nvim',
                 requires = {
-                    'kyazdani42/nvim-web-devicons',
+                    'nvim-tree/nvim-web-devicons',
                     'tiagovla/scope.nvim',
                 }
             },
@@ -125,6 +127,7 @@ return require('packer').startup(function(use)
                     require("scrollbar.handlers.search").setup()
 
                     require("plugins.bufferline").setup()
+                    require('plugins.heirline').setup()
 
                     vim.cmd.colorscheme("tokyonight")
                 end
@@ -173,18 +176,11 @@ return require('packer').startup(function(use)
             },
         }
 
-        -- ステータスラインをリッチな見た目にする
-        use {
-            "rebelot/heirline.nvim",
-            config = function()
-                require('plugins.heirline').load()
-            end
-        }
 
         -- 起動時の画面をカスタマイズする
         use {
             'goolord/alpha-nvim',
-            requires = { 'kyazdani42/nvim-web-devicons' },
+            requires = { 'nvim-tree/nvim-web-devicons' },
             config = function()
                 require('alpha').setup(require'alpha.themes.startify'.config)
             end

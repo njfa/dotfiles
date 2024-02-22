@@ -61,11 +61,11 @@ git_info() {
         fi
     fi
 
-    echo "#[fg=#296873,bg=#262a33]#[fg=colour255,bg=#296873] #{pane_pid} #[fg=#296873,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] #(whoami) #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $current_path #[bg=#262a33,fg=#363a43]$git_info#[fg=#262a33,bg=#296873]#[bg=#262a33,fg=#296873]#[default]"
+    echo "#[fg=#7aa2f7,bg=#262a33]#[fg=colour255,bg=#7aa2f7] #{pane_pid} #[fg=#7aa2f7,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] #(whoami) #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $current_path #[bg=#262a33,fg=#363a43]$git_info#[fg=#262a33,bg=#7aa2f7]#[bg=#262a33,fg=#7aa2f7]#[default]"
 }
 
-if [[ $1 = "ssh" ]]; then
-    pane_pid=$2
+if [[ $2 = "ssh" ]]; then
+    pane_pid=$3
     info=$({ pgrep -flaP $pane_pid ; ps -o command -p $pane_pid; } | xargs -I{} echo {} | awk '/ssh/' | sed -E 's/^[0-9]*[[:blank:]]*ssh //')
     port=$(echo $info | grep -Eo '\-p ([0-9]+)'|sed 's/-p //')
     if [ -z $port ]; then
@@ -99,7 +99,7 @@ if [[ $1 = "ssh" ]]; then
         done
     fi
     ssh_hostname=" ssh:$user@$host "
-    echo "#[fg=#296873,bg=#262a33]#[fg=colour255,bg=#296873] #{pane_pid} #[fg=#296873,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $user #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $host #[bg=#262a33,fg=#363a43]#[default]"
+    echo "#[fg=#7aa2f7,bg=#262a33]#[fg=colour255,bg=#7aa2f7] #{pane_pid} #[fg=#7aa2f7,bg=#262a33]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $user #[bg=#262a33,fg=#363a43]#[fg=#262a33,bg=#363a43]#[fg=colour255,bg=#363a43] $host #[bg=#262a33,fg=#363a43]#[default]"
 else
     git_info $1
 fi

@@ -45,6 +45,10 @@ local function getcwd()
     return cwd
 end
 
+M.is_git_repo = function()
+    return is_git_repo()
+end
+
 M.get_cwd = function()
     return getcwd()
 end
