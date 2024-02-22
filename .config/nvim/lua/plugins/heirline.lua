@@ -1,14 +1,34 @@
 local M = {}
 
-function M.load()
+function M.setup()
     local conditions = require("heirline.conditions")
     local utils = require("heirline.utils")
     local colors = require("tokyonight.colors").setup()
 
-    local Separator = {
+    local AreaSeparator = {
         provider  = function()
             return "%="
+        end
+    }
+
+    local SegmentSeparator = {
+        provider  = function()
+            return "┃"
         end,
+        hl = { fg = "#1f2335" },
+    }
+
+    local Spacer = {
+        provider  = function()
+            return " "
+        end
+    }
+
+    local EOL = {
+        provider  = function()
+            return '▐'
+        end,
+        hl = { fg = "blue", bg = "bg_highlight" },
     }
 
     local ViMode = {
@@ -98,27 +118,13 @@ function M.load()
             hl = function(self)
                 local mode = self.mode:sub(1, 1) -- get only the first mode character
                 return {
-                    fg = "black",
+                    fg = "#000000",
                     bg = self.mode_colors[mode],
                     bold = true,
                 }
             end,
             -- Re-evaluate the component only on ModeChanged event!
             -- Also allows the statusline to be re-evaluated when entering operator-pending mode
-        },
-        {
-            provider = function()
-                return ""
-            end,
-            -- Same goes for the highlight. Now the foreground will change according to the current mode.
-            hl = function(self)
-                local mode = self.mode:sub(1, 1) -- get only the first mode character
-                return {
-                    fg = self.mode_colors[mode],
-                    bg = "bg",
-                    bold = true,
-                }
-            end,
         }
     }
 
@@ -131,43 +137,34 @@ function M.load()
     -- We can now define some children separately and add them later
 
     local WorkDir = {
+        hl = { fg = "comment" },
         {
             provider = function()
-                local cwd = vim.fn.getcwd(0)
-                cwd = vim.fn.fnamemodify(cwd, ":~")
+                local cwd = require('picker').get_cwd()
                 if not conditions.width_percent_below(#cwd, 0.25) then
                     cwd = vim.fn.pathshorten(cwd)
                 end
-                local trail = cwd:sub(-1) == '/' and '' or '/'
-                return  "  " .. cwd  .. trail
-            end,
-            hl = { fg = "yellow", bg = "bg_dark", bold = true },
-        },
-        -- {
-        --     provider = function()
-        --         return "  "
-        --     end,
-        --     hl = { fg = "fg", bg = "bg_dark", bold = false },
-        -- },
+                -- local trail = cwd:sub(-1) == '/' and '' or '/'
+                -- return  " " .. cwd  .. trail
+                return "@ " .. cwd
+            end
+        }
     }
 
     local FileName = {
-        {
-            provider = function(self)
-                -- first, trim the pattern relative to the current directory. For other
-                -- options, see :h filename-modifers
-                local filename = vim.fn.fnamemodify(self.filename, ":.")
-                if filename == "" then return "[No Name]" end
-                -- now, if the filename would occupy more than 1/4th of the available
-                -- space, we trim the file path to its initials
-                -- See Flexible Components section below for dynamic truncation
-                -- if not conditions.width_percent_below(#filename, 0.25) then
-                --     filename = vim.fn.pathshorten(filename)
-                -- end
-                return filename
-            end,
-            hl = { fg = "fg", bg = "bg_dark" },
-        }
+        provider = function(self)
+            -- first, trim the pattern relative to the current directory. For other
+            -- options, see :h filename-modifers
+            local filename = vim.fn.fnamemodify(self.filename, ":.")
+            if filename == "" then filename = "[No Name]" end
+            -- now, if the filename would occupy more than 1/4th of the available
+            -- space, we trim the file path to its initials
+            -- See Flexible Components section below for dynamic truncation
+            -- if not conditions.width_percent_below(#filename, 0.25) then
+            --     filename = vim.fn.pathshorten(filename)
+            -- end
+            return filename
+        end
     }
 
     local FileFlags = {
@@ -176,14 +173,14 @@ function M.load()
                 return vim.bo.modified
             end,
             provider = " ●",
-            hl = { fg = "green", bg = "bg_dark" },
+            hl = { fg = "green" },
         },
         {
             condition = function()
                 return not vim.bo.modifiable or vim.bo.readonly
             end,
             provider = " ",
-            hl = { fg = "red", bg = "bg_dark" },
+            hl = { fg = "red" },
         },
     }
 
@@ -196,7 +193,7 @@ function M.load()
         hl = function()
             if vim.bo.modified then
                 -- use `force` because we need to override the child's hl foreground
-                return { fg = "fg", bg = "bg_dark", bold = true, force=true }
+                return { bold = true, force=true }
             end
         end,
     }
@@ -205,81 +202,98 @@ function M.load()
     FileNameBlock = utils.insert(
         FileNameBlock,
         utils.insert(FileNameModifer, FileName), -- a new table where FileName is a child of FileNameModifier
-        FileFlags,
         { provider = '%<'} -- this means that the statusline is cut here when there's not enough space
     )
 
     local FileType = {
         provider = function()
-            return "  " .. string.upper(vim.bo.filetype)
-        end,
-        hl = { fg = "black", bg = "teal", bold = true },
+            -- return "  " .. string.upper(vim.bo.filetype)
+            return string.upper(vim.bo.filetype)
+        end
     }
 
     local FileEncoding = {
         {
             provider = function()
-                return ""
-            end,
-            hl = { fg = "teal", bg = "bg", bold = true },
-        },
-        {
-            provider = function()
                 local enc = (vim.bo.fenc ~= '' and vim.bo.fenc) or vim.o.enc -- :h 'enc'
-                return " " .. enc:upper()
-            end,
-            hl = { fg = "black", bg = "teal", bold = true },
+                return enc:upper()
+            end
         }
     }
 
     local FileFormat = {
         provider = function()
             local fmt = vim.bo.fileformat
-            return "  " .. fmt:upper() .. " "
-        end,
-        hl = { fg = "black", bg = "teal", bold = true },
+            -- return "  " .. fmt:upper() .. " "
+            return fmt:upper()
+        end
     }
 
     local FileSize = {
         provider = function()
             -- stackoverflow, compute human readable file size
-            local suffix = { 'B', 'k', 'M', 'G', 'T', 'P', 'E' }
+            local suffix = { 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' }
             local fsize = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
             fsize = (fsize < 0 and 0) or fsize
             if fsize < 1024 then
-                return " (" .. fsize .. " " .. suffix[1] .. ") "
+                return fsize ..  suffix[1]
             end
             local i = math.floor((math.log(fsize) / math.log(1024)))
-            return " (" .. string.format("%.2g %s", fsize / math.pow(1024, i), suffix[i + 1]) .. ") "
-        end,
-        hl = { fg = "fg", bg = "bg_dark" },
+            return string.format("%.2g%s", fsize / math.pow(1024, i), suffix[i + 1])
+        end
+    }
+
+    local ShiftWidth = {
+        provider = function()
+            return "Spc " .. vim.fn.shiftwidth()
+        end
     }
 
     -- We're getting minimalists here!
-    local Ruler = {
+    local Line = {
         -- %l = current line number
         -- %L = number of lines in the buffer
         -- %c = column number
         -- %P = percentage through file of displayed window
-        provider = "ROW:%7(%l/%3L%) (%P)  COL:%2c ",
+        provider = "Ln %l (%P)"
+    }
+
+    local Column = {
+        -- %l = current line number
+        -- %L = number of lines in the buffer
+        -- %c = column number
+        -- %P = percentage through file of displayed window
+        provider = "Col %2c"
     }
 
     local LSPActive = {
         condition = conditions.lsp_attached,
         update = {'LspAttach', 'LspDetach', 'BufEnter'},
+        hl = { fg = "teal" },
 
         -- You can keep it simple,
         -- provider = " [LSP]",
 
         -- Or complicate things a bit and get the servers names
-        provider  = function()
-            local names = {}
-            for i, server in pairs(vim.lsp.get_active_clients({ bufnr = 0 })) do
-                table.insert(names, server.name)
+        {
+            provider  = function()
+                return " [ "
             end
-            return "  LSP:[" .. table.concat(names, ", ") .. "] "
-        end,
-        hl = { fg = "orange", bg = "bg_dark", bold = true },
+        },
+        {
+            provider  = function()
+                local names = {}
+                for i, server in pairs(vim.lsp.get_active_clients({ bufnr = 0 })) do
+                    table.insert(names, server.name)
+                end
+                return table.concat(names, " ┊ ")
+            end
+        },
+        {
+            provider  = function()
+                return " ]"
+            end
+        },
     }
     local Git = {
         condition = conditions.is_git_repo,
@@ -289,54 +303,46 @@ function M.load()
             self.has_changes = self.status_dict.added ~= 0 or self.status_dict.removed ~= 0 or self.status_dict.changed ~= 0
         end,
 
-        hl = { fg = "fg", bg = "bg_dark" },
-
-
+        SegmentSeparator,
+        Spacer,
         {   -- git branch name
             provider = function(self)
-                return "   " .. self.status_dict.head
+                -- return "   " .. self.status_dict.head
+                return " " .. self.status_dict.head
             end,
             hl = { bold = true }
         },
-        -- You could handle delimiters, icons and counts similar to Diagnostics
+        Spacer,
         {
-            condition = function(self)
-                return self.has_changes
+            provider = function(self)
+                if self.has_changes == true then
+                    return "┊ "
+                else
+                    return ""
+                end
             end,
-            provider = " ("
+            hl = { fg = "comment" },
         },
         {
             provider = function(self)
                 local count = self.status_dict.added or 0
-                return count > 0 and ("+" .. count)
+                return count > 0 and (" " .. count .. " ")
             end,
             hl = { fg = "teal" },
         },
         {
             provider = function(self)
                 local count = self.status_dict.removed or 0
-                return count > 0 and ("-" .. count)
+                return count > 0 and (" " .. count .. " ")
             end,
             hl = { fg = "red" },
         },
         {
             provider = function(self)
                 local count = self.status_dict.changed or 0
-                return count > 0 and ("~" .. count)
+                return count > 0 and ("󰝤 " .. count .. " ")
             end,
             hl = { fg = "orange" },
-        },
-        {
-            condition = function(self)
-                return self.has_changes
-            end,
-            provider = ") ",
-        },
-        {
-            provider = function()
-                return " "
-            end,
-            hl = { fg = "fg", bold = false },
         }
     }
 
@@ -352,25 +358,69 @@ function M.load()
         -- see Click-it! section for clickable actions
     }
     local StatusLine = {
+        hl = { fg = "fg_dark", bg = "bg_highlight" },
+        ViMode,
         {
-            ViMode,
-            Git,
-            WorkDir,
+            Spacer,
             FileNameBlock,
-            FileSize,
+            FileFlags,
+            Spacer,
         },
+        SegmentSeparator,
         {
-            Separator,
+            Spacer,
+            FileSize,
+            Spacer,
+        },
+        SegmentSeparator,
+        {
+            Spacer,
+            WorkDir,
+            Spacer,
+        },
+        AreaSeparator,
+        {
             LSPActive,
             DAPMessages,
         },
+        AreaSeparator,
         {
-            Separator,
-            Ruler,
-            FileEncoding,
-            FileType,
-            FileFormat,
+            Spacer,
+            Line,
+            Spacer,
         },
+        SegmentSeparator,
+        {
+            Spacer,
+            Column,
+            Spacer,
+        },
+        SegmentSeparator,
+        {
+            Spacer,
+            ShiftWidth,
+            Spacer,
+        },
+        SegmentSeparator,
+        {
+            Spacer,
+            FileEncoding,
+            Spacer,
+        },
+        SegmentSeparator,
+        {
+            Spacer,
+            FileFormat,
+            Spacer,
+        },
+        SegmentSeparator,
+        {
+            Spacer,
+            FileType,
+            Spacer,
+        },
+        Git,
+        EOL
     }
 
     require("heirline").setup({

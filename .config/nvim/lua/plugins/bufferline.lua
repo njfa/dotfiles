@@ -11,76 +11,131 @@ function M.setup()
                 fg = colors.fg,
                 bg = colors.bg_highlight,
             },
-            separator = {
-                fg = colors.fg,
-                bg = colors.bg,
-            },
-            separator_selected = {
-                fg = colors.fg,
-                bg = colors.bg,
-            },
-            separator_visible = {
-                fg = colors.fg,
-                bg = colors.bg,
-            },
-            offset_separator = {
-                fg = colors.bg_dark,
-                bg = colors.bg,
-            },
-            indicator_visible = {
-                fg = colors.fg,
-                bg = colors.bg,
-            },
-            indicator_selected = {
-                fg = colors.fg,
-                bg = colors.bg,
-            },
             background = {
-                fg = colors.dark5,
-                bg = colors.bg,
+                fg = colors.comment,
+                bg = "#1f2335",
             },
-            buffer_selected = {
+            buffer = {
                 fg = colors.fg,
+                bg = colors.bg_highlight,
             },
             tab = {
-                fg = colors.fg,
-                bold = false,
-                italic = false,
+                fg = colors.comment,
+                bg = "#1f2335",
             },
             tab_selected = {
                 fg = colors.bg_dark,
-                bg = colors.purple,
-                bold = true,
-                italic = true,
+                bg = colors.blue,
             },
             tab_separator = {
-                fg = colors.bg_dark,
+                fg = "#1f2335",
+                bg = "#1f2335",
             },
             tab_separator_selected = {
-                fg = colors.purple,
+                fg = colors.blue,
+                bg = colors.blue,
             },
-            diagnostic_selected = {
-                bold = true,
-                italic = false,
+            -- close_button = {
+            --     fg = colors.fg,
+            --     bg = colors.bg,
+            -- },
+        --     close_button_selected = {
+        --         fg = colors.fg,
+        --         bg = colors.bg_highlight,
+        --     },
+            separator = {
+                fg = colors.bg_highlight,
+                bg = colors.bg_highlight,
             },
-            hint_selected = {
-                bold = true,
-                italic = false,
+        --     separator_selected = {
+        --         fg = colors.fg,
+        --         bg = colors.bg_highlight,
+        --     },
+        --     -- separator_visible = {
+        --     --     fg = colors.fg,
+        --     --     bg = colors.bg,
+        --     -- },
+            offset_separator = {
+                fg = colors.bg_dark,
+                bg = colors.bg_highlight,
             },
-            hint_diagnostic_selected = {
-                bold = true,
-                italic = false,
+        --     indicator_visible = {
+        --         fg = colors.fg,
+        --         bg = colors.bg_highlight,
+        --     },
+        --     indicator_selected = {
+        --         fg = colors.fg,
+        --         bg = colors.bg_highlight,
+        --     },
+            diagnostic = {
+                bg = "#1f2335",
             },
+            diagnostic_visible = {
+                bg = "#1f2335",
+            },
+            hint = {
+                bg = "#1f2335",
+            },
+            hint_visible = {
+                bg = "#1f2335",
+            },
+            info = {
+                bg = "#1f2335",
+            },
+            warning = {
+                bg = "#1f2335",
+            },
+            error = {
+                bg = "#1f2335",
+            },
+            info_visible = {
+                bg = "#1f2335",
+            },
+            warning_visible = {
+                bg = "#1f2335",
+            },
+            error_visible = {
+                bg = "#1f2335",
+            },
+            hint_diagnostic = {
+                bg = "#1f2335",
+            },
+            hint_diagnostic_visible = {
+                bg = "#1f2335",
+            },
+            info_diagnostic = {
+                bg = "#1f2335",
+            },
+            info_diagnostic_visible = {
+                bg = "#1f2335",
+            },
+            warning_diagnostic = {
+                bg = "#1f2335",
+            },
+            warning_diagnostic_visible = {
+                bg = "#1f2335",
+            },
+            error_diagnostic = {
+                bg = "#1f2335",
+            },
+            error_diagnostic_visible = {
+                bg = "#1f2335",
+            },
+        --     hint_diagnostic_selected = {
+        --         bold = true,
+        --         italic = false,
+        --         bg = colors.bg_highlight,
+        --     },
         },
         options = {
             -- numbers = "buffer_id",
-            -- numbers = "none",
+            numbers = "none",
             -- numbers = function(opts)
             --     return string.format(' %s|%s', opts.id, opts.raise(opts.ordinal))
             -- end,
-            numbers = function()
-                return ''
-            end,
+            -- numbers = function()
+            --     return ''
+            -- end,
             buffer_close_icon = '',
             max_name_length = 20,
             max_prefix_length = 10, -- prefix used when a buffer is de-duplicated
@@ -89,7 +144,7 @@ function M.setup()
             color_icons = true,
             sort_by = 'insert_after_current',
             always_show_bufferline = true,
-            separator_style = { '┊ ', '┊ ' },
+            separator_style = { ' ', ' ' },
             show_tab_indicators = true,
             indicator = {
                 icon = "▌",
