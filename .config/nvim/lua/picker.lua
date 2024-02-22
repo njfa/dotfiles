@@ -45,6 +45,10 @@ local function getcwd()
     return cwd
 end
 
+M.get_cwd = function()
+    return getcwd()
+end
+
 local function entry_maker(line, gen)
     local entry = gen(line)
     local displayer = entry_display.create({

@@ -74,7 +74,13 @@ function M.setup()
         },
         options = {
             -- numbers = "buffer_id",
-            numbers = "none",
+            -- numbers = "none",
+            -- numbers = function(opts)
+            --     return string.format(' %s|%s', opts.id, opts.raise(opts.ordinal))
+            -- end,
+            numbers = function()
+                return ''
+            end,
             buffer_close_icon = '',
             max_name_length = 20,
             max_prefix_length = 10, -- prefix used when a buffer is de-duplicated
