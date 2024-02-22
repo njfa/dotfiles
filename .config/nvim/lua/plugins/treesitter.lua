@@ -124,6 +124,14 @@ function M.load(use)
             })
         end
     }
+
+    use {
+        'lukas-reineke/indent-blankline.nvim',
+        requires = 'nvim-treesitter/nvim-treesitter',
+        config = function()
+            require('ibl').setup()
+        end
+    }
 end
 
 return M;
