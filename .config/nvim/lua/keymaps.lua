@@ -52,7 +52,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>g", "<Cmd>lua require('picker').live_grep_from_project_git_root()<CR>")
     map("n", "<leader>G", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>")
     map("x", "<leader>g", "<Cmd>lua require('picker').grep_string_visual()<CR>")
-    map("n", "<leader>h", "<Cmd>lua require('picker').find_files_from_project_git_root({oldfiles=true})<CR>")
+    map("n", "<leader>h", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
+    map("n", "<leader>H", "<Cmd>lua require('picker').find_files_from_project_git_root({oldfiles=true})<CR>")
 
     map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     -- map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
