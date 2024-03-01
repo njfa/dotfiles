@@ -195,8 +195,9 @@ if vim.fn.exists("g:vscode") == 0 then
 
     -- lspsaga
     on_attach_lsp = function(_, bufnr)
-        buf_map(bufnr, "n", "gf", "<cmd>Lspsaga finder<cr>", {})
-        buf_map(bufnr, "n", "gi", "<cmd>Lspsaga show_buf_diagnostics<cr>", {})
+        buf_map(bufnr, "n", "gs", "<cmd>Lspsaga finder<cr>", {})
+        buf_map(bufnr, "n", "gw", "<cmd>Lspsaga incoming_calls<cr>", {})
+        buf_map(bufnr, "n", "go", "<cmd>Lspsaga outgoing_calls<cr>", {})
         buf_map(bufnr, "n", "gd", "<cmd>Lspsaga peek_definition<cr>", {})
         buf_map(bufnr, "n", "gD", "<cmd>Lspsaga goto_definition<cr>", {})
         -- buf_map(bufnr, "n", "go", "<cmd>Lspsaga outline<cr>", {})
@@ -205,7 +206,7 @@ if vim.fn.exists("g:vscode") == 0 then
         buf_map(bufnr, "n", "gh", "<cmd>lua require('lsp_signature').toggle_float_win()<cr>", {})
         buf_map(bufnr, "n", "gr", "<cmd>Lspsaga rename<cr>", {})
         buf_map(bufnr, "n", "<Tab>", "<cmd>Lspsaga code_action<cr>", {})
-        buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc<CR>", {})
+        buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc ++keep<CR>", {})
         -- buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", {})
         buf_map(bufnr, "n", "gn", "<cmd>Lspsaga diagnostic_jump_next<cr>", {})
         buf_map(bufnr, "n", "gp", "<cmd>Lspsaga diagnostic_jump_prev<cr>", {})
