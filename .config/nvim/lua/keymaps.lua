@@ -197,8 +197,8 @@ if vim.fn.exists("g:vscode") == 0 then
     on_attach_lsp = function(_, bufnr)
         local opts = {silent = false, noremap = true}
         buf_map(bufnr, "n", "[f", "<cmd>Lspsaga finder<cr>", opts)
-        buf_map(bufnr, "n", "[i", "<cmd>Lspsaga incoming_calls<cr>", opts)
-        buf_map(bufnr, "n", "[o", "<cmd>Lspsaga outgoing_calls<cr>", opts)
+        buf_map(bufnr, "n", "[ci", "<cmd>Lspsaga incoming_calls<cr>", opts)
+        buf_map(bufnr, "n", "[co", "<cmd>Lspsaga outgoing_calls<cr>", opts)
         buf_map(bufnr, "n", "[d", "<cmd>Lspsaga peek_definition<cr>", opts)
         buf_map(bufnr, "n", "[D", "<cmd>Lspsaga goto_definition<cr>", opts)
         -- buf_map(bufnr, "n", "go", "<cmd>Lspsaga outline<cr>", opts)
