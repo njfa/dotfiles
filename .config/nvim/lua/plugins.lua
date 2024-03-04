@@ -396,7 +396,7 @@ return require('packer').startup(function(use)
                 })
 
                 map('n', '(', '<cmd>AerialToggle!<CR>', {})
-                map('n', '<A-n>', '<cmd>AerialNavToggle<CR>', {})
+                map('n', ')', '<cmd>AerialNavToggle<CR>', {})
 
             end
         }
