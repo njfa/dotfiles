@@ -126,6 +126,13 @@ function M.setup()
         --         italic = false,
         --         bg = colors.bg_highlight,
         --     },
+        --
+            duplicate = {
+                bg = "#1f2335",
+            },
+            duplicate_visible = {
+                bg = "#1f2335",
+            },
         },
         options = {
             -- numbers = "buffer_id",
