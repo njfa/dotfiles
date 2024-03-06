@@ -32,50 +32,26 @@ function M.load(use)
             -- ft = {'sh', 'zsh', 'bash', 'html', 'markdown', 'vim', 'lua', 'yaml', 'env', 'json', 'javascript'},
             config = function()
                 -- mason
-                require('mason').setup()
+                require('mason').setup({
+                    ui = {
+                        icons = {
+                            package_installed = "✓",
+                            package_pending = "➜",
+                            package_uninstalled = "-"
+                        }
+                    }
+                })
                 require('mason-lspconfig').setup()
                 require("mason-lspconfig").setup_handlers {
                     function (server_name)
                         -- Setup lspconfig.
-                        if server_name ~= "jdtls" then
-                            require("lspconfig")[server_name].setup {
-                                on_attach = on_attach_lsp,
-                                capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
-                            }
-                        end
-                        require("notify")("server_name: " .. server_name)
+                        require("lspconfig")[server_name].setup {
+                            on_attach = on_attach_lsp,
+                            capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        }
                     end,
 
-                    -- ["jdtls"] = function()
-                    --     local jdtls_path = vim.fn.stdpath('data') .. "/mason/packages/jdtls/bin/jdtls"
-                    --     local java_debugger_path = vim.fn.stdpath('data') .. "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
-
-                    --     local cfg = {
-                    --         cmd = { jdtls_path },
-                    --         root_dir = vim.fs.dirname(vim.fs.find({'gradlew', '.git', 'mvnw'}, { upward = true })[1]),
-                    --         init_options = {
-                    --             bundles = {
-                    --                 vim.fn.glob(java_debugger_path, true)
-                    --             };
-                    --         },
-                    --         on_attach = function(client, bufnr)
-                    --             -- require('jdtls').setup_dap({ hotcodereplace = 'auto' })
-                    --             on_attach_lsp(client, bufnr)
-                    --         end
-                    --     }
-
-                    --     require('jdtls').start_or_attach(cfg)
-
-                    --     -- require('dap').configurations.java = {
-                    --     --     {
-                    --     --         type = 'java';
-                    --     --         request = 'launch';
-                    --     --         name = "Debug (Attach) - Remote";
-                    --     --         hostName = '127.0.0.1';
-                    --     --         port = 5005;
-                    --     --     },
-                    --     -- }
-                    -- end,
+                    ["jdtls"] = function() end,
 
                     ["rust_analyzer"] = function ()
                         -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
