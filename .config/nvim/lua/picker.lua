@@ -42,7 +42,7 @@ local function getcwd()
     if cwd == '.' then
         cwd = vim.fn.getcwd()
     end
-    return cwd
+    return vim.fn.fnamemodify(cwd, ":~:.")
 end
 
 M.is_git_repo = function()
