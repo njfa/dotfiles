@@ -74,6 +74,13 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<leader>e", "<Cmd>Telescope projects<CR>")
     -- map("n", "<leader>s", "<cmd>SidebarNvimToggle<cr>")
 
+    map("n", "<leader>xx", function() require("trouble").toggle() end)
+    map("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end)
+    map("n", "<leader>xd", function() require("trouble").toggle("document_diagnostics") end)
+    map("n", "<leader>xr", function() require("trouble").toggle("lsp_references") end)
+    map("n", "<leader>xt", function() require("trouble").toggle("lsp_type_definitions") end)
+    map("n", "<leader>xD", function() require("trouble").toggle("lsp_definitions") end)
+
     -- タブ、バッファ操作
     map("n", "<leader>w", "<cmd>w<cr>", { silent = true })
     map("n", "<leader>q", "<cmd>q<cr>", { silent = true })
