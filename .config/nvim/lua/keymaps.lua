@@ -67,7 +67,7 @@ if vim.fn.exists("g:vscode") == 0 then
     -- map("n", "<leader>I", "<Cmd>lua require('telescope.builtin').diagnostics({})<CR>")
     map("n", "<leader>p", "<Cmd>Telescope registers<CR>")
     -- map("n", "<leader>p", "<Cmd>Trouble<CR>")
-    map("n", "<leader>td", "<Cmd>TodoTelescope<CR>")
+    map("n", "<leader>T", "<Cmd>TodoTelescope<CR>")
     map("n", "<leader>:", "<Cmd>lua require('picker').command_history()<CR>")
     -- map("n", "<leader>:", "<Cmd>Telescope command_history<CR>")
     map("n", "<leader>/", "<Cmd>Telescope current_buffer_fuzzy_find<CR>")
@@ -122,6 +122,10 @@ if vim.fn.exists("g:vscode") == 0 then
     -- Align
     map("n", "ga", "<Plug>(EasyAlign)")
     map("x", "ga", "<Plug>(EasyAlign)")
+
+    -- 表編集
+    map("n", "<leader>t", "<Cmd>TableModeToggle<CR>")
+    map("x", "<Bar>", ":EasyAlign*<Bar><CR>")
 
     -- Switch
     map("n", "gt", "<cmd>Switch<cr>")

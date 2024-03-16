@@ -443,14 +443,14 @@ return require('packer').startup(function(use)
         -- }
 
         -- Debuggerの設定
-        local dap = require('plugins.dap')
-        dap.load(use)
+        require('plugins.dap').load(use)
 
         -- テーブル作成用のモードを追加
         use {
             'dhruvasagar/vim-table-mode',
             config = function ()
                 vim.g.table_mode_corner='|'
+                vim.g.table_disable_mappings=1
             end
         }
 
@@ -521,19 +521,15 @@ return require('packer').startup(function(use)
     end
 
     -- 補完の設定
-    local complete = require('plugins.complete')
-    complete.load(use)
+    require('plugins.complete').load(use)
 
     -- LSPの設定
-    local lsp = require('plugins.lsp')
-    lsp.load(use)
+    require('plugins.lsp').load(use)
 
     -- 特定言語のための拡張機能
-    local markdown = require('plugins.languages.markdown')
-    markdown.load(use)
+    require('plugins.languages.markdown').load(use)
 
-    local html = require('plugins.languages.html')
-    html.load(use)
+    require('plugins.languages.html').load(use)
 
     if packer_bootstrap then
         require('packer').sync()

@@ -16,128 +16,145 @@ function M.load(use)
 
     -- LSPサーバー管理
     use {
-        'williamboman/mason.nvim',
-        'neovim/nvim-lspconfig',
-        'hrsh7th/cmp-nvim-lsp',
-        'jose-elias-alvarez/null-ls.nvim',
-        {
-            'williamboman/mason-lspconfig.nvim',
-            requires = {
-                'williamboman/mason.nvim',
-                'hrsh7th/cmp-nvim-lsp',
-                'jose-elias-alvarez/null-ls.nvim',
-                'mfussenegger/nvim-jdtls',
-                'simrat39/rust-tools.nvim',
-            },
-            -- ft = {'sh', 'zsh', 'bash', 'html', 'markdown', 'vim', 'lua', 'yaml', 'env', 'json', 'javascript'},
-            config = function()
-                -- mason
-                require('mason').setup({
-                    ui = {
-                        icons = {
-                            package_installed = "✓",
-                            package_pending = "➜",
-                            package_uninstalled = "-"
-                        }
+        'williamboman/mason-lspconfig.nvim',
+        requires = {
+            'williamboman/mason.nvim',
+            'hrsh7th/cmp-nvim-lsp',
+            'mfussenegger/nvim-jdtls',
+            'simrat39/rust-tools.nvim',
+            "jay-babu/mason-null-ls.nvim",
+            "nvimtools/none-ls.nvim",
+        },
+        -- ft = {'sh', 'zsh', 'bash', 'html', 'markdown', 'vim', 'lua', 'yaml', 'env', 'json', 'javascript'},
+        config = function()
+            -- mason
+            require('mason').setup({
+                ui = {
+                    icons = {
+                        package_installed = "✓",
+                        package_pending = "➜",
+                        package_uninstalled = "-"
                     }
-                })
-                require('mason-lspconfig').setup()
-                require("mason-lspconfig").setup_handlers {
-                    function (server_name)
-                        -- Setup lspconfig.
-                        require("lspconfig")[server_name].setup {
-                            on_attach = on_attach_lsp,
-                            capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
-                        }
-                    end,
+                }
+            })
+            require('mason-lspconfig').setup()
+            require("mason-lspconfig").setup_handlers {
+                function (server_name)
+                    -- Setup lspconfig.
+                    require("lspconfig")[server_name].setup {
+                        on_attach = on_attach_lsp,
+                        capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+                    }
+                end,
 
-                    ["jdtls"] = function() end,
+                ["jdtls"] = function() end,
 
-                    ["rust_analyzer"] = function ()
-                        -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
-                        local codelldb_path = vim.fn.stdpath('data') .. "/mason/packages/codelldb/extension"
-                        local codelldb_bin = codelldb_path .. "/adapter/codelldb"
-                        local liblldb_bin = codelldb_path .. "/lldb/lib/liblldb.so"
+                ["rust_analyzer"] = function ()
+                    -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
+                    local codelldb_path = vim.fn.stdpath('data') .. "/mason/packages/codelldb/extension"
+                    local codelldb_bin = codelldb_path .. "/adapter/codelldb"
+                    local liblldb_bin = codelldb_path .. "/lldb/lib/liblldb.so"
 
-                        local rt = require('rust-tools')
+                    local rt = require('rust-tools')
 
-                        local cfg = {
-                            server = {
-                                settings = {
-                                    ['rust-analyzer'] = {
-                                        cargo = {
-                                            autoReload = true
-                                        }
-                                    }
-                                },
-                            },
-                            dap = {
-                                adapter = require('rust-tools.dap').get_codelldb_adapter(
-                                    codelldb_bin,
-                                    liblldb_bin
-                                )
-                            }
-                        }
-
-                        rt.setup(cfg)
-
-                        -- require('dap.ext.vscode').load_launchjs(nil, {rt_lldb={'rust'}})
-                        require('dap').configurations.rust = {
-                            {
-                                type = 'rt_lldb';
-                                request = 'launch';
-                                name = "Debug (Attach)";
-                                cwd = "${workspaceFolder}",
-                                program = "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
-                                stopAtEntry = true,
-                            },
-                        }
-                    end,
-
-                    ["pylsp"] = function()
-                        require("lspconfig").pylsp.setup {
+                    local cfg = {
+                        server = {
                             settings = {
-                                pylsp = {
-                                    plugins = {
-                                        pycodestyle = {
-                                            ignore = {'E501'}
-                                        }
+                                ['rust-analyzer'] = {
+                                    cargo = {
+                                        autoReload = true
                                     }
                                 }
                             },
-                            on_attach = on_attach_lsp,
-                            capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        },
+                        dap = {
+                            adapter = require('rust-tools.dap').get_codelldb_adapter(
+                            codelldb_bin,
+                            liblldb_bin
+                            )
                         }
-                    end
-                }
+                    }
 
-                -- Formatterのセットアップ
-                local mason = require("mason")
-                local mason_package = require("mason-core.package")
-                local mason_registry = require("mason-registry")
-                local null_ls = require("null-ls")
+                    rt.setup(cfg)
 
-                local null_sources = {
-                    null_ls.builtins.diagnostics.markdownlint.with({
-                        extra_args = { "--disable", "MD007", "MD012", "MD013" }
-                    })
-                }
+                    -- require('dap.ext.vscode').load_launchjs(nil, {rt_lldb={'rust'}})
+                    require('dap').configurations.rust = {
+                        {
+                            type = 'rt_lldb';
+                            request = 'launch';
+                            name = "Debug (Attach)";
+                            cwd = "${workspaceFolder}",
+                            program = "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
+                            stopAtEntry = true,
+                        },
+                    }
+                end,
 
-                for _, package in ipairs(mason_registry.get_installed_packages()) do
-                    local package_categories = package.spec.categories[1]
-                    if package_categories == mason_package.Cat.Formatter then
-                        table.insert(null_sources, null_ls.builtins.formatting[package.name])
-                    end
-                    if package_categories == mason_package.Cat.Linter then
-                        table.insert(null_sources, null_ls.builtins.diagnostics[package.name])
-                    end
+                ["pylsp"] = function()
+                    require("lspconfig").pylsp.setup {
+                        settings = {
+                            pylsp = {
+                                plugins = {
+                                    pycodestyle = {
+                                        ignore = {'E501'}
+                                    }
+                                }
+                            }
+                        },
+                        on_attach = on_attach_lsp,
+                        capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+                    }
                 end
+            }
 
-                null_ls.setup({
-                    sources = null_sources,
-                })
-            end
-        },
+            -- Formatterのセットアップ
+            local mason_package = require("mason-core.package")
+            local mason_registry = require("mason-registry")
+            local null_ls = require("null-ls")
+
+            local null_sources = {
+                -- null_ls.builtins.diagnostics.markdownlint.with({
+                --     extra_args = { "--disable", "MD007", "MD012", "MD013" }
+                -- })
+            }
+
+            -- for _, package in ipairs(mason_registry.get_installed_packages()) do
+            --     local package_categories = package.spec.categories[1]
+            --     if package_categories == mason_package.Cat.Formatter then
+            --         table.insert(null_sources, null_ls.builtins.formatting[package.name])
+            --     end
+            --     if package_categories == mason_package.Cat.Linter then
+            --         table.insert(null_sources, null_ls.builtins.diagnostics[package.name])
+            --     end
+            -- end
+
+            null_ls.setup({
+                debug = true,
+                sources = null_sources,
+            })
+
+            require("mason-null-ls").setup({
+                ensure_installed = {
+                    "markdownlint"
+                },
+                automatic_installation = false,
+                handlers = {
+                    -- function() end, -- disables automatic setup of all null-ls sources
+                    markdownlint = function(source_name, methods)
+                        null_ls.register(
+                            null_ls.builtins.diagnostics.markdownlint.with({
+                                extra_args = { "--disable", "MD007", "MD012", "MD013" }
+                            })
+                        )
+                    end,
+                    -- shfmt = function(source_name, methods)
+                    --     -- custom logic
+                    --     require('mason-null-ls').default_setup(source_name, methods) -- to maintain default behavior
+                    -- end,
+                },
+            })
+
+        end
     }
 
     use {

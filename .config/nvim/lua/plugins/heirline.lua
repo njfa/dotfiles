@@ -230,17 +230,30 @@ function M.setup()
     }
 
     local FileSize = {
-        provider = function()
-            -- stackoverflow, compute human readable file size
-            local suffix = { 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' }
+        init = function(self)
+            local suffix = { 'Byte', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' }
             local fsize = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
             fsize = (fsize < 0 and 0) or fsize
             if fsize < 1024 then
-                return fsize ..  suffix[1]
+                self.fsize = fsize
+                self.suffix = suffix[1]
+                return
             end
+
             local i = math.floor((math.log(fsize) / math.log(1024)))
-            return string.format("%.2g%s", fsize / math.pow(1024, i), suffix[i + 1])
-        end
+            self.fsize = string.format("%.2g", fsize / 1024 ^ i)
+            self.suffix = suffix[i + 1]
+        end,
+        {
+            provider = function(self)
+                return self.fsize
+            end,
+        },
+        {
+            provider = function(self)
+                return " " .. self.suffix
+            end,
+        },
     }
 
     local ShiftWidth = {
@@ -366,6 +379,11 @@ function M.setup()
 
         update = { "DiagnosticChanged", "BufEnter" },
 
+        {
+            provider = function(self)
+                return (self.errors > 0 or self.warnings > 0 or self.info > 0 or self.hints > 0) and " "
+            end,
+        },
         {
             provider = function(self)
                 -- 0 is just another output, we can decide to print it or not!
