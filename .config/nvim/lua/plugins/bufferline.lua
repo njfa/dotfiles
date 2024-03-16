@@ -143,8 +143,8 @@ function M.setup()
             -- numbers = function()
             --     return ''
             -- end,
-            -- buffer_close_icon = '',
-            buffer_close_icon = 'ⅹ ',
+            buffer_close_icon = '',
+            -- buffer_close_icon = 'ⅹ ',
             max_name_length = 20,
             max_prefix_length = 10, -- prefix used when a buffer is de-duplicated
             truncate_names = true, -- whether or not tab names should be truncated
