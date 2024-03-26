@@ -1,10 +1,9 @@
-local M = {}
-
-function M.load(use)
+return {
     -- 色定義の追加
-    use 'folke/lsp-colors.nvim'
+    'folke/lsp-colors.nvim',
 
-    use {
+    -- LSPの結果を別行に表示する
+    {
         "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
         config = function()
             vim.diagnostic.config({
@@ -12,21 +11,29 @@ function M.load(use)
             })
             require("lsp_lines").setup()
         end,
-    }
+    },
 
     -- LSPサーバー管理
-    use {
+    {
+        "williamboman/mason.nvim",
+        "neovim/nvim-lspconfig",
+        'hrsh7th/cmp-nvim-lsp',
+        'mfussenegger/nvim-jdtls',
+        'simrat39/rust-tools.nvim',
+        "nvimtools/none-ls.nvim",
+    },
+
+    {
         'williamboman/mason-lspconfig.nvim',
-        requires = {
+        dependencies = {
             'williamboman/mason.nvim',
             'hrsh7th/cmp-nvim-lsp',
             'mfussenegger/nvim-jdtls',
             'simrat39/rust-tools.nvim',
-            "jay-babu/mason-null-ls.nvim",
-            "nvimtools/none-ls.nvim",
+            'nvimdev/lspsaga.nvim',
         },
-        -- ft = {'sh', 'zsh', 'bash', 'html', 'markdown', 'vim', 'lua', 'yaml', 'env', 'json', 'javascript'},
         config = function()
+
             -- mason
             require('mason').setup({
                 ui = {
@@ -42,7 +49,9 @@ function M.load(use)
                 function (server_name)
                     -- Setup lspconfig.
                     require("lspconfig")[server_name].setup {
-                        on_attach = on_attach_lsp,
+                        on_attach = function(_, bufnr)
+                            require('common').on_attach_lsp(_, bufnr, server_name)
+                        end,
                         capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
                     }
                 end,
@@ -106,10 +115,17 @@ function M.load(use)
                     }
                 end
             }
+        end
+    },
 
-            -- Formatterのセットアップ
-            local mason_package = require("mason-core.package")
-            local mason_registry = require("mason-registry")
+    -- masonとnone-lsの連携
+    {
+        "jay-babu/mason-null-ls.nvim",
+        dependencies = {
+            "williamboman/mason.nvim",
+            "nvimtools/none-ls.nvim"
+        },
+        config = function()
             local null_ls = require("null-ls")
 
             local null_sources = {
@@ -153,13 +169,14 @@ function M.load(use)
                     -- end,
                 },
             })
-
         end
-    }
+    },
 
-    use {
+    {
         'nvimdev/lspsaga.nvim',
-        requires = 'nvim-lspconfig',
+        dependencies = {
+            'neovim/nvim-lspconfig',
+        },
         config = function()
             require('lspsaga').setup({
                 code_action = {
@@ -205,9 +222,9 @@ function M.load(use)
                 }
             })
         end,
-    }
+    },
 
-    use {
+    {
         "ray-x/lsp_signature.nvim",
         config = function()
             local cfg = {
@@ -233,11 +250,9 @@ function M.load(use)
             }
             require("lsp_signature").setup(cfg)
         end
-    }
+    },
 
-    use {
-        "folke/trouble.nvim"
-    }
-end
+    -- LSPの結果を一覧表示
+    "folke/trouble.nvim",
 
-return M;
+}

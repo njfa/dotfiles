@@ -12,13 +12,12 @@ local function get_path_and_tail(filename)
   return bufname_tail, path_to_display
 end
 
--- local use_find_files_instead_of_git = true
+local status_ok, utils = pcall(require, "telescope.utils")
+if not status_ok then
+    return
+end
 
--- M.project_files_toggle_between_git_and_fd = function()
---   use_find_files_instead_of_git = not use_find_files_instead_of_git
--- end
-
-local utils = require('telescope.utils')
+-- local utils = require('telescope.utils')
 local entry_display = require('telescope.pickers.entry_display')
 local devicons = require('nvim-web-devicons')
 local strings = require('plenary.strings')

@@ -1,10 +1,21 @@
-local M = {}
+return {
+    'neovim/nvim-lspconfig',
+    'hrsh7th/cmp-nvim-lsp',
+    'hrsh7th/cmp-buffer',
+    'hrsh7th/cmp-path',
+    'hrsh7th/cmp-cmdline',
+    'hrsh7th/cmp-vsnip',
+    'hrsh7th/vim-vsnip',
+    'ray-x/cmp-treesitter',
+    'hrsh7th/cmp-nvim-lsp-document-symbol',
+    'hrsh7th/cmp-nvim-lsp-signature-help',
+    'petertriho/cmp-git',
+    'onsails/lspkind.nvim',
 
-function M.load(use)
     -- 自動補完
-    use {
+    {
         'hrsh7th/nvim-cmp',
-        requires = {
+        dependencies = {
             'neovim/nvim-lspconfig',
             'hrsh7th/cmp-nvim-lsp',
             'hrsh7th/cmp-buffer',
@@ -138,7 +149,7 @@ function M.load(use)
                     })
                 })
 
-                -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
+                -- buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
                 cmp.setup.cmdline('/', {
                     mapping = cmp.mapping.preset.cmdline(),
                     sources = {
@@ -149,7 +160,7 @@ function M.load(use)
                     }
                 })
 
-                -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+                -- cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
                 cmp.setup.cmdline(':', {
                     mapping = cmp.mapping.preset.cmdline(),
                     sources = cmp.config.sources({
@@ -164,12 +175,12 @@ function M.load(use)
                     })
                 })
             end
-        }
+        },
 
-        -- use {
+        -- {
         --     'tzachar/cmp-tabnine',
         --     run='./install.sh',
-        --     requires = 'hrsh7th/nvim-cmp',
+        --     dependencies = 'hrsh7th/nvim-cmp',
         --     config = function()
         --         require('cmp_tabnine.config'):setup({
         --             max_lines = 1000,
@@ -188,11 +199,8 @@ function M.load(use)
         -- }
 
         -- 対応する括弧を自動挿入する
-        use {
+        {
             "windwp/nvim-autopairs",
             config = function() require("nvim-autopairs").setup {} end
         }
-    end
-
-    return M;
-
+}

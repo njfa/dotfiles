@@ -1,17 +1,6 @@
 local M = {}
 
 function M.reload()
-    local function get_module_name(s)
-        local module_name;
-
-        module_name = s:gsub("%.lua", "")
-        module_name = module_name:gsub("lua/", "")
-        module_name = module_name:gsub("%/", ".")
-        module_name = module_name:gsub("%.init", "")
-
-        return module_name
-    end
-
     local prompt_title = "neovim modules"
 
     -- sets the path to the lua folder
@@ -26,12 +15,10 @@ function M.reload()
             map("i", "<c-r>", function(_)
                 -- these two a very self-explanatory
                 local entry = require("telescope.actions.state").get_selected_entry()
-                local name = get_module_name(entry.value)
+                local file_path = vim.fn.stdpath('config') .. "/" .. entry.value
 
-                -- call the helper method to reload the module
-                -- and give some feedback
-                R(name)
-                P("Reload module: '" .. name .."'", " Success!!")
+                vim.api.nvim_exec("source " .. file_path, false)
+                vim.notify("Reload module: " .. entry.value)
             end)
 
             return true

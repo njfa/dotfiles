@@ -1,4 +1,5 @@
-require('utils')
+local map = require('common').map
+local buf_map = require('common').buf_map
 
 -- 行頭への移動を先頭の文字に変更
 map("n", "0", "^")
@@ -46,21 +47,22 @@ map("x", "<C-x>", "<C-x>gv")
 if vim.fn.exists("g:vscode") == 0 then
     -- Telescope
     -- 隠しファイルも検索対象に含めるためにrgを利用する
-    map("n", "<leader>f", "<Cmd>lua require('picker').find_files_from_project_git_root()<CR>")
-    map("n", "<leader>F", ":lua require('picker').find_files_from_project_git_root( { search_file=\"\" })<left><left><left><left>")
-    map("x", "<leader>f", "<Cmd>lua require('picker').find_files_string_visual()<CR>")
-    map("n", "<leader>g", "<Cmd>lua require('picker').live_grep_from_project_git_root()<CR>")
-    map("n", "<leader>G", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>")
-    map("x", "<leader>g", "<Cmd>lua require('picker').grep_string_visual()<CR>")
-    map("n", "<leader>h", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
-    map("n", "<leader>H", "<Cmd>lua require('picker').find_files_from_project_git_root({oldfiles=true})<CR>")
+    -- which-keyで定義済みのためコメントアウト
+    -- map("n", "<leader>f", "<Cmd>lua require('picker').find_files_from_project_git_root()<CR>")
+    -- map("n", "<leader>F", ":lua require('picker').find_files_from_project_git_root( { search_file=\"\" })<left><left><left><left>")
+    -- map("x", "<leader>f", "<Cmd>lua require('picker').find_files_string_visual()<CR>")
+    -- map("n", "<leader>g", "<Cmd>lua require('picker').live_grep_from_project_git_root()<CR>")
+    -- map("n", "<leader>G", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>")
+    -- map("x", "<leader>g", "<Cmd>lua require('picker').grep_string_visual()<CR>")
+    -- map("n", "<leader>h", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
+    -- map("n", "<leader>H", "<Cmd>lua require('picker').find_files_from_project_git_root({oldfiles=true})<CR>")
 
     map("n", "<A-s>", "<cmd>Fern . -reveal=% -drawer -toggle<cr>")
     -- map("n", "<leader>r", "<Cmd>lua require('telescope').extensions.frecency.frecency()<CR>")
-    map("n", "<leader>rr", "[[<Plug>RestNvim]]")
-    map("n", "<leader>rp", "[[<Plug>RestNvimPreview]]")
-    map("n", "<leader>r.", "[[<Plug>RestNvimLast]]")
-    map("n", "<leader>re", ":RestSelectEnv ")
+    -- map("n", "<leader>rr", "[[<Plug>RestNvim]]")
+    -- map("n", "<leader>rp", "[[<Plug>RestNvimPreview]]")
+    -- map("n", "<leader>r.", "[[<Plug>RestNvimLast]]")
+    -- map("n", "<learer>re", ":RestSelectEnv ")
     map("n", "<leader>b", "<Cmd>BufferLinePick<CR>")
     map("n", "<leader>B", "<Cmd>Telescope buffers<CR>")
     map("n", "<leader>i", "<Cmd>lua require('telescope.builtin').diagnostics({ bufnr=0 })<CR>")
@@ -84,8 +86,6 @@ if vim.fn.exists("g:vscode") == 0 then
     -- タブ、バッファ操作
     map("n", "<leader>w", "<cmd>w<cr>", { silent = true })
     map("n", "<leader>q", "<cmd>q<cr>", { silent = true })
-    -- map("n", "<leader>qh", "<cmd>BufferLineCloseLeft<cr>", { silent = true })
-    -- map("n", "<leader>ql", "<cmd>BufferLineCloseRight<cr>", { silent = true })
     map("n", "<leader>Q", "<cmd>qa!<cr>", { silent = true })
     -- 単にbdeleteを実行すると、タブ中の空バッファを閉じたときにタブも一緒に閉じられてしまう
     map("n", "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", { silent = true })
@@ -112,11 +112,11 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<C-w>i", "<cmd>split<cr>")
 
     -- ローカルのディレクトリを変更
-    map("n", "<C-w>.", "<cmd>lua lcd_current_workspace()<cr>", { silent = true })
+    map("n", "<C-w>.", function() require('common').lcd_current_workspace() end, { silent = true })
 
     map("n", "<leader>.", "<cmd>lua require('reload').reload()<cr>")
 
-    map("n", "<C-w>p", "<cmd>MarkdownPreview<cr>")
+    map("n", "<A-p>", "<cmd>MarkdownPreview<cr>")
     map("n", "<C-w>d", "<cmd>DiffviewFileHistory<cr>")
 
     -- Align
@@ -128,8 +128,8 @@ if vim.fn.exists("g:vscode") == 0 then
     map("x", "<Bar>", ":EasyAlign*<Bar><CR>")
 
     -- Switch
-    map("n", "gt", "<cmd>Switch<cr>")
-    map("x", "gt", "<cmd>Switch<cr>")
+    map("n", "ms", "<cmd>Switch<cr>")
+    map("x", "ms", "<cmd>Switch<cr>")
 
     -- 検索
     map('n', '*', [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]])
@@ -146,25 +146,28 @@ if vim.fn.exists("g:vscode") == 0 then
     map("n", "<Esc>", ':noh<cr>', { silent = true })
 
     -- 移動
-    map('n', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
-    map('n', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false })<cr>", {})
-    map('n', 't', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false, hint_offset = -1 })<cr>", {})
-    map('n', 'T', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false, hint_offset = 1 })<cr>", {})
-    map('x', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
-    map('x', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false })<cr>", {})
-    map('x', 't', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false, hint_offset = -1 })<cr>", {})
-    map('x', 'T', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false, hint_offset = 1 })<cr>", {})
-    -- map('n', 'gw', "<cmd>HopWord<cr>", {})
-    -- map('x', 'gw', "<cmd>HopWord<cr>", {})
-    map('n', 'gl', "<cmd>HopLineStart<cr>", {})
-    map('x', 'gl', "<cmd>HopLineStart<cr>", {})
-    -- map('n', 'gk', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false })<cr>", {})
-    -- map('n', 'gj', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
-    -- map('x', 'gk', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = false })<cr>", {})
-    -- map('x', 'gj', "<cmd>lua require'hop'.hint_lines_skip_whitespace({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = false })<cr>", {})
-    map('n', 'g/', "<cmd>HopPattern<cr>", {})
-    map('x', 'g/', "<cmd>HopPattern<cr>", {})
-    map('o', 'm', "<cmd>lua require('tsht').nodes()<cr>", {})
+    local hop = require('hop')
+    local directions = require('hop.hint').HintDirection
+    map('n', 'L', function() hop.hint_lines_skip_whitespace({ direction = directions.AFTER_CURSOR }) end, {})
+    map('n', 'H', function() hop.hint_lines_skip_whitespace({ direction = directions.BEFORE_CURSOR }) end, {})
+    map('n', 'w', function() hop.hint_words({ direction = directions.AFTER_CURSOR, current_line_only = false }) end, {})
+    map('n', 'b', function() hop.hint_words({ direction = directions.BEFORE_CURSOR, current_line_only = false }) end, {})
+    map('n', 'W', function() hop.hint_words({ direction = directions.AFTER_CURSOR, current_line_only = true }) end, {})
+    map('n', 'B', function() hop.hint_words({ direction = directions.BEFORE_CURSOR, current_line_only = true }) end, {})
+    map('x', 'w', function() hop.hint_words({ direction = directions.AFTER_CURSOR, current_line_only = false }) end, {})
+    map('x', 'b', function() hop.hint_words({ direction = directions.BEFORE_CURSOR, current_line_only = false }) end, {})
+    map('x', 'W', function() hop.hint_words({ direction = directions.AFTER_CURSOR, current_line_only = true }) end, {})
+    map('x', 'B', function() hop.hint_words({ direction = directions.BEFORE_CURSOR, current_line_only = true }) end, {})
+    map('n', 'f', function() hop.hint_char1({ current_line_only = false }) end, {})
+    map('n', 'F', function() hop.hint_char1({ current_line_only = false }) end, {})
+    map('n', 't', function() hop.hint_char1({ current_line_only = false, hint_offset = -1 }) end, {})
+    map('n', 'T', function() hop.hint_char1({ current_line_only = false, hint_offset = 1 }) end, {})
+    map('x', 'f', function() hop.hint_char1({ current_line_only = false }) end, {})
+    map('x', 'F', function() hop.hint_char1({ current_line_only = false }) end, {})
+    map('x', 't', function() hop.hint_char1({ current_line_only = false, hint_offset = -1 }) end, {})
+    map('x', 'T', function() hop.hint_char1({ current_line_only = false, hint_offset = 1 }) end, {})
+
+    map("n", "R", "<cmd>lua require'substitute'.operator()<cr>", {})
     map('x', 'm', ":lua require('tsht').nodes()<cr>", {})
 
     -- 編集
@@ -175,6 +178,7 @@ if vim.fn.exists("g:vscode") == 0 then
     vim.api.nvim_create_autocmd({"FileType"}, {
         pattern = {"fern"},
         callback = function()
+            vim.cmd("setlocal nonumber")
             buf_map(0, 'n', 'r', [[<Plug>(fern-action-rename)]], {})
             buf_map(0, 'n', 'R', [[<Plug>(fern-action-remove)]], {})
 
@@ -203,52 +207,6 @@ if vim.fn.exists("g:vscode") == 0 then
             buf_map(0, "n", "<C-k>", '<cmd>tabn<cr>', {})
         end,
     })
-
-    -- lspsaga
-    on_attach_lsp = function(_, bufnr)
-        local opts = {silent = false, noremap = true}
-        buf_map(bufnr, "n", "[f", "<cmd>Lspsaga finder<cr>", opts)
-        buf_map(bufnr, "n", "[ci", "<cmd>Lspsaga incoming_calls<cr>", opts)
-        buf_map(bufnr, "n", "[co", "<cmd>Lspsaga outgoing_calls<cr>", opts)
-        buf_map(bufnr, "n", "[d", "<cmd>Lspsaga peek_definition<cr>", opts)
-        buf_map(bufnr, "n", "[D", "<cmd>Lspsaga goto_definition<cr>", opts)
-        -- buf_map(bufnr, "n", "go", "<cmd>Lspsaga outline<cr>", opts)
-        buf_map(bufnr, "n", "[t", "<cmd>Lspsaga peek_type_definition<cr>", opts)
-        buf_map(bufnr, "n", "[T", "<cmd>Lspsaga goto_type_definition<cr>", opts)
-        buf_map(bufnr, "n", "[h", "<cmd>lua require('lsp_signature').toggle_float_win()<cr>", opts)
-        buf_map(bufnr, "n", "[r", "<cmd>Lspsaga rename<cr>", opts)
-        buf_map(bufnr, "n", "<Tab>", "<cmd>Lspsaga code_action<cr>", opts)
-        buf_map(bufnr, "n", "K", "<cmd>Lspsaga hover_doc ++keep<CR>", opts)
-        -- buf_map(bufnr, "n", "go", "<cmd>Lspsaga show_line_diagnostics<cr>", opts)
-        buf_map(bufnr, "n", "[n", "<cmd>Lspsaga diagnostic_jump_next<cr>", opts)
-        buf_map(bufnr, "n", "[p", "<cmd>Lspsaga diagnostic_jump_prev<cr>", opts)
-        -- buf_map(bufnr, 'n', '[a', vim.lsp.buf.add_workspace_folder, opts)
-        -- buf_map(bufnr, 'n', '[x', vim.lsp.buf.remove_workspace_folder, opts)
-        -- buf_map(bufnr, "n", "gd", "<cmd>lua require('lspsaga.provider').preview_definition()<CR>", {silent = true, noremap = true})
-        -- buf_map(bufnr, "n", "<C-u>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1, '<c-u>')<cr>", {})
-        -- buf_map(bufnr, "n", "<C-d>", "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1, '<c-d>')<cr>", {})
-
-        require("lsp_signature").on_attach({
-            bind = true,
-            handler_opts = {
-                border = "rounded"
-            }
-        }, bufnr)
-
-        -- if client.server_capabilities.documentSymbolProvider then
-        --     require("nvim-navic").attach(client, bufnr)
-        -- end
-    end
-
-    on_attach_aerial = function(bufnr)
-        -- Toggle the aerial window with <leader>o
-        -- Jump forwards/backwards with '{' and '}'
-        buf_map(bufnr, 'n', '}', '<cmd>AerialPrev<CR>', {})
-        buf_map(bufnr, 'n', '{', '<cmd>AerialNext<CR>', {})
-        -- Jump up the tree with '[' or ']'
-        -- buf_map(bufnr, 'n', ']', '<cmd>lua require("aerial").prev_up()<CR>', {})
-        -- buf_map(bufnr, 'n', '[', '<cmd>lua require("aerial").next_up()<CR>', {})
-    end
 
     -- Debugger
     map('n', '<F1>', "<cmd>lua require'telescope'.extensions.dap.configurations{}<CR>", {})
