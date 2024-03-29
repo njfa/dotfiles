@@ -83,12 +83,11 @@ M.find_files_from_project_git_root = function(opts)
     opts = opts or {}
     if is_git_repo() then
         opts.results_title = '  Project Files: '
-        opts.cwd = get_git_root()
+        opts.cwd = getcwd()
         opts.prompt_title = getcwd()
     else
         opts.results_title = '  All Files: '
         opts.prompt_title = vim.fn.getcwd()
-        opts.cmd = vim.fn.getcwd()
     end
 
     opts.find_command = {
@@ -109,7 +108,7 @@ M.find_files_from_project_git_root = function(opts)
         --- we want recent files inside monorepo root folder, not a sub project root.
         --- see https://github.com/nvim-telescope/telescope.nvim/blob/276362a8020c6e94c7a76d49aa00d4923b0c02f3/lua/telescope/builtin/__internal.lua#L533C61-L533C61
         if opts.cwd then
-            opts.cwd_only = false
+            opts.only_cwd = false
         end
         require('telescope.builtin').oldfiles(opts)
         return
@@ -123,12 +122,11 @@ M.live_grep_from_project_git_root = function(opts)
     opts = opts or {}
     if is_git_repo() then
         opts.results_title = '  Project Files: '
-        opts.cwd = get_git_root()
+        opts.cwd = getcwd()
         opts.prompt_title = getcwd()
     else
         opts.results_title = '  All Files: '
         opts.prompt_title = vim.fn.getcwd()
-        opts.cmd = vim.fn.getcwd()
     end
 
     opts.find_command = {

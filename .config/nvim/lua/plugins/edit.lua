@@ -1,5 +1,5 @@
 local map = require('common').map
-local buf_map = require('common').buf_map
+-- local buf_map = require('common').buf_map
 
 -- ファイル編集用プラグイン全般
 return {
@@ -10,7 +10,12 @@ return {
     'junegunn/vim-easy-align',
 
     -- 単語や演算子を反対の意味に切り替える
-     'AndrewRadev/switch.vim',
+    {
+        'AndrewRadev/switch.vim',
+        init = function ()
+            vim.g.switch_mapping = ""
+        end
+    },
 
     -- 様々ものをincrement/decrementする
     {
@@ -69,7 +74,7 @@ return {
     -- TODOコメントの管理
     {
         "folke/todo-comments.nvim",
-        requires = "nvim-lua/plenary.nvim",
+        dependencies = "nvim-lua/plenary.nvim",
         config = function()
             require("todo-comments").setup {
                 -- your configuration comes here
@@ -82,9 +87,11 @@ return {
     -- テーブル作成用のモードを追加
     {
         'dhruvasagar/vim-table-mode',
-        config = function ()
-            vim.g.table_mode_corner='|'
-            vim.g.table_disable_mappings=1
+        init = function ()
+            vim.g.table_mode_map_prefix = '<Leader><Leader>t'
+            -- vim.g.table_disable_mappings = 1
+            vim.g.table_mode_disable_tableize_mappings = 1
+            vim.g.table_mode_corner = '|'
         end
     },
 
@@ -95,7 +102,7 @@ return {
             'nvim-lua/plenary.nvim'
         },
         config = function()
-            local actions = require("diffview.actions")
+            -- local actions = require("diffview.actions")
 
             require("diffview").setup({
                 keymaps = {
