@@ -122,7 +122,7 @@ return {
 
     {
         'hashivim/vim-terraform',
-        ft = { "tf" },
+        ft = { "terraform" },
         init = function ()
             vim.g.terraform_fmt_on_save = 1
         end
@@ -137,4 +137,14 @@ return {
         end,
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     },
+
+    {
+        'rhysd/git-messenger.vim',
+        init = function ()
+            vim.g.git_messenger_no_default_mappings = true
+            vim.g.git_messenger_include_diff = "current"
+            vim.g.git_messenger_floating_win_opts = { border = 'single' }
+            vim.g.git_messenger_max_popup_height = 50
+        end
+    }
 }

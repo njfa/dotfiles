@@ -110,7 +110,9 @@ return {
                                 }
                             }
                         },
-                        on_attach = on_attach_lsp,
+                        on_attach = function(_, bufnr)
+                            require('common').on_attach_lsp(_, bufnr, _)
+                        end,
                         capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
                     }
                 end
@@ -156,10 +158,10 @@ return {
                 automatic_installation = false,
                 handlers = {
                     -- function() end, -- disables automatic setup of all null-ls sources
-                    markdownlint = function(source_name, methods)
+                    markdownlint = function(_, _)
                         null_ls.register(
                             null_ls.builtins.diagnostics.markdownlint.with({
-                                extra_args = { "--disable", "MD007", "MD012", "MD013" }
+                                extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051" }
                             })
                         )
                     end,
@@ -187,13 +189,23 @@ return {
                 finder = {
                     max_height = 0.6,
                     keys = {
+                        edit = 'o',
                         vsplit = 'e',
                         toggle_or_open = '<cr>',
+                        shuttle = '<C-w>'
                     },
                     methods = {
                         tyd = 'textDocument/typeDefinition'
                     },
-                    default = 'def+ref+imp+tyd'
+                    default = 'def+ref+imp+tyd',
+                },
+                callhierarchy = {
+                    keys = {
+                        edit = 'o',
+                        vsplit = 'e',
+                        toggle_or_open = '<cr>',
+                        shuttle = '<C-w>'
+                    },
                 },
                 hover = {
                     open_cmd = '!browser.sh'
@@ -226,29 +238,41 @@ return {
 
     {
         "ray-x/lsp_signature.nvim",
-        config = function()
-            local cfg = {
-                hint_prefix = " ",
-                floating_window_off_x = 5, -- adjust float windows x position.
-                floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
-                    local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
-                    local pumheight = vim.o.pumheight
-                    local winline = vim.fn.winline() -- line number in the window
-                    local winheight = vim.fn.winheight(0)
-
-                    -- window top
-                    if winline - 1 < pumheight then
-                        return pumheight
-                    end
-
-                    -- window bottom
-                    if winheight - winline < pumheight then
-                        return -pumheight
-                    end
-                    return 0
-                end,
+        event = "VeryLazy",
+        opts = {},
+        config = function(_, opts)
+            opts.bind = true
+            opts.handler_opts = {
+                border = "rounded"
             }
-            require("lsp_signature").setup(cfg)
+            opts.hint_prefix = "󱄑 "
+            -- opts.hint_prefix = " "
+            opts.transparency = 10
+            opts.max_width = 120
+            opts.floating_window_off_x = function() -- adjust float windows x position.
+                local colnr = vim.api.nvim_win_get_cursor(0)[2] -- buf col number
+                return colnr
+                -- return vim.fn.wincol()
+            end
+            opts.floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
+                -- local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
+                local pumheight = vim.o.pumheight
+                local winline = vim.fn.winline() -- line number in the window
+                local winheight = vim.fn.winheight(0)
+
+                -- window top
+                if winline - 1 < pumheight then
+                    return pumheight
+                end
+
+                -- window bottom
+                if winheight - winline < pumheight then
+                    return -pumheight
+                end
+                return 0
+            end
+
+            require("lsp_signature").setup(opts)
         end
     },
 

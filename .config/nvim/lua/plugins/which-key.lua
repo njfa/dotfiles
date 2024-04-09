@@ -35,9 +35,9 @@ return {
                 ["#"] = { [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]], "g# (カーソルを移動しない)" },
             },
 
-            L = { function() hop.hint_lines_skip_whitespace({ }) end, "任意の行頭へ移動" },
-            H = { function() hop.hint_anywhere({}) end, "任意の場所へ移動" },
-            t = { function() hop.hint_words({ current_line_only = false }) end, "任意の単語へ移動" },
+            L = { function() hop.hint_lines_skip_whitespace({ }) end, "任意の行頭へ移動（空行は無視）" },
+            H = { function() hop.hint_lines({ }) end, "任意の行頭へ移動" },
+            t = { function() hop.hint_camel_case({ current_line_only = false }) end, "任意の単語へ移動" },
             f = { function() hop.hint_char1({ current_line_only = true }) end, "指定文字へ移動 (行中)" },
             F = { function() hop.hint_char1({ current_line_only = false }) end, "指定文字へ移動 (全体)" },
 
@@ -76,7 +76,7 @@ return {
                 g = { function() require('picker').live_grep_from_project_git_root() end, "Grep検索"},
                 h = { function() require('picker').find_files_from_project_git_root({oldfiles= true}) end, "ファイル閲覧履歴" },
                 i = { function() require('telescope.builtin').diagnostics({ bufnr=0 }) end, "Diagnostics (バッファ内)" },
-                p = { "<cmd>Telescope registers<CR>", "クリップボード履歴" },
+                p = { "<cmd>HopPasteChar1<CR>", "貼り付け（場所選択）" },
                 s = { [[:<c-u>%s/]], "文字列置換"},
                 t = { "<cmd>Telescope<CR>", "Telescope機能一覧" },
                 u = { "<cmd>UndotreeToggle<cr>", "ファイル編集履歴 表示/非表示切替" },
@@ -88,6 +88,7 @@ return {
                     w = { function() require("trouble").toggle("workspace_diagnostics") end, "Diagnostics (ワークスペース内)" },
                     d = { function() require("trouble").toggle("document_diagnostics")  end, "Diagnostics (ドキュメント内)" },
                 },
+                y = { "<cmd>HopYankChar1<CR>", "コピー（場所選択）" },
                 ["/"] = { "<cmd>Telescope current_buffer_fuzzy_find<CR>", "バッファ内検索" },
                 [":"] = { function() require('picker').command_history() end, "コマンド履歴" },
                 ["."] = { function() require('reload').reload() end, "Neovim設定ファイル一覧" },
@@ -100,6 +101,7 @@ return {
                     g = { ":lua require('picker').live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>", "Grep検索 (ファイルパスを指定)" },
                     h = { "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", "ファイル閲覧履歴 (頻度考慮)" },
                     i = { "<cmd>lua require('telescope.builtin').diagnostics({})<CR>", "Diagnostics (プロジェクト全体)" },
+                    p = { "<cmd>Telescope registers<CR>", "クリップボード履歴" },
                     s = { [[:<c-u>%s/\v]], "文字列置換 (正規表現)"},
                     t = {
                         name = "コマンド (Todo一覧 / Tableモード)",
@@ -116,10 +118,10 @@ return {
             ['<F3>'] = { "<cmd>lua require('telescope').extensions.dap.list_breakpoints{}<CR>", "ブレークポイントの一覧" },
             ['<F4>'] = { "<cmd>lua require('dap').set_breakpoint()<CR>", "ブレークポイントの追加" },
             ['<F5>'] = { "<cmd>lua require('dap').toggle_breakpoint()<CR>", "ブレークポイントの切替" },
-            ['<F6>'] = { "<cmd>lua require('dap').step_into()<CR>", "Step into" },
-            ['<F7>'] = { "<cmd>lua require('dap').continue()<CR>", "Continue" },
-            ['<F8>'] = { "<cmd>lua require('dap').step_over()<CR>", "Step over" },
-            ['<F9>'] = { "<cmd>lua require('dap').step_out()<CR>", "Step out" },
+            ['<F6>'] = { "<cmd>lua require('dap').step_into()<CR>", "ステップ実行 (IN)" },
+            ['<F7>'] = { "<cmd>lua require('dap').continue()<CR>", "実行" },
+            ['<F8>'] = { "<cmd>lua require('dap').step_over()<CR>", "ステップ実行 (Over)" },
+            ['<F9>'] = { "<cmd>lua require('dap').step_out()<CR>", "ステップ実行 (OUT)" },
             ['<F12>'] = { "<cmd>lua require('dapui').toggle()<CR>", "DAP UIの表示/非表示切替" },
         }, {
             mode = "n"
@@ -152,10 +154,10 @@ return {
             t = { function() hop.hint_words({ current_line_only = false }) end, "任意のWordへ移動" },
             f = { function() hop.hint_char1({ current_line_only = true }) end, "指定文字へ移動 (行中)" },
             F = { function() hop.hint_char1({ current_line_only = false }) end, "指定文字へ移動 (全体)" },
+            v = { ":lua require('tsht').nodes()<cr>", "選択範囲を拡大" },
 
             m = {
                 a = { "<Plug>(EasyAlign)", "指定文字で整列 (*で全一致箇所)"},
-                m = { ":lua require('tsht').nodes()<cr>", "選択範囲を拡大" },
                 s = { "<cmd>Switch<cr>", "カーソル下の単語を反転 (true→false等)"},
             },
 
