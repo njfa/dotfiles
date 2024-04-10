@@ -64,7 +64,7 @@ M.on_attach_lsp = function(_, bufnr, _)
     })
 
     wk.register({
-        ['<C-e>'] = { "<cmd>lua require('lsp_signature').toggle_float_win()<cr>", "フローティングウィンドウの表示/非表示切替" },
+        ['<C-s>'] = { "<cmd>lua require('lsp_signature').toggle_float_win()<cr>", "フローティングウィンドウの表示/非表示切替" },
     }, {
         mode = "i",
         buffer = bufnr

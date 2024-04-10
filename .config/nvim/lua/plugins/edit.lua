@@ -146,5 +146,25 @@ return {
             vim.g.git_messenger_floating_win_opts = { border = 'single' }
             vim.g.git_messenger_max_popup_height = 50
         end
+    },
+
+    -- 対応する括弧を自動挿入する
+    {
+        'windwp/nvim-autopairs',
+        event = "InsertEnter",
+        config = true
+        -- use opts = {} for passing setup options
+        -- this is equalent to setup({}) function
+    },
+
+    {
+        "L3MON4D3/LuaSnip",
+        dependencies = {
+            'rafamadriz/friendly-snippets'
+        },
+        -- follow latest release.
+        version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+        -- install jsregexp (optional!).
+        build = "make install_jsregexp"
     }
 }

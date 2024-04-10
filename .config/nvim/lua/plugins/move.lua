@@ -15,5 +15,14 @@ return {
         dependencies = {
             'smoka7/hop.nvim',
         }
-    }
+    },
+
+    {
+        "andymass/vim-matchup",
+        init = function()
+            -- statusに設定するとnvim_context_vtと機能が被る
+            -- また、popupにするとlspsagaでエラーが起きるようになるため無効化
+            vim.g.matchup_matchparen_offscreen = {}
+        end,
+    },
 }

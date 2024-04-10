@@ -19,13 +19,15 @@ return {
             'hrsh7th/cmp-buffer',
             'hrsh7th/cmp-path',
             'hrsh7th/cmp-cmdline',
-            'hrsh7th/cmp-vsnip',
-            'hrsh7th/vim-vsnip',
+            'L3MON4D3/LuaSnip',
+            'saadparwaiz1/cmp_luasnip',
+            -- 'hrsh7th/cmp-vsnip',
+            -- 'hrsh7th/vim-vsnip',
             'ray-x/cmp-treesitter',
             -- 'hrsh7th/cmp-nvim-lsp-document-symbol', -- lsp_signagureと役割が重複するのでコメントアウト
             -- 'hrsh7th/cmp-nvim-lsp-signature-help', -- lsp_signagureと役割が重複するのでコメントアウト
             'petertriho/cmp-git',
-            'onsails/lspkind.nvim'
+            'onsails/lspkind.nvim',
         },
         config = function()
             -- nvim-cmpの設定
@@ -38,7 +40,8 @@ return {
             local source_mapping = {
                 buffer = "[Buf]",
                 nvim_lsp = "[LSP]",
-                vsnip = "[Snip]",
+                -- vsnip = "[Snip]",
+                luasnip = "[Snip]",
                 treesitter = "[TS]",
                 -- cmp_tabnine = "[TAB]",
                 path = "[Path]",
@@ -57,7 +60,8 @@ return {
             cmp.setup({
                 snippet = {
                     expand = function(args)
-                        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+                        -- vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+                        require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
                     end,
                 },
                 window = {
@@ -65,10 +69,12 @@ return {
                     documentation = cmp.config.window.bordered(),
                 },
                 mapping = cmp.mapping.preset.insert({
+                    ['<C-p>'] = cmp.mapping.select_prev_item(),
+                    ['<C-n>'] = cmp.mapping.select_next_item(),
                     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
                     ['<C-f>'] = cmp.mapping.scroll_docs(4),
                     ['<C-Space>'] = cmp.mapping.complete(),
-                    ['<C-e>'] = cmp.mapping.abort(),
+                    ['<C-e>'] = cmp.mapping.close(),
                     ["<CR>"] = cmp.mapping({
                         i = function(fallback)
                             if cmp.visible() and cmp.get_active_entry() then
@@ -81,11 +87,41 @@ return {
                         c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
                     }),
 
+                    ["<C-j>"] = cmp.mapping(function(fallback)
+                        if cmp.visible() then
+                            cmp.select_next_item()
+                        elseif require('luasnip').expandable() then
+                            require('luasnip').expand()
+                        elseif require('luasnip').jumpable(1) then
+                            require('luasnip').jump(1)
+                        -- elseif vim.fn["vsnip#available"](1) == 1 then
+                        --     feedkey("<Plug>(vsnip-expand-or-jump)", "")
+                        elseif has_words_before() then
+                            cmp.complete()
+                        else
+                            fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
+                        end
+                    end, { "i", "s" }),
+
+                    ["<C-k>"] = cmp.mapping(function()
+                        if cmp.visible() then
+                            cmp.select_prev_item()
+                        elseif require('luasnip').jumpable(-1) then
+                            require('luasnip').jump(-1)
+                        -- elseif vim.fn["vsnip#jumpable"](-1) == 1 then
+                        --     feedkey("<Plug>(vsnip-jump-prev)", "")
+                        end
+                    end, { "i", "s" }),
+
                     ["<Tab>"] = cmp.mapping(function(fallback)
                         if cmp.visible() then
                             cmp.select_next_item()
-                        elseif vim.fn["vsnip#available"](1) == 1 then
-                            feedkey("<Plug>(vsnip-expand-or-jump)", "")
+                        elseif require('luasnip').expandable() then
+                            require('luasnip').expand()
+                        elseif require('luasnip').jumpable(1) then
+                            require('luasnip').jump(1)
+                        -- elseif vim.fn["vsnip#available"](1) == 1 then
+                        --     feedkey("<Plug>(vsnip-expand-or-jump)", "")
                         elseif has_words_before() then
                             cmp.complete()
                         else
@@ -96,6 +132,8 @@ return {
                     ["<S-Tab>"] = cmp.mapping(function()
                         if cmp.visible() then
                             cmp.select_prev_item()
+                        elseif require('luasnip').jumpable(-1) then
+                            require('luasnip').jump(-1)
                         elseif vim.fn["vsnip#jumpable"](-1) == 1 then
                             feedkey("<Plug>(vsnip-jump-prev)", "")
                         end
@@ -112,7 +150,8 @@ return {
 
                 sources = cmp.config.sources({
                     { name = 'nvim_lsp' },
-                    { name = 'vsnip' }, -- For vsnip users.
+                    -- { name = 'vsnip' }, -- For vsnip users.
+                    { name = 'luasnip' }, -- For luasnip users.
                     -- { name = 'cmp_tabnine' },
                     { name = 'treesitter' },
                     -- { name = 'nvim_lsp_signature_help' },
@@ -177,33 +216,8 @@ return {
                     }
                 })
             })
+
+            require("luasnip.loaders.from_vscode").lazy_load()
         end
     },
-
-    -- {
-    --     'tzachar/cmp-tabnine',
-    --     run='./install.sh',
-    --     dependencies = 'hrsh7th/nvim-cmp',
-    --     config = function()
-    --         require('cmp_tabnine.config'):setup({
-    --             max_lines = 1000,
-    --             max_num_results = 20,
-    --             sort = true,
-    --             run_on_every_keystroke = true,
-    --             snippet_placeholder = '..',
-    --             ignored_file_types = {
-    --                 -- default is not to ignore
-    --                 -- uncomment to ignore in lua:
-    --                 -- lua = true
-    --             },
-    --             show_prediction_strength = false
-    --         })
-    --     end
-    -- }
-
-    -- 対応する括弧を自動挿入する
-    {
-        "windwp/nvim-autopairs",
-        config = function() require("nvim-autopairs").setup {} end
-    }
 }

@@ -183,6 +183,32 @@ return {
         }, {
             mode = "x"
         })
+
+        -- wk.register({
+        --     ['<C-e>'] = { function() require('luasnip').expand() end, "スニペットの展開"},
+        --     ['<C-j>'] = { function() require('luasnip').jump(1) end, "次の要素へ移動"},
+        --     ['<C-k>'] = { function() require('luasnip').jump(-1) end, "前の要素へ移動"},
+        --     ['<C-c>'] = { function()
+        --         if require('luasnip').choice_active() then
+        --             require('luasnip').change_choice(1)
+        --         end
+        --     end, "選択中の要素を変更"},
+        -- }, {
+        --     mode = "i"
+        -- })
+
+        -- wk.register({
+        --     ['<C-j>'] = { function() require('luasnip').jump(1) end, "次の要素へ移動"},
+        --     ['<C-k>'] = { function() require('luasnip').jump(-1) end, "前の要素へ移動"},
+        --     ['<C-c>'] = { function()
+        --         if require('luasnip').choice_active() then
+        --             require('luasnip').change_choice(1)
+        --         end
+        --     end, "選択中の要素を変更"},
+        -- }, {
+        --     mode = "s"
+        -- })
+
         wk.setup({
             window = {
                 border = "double",
