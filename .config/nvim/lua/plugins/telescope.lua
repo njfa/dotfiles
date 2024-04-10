@@ -30,13 +30,16 @@ return {
     },
 
     {
+        "nvim-telescope/telescope-frecency.nvim"
+    },
+
+    {
         'nvim-telescope/telescope.nvim',
         branch = 'master',
         dependencies = {
             'nvim-lua/plenary.nvim',
             'nvim-telescope/telescope-frecency.nvim',
             'nvim-telescope/telescope-dap.nvim',
-            'tami5/sqlite.lua',
             "ahmedkhalf/project.nvim",
         },
         config = function()
@@ -85,7 +88,6 @@ return {
                         db_root = vim.fn.stdpath("data"),
                         show_scores = true,
                         ignore_patterns = { "*.git/*", "*/tmp/*" },
-                        use_sqlite = false,
                     }
                 },
             }

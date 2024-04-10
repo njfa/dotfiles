@@ -105,11 +105,12 @@ M.find_files_from_project_git_root = function(opts)
     if opts.oldfiles then
         opts.results_title = '  Recent files: '
         opts.include_current_session = true
+        opts.cwd = nil
         --- we want recent files inside monorepo root folder, not a sub project root.
         --- see https://github.com/nvim-telescope/telescope.nvim/blob/276362a8020c6e94c7a76d49aa00d4923b0c02f3/lua/telescope/builtin/__internal.lua#L533C61-L533C61
-        if opts.cwd then
-            opts.only_cwd = false
-        end
+        -- if opts.cwd then
+        --     opts.only_cwd = false
+        -- end
         require('telescope.builtin').oldfiles(opts)
         return
     end
