@@ -7,16 +7,34 @@ $WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
 $WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\
 $WINDOWS_TERMINAL_PREVIEW = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreView_*\LocalState\
 
-$HTTPS_PROXY = [System.Environment]::GetEnvironmentVariable("HTTPS_PROXY", "User")
-$HTTP_PROXY = [System.Environment]::GetEnvironmentVariable("HTTP_PROXY", "User")
 
-if (-not [string]::IsNullOrEmpty($HTTPS_PROXY)) {
-    $myproxy = New-Object System.Net.WebProxy $HTTPS_PROXY, $True
-    [System.Net.WebRequest]::DefaultWebProxy = $myproxy
-} elseif (-not [string]::IsNullOrEmpty($HTTP_PROXY)) {
-    $myproxy = New-Object System.Net.WebProxy $HTTP_PROXY, $True
-    [System.Net.WebRequest]::DefaultWebProxy = $myproxy
+if (($mode -eq "i") -Or ($mode -eq "init") -Or ($mode -eq "fonts") -Or ($mode -eq "tools")) {
+    $useProxy = Read-Host "Would you like to use a proxy? (y/n)"
+    $useProxy = $useProxy.ToLower()
+
+    if ($useProxy -eq "y" -or $useProxy -eq "yes") {
+        $proxyHost = Read-Host "Host"
+        $proxyPort = Read-Host "Port"
+        $proxyUser = Read-Host "Username"
+        $proxyPassword = Read-Host "Password" -AsSecureString
+
+        if ($proxyHost.Length -gt 0 -And $proxyPort.Length -gt 0) {
+            $proxy = New-Object System.Net.WebProxy "http://$($proxyHost):$($proxyPort)/"
+            if ($proxyUser.Length -gt 0 -And $proxyPassword.Length -gt 0) {
+                $creds = New-Object System.Management.Automation.PSCredential ($proxyUser, $proxyPassword)
+                $proxy.Credentials = $creds
+            }
+            [System.Net.WebRequest]::DefaultWebProxy = $proxy
+
+            Write-Output "Proxy has been configured."
+        } else {
+            Write-Output "The proxy will not be used."
+        }
+    } else {
+        Write-Output "The proxy will not be used."
+    }
 }
+
 
 function isInstalledWindowsTerminal() {
     return Test-Path ($WINDOWS_TERMINAL)
