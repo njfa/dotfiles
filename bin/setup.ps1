@@ -162,12 +162,6 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "7zip"
         "git"
         "python"
-        # "rust"
-        "ripgrep"
-        "pwsh"
-        "delta"
-        "PSFzf"
-        "posh-git"
     )
 
     $PACKAGES = @(
@@ -177,6 +171,11 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "powertoys"
         "jq"
         "zenhan"
+        "ripgrep"
+        "pwsh"
+        "delta"
+        "PSFzf"
+        "posh-git"
     )
 
     scoop install $UTILS
@@ -240,18 +239,18 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Remove-Item sarasa-gothic.7z
     }
 
-    if (-Not (Test-Path ("$env:USERPROFILE\font\PlemolJP"))) {
-        Write-Host "Download PlemolJP.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/PlemolJP/releases/download/v1.6.0/PlemolJP_NF_v1.6.0.zip", ".\PlemolJP.zip")
-        7z x .\PlemolJP.zip -o"$env:USERPROFILE\font\PlemolJP"
-        Remove-Item PlemolJP.zip
-    }
-
     if (-Not (Test-Path ("$env:USERPROFILE\font\UDEV"))) {
         Write-Host "Download UDEV.zip"
         (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.3.1/UDEVGothic_NF_v1.3.1.zip", ".\UDEV.zip")
         7z x .\UDEV.zip -o"$env:USERPROFILE\font\UDEV"
         Remove-Item UDEV.zip
+    }
+
+    if (-Not (Test-Path ("$env:USERPROFILE\font\Moralerspace"))) {
+        Write-Host "Download Moralerspace.zip"
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/moralerspace/releases/download/v1.0.0/MoralerspaceHWNF_v1.0.0.zip", ".\Moralerspace.zip")
+        7z x .\Moralerspace.zip -o"$env:USERPROFILE\font\Moralerspace"
+        Remove-Item Moralerspace.zip
     }
 
 } elseif ($mode -eq "fonts") {
@@ -342,7 +341,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
 } elseif ($mode -eq "wslconfig") {
 
-    deployNewSettings $WINDOTFILES\.wslcofontsig $env:USERPROFILE .wslconfig
+    deployNewSettings $WINDOTFILES\.wslconfig $env:USERPROFILE .wslconfig
 
 } elseif ($mode -eq "profile") {
 
