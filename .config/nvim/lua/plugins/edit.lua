@@ -166,5 +166,24 @@ return {
         version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
         -- install jsregexp (optional!).
         build = "make install_jsregexp"
+    },
+
+    {
+        'preservim/vim-markdown',
+        ft = {'text', 'markdown', 'plantuml', ''},
+        dependencies = {
+            'godlygeek/tabular'
+        },
+        config =function ()
+            vim.g.vim_markdown_folding_disabled = 1
+            -- vim.g.vim_markdown_no_default_key_mappings = 1
+            vim.g.vim_markdown_toc_autofit = 1
+            vim.g.vim_markdown_new_list_item_indent = 0
+        end
+    },
+
+    {
+        'bullets-vim/bullets.vim',
+        ft = {'text', 'markdown', ''},
     }
 }
