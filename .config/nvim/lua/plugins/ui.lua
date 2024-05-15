@@ -232,4 +232,84 @@ return {
 
     -- LSP用の色定義を追加
     'folke/lsp-colors.nvim',
+
+    {
+        "shellRaining/hlchunk.nvim",
+        event = { "UIEnter" },
+        config = function()
+            support_filetypes = {
+                "*.sh",
+                "*.ts",
+                "*.tsx",
+                "*.js",
+                "*.jsx",
+                "*.html",
+                "*.json",
+                "*.go",
+                "*.c",
+                "*.py",
+                "*.cpp",
+                "*.rs",
+                "*.h",
+                "*.hpp",
+                "*.lua",
+                "*.vue",
+                "*.java",
+                "*.cs",
+                "*.dart",
+                "*.yaml"
+            }
+
+            require("hlchunk").setup({
+                chunk = {
+                    enable = true,
+                    notify = true,
+                    use_treesitter = true,
+                    -- details about support_filetypes and exclude_filetypes in https://github.com/shellRaining/hlchunk.nvim/blob/main/lua/hlchunk/utils/filetype.lua
+                    support_filetypes = support_filetypes,
+                }
+            })
+        end
+    },
+
+    -- {
+    --     'lukas-reineke/indent-blankline.nvim',
+    --     dependencies = {
+    --         'nvim-treesitter/nvim-treesitter'
+    --     },
+    --     config = function()
+    --         require('ibl').setup()
+    --     end
+    -- },
+
+    {
+        'b0o/incline.nvim',
+        config = function()
+            local helpers = require 'incline.helpers'
+            local devicons = require 'nvim-web-devicons'
+            require('incline').setup {
+                window = {
+                    padding = 0,
+                    margin = { horizontal = 0 },
+                },
+                render = function(props)
+                    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ':t')
+                    if filename == '' then
+                        filename = '[No Name]'
+                    end
+                    local ft_icon, ft_color = devicons.get_icon_color(filename)
+                    local modified = vim.bo[props.buf].modified
+                    return {
+                        ft_icon and { ' ', ft_icon, ' ', guibg = ft_color, guifg = helpers.contrast_color(ft_color) } or '',
+                        ' ',
+                        { filename, gui = modified and 'bold,italic' or 'bold' },
+                        ' ',
+                        guibg = '#44406e',
+                    }
+                end,
+            }
+        end,
+        -- Optional: Lazy load Incline
+        event = 'VeryLazy',
+    },
 }

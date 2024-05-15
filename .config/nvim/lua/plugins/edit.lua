@@ -206,5 +206,35 @@ return {
     {
         'bullets-vim/bullets.vim',
         ft = {'text', 'markdown', ''},
-    }
+    },
+
+    -- 対応する括弧をわかりやすくする
+    {
+        'haringsrob/nvim_context_vt',
+        dependencies = {
+            'nvim-treesitter/nvim-treesitter'
+        },
+        -- init = function()
+        --     require("nvim-treesitter.parsers")
+        -- end,
+        config = function()
+            require('nvim_context_vt').setup({
+                -- disable_ft = {'yml', 'py'},
+                disable_virtual_lines = true,
+            })
+        end
+    },
+
+    -- タグ入力時の補助
+    {
+        "windwp/nvim-ts-autotag",
+        dependencies = {
+            'nvim-treesitter/nvim-treesitter'
+        },
+        config = function()
+            require("nvim-ts-autotag").setup({
+                -- filetypes = { "html" , "xml", "markdown" },
+            })
+        end
+    },
 }

@@ -9,7 +9,7 @@ return {
         config = function()
             require('nvim-treesitter.configs').setup {
                 -- A list of parser names, or "all"
-                ensure_installed = { "lua", "bash", "java", "rust", "markdown", "markdown_inline", "http", "json" },
+                ensure_installed = { "lua", "bash", "java", "rust", "markdown", "markdown_inline", "http", "json", "yaml" },
 
                 -- Install parsers synchronously (only applied to `ensure_installed`)
                 sync_install = false,
@@ -97,44 +97,4 @@ return {
     -- 'nvim-treesitter/nvim-treesitter-textobjects', -- これを追加するとLSPの挙動がおかしくなったので無効化
     -- treesitter unitをテキストオブジェクトに追加
     'David-Kunz/treesitter-unit',
-
-    -- 対応する括弧をわかりやすくする
-    {
-        'haringsrob/nvim_context_vt',
-        dependencies = {
-            'nvim-treesitter/nvim-treesitter'
-        },
-        -- init = function()
-        --     require("nvim-treesitter.parsers")
-        -- end,
-        config = function()
-            require('nvim_context_vt').setup({
-                -- disable_ft = {'yml', 'py'},
-                disable_virtual_lines = true,
-            })
-        end
-    },
-
-    -- タグ入力時の補助
-    {
-        "windwp/nvim-ts-autotag",
-        dependencies = {
-            'nvim-treesitter/nvim-treesitter'
-        },
-        config = function()
-            require("nvim-ts-autotag").setup({
-                -- filetypes = { "html" , "xml", "markdown" },
-            })
-        end
-    },
-
-    {
-        'lukas-reineke/indent-blankline.nvim',
-        dependencies = {
-            'nvim-treesitter/nvim-treesitter'
-        },
-        config = function()
-            require('ibl').setup()
-        end
-    }
 }
