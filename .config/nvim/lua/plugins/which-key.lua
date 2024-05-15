@@ -18,9 +18,9 @@ return {
             ["<C-Up>"] = { '"zdd<Up>"zP', "カーソル行を1行移動 (上)" },
             ["<C-Down>"] = { '"zdd"zp', "カーソル行を1行移動 (下)" },
 
-            ["ys"] = { [[<Plug>(operator-sandwich-add)]], "" },
-            ["ds"] = { [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], "" },
-            ["cs"] = { [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], "" },
+            ["ys"] = { [[<Plug>(operator-sandwich-add)]], "Sandwich add" },
+            ["ds"] = { [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], "Sandwich delete" },
+            ["cs"] = { [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], "Sandwich replace" },
 
             ["<C-j>"] = { 'o<Esc>0"_D', "空行を挿入 (下)" },
             ["<C-k>"] = { 'O<Esc>0"_D', "空行を挿入 (上)" },
@@ -44,6 +44,7 @@ return {
             m = {
                 a = { "<Plug>(EasyAlign)", "指定文字で整列 (*で全一致箇所)"},
                 s = { "<cmd>Switch<cr>", "カーソル下の単語を反転 (true→false等)"},
+                g = { "<cmd>GitMessenger<cr>", "Git履歴表示"},
             },
 
             R = { function() require('substitute').operator() end, {}, "指定したテキストオブジェクトを置換" },

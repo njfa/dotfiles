@@ -21,15 +21,6 @@ return {
     {
         'monaqa/dial.nvim',
         config = function()
-            map("n", "<C-a>", require("dial.map").inc_normal(),   {silent = true})
-            map("n", "<C-x>", require("dial.map").dec_normal(),   {silent = true})
-            map("n", "g<C-a>", require("dial.map").inc_gnormal(), {silent = true})
-            map("n", "g<C-x>", require("dial.map").dec_gnormal(), {silent = true})
-            map("v", "<C-a>", require("dial.map").inc_visual(),   {silent = true})
-            map("v", "<C-x>", require("dial.map").dec_visual(),   {silent = true})
-            map("v", "g<C-a>", require("dial.map").inc_gvisual(), {silent = true})
-            map("v", "g<C-x>", require("dial.map").dec_gvisual(), {silent = true})
-
             local augend = require("dial.augend")
             require("dial.config").augends:register_group{
                 -- default augends used when no group name is specified
@@ -40,6 +31,25 @@ return {
                     augend.constant.alias.bool,    -- boolean value (true <-> false)
                 }
             }
+
+            local wk = require("which-key")
+            wk.register({
+                ["<C-a>"] = { require("dial.map").inc_normal(),   "インクリメント (dial.nvim)" },
+                ["<C-x>"] = { require("dial.map").dec_normal(),   "デクリメント (dial.nvim)" },
+                ["g<C-a>"] = { require("dial.map").inc_gnormal(), "インクリメント (dial.nvim)" },
+                ["g<C-x>"] = { require("dial.map").dec_gnormal(), "デクリメント (dial.nvim)" },
+            }, {
+                mode = "n"
+            })
+
+            wk.register({
+                ["<C-a>"] = { require("dial.map").inc_visual(),   "インクリメント (dial.nvim)" },
+                ["<C-x>"] = { require("dial.map").dec_visual(),   "デクリメント (dial.nvim)" },
+                ["g<C-a>"] = { require("dial.map").inc_gvisual(), "インクリメント (dial.nvim)" },
+                ["g<C-x>"] = { require("dial.map").dec_gvisual(), "デクリメント (dial.nvim)" },
+            }, {
+                mode = "x"
+            })
         end
     },
 
