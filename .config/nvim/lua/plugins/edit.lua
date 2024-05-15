@@ -190,23 +190,40 @@ return {
     },
 
     {
-        'preservim/vim-markdown',
-        ft = {'text', 'markdown', 'plantuml', ''},
-        dependencies = {
-            'godlygeek/tabular'
-        },
-        config =function ()
-            vim.g.vim_markdown_folding_disabled = 1
-            -- vim.g.vim_markdown_no_default_key_mappings = 1
+        'ixru/nvim-markdown',
+        init = function()
+            vim.g.vim_markdown_conceal = 0
             vim.g.vim_markdown_toc_autofit = 1
-            vim.g.vim_markdown_new_list_item_indent = 0
         end
     },
 
     {
-        'bullets-vim/bullets.vim',
-        ft = {'text', 'markdown', ''},
+        'MeanderingProgrammer/markdown.nvim',
+        name = 'render-markdown', -- Only needed if you have another plugin named markdown.nvim
+        dependencies = { 'nvim-treesitter/nvim-treesitter' },
+        config = function()
+            require('render-markdown').setup({})
+        end,
     },
+
+    -- {
+    --     'preservim/vim-markdown',
+    --     ft = {'text', 'markdown', 'plantuml', ''},
+    --     dependencies = {
+    --         'godlygeek/tabular'
+    --     },
+    --     config =function ()
+    --         vim.g.vim_markdown_folding_disabled = 1
+    --         -- vim.g.vim_markdown_no_default_key_mappings = 1
+    --         vim.g.vim_markdown_toc_autofit = 1
+    --         vim.g.vim_markdown_new_list_item_indent = 0
+    --     end
+    -- },
+
+    -- {
+    --     'bullets-vim/bullets.vim',
+    --     ft = {'text', 'markdown', ''},
+    -- },
 
     -- 対応する括弧をわかりやすくする
     {
