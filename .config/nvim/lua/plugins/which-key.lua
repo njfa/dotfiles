@@ -172,7 +172,7 @@ return {
                 name = "コマンド (利用頻度: 高)",
                 f = { function() require('picker').find_files_string_visual() end, "ファイル検索 (選択範囲の文字利用)" },
                 g = { function() require('picker').grep_string_visual() end, "Grep検索 (選択範囲の文字利用)" },
-                s = { [[:<c-u>'<,'>s/]], "文字列置換" },
+                r = { [[:<c-u>'<,'>s/]], "文字列置換" },
                 ["<leader>"] = {
                     name = "コマンド (利用頻度: 中)",
                     t = {
@@ -181,7 +181,7 @@ return {
                         m = { "<cmd>TableModeToggle<CR>", "Tableモード切替" },
                         t = { [[<Plug>(table-mode-tableize)]], "Tableへ変換" },
                     },
-                    s = { [[:<c-u>'<,'>s/\v]], "文字列置換 (正規表現)" },
+                    r = { [[:<c-u>'<,'>s/\v]], "文字列置換 (正規表現)" },
                 }
             }
         }, {
