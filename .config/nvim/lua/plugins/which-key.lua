@@ -51,7 +51,7 @@ return {
 
             ["<Esc>"] = { ":noh<cr>", "検索結果のハイライトを削除" },
 
-            ["<A-s>"] = { "<cmd>Fern . -reveal=% -drawer -toggle<cr>", "ファイルツリーの表示/非表示切替" },
+            ["<A-s>"] = { "<cmd>Fern . -reveal=% -drawer -toggle<cr>", "ファイルツリーの表示切替" },
 
             ["<C-p>"] = { "<cmd>tabp<cr>", "前のタブに移動" },
             ["<C-n>"] = { "<cmd>tabn<cr>", "次のタブに移動" },
@@ -83,12 +83,12 @@ return {
                 r = { [[:<c-u>%s/]], "文字列置換"},
                 s = { require('treesj').split, "行分割" },
                 t = { "<cmd>Telescope<CR>", "Telescope機能一覧" },
-                u = { "<cmd>UndotreeToggle<cr>", "ファイル編集履歴 表示/非表示切替" },
+                u = { "<cmd>UndotreeToggle<cr>", "ファイル編集履歴 表示切替" },
                 w = { "<cmd>w<cr>", "保存" },
                 q = { "<cmd>q<cr>", "ウィンドウを閉じる" },
                 x = {
                     name = "コマンド (Diagnostics表示)",
-                    x = { function() require("trouble").toggle() end, "表示/非表示切替" },
+                    x = { function() require("trouble").toggle() end, "表示切替" },
                     w = { function() require("trouble").toggle("workspace_diagnostics") end, "Diagnostics (ワークスペース内)" },
                     d = { function() require("trouble").toggle("document_diagnostics")  end, "Diagnostics (ドキュメント内)" },
                 },
@@ -126,7 +126,7 @@ return {
             ['<F7>'] = { "<cmd>lua require('dap').continue()<CR>", "実行" },
             ['<F8>'] = { "<cmd>lua require('dap').step_over()<CR>", "ステップ実行 (Over)" },
             ['<F9>'] = { "<cmd>lua require('dap').step_out()<CR>", "ステップ実行 (OUT)" },
-            ['<F12>'] = { "<cmd>lua require('dapui').toggle()<CR>", "DAP UIの表示/非表示切替" },
+            ['<F12>'] = { "<cmd>lua require('dapui').toggle()<CR>", "DAP UIの表示切替" },
         }, {
             mode = "n"
         })
@@ -212,6 +212,7 @@ return {
         -- }, {
         --     mode = "s"
         -- })
+        --
 
         wk.setup({
             window = {
@@ -222,7 +223,7 @@ return {
             },
             layout = {
                 height = { min = 4, max = 25 }, -- min and max height of the columns
-                width = { min = 10, max = 45 }, -- min and max width of the columns
+                width = { min = 10, max = 50 }, -- min and max width of the columns
                 spacing = 3, -- spacing between columns
                 align = "center", -- align columns left, center or right
             },
