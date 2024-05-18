@@ -257,7 +257,8 @@ return {
                 "*.java",
                 "*.cs",
                 "*.dart",
-                "*.yml"
+                "*.yml",
+                "*.tf"
             }
 
             require("hlchunk").setup({
