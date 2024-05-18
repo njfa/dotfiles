@@ -4,8 +4,13 @@ else
     vim.opt_local.expandtab = false
 end
 
+if require('common').is_floating_window() then
+    return false
+end
+
 local status_ok, jdtls = pcall(require, "jdtls")
 if not status_ok then
+    vim.notify("jdtls is not available", vim.log.levels.WARN)
     return false
 end
 
