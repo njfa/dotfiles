@@ -20,6 +20,9 @@ local root_dir = jdtls_setup.find_root(root_markers)
 local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
 local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name
 
+local path_to_java17 = vim.fn.glob(home .. "/.sdkman/candidates/java/17.*-amzn/", true)
+local path_to_java11 = vim.fn.glob(home .. "/.sdkman/candidates/java/11.*-amzn/", true)
+
 local path_to_mason_packages = vim.fn.stdpath('data') .. "/mason/packages"
 
 local path_to_jdtls = path_to_mason_packages .. "/jdtls"
@@ -92,7 +95,7 @@ local config = {
 }
 
 config.cmd = {
-    "java", -- or '/path/to/java17_or_newer/bin/java'
+    path_to_java17 .. 'bin/java', -- or '/path/to/java17_or_newer/bin/java'
     -- depends on if `java` is in your $PATH env variable and if it points to the right version.
 
     "-Declipse.application=org.eclipse.jdt.ls.core.id1",
@@ -163,14 +166,18 @@ config.settings = {
                 template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
             },
             useBlocks = true,
-        -- },
-        -- configuration = {
-        --     runtimes = {
-        --         {
-        --             name = "amazoncorreto-17",
-        --             path = vim.fn.glob(home .. "/.sdkman/candidates/java/17.0.8-amzn/", true),
-        --         }
-        --     }
+        },
+        configuration = {
+            runtimes = {
+                {
+                    name = "JavaSE-11",
+                    path = path_to_java11
+                },
+                {
+                    name = "JavaSE-17",
+                    path = path_to_java17
+                }
+            }
         }
     }
 }
