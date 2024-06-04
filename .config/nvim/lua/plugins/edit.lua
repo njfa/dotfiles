@@ -155,6 +155,11 @@ return {
         build = function() vim.fn["mkdp#util#install"]() end,
         init = function()
             vim.g.mkdp_filetypes = { "markdown", "plantuml" }
+            vim.g.mkdp_preview_options = {
+                uml = {
+                    server = 'http://127.0.0.1:18123'
+                }
+            }
         end,
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     },
