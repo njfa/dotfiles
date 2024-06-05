@@ -1,10 +1,9 @@
-local M = {}
-
-function M.load(use)
+return {
     -- 色定義の追加
-    use 'folke/lsp-colors.nvim'
+    'folke/lsp-colors.nvim',
 
-    use {
+    -- LSPの結果を別行に表示する
+    {
         "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
         config = function()
             vim.diagnostic.config({
@@ -12,21 +11,29 @@ function M.load(use)
             })
             require("lsp_lines").setup()
         end,
-    }
+    },
 
     -- LSPサーバー管理
-    use {
+    {
+        "williamboman/mason.nvim",
+        "neovim/nvim-lspconfig",
+        'hrsh7th/cmp-nvim-lsp',
+        'mfussenegger/nvim-jdtls',
+        'simrat39/rust-tools.nvim',
+        "nvimtools/none-ls.nvim",
+    },
+
+    {
         'williamboman/mason-lspconfig.nvim',
-        requires = {
+        dependencies = {
             'williamboman/mason.nvim',
             'hrsh7th/cmp-nvim-lsp',
             'mfussenegger/nvim-jdtls',
             'simrat39/rust-tools.nvim',
-            "jay-babu/mason-null-ls.nvim",
-            "nvimtools/none-ls.nvim",
+            'nvimdev/lspsaga.nvim',
         },
-        -- ft = {'sh', 'zsh', 'bash', 'html', 'markdown', 'vim', 'lua', 'yaml', 'env', 'json', 'javascript'},
         config = function()
+
             -- mason
             require('mason').setup({
                 ui = {
@@ -42,7 +49,9 @@ function M.load(use)
                 function (server_name)
                     -- Setup lspconfig.
                     require("lspconfig")[server_name].setup {
-                        on_attach = on_attach_lsp,
+                        on_attach = function(_, bufnr)
+                            require('common').on_attach_lsp(_, bufnr, server_name)
+                        end,
                         capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
                     }
                 end,
@@ -101,15 +110,24 @@ function M.load(use)
                                 }
                             }
                         },
-                        on_attach = on_attach_lsp,
+                        on_attach = function(_, bufnr)
+                            require('common').on_attach_lsp(_, bufnr, _)
+                        end,
                         capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
                     }
                 end
             }
+        end
+    },
 
-            -- Formatterのセットアップ
-            local mason_package = require("mason-core.package")
-            local mason_registry = require("mason-registry")
+    -- masonとnone-lsの連携
+    {
+        "jay-babu/mason-null-ls.nvim",
+        dependencies = {
+            "williamboman/mason.nvim",
+            "nvimtools/none-ls.nvim"
+        },
+        config = function()
             local null_ls = require("null-ls")
 
             local null_sources = {
@@ -140,10 +158,10 @@ function M.load(use)
                 automatic_installation = false,
                 handlers = {
                     -- function() end, -- disables automatic setup of all null-ls sources
-                    markdownlint = function(source_name, methods)
+                    markdownlint = function(_, _)
                         null_ls.register(
                             null_ls.builtins.diagnostics.markdownlint.with({
-                                extra_args = { "--disable", "MD007", "MD012", "MD013" }
+                                extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051" }
                             })
                         )
                     end,
@@ -153,13 +171,14 @@ function M.load(use)
                     -- end,
                 },
             })
-
         end
-    }
+    },
 
-    use {
+    {
         'nvimdev/lspsaga.nvim',
-        requires = 'nvim-lspconfig',
+        dependencies = {
+            'neovim/nvim-lspconfig',
+        },
         config = function()
             require('lspsaga').setup({
                 code_action = {
@@ -170,13 +189,23 @@ function M.load(use)
                 finder = {
                     max_height = 0.6,
                     keys = {
+                        edit = 'o',
                         vsplit = 'e',
                         toggle_or_open = '<cr>',
+                        shuttle = '<C-w>'
                     },
                     methods = {
                         tyd = 'textDocument/typeDefinition'
                     },
-                    default = 'def+ref+imp+tyd'
+                    default = 'def+ref+imp+tyd',
+                },
+                callhierarchy = {
+                    keys = {
+                        edit = 'o',
+                        vsplit = 'e',
+                        toggle_or_open = '<cr>',
+                        shuttle = '<C-w>'
+                    },
                 },
                 hover = {
                     open_cmd = '!browser.sh'
@@ -205,39 +234,49 @@ function M.load(use)
                 }
             })
         end,
-    }
+    },
 
-    use {
+    {
         "ray-x/lsp_signature.nvim",
-        config = function()
-            local cfg = {
-                hint_prefix = " ",
-                floating_window_off_x = 5, -- adjust float windows x position.
-                floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
-                    local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
-                    local pumheight = vim.o.pumheight
-                    local winline = vim.fn.winline() -- line number in the window
-                    local winheight = vim.fn.winheight(0)
-
-                    -- window top
-                    if winline - 1 < pumheight then
-                        return pumheight
-                    end
-
-                    -- window bottom
-                    if winheight - winline < pumheight then
-                        return -pumheight
-                    end
-                    return 0
-                end,
+        event = "VeryLazy",
+        opts = {},
+        config = function(_, opts)
+            opts.bind = true
+            opts.handler_opts = {
+                border = "rounded"
             }
-            require("lsp_signature").setup(cfg)
+            opts.hint_prefix = "󱄑 "
+            -- opts.hint_prefix = " "
+            opts.transparency = 10
+            opts.max_width = 120
+            opts.floating_window_off_x = function() -- adjust float windows x position.
+                local colnr = vim.api.nvim_win_get_cursor(0)[2] -- buf col number
+                return colnr
+                -- return vim.fn.wincol()
+            end
+            opts.floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
+                -- local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
+                local pumheight = vim.o.pumheight
+                local winline = vim.fn.winline() -- line number in the window
+                local winheight = vim.fn.winheight(0)
+
+                -- window top
+                if winline - 1 < pumheight then
+                    return pumheight
+                end
+
+                -- window bottom
+                if winheight - winline < pumheight then
+                    return -pumheight
+                end
+                return 0
+            end
+
+            require("lsp_signature").setup(opts)
         end
-    }
+    },
 
-    use {
-        "folke/trouble.nvim"
-    }
-end
+    -- LSPの結果を一覧表示
+    "folke/trouble.nvim",
 
-return M;
+}

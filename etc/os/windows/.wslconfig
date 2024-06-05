@@ -1,2 +1,5 @@
 [wsl2]
-localhostForwarding=True
+localhostForwarding=true
+
+[experimental]
+sparseVhd=true

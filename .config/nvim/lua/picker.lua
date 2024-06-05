@@ -12,13 +12,12 @@ local function get_path_and_tail(filename)
   return bufname_tail, path_to_display
 end
 
--- local use_find_files_instead_of_git = true
+local status_ok, utils = pcall(require, "telescope.utils")
+if not status_ok then
+    return
+end
 
--- M.project_files_toggle_between_git_and_fd = function()
---   use_find_files_instead_of_git = not use_find_files_instead_of_git
--- end
-
-local utils = require('telescope.utils')
+-- local utils = require('telescope.utils')
 local entry_display = require('telescope.pickers.entry_display')
 local devicons = require('nvim-web-devicons')
 local strings = require('plenary.strings')
@@ -84,12 +83,11 @@ M.find_files_from_project_git_root = function(opts)
     opts = opts or {}
     if is_git_repo() then
         opts.results_title = '  Project Files: '
-        opts.cwd = get_git_root()
+        opts.cwd = getcwd()
         opts.prompt_title = getcwd()
     else
         opts.results_title = '  All Files: '
         opts.prompt_title = vim.fn.getcwd()
-        opts.cmd = vim.fn.getcwd()
     end
 
     opts.find_command = {
@@ -107,11 +105,12 @@ M.find_files_from_project_git_root = function(opts)
     if opts.oldfiles then
         opts.results_title = '  Recent files: '
         opts.include_current_session = true
+        opts.cwd = nil
         --- we want recent files inside monorepo root folder, not a sub project root.
         --- see https://github.com/nvim-telescope/telescope.nvim/blob/276362a8020c6e94c7a76d49aa00d4923b0c02f3/lua/telescope/builtin/__internal.lua#L533C61-L533C61
-        if opts.cwd then
-            opts.cwd_only = false
-        end
+        -- if opts.cwd then
+        --     opts.only_cwd = false
+        -- end
         require('telescope.builtin').oldfiles(opts)
         return
     end
@@ -124,12 +123,11 @@ M.live_grep_from_project_git_root = function(opts)
     opts = opts or {}
     if is_git_repo() then
         opts.results_title = '  Project Files: '
-        opts.cwd = get_git_root()
+        opts.cwd = getcwd()
         opts.prompt_title = getcwd()
     else
         opts.results_title = '  All Files: '
         opts.prompt_title = vim.fn.getcwd()
-        opts.cmd = vim.fn.getcwd()
     end
 
     opts.find_command = {

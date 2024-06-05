@@ -1,3 +1,5 @@
+[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('utf-8')
+
 Import-Module posh-git
 
 # キーバインドをEmacs風に変更
