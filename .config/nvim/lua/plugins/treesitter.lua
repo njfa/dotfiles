@@ -1,8 +1,6 @@
-local M = {}
-
-function M.load(use)
-    -- treesitter
-    use {
+-- treesitterとtreesitterに依存するプラグイン
+return {
+    {
         'nvim-treesitter/nvim-treesitter',
         run = function()
             local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
@@ -11,7 +9,7 @@ function M.load(use)
         config = function()
             require('nvim-treesitter.configs').setup {
                 -- A list of parser names, or "all"
-                ensure_installed = { "lua", "bash", "java", "rust", "markdown", "markdown_inline", "http", "json" },
+                ensure_installed = { "lua", "bash", "java", "rust", "markdown", "markdown_inline", "http", "json", "yaml", "python", "terraform" },
 
                 -- Install parsers synchronously (only applied to `ensure_installed`)
                 sync_install = false,
@@ -48,10 +46,11 @@ function M.load(use)
                 },
             }
         end
-    }
-    use {
+    },
+
+    {
         'nvim-treesitter/nvim-treesitter-context',
-        requires = 'nvim-treesitter/nvim-treesitter',
+        dependencies = 'nvim-treesitter/nvim-treesitter',
         config = function()
             require('treesitter-context').setup{
                 enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
@@ -93,46 +92,25 @@ function M.load(use)
                 separator = nil, -- Separator between context and content. Should be a single character string, like '-'.
             }
         end
-    }
+    },
 
-    -- use 'nvim-treesitter/nvim-treesitter-textobjects' -- これを追加するとLSPの挙動がおかしくなったので無効化
+    -- 'nvim-treesitter/nvim-treesitter-textobjects', -- これを追加するとLSPの挙動がおかしくなったので無効化
     -- treesitter unitをテキストオブジェクトに追加
-    use 'David-Kunz/treesitter-unit'
-
-    -- 対応する括弧をわかりやすくする
-    use {
-        'haringsrob/nvim_context_vt',
-        requires = 'nvim-treesitter/nvim-treesitter',
-        setup = function()
-            require("nvim-treesitter.parsers")
-        end,
+    'David-Kunz/treesitter-unit',
+    {
+        'RRethy/nvim-treesitter-textsubjects',
         config = function()
-            require('nvim_context_vt').setup({
-                -- disable_ft = {'yml', 'py'},
-                disable_virtual_lines = true,
-            })
+            require('nvim-treesitter.configs').setup {
+                textsubjects = {
+                    enable = true,
+                    prev_selection = ',', -- (Optional) keymap to select the previous selection
+                    keymaps = {
+                        ['.'] = 'textsubjects-smart',
+                        [';'] = 'textsubjects-container-outer',
+                        ['i;'] = { 'textsubjects-container-inner', desc = "コンテナ内を選択 (classes, functions, etc.)" },
+                    },
+                },
+            }
         end
-    }
-
-    -- -- タグ入力時の補助
-    use {
-        "windwp/nvim-ts-autotag",
-        requires = 'nvim-treesitter/nvim-treesitter',
-        config = function()
-            require("nvim-ts-autotag").setup({
-                -- filetypes = { "html" , "xml", "markdown" },
-            })
-        end
-    }
-
-    use {
-        'lukas-reineke/indent-blankline.nvim',
-        requires = 'nvim-treesitter/nvim-treesitter',
-        config = function()
-            require('ibl').setup()
-        end
-    }
-end
-
-return M;
-
+    },
+}

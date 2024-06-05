@@ -1,3 +1,6 @@
+local map = require('common').map
+local buf_map = require('common').buf_map
+
 -- IMEの自動OFF
 if vim.fn.executable('zenhan.exe') == 1 then
     vim.api.nvim_create_autocmd({"InsertLeave", "CmdlineLeave"}, {
@@ -11,24 +14,6 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
     pattern = { "*" },
     callback = function()
         vim.api.nvim_exec('silent! normal! g`"zv', false)
-    end,
-})
-
-
--- plugins.luaに記載した設定を反映
-vim.api.nvim_create_autocmd({ "BufWritePost" }, {
-    pattern = { "plugins.lua" },
-    callback = function()
-        -- local fn = vim.fn
-        -- local config_path = fn.stdpath('config') .. "/lua/plugins/**/*.lua"
-
-        -- for _, file in ipairs(vim.split(fn.glob(config_path), '\n')) do
-        --     vim.api.nvim_exec("source " .. file, false)
-        --     P("Reload module: '" .. file .."'", " Success!!")
-        -- end
-
-        vim.api.nvim_exec("source <afile>", false)
-        vim.api.nvim_exec('PackerCompile', false)
     end,
 })
 
@@ -56,17 +41,14 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     end,
 })
 
--- vim.api.nvim_create_autocmd({"FileType"}, {
---     pattern = {"saga_codeaction" },
---     callback = function()
---         buf_map(0, 'n', "<Esc>", require('lspsaga').config.code_action.keys.quit, { noremap = true })
---     end,
--- })
-
--- vim.api.nvim_create_autocmd({"FileType"}, {
---     pattern = {"saga_codeaction", "sagarename" },
---     callback = function()
---         buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
---     end,
--- })
-
+vim.api.nvim_create_user_command("Format", function(args)
+  local range = nil
+  if args.count ~= -1 then
+    local end_line = vim.api.nvim_buf_get_lines(0, args.line2 - 1, args.line2, true)[1]
+    range = {
+      start = { args.line1, 0 },
+      ["end"] = { args.line2, end_line:len() },
+    }
+  end
+  require("conform").format({ async = true, lsp_fallback = true, range = range })
+end, { range = true })

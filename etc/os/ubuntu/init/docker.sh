@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker version || if [ -z "$(command -v docker)" ]; then
+if ! command -v docker >/dev/null 2>&1; then
     sudo apt-get update -y
     sudo apt-get install -y \
         ca-certificates \
@@ -23,10 +23,13 @@ docker version || if [ -z "$(command -v docker)" ]; then
 
     sudo service docker start
     docker version
+elif service docker status || sudo service docker start; then
+    docker version
+else
+    exit 1
 fi
 
-
-if [ "$(docker compose version 2>/dev/null)" ]; then
+if ! docker compose version; then
     sudo apt-get install -y docker-compose-plugin
     docker compose version
 fi

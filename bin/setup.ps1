@@ -7,16 +7,34 @@ $WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
 $WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\
 $WINDOWS_TERMINAL_PREVIEW = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreView_*\LocalState\
 
-$HTTPS_PROXY = [System.Environment]::GetEnvironmentVariable("HTTPS_PROXY", "User")
-$HTTP_PROXY = [System.Environment]::GetEnvironmentVariable("HTTP_PROXY", "User")
 
-if (-not [string]::IsNullOrEmpty($HTTPS_PROXY)) {
-    $myproxy = New-Object System.Net.WebProxy $HTTPS_PROXY, $True
-    [System.Net.WebRequest]::DefaultWebProxy = $myproxy
-} elseif (-not [string]::IsNullOrEmpty($HTTP_PROXY)) {
-    $myproxy = New-Object System.Net.WebProxy $HTTP_PROXY, $True
-    [System.Net.WebRequest]::DefaultWebProxy = $myproxy
+if (($mode -eq "i") -Or ($mode -eq "init") -Or ($mode -eq "fonts") -Or ($mode -eq "tools")) {
+    $useProxy = Read-Host "Would you like to use a proxy? (y/n)"
+    $useProxy = $useProxy.ToLower()
+
+    if ($useProxy -eq "y" -or $useProxy -eq "yes") {
+        $proxyHost = Read-Host "Host"
+        $proxyPort = Read-Host "Port"
+        $proxyUser = Read-Host "Username"
+        $proxyPassword = Read-Host "Password" -AsSecureString
+
+        if ($proxyHost.Length -gt 0 -And $proxyPort.Length -gt 0) {
+            $proxy = New-Object System.Net.WebProxy "http://$($proxyHost):$($proxyPort)/"
+            if ($proxyUser.Length -gt 0 -And $proxyPassword.Length -gt 0) {
+                $creds = New-Object System.Management.Automation.PSCredential ($proxyUser, $proxyPassword)
+                $proxy.Credentials = $creds
+            }
+            [System.Net.WebRequest]::DefaultWebProxy = $proxy
+
+            Write-Output "Proxy has been configured."
+        } else {
+            Write-Output "The proxy will not be used."
+        }
+    } else {
+        Write-Output "The proxy will not be used."
+    }
 }
+
 
 function isInstalledWindowsTerminal() {
     return Test-Path ($WINDOWS_TERMINAL)
@@ -162,12 +180,6 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "7zip"
         "git"
         "python"
-        # "rust"
-        "ripgrep"
-        "pwsh"
-        "delta"
-        "PSFzf"
-        "posh-git"
     )
 
     $PACKAGES = @(
@@ -177,6 +189,11 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "powertoys"
         "jq"
         "zenhan"
+        "ripgrep"
+        "pwsh"
+        "delta"
+        "PSFzf"
+        "posh-git"
     )
 
     scoop install $UTILS
@@ -240,18 +257,18 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Remove-Item sarasa-gothic.7z
     }
 
-    if (-Not (Test-Path ("$env:USERPROFILE\font\PlemolJP"))) {
-        Write-Host "Download PlemolJP.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/PlemolJP/releases/download/v1.6.0/PlemolJP_NF_v1.6.0.zip", ".\PlemolJP.zip")
-        7z x .\PlemolJP.zip -o"$env:USERPROFILE\font\PlemolJP"
-        Remove-Item PlemolJP.zip
-    }
-
     if (-Not (Test-Path ("$env:USERPROFILE\font\UDEV"))) {
         Write-Host "Download UDEV.zip"
         (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.3.1/UDEVGothic_NF_v1.3.1.zip", ".\UDEV.zip")
         7z x .\UDEV.zip -o"$env:USERPROFILE\font\UDEV"
         Remove-Item UDEV.zip
+    }
+
+    if (-Not (Test-Path ("$env:USERPROFILE\font\Moralerspace"))) {
+        Write-Host "Download Moralerspace.zip"
+        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/moralerspace/releases/download/v1.0.0/MoralerspaceHWNF_v1.0.0.zip", ".\Moralerspace.zip")
+        7z x .\Moralerspace.zip -o"$env:USERPROFILE\font\Moralerspace"
+        Remove-Item Moralerspace.zip
     }
 
 } elseif ($mode -eq "fonts") {
@@ -342,7 +359,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
 } elseif ($mode -eq "wslconfig") {
 
-    deployNewSettings $WINDOTFILES\.wslcofontsig $env:USERPROFILE .wslconfig
+    deployNewSettings $WINDOTFILES\.wslconfig $env:USERPROFILE .wslconfig
 
 } elseif ($mode -eq "profile") {
 
