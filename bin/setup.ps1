@@ -7,6 +7,12 @@ $WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
 $WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\
 $WINDOWS_TERMINAL_PREVIEW = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreView_*\LocalState\
 
+if ($null -eq $Proxy) {
+    echo "$Proxy is null"
+} else {
+    [System.Net.WebRequest]::DefaultWebProxy = $null
+}
+
 
 if (($mode -eq "i") -Or ($mode -eq "init") -Or ($mode -eq "fonts") -Or ($mode -eq "tools")) {
     $useProxy = Read-Host "Would you like to use a proxy? (y/n)"
@@ -86,6 +92,19 @@ function backup() {
     Write-Host "Result: Backup failed`r`n"
 }
 
+function downloadLatestRelease() {
+    if ($args.Length -lt 2) {
+        return $(Write-Host "downloadLatestrelease repoOwner/repoName nameFormat")
+    }
+
+    $REPO_PATH = $args[0]
+    $NAME_FORMAT = $args[1]
+    Write-Host "repoOwner/repoName: ${REPO_PATH}, nameFormat: ${NAME_FORMAT}"
+    $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/${REPO_PATH}/releases/latest" -Method Get
+    $releaseUrl = $($releaseInfo.assets | Where-Object { $_.name -like "${NAME_FORMAT}" } | Select-Object -First 1).browser_download_url
+    Write-Host "download url: $releaseUrl"
+    (New-Object Net.WebClient).DownloadFile($releaseUrl, ".\latestRelease")
+}
 
 function deployNewSettings() {
     if ($args.Length -lt 3) {
@@ -171,14 +190,17 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Invoke-Expression (New-Object System.Net.WebClient).downloadstring("https://get.scoop.sh")
     }
 
-    $UTILS = @(
+    $DEPENDENCIES = @(
+        "git"
         "gcc"
+    )
+
+    $UTILS = @(
         "aria2"
         "lessmsi"
         # "vcredist2022"
         "dark"
         "7zip"
-        "git"
         "python"
     )
 
@@ -196,11 +218,12 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "posh-git"
     )
 
-    scoop install $UTILS
+    scoop install $DEPENDENCIES
     scoop bucket add versions
     scoop bucket add extras
     scoop bucket add java
     scoop update *
+    scoop install $UTILS
     scoop install $PACKAGES
 
     # python3
@@ -252,23 +275,23 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic"))) {
         Write-Host "Download sarasa-gothic.7z"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/be5invis/Sarasa-Gothic/releases/download/v0.41.7/sarasa-gothic-super-ttc-0.41.7.7z", ".\sarasa-gothic.7z")
-        7z x .\sarasa-gothic.7z -o"$env:USERPROFILE\font\sarasa-gothic"
-        Remove-Item sarasa-gothic.7z
+        downloadLatestRelease "be5invis/Sarasa-Gothic" "Sarasa-SuperTTC-*.7z"
+        7z x .\latestRelease -o"$env:USERPROFILE\font\sarasa-gothic"
+        Remove-Item latestRelease
     }
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\UDEV"))) {
         Write-Host "Download UDEV.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/udev-gothic/releases/download/v1.3.1/UDEVGothic_NF_v1.3.1.zip", ".\UDEV.zip")
-        7z x .\UDEV.zip -o"$env:USERPROFILE\font\UDEV"
-        Remove-Item UDEV.zip
+        downloadLatestRelease "yuru7/udev-gothic" "UDEVGothic_NF_*.zip"
+        7z x .\latestRelease -o"$env:USERPROFILE\font\UDEV"
+        Remove-Item latestRelease
     }
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\Moralerspace"))) {
         Write-Host "Download Moralerspace.zip"
-        (New-Object Net.WebClient).DownloadFile("https://github.com/yuru7/moralerspace/releases/download/v1.0.0/MoralerspaceHWNF_v1.0.0.zip", ".\Moralerspace.zip")
-        7z x .\Moralerspace.zip -o"$env:USERPROFILE\font\Moralerspace"
-        Remove-Item Moralerspace.zip
+        downloadLatestRelease "yuru7/moralerspace" "MoralerspaceHWNF*.zip"
+        7z x .\latestRelease -o"$env:USERPROFILE\font\Moralerspace"
+        Remove-Item latestRelease
     }
 
 } elseif ($mode -eq "fonts") {
