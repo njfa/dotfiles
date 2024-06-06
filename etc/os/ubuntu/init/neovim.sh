@@ -1,36 +1,36 @@
-#!/bin/sh
+#!/bin/bash
 
 PYENV_ROOT="$HOME/.pyenv"
 PATH="$PYENV_ROOT/bin:$PATH"
 
-if [ -z "$(command -v pip)" ]; then
+if command -v pip >/dev/null 2>&1; then
+    echo "pip is installed."
+else
     echo "pip is not installed."
     PWD=$(cd $(dirname $0); pwd)
     sh $PWD/python.sh
     eval "$(pyenv init -)"
-else
-    echo "pip is installed."
 fi
 
-if [ -n "$(command -v pip)" -a -z "$(pip list | grep pynvim)" ]; then
+if pip list | grep pynvim >/dev/null 2>&1; then
+    echo "pynvim is installed."
+else
     echo "pynvim is not installed."
     pip install pynvim
-else
-    echo "pynvim is installed."
 fi
 
-if [ -z "$(command -v rg)" ]; then
+if command -v rg >/dev/null 2>&1; then
+    echo "ripgrep is installed."
+else
     echo "ripgrep is not installed."
     sudo apt install -y ripgrep
-else
-    echo "ripgrep is installed."
 fi
 
-if [ -z "$(command -v fdfind)" ]; then
+if command -v fdfind >/dev/null 2>&1; then
+    echo "fd-find is installed."
+else
     echo "fd-find is not installed."
     sudo apt install -y fd-find
-else
-    echo "fd-find is installed."
 fi
 
 is_installed=false
@@ -38,7 +38,7 @@ is_installed=false
 # ダウンロード先のディレクトリを生成
 [ ! -d "$HOME/.nvim" ] && mkdir ~/.nvim
 
-if [ -n "$(command -v nvim)" ]; then
+if command -v nvim >/dev/null 2>&1; then
     version="$(nvim --version | grep "NVIM" | awk '{print $2}')"
     echo "neovim is installed. required version: $NEOVIM_VERSION. now version: $version"
 
@@ -56,7 +56,7 @@ if ! $is_installed; then
         mv squashfs-root ~/.nvim/$NEOVIM_VERSION
         rm nvim.appimage
     else
-        echo "neovim is downloaded."
+        echo "neovim is already downloaded."
     fi
 
     sudo ln -sf ~/.nvim/$NEOVIM_VERSION/usr/bin/nvim /usr/local/bin/nvim

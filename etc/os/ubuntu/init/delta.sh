@@ -2,7 +2,7 @@
 
 is_installed=false
 
-if [ -n "$(command -v delta)" ]; then
+if command -v delta >/dev/null 2>&1; then
     version="$(delta --version | awk '{print $2}')"
     echo "delta is installed. required version: $DELTA_VERSION. now version: $version"
 
