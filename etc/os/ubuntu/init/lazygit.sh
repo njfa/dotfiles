@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 is_installed=false
 
