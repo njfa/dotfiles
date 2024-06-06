@@ -11,18 +11,6 @@ return {
 
         require("bufferline").setup {
             highlights = {
-                fill = {
-                    fg = colors.fg,
-                    bg = colors.bg_highlight,
-                },
-                background = {
-                    fg = colors.comment,
-                    bg = "#1f2335",
-                },
-                buffer = {
-                    fg = colors.fg,
-                    bg = colors.bg_highlight,
-                },
                 tab = {
                     fg = colors.comment,
                     bg = "#1f2335",
@@ -38,126 +26,35 @@ return {
                 tab_separator_selected = {
                     fg = colors.blue,
                     bg = colors.blue,
-                },
-                -- close_button = {
-                --     fg = colors.fg,
-                --     bg = colors.bg,
-                -- },
-                --     close_button_selected = {
-                --         fg = colors.fg,
-                --         bg = colors.bg_highlight,
-                --     },
-                separator = {
-                    fg = colors.bg_highlight,
-                    bg = colors.bg_highlight,
-                },
-                --     separator_selected = {
-                --         fg = colors.fg,
-                --         bg = colors.bg_highlight,
-                --     },
-                --     -- separator_visible = {
-                --     --     fg = colors.fg,
-                --     --     bg = colors.bg,
-                --     -- },
-                offset_separator = {
-                    fg = colors.bg_dark,
-                    bg = colors.bg_highlight,
-                },
-                --     indicator_visible = {
-                --         fg = colors.fg,
-                --         bg = colors.bg_highlight,
-                --     },
-                --     indicator_selected = {
-                --         fg = colors.fg,
-                --         bg = colors.bg_highlight,
-                --     },
-                diagnostic = {
-                    bg = "#1f2335",
-                },
-                diagnostic_visible = {
-                    bg = "#1f2335",
-                },
-                hint = {
-                    bg = "#1f2335",
-                },
-                hint_visible = {
-                    bg = "#1f2335",
-                },
-                info = {
-                    bg = "#1f2335",
-                },
-                warning = {
-                    bg = "#1f2335",
-                },
-                error = {
-                    bg = "#1f2335",
-                },
-                info_visible = {
-                    bg = "#1f2335",
-                },
-                warning_visible = {
-                    bg = "#1f2335",
-                },
-                error_visible = {
-                    bg = "#1f2335",
-                },
-                hint_diagnostic = {
-                    bg = "#1f2335",
-                },
-                hint_diagnostic_visible = {
-                    bg = "#1f2335",
-                },
-                info_diagnostic = {
-                    bg = "#1f2335",
-                },
-                info_diagnostic_visible = {
-                    bg = "#1f2335",
-                },
-                warning_diagnostic = {
-                    bg = "#1f2335",
-                },
-                warning_diagnostic_visible = {
-                    bg = "#1f2335",
-                },
-                error_diagnostic = {
-                    bg = "#1f2335",
-                },
-                error_diagnostic_visible = {
-                    bg = "#1f2335",
-                },
-                --     hint_diagnostic_selected = {
-                --         bold = true,
-                --         italic = false,
-                --         bg = colors.bg_highlight,
-                --     },
-                --
-                duplicate = {
-                    bg = "#1f2335",
-                },
-                duplicate_visible = {
-                    bg = "#1f2335",
-                },
+                }
             },
             options = {
-                -- numbers = "buffer_id",
                 numbers = "none",
-                -- numbers = function(opts)
-                --     return string.format(' %s|%s', opts.id, opts.raise(opts.ordinal))
-                -- end,
-                -- numbers = function()
-                --     return ''
-                -- end,
-                buffer_close_icon = '',
-                -- buffer_close_icon = 'ⅹ ',
+                name_formatter = function(buf)  -- buf contains:
+                    return buf.name
+                end,
+                get_element_icon = function(element)
+                    -- element consists of {filetype: string, path: string, extension: string, directory: string}
+                    -- This can be used to change how bufferline fetches the icon
+                    -- for an element e.g. a buffer or a tab.
+                    -- e.g.
+                    local icon, hl = require('nvim-web-devicons').get_icon_by_filetype(element.filetype, { default = false })
+                    if icon then
+                        return " " .. icon .. " ", hl
+                    else
+                        return "  ", hl
+                    end
+                end,
+                show_buffer_close_icons = true,
+                show_close_icon = true,
                 max_name_length = 20,
                 max_prefix_length = 10, -- prefix used when a buffer is de-duplicated
                 truncate_names = true, -- whether or not tab names should be truncated
                 tab_size = 10,
                 color_icons = true,
                 sort_by = 'insert_after_current',
-                always_show_bufferline = true,
-                separator_style = { ' ', ' ' },
                 show_tab_indicators = true,
+                separator_style = 'thick',
                 indicator = {
                     icon = "▌",
                     style = 'icon'
@@ -196,10 +93,11 @@ return {
                         separator = true
                     }
                 },
+                -- WindowsTerminalではhoverイベントが効かないため無効かする
                 hover = {
-                    enabled = true,
-                    delay = 200,
-                    reveal = {'close'}
+                    enabled = false,
+                    -- delay = 200,
+                    -- reveal = {'close'}
                 },
             }
         }
