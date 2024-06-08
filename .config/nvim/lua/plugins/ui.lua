@@ -265,6 +265,7 @@ return {
                 chunk = {
                     enable = true,
                     notify = false,
+                    delay = 0,
                     use_treesitter = true,
                     -- details about support_filetypes and exclude_filetypes in https://github.com/shellRaining/hlchunk.nvim/blob/main/lua/hlchunk/utils/filetype.lua
                     support_filetypes = support_filetypes,
