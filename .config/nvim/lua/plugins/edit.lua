@@ -196,9 +196,12 @@ return {
 
     {
         'ixru/nvim-markdown',
+        dependencies = {
+            "godlygeek/tabular"
+        },
         init = function()
             vim.g.vim_markdown_conceal = 0
-            vim.g.vim_markdown_toc_autofit = 1
+            vim.g.vim_markdown_toc_autofit = 0
         end
     },
 
@@ -210,25 +213,6 @@ return {
             require('render-markdown').setup({})
         end,
     },
-
-    -- {
-    --     'preservim/vim-markdown',
-    --     ft = {'text', 'markdown', 'plantuml', ''},
-    --     dependencies = {
-    --         'godlygeek/tabular'
-    --     },
-    --     config =function ()
-    --         vim.g.vim_markdown_folding_disabled = 1
-    --         -- vim.g.vim_markdown_no_default_key_mappings = 1
-    --         vim.g.vim_markdown_toc_autofit = 1
-    --         vim.g.vim_markdown_new_list_item_indent = 0
-    --     end
-    -- },
-
-    -- {
-    --     'bullets-vim/bullets.vim',
-    --     ft = {'text', 'markdown', ''},
-    -- },
 
     -- 対応する括弧をわかりやすくする
     {
