@@ -51,7 +51,8 @@ return {
 
             ["<Esc>"] = { ":noh<cr>", "検索結果のハイライトを削除" },
 
-            ["<A-s>"] = { "<cmd>Fern . -reveal=% -drawer -toggle<cr>", "ファイルツリーの表示切替" },
+            ["<A-f>"] = { "<cmd>Neotree float reveal toggle<CR>", "ファイラーを開く (floating window)"},
+            ["<A-s>"] = { "<cmd>Neotree left reveal toggle<CR>", "ファイラーを開く"},
 
             ["<C-p>"] = { "<cmd>tabp<cr>", "前のタブに移動" },
             ["<C-n>"] = { "<cmd>tabn<cr>", "次のタブに移動" },
@@ -69,7 +70,8 @@ return {
 
             ["<leader>"] = {
                 name = "コマンド (利用頻度: 高)",
-                b = { "<cmd>Telescope buffers<CR>", "バッファ一覧" },
+                -- b = { "<cmd>Telescope buffers<CR>", "バッファ一覧" },
+                b = { "<cmd>Neotree buffers reveal toggle<CR>", "バッファ一覧を開く (floating window)"},
                 c = { '<cmd>enew<cr>', "バッファ作成" },
                 d = { "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", "バッファを閉じる" },
                 e = { "<cmd>Telescope projects<CR>", "プロジェクト一覧" },

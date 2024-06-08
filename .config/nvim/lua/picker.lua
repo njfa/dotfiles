@@ -82,11 +82,11 @@ M.find_files_from_project_git_root = function(opts)
 
     opts = opts or {}
     if is_git_repo() then
-        opts.results_title = '  Project Files: '
+        opts.results_title = '  Project Files: '
         opts.cwd = getcwd()
         opts.prompt_title = getcwd()
     else
-        opts.results_title = '  All Files: '
+        opts.results_title = '  All Files: '
         opts.prompt_title = vim.fn.getcwd()
     end
 
@@ -103,7 +103,7 @@ M.find_files_from_project_git_root = function(opts)
     end
 
     if opts.oldfiles then
-        opts.results_title = '  Recent files: '
+        opts.results_title = '  Recent files: '
         opts.include_current_session = true
         opts.cwd = nil
         --- we want recent files inside monorepo root folder, not a sub project root.
@@ -122,11 +122,11 @@ M.live_grep_from_project_git_root = function(opts)
 
     opts = opts or {}
     if is_git_repo() then
-        opts.results_title = '  Project Files: '
+        opts.results_title = '  Project Files: '
         opts.cwd = getcwd()
         opts.prompt_title = getcwd()
     else
-        opts.results_title = '  All Files: '
+        opts.results_title = '  All Files: '
         opts.prompt_title = vim.fn.getcwd()
     end
 

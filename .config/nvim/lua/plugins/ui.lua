@@ -40,29 +40,29 @@ return {
     },
 
     -- スクロールバーを表示する
-    {
-        'petertriho/nvim-scrollbar',
-        config = function()
-            local colors = require("tokyonight.colors").setup() -- pass in any of the config options as explained above
+    -- {
+    --     'petertriho/nvim-scrollbar',
+    --     config = function()
+    --         local colors = require("tokyonight.colors").setup() -- pass in any of the config options as explained above
 
-            require("scrollbar").setup({
-                handle = {
-                    color = colors.bg_highlight,
-                },
-                marks = {
-                    Search = { color = colors.orange },
-                    Error = { color = colors.error },
-                    Warn = { color = colors.warning },
-                    Info = { color = colors.info },
-                    Hint = { color = colors.hint },
-                    Misc = { color = colors.purple },
-                }
-            })
+    --         require("scrollbar").setup({
+    --             handle = {
+    --                 color = colors.bg_highlight,
+    --             },
+    --             marks = {
+    --                 Search = { color = colors.orange },
+    --                 Error = { color = colors.error },
+    --                 Warn = { color = colors.warning },
+    --                 Info = { color = colors.info },
+    --                 Hint = { color = colors.hint },
+    --                 Misc = { color = colors.purple },
+    --             }
+    --         })
 
-            -- scrollbarに検索がヒットした箇所を表示する
-            require("scrollbar.handlers.search").setup()
-        end
-    },
+    --         -- scrollbarに検索がヒットした箇所を表示する
+    --         require("scrollbar.handlers.search").setup()
+    --     end
+    -- },
 
     -- Gitの変更箇所を表示する
     {
@@ -73,47 +73,32 @@ return {
         end
     },
 
-    -- nvimの標準をファイラーを置き換え
-    'lambdalisue/fern-hijack.vim',
-
-    -- ファイラー
     {
-        'lambdalisue/fern.vim',
+        "nvim-neo-tree/neo-tree.nvim",
+        branch = "v3.x",
         dependencies = {
-            -- 'antoinemadec/FixCursorHold.nvim',
-            'lambdalisue/nerdfont.vim',
-            'lambdalisue/fern-git-status.vim',
-            'lambdalisue/fern-hijack.vim',
+          "nvim-lua/plenary.nvim",
+          "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+          "MunifTanjim/nui.nvim",
+          -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
         },
         config = function()
-            vim.g['fern#default_hidden'] = 1
+            require('neo-tree').setup({
+                filesystem = {
+                    filtered_items = {
+                        visible = false, -- when true, they will just be displayed differently than normal items
+                        hide_dotfiles = false,
+                    },
+                },
+                window = {
+                    mappings = {
+                        ["P"] = { "toggle_preview", config = { use_float = true, use_image_nvim = false } },
+                    }
+                }
+            })
         end
     },
 
-    -- fernでGitのステータスを表示
-    'lambdalisue/fern-git-status.vim',
-
-    -- fernでnerdfontを表示する
-    {
-        'lambdalisue/fern-renderer-nerdfont.vim',
-        dependencies = {
-            'lambdalisue/fern.vim'
-        },
-        config = function ()
-            vim.g['fern#renderer'] = 'nerdfont'
-        end
-    },
-
-    -- fernでファイルにカーソルがあたった際に自動でプレビューする
-    {
-        'yuki-yano/fern-preview.vim',
-        dependencies = {
-            'lambdalisue/fern.vim'
-        },
-        config = function ()
-            vim.g['fern_auto_preview'] = false
-        end
-    },
 
     -- ターミナルの表示
     -- Lspsagaにも同様の機能があるが、こちらのほうが挙動が良い
@@ -137,22 +122,6 @@ return {
 
             map("n", "<A-d>", "<cmd>lua TermToggle()<cr>", {})
             map("t", "<A-d>", "<cmd>lua TermToggle()<cr>", {})
-
-            -- if vim.fn.executable('lazygit') == 1 then
-            --     local lazygit = Terminal:new({
-            --         cmd = "lazygit",
-            --         dir = ".",
-            --         autochdir = true,
-            --         direction = "float",
-            --         hidden = true
-            --     })
-
-            --     function LazygitToggle()
-            --         lazygit:toggle()
-            --     end
-            --     map("n", "<A-g>", "<cmd>lua LazygitToggle()<cr>", {})
-            --     map("t", "<A-g>", "<cmd>lua LazygitToggle()<cr>", {})
-            -- end
         end
     },
 
