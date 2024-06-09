@@ -26,7 +26,11 @@ return {
                 tab_separator_selected = {
                     fg = colors.blue,
                     bg = colors.blue,
-                }
+                },
+                separator = {
+                    fg = '#000000',
+                    bg = '#000000',
+                },
             },
             options = {
                 numbers = "none",
