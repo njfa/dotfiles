@@ -77,13 +77,18 @@ return {
         "nvim-neo-tree/neo-tree.nvim",
         branch = "v3.x",
         dependencies = {
-          "nvim-lua/plenary.nvim",
-          "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
-          "MunifTanjim/nui.nvim",
-          -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+            "nvim-lua/plenary.nvim",
+            "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+            "MunifTanjim/nui.nvim",
+            -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
         },
         config = function()
             require('neo-tree').setup({
+                close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
+                popup_border_style = "rounded",
+                enable_git_status = true,
+                enable_diagnostics = true,
+                open_files_do_not_replace_types = { "terminal", "trouble", "qf", "sagafinder" }, -- when opening files, do not use windows containing these filetypes or buftypes
                 filesystem = {
                     filtered_items = {
                         visible = false, -- when true, they will just be displayed differently than normal items
@@ -94,7 +99,7 @@ return {
                     mappings = {
                         ["P"] = { "toggle_preview", config = { use_float = true, use_image_nvim = false } },
                     }
-                }
+                },
             })
         end
     },
