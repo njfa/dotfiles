@@ -277,6 +277,11 @@ return {
     },
 
     -- LSPの結果を一覧表示
-    "folke/trouble.nvim",
+    {
+      "folke/trouble.nvim",
+      opts = {}, -- for default options, refer to the configuration section for custom setup.
+      cmd = "Trouble",
+      keys = {},
+    }
 
 }

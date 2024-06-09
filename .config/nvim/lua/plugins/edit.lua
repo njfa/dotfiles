@@ -92,19 +92,6 @@ return {
         end
     },
 
-    -- TODOコメントの管理
-    {
-        "folke/todo-comments.nvim",
-        dependencies = "nvim-lua/plenary.nvim",
-        config = function()
-            require("todo-comments").setup {
-                -- your configuration comes here
-                -- or leave it empty to the default settings
-                -- refer to the configuration section below
-            }
-        end
-    },
-
     -- テーブル作成用のモードを追加
     {
         'dhruvasagar/vim-table-mode',
