@@ -1,5 +1,4 @@
 local map = require('common').map
-local buf_map = require('common').buf_map
 
 -- UI変更に関連する全般
 return {
@@ -211,7 +210,7 @@ return {
         "shellRaining/hlchunk.nvim",
         event = { "UIEnter" },
         config = function()
-            support_filetypes = {
+            local support_filetypes = {
                 "*.sh",
                 "*.ts",
                 "*.tsx",
