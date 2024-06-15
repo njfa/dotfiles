@@ -320,8 +320,11 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     }
 
     if (-Not (Test-Path ("$env:USERPROFILE\.nerd-fonts"))) {
-        git clone https://github.com/ryanoasis/nerd-fonts $env:USERPROFILE\.nerd-fonts
+        git clone --depth 1 --single-branch --branch master https://github.com/ryanoasis/nerd-fonts $env:USERPROFILE\.nerd-fonts
         Move-Item $env:USERPROFILE\.nerd-fonts\font-patcher $env:USERPROFILE\.nerd-fonts\font-patcher.py
+        # downloadLatestRelease "ryanoasis/nerd-fonts" "FontPatcher.zip"
+        # 7z x .\latestRelease -o"$env:USERPROFILE\fonts\font-patcher"
+        # Remove-Item latestRelease
     }
 
     if (-Not (Test-Path ("$env:USERPROFILE\fonts\sarasa-gothic-ttf"))) {
@@ -332,13 +335,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     }
 
     scoop install "fontforge"
-
-    if (-Not (Test-Path ("$env:USERPROFILE\fonts\sarasa-gothic-nerd"))) {
-        # Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
-        # Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -l -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
-        # Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w --fontlogos --fontawesome --powerline --powerlineextra -l -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
-        Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -c -l --careful -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
-    }
+    Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf --debug -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
 
 } elseif ($mode -eq "terminal") {
 
