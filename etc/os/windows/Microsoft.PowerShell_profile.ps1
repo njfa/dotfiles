@@ -19,4 +19,4 @@ if ($PSVersionTable.PSVersion.Major -gt 5) {
     Set-Alias cat bat -O AllScope
 }
 
-oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradox.omp.json" | Invoke-Expression
+oh-my-posh init pwsh --config "$env:USERPROFILE\.dotfiles\etc\os\windows\night-owl.omp.json" | Invoke-Expression
