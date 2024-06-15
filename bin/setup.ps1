@@ -231,6 +231,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "delta"
         "PSFzf"
         "posh-git"
+        "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/oh-my-posh.json"
     )
 
     scoop install $DEPENDENCIES
@@ -274,19 +275,9 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         git clone https://github.com/njfa/dotfiles.git $DOTFILES
     }
 
-    # if (-Not (Get-Module -ListAvailable -Name PSFzf)) {
-    #     Install-Module PSFzf -Scope CurrentUser -Force -SkipPublisherCheck
-    # }
-
-    # if (-Not (Get-Module -ListAvailable -Name posh-git)) {
-    #     Install-Module posh-git -Scope CurrentUser -Force -SkipPublisherCheck
-    # }
-
     if (-Not (Get-Module -ListAvailable -Name PSReadLine)) {
         Install-Module PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
     }
-
-    winget install JanDeDobbeleer.OhMyPosh -s winget
 
     if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic"))) {
         Write-Host "Download sarasa-gothic.7z"
