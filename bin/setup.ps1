@@ -7,8 +7,8 @@ $WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
 $WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\
 $WINDOWS_TERMINAL_PREVIEW = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreView_*\LocalState\
 
-if ($null -eq $Proxy) {
-    echo "$Proxy is null"
+if ($null -eq $dotfilesProxy) {
+    echo "$dotfilesProxy is null"
 } else {
     [System.Net.WebRequest]::DefaultWebProxy = $null
 }
@@ -17,9 +17,8 @@ if ($null -eq $Proxy) {
 if ($mode -eq "i" -or $mode -eq "init" -or $mode -eq "fonts" -or $mode -eq "tools") {
     $useProxy = $env:DOTFILES_USE_PROXY
     if (-not $useProxy) {
-        $useProxy = Read-Host "Would you like to use a proxy? (y/n)"
+        $useProxy = (Read-Host "Would you like to use a proxy? (y/n)").ToLower()
     }
-    $useProxy = $useProxy.ToLower()
 
     if ($useProxy -eq "y" -or $useProxy -eq "yes") {
         $proxyHost = $env:DOTFILES_PROXY_HOST
@@ -41,12 +40,12 @@ if ($mode -eq "i" -or $mode -eq "init" -or $mode -eq "fonts" -or $mode -eq "tool
         }
 
         if ($proxyHost.Length -gt 0 -And $proxyPort.Length -gt 0) {
-            $proxy = New-Object System.Net.WebProxy "http://$($proxyHost):$($proxyPort)/"
+            $dotfilesProxy = New-Object System.Net.WebProxy "http://$($proxyHost):$($proxyPort)/"
             if ($proxyUser.Length -gt 0 -And $proxyPassword.Length -gt 0) {
                 $creds = New-Object System.Management.Automation.PSCredential ($proxyUser, $proxyPassword)
-                $proxy.Credentials = $creds
+                $dotfilesProxy.Credentials = $creds
             }
-            [System.Net.WebRequest]::DefaultWebProxy = $proxy
+            [System.Net.WebRequest]::DefaultWebProxy = $dotfilesProxy
 
             Write-Output "Proxy has been configured."
         } else {
@@ -200,7 +199,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     $ErrorActionPreference = "Stop"
 
     try {
-        Get-Command -Name scoop -ErrorAction $ErrorActionPreference 
+        Get-Command -Name scoop -ErrorAction $ErrorActionPreference
     }
     catch [System.Management.Automation.CommandNotFoundException] {
         Invoke-Expression (New-Object System.Net.WebClient).downloadstring("https://get.scoop.sh")
