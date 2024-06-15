@@ -6,6 +6,9 @@ $DOTFILES = "$env:USERPROFILE\.dotfiles"
 $WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
 $WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\
 $WINDOWS_TERMINAL_PREVIEW = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreView_*\LocalState\
+$VSCODE_EXE_PATH = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\Code.exe"
+$SCOOP_VSCODE_EXE_PATH = "$env:USERPROFILE\scoop\apps\vscode\current\Code.exe"
+
 
 if ($null -eq $dotfilesProxy) {
     echo "$dotfilesProxy is null"
@@ -57,10 +60,17 @@ if ($mode -eq "i" -or $mode -eq "init" -or $mode -eq "fonts" -or $mode -eq "tool
 }
 
 
-function isInstalledWindowsTerminal() {
+function CheckWindowsTerminalInstalled() {
     return $null -ne $WINDOWS_TERMINAL -and (Test-Path ($WINDOWS_TERMINAL))
 }
 
+function CheckVSCodeInstalled() {
+    return $null -ne $VSCODE_EXE_PATH -and (Test-Path ($VSCODE_EXE_PATH))
+}
+
+function CheckScoopVSCodeInstalled() {
+    return ($null -ne $SCOOP_VSCODE_EXE_PATH -and (Test-Path ($SCOOP_VSCODE_EXE_PATH)))
+}
 
 function isSymbolicLink() {
     if (-Not (Test-Path $args[0])) {
@@ -336,15 +346,15 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     $PREVIEW_SETTINGS = "$WINDOWS_TERMINAL\settings.json"
     $NEW_SETTINGS = "$WINDOTFILES\WindowsTerminal\settings.$env:COMPUTERNAME.json"
 
-    if (-Not (isInstalledWindowsTerminal)) {
-        Write-Host "Please install WindowsTerminal"
+    if (-Not (CheckWindowsTerminalInstalled)) {
+        Write-Host "Please install WindowsTerminal."
         exit
     } elseif (isSymbolicLink $SETTINGS) {
-        Write-Host "$SETTINGS is already deployed"
+        Write-Host "$SETTINGS is already deployed."
         exit
     } elseif ((-Not (Test-Path $SETTINGS)) -And (-Not (Test-Path $PREVIEW_SETTINGS))) {
         Write-Host "$SETTINGS and $PREVIEW_SETTINGS doesn't exist"
-        Write-Host "Please start WindowsTerminal"
+        Write-Host "Please start WindowsTerminal."
         exit
     }
 
@@ -370,17 +380,35 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
 } elseif ($mode -eq "vscode") {
 
+    if (-Not (CheckVSCodeInstalled) -and -Not (CheckScoopVSCodeInstalled)) {
+        Write-Host "Please install vscode."
+        exit
+    }
+
     $VSCODE_PATH = "$env:USERPROFILE\AppData\Roaming\Code\User"
     $SCOOP_VSCODE_PATH = "$env:USERPROFILE\scoop\apps\vscode\current\data\user-data\User"
 
-    deployNewSettings $WINDOTFILES\vscode\settings.json $VSCODE_PATH settings.json
-    deployNewSettings $WINDOTFILES\vscode\keybindings.json $VSCODE_PATH keybindings.json
+    if (CheckVSCodeInstalled) {
+        if (-Not (Test-Path $VSCODE_PATH)) {
+            Write-Host "Please start vscode."
+        } else {
+            deployNewSettings $WINDOTFILES\vscode\settings.json $VSCODE_PATH settings.json
+            deployNewSettings $WINDOTFILES\vscode\keybindings.json $VSCODE_PATH keybindings.json
+        }
+    }
 
-    deployNewSettings $WINDOTFILES\vscode\settings.json $SCOOP_VSCODE_PATH settings.json
-    deployNewSettings $WINDOTFILES\vscode\keybindings.json $SCOOP_VSCODE_PATH keybindings.json
+    if (CheckScoopVSCodeInstalled) {
+        if (-Not (Test-Path $SCOOP_VSCODE_PATH)) {
+            Write-Host "Please start vscode (scoop)."
+        } else {
+            deployNewSettings $WINDOTFILES\vscode\settings.json $SCOOP_VSCODE_PATH settings.json
+            deployNewSettings $WINDOTFILES\vscode\keybindings.json $SCOOP_VSCODE_PATH keybindings.json
+        }
+    }
 
     # install extensions
-    if (Test-Path ("$env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions")) {
+    $VSCODE_CMD_PATH = Get-Command code.cmd -ErrorAction SilentlyContinue
+    if ((Test-Path ("$env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions")) -and ($null -ne $VSCODE_CMD_PATH)) {
         Get-Content $env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions | ForEach-Object { code.cmd --install-extension $_ }
     }
 
