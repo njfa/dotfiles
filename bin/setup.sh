@@ -85,7 +85,7 @@ error() {
 }
 
 get_dotfiles() {
-    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g"
+    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -v ".config/nvim"
 }
 
 exec_cmd() {
@@ -188,6 +188,10 @@ deploy() {
         fi
         symlink_cmd "$DOTFILES_PATH/$f" "$HOME/$f"
     done
+
+    if [ -d "$DOTFILES_PATH/.config/nvim" ]; then
+        symlink_cmd $DOTFILES_PATH/.config/nvim $HOME/.config/nvim
+    fi
 
     if [ -f "$DOTFILES_PATH/wsl.conf" ]; then
         if [ ! -z "$(command -v sudo)" ]; then
