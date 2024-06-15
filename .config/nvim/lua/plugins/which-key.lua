@@ -30,9 +30,18 @@ return {
 
             ["*"] = { [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]], "* (カーソルを移動しない)" },
             ["#"] = { [[<Plug>(asterisk-z#)<Cmd>lua require('hlslens').start()<CR>]], "# (カーソルを移動しない)" },
+
             g = {
                 ["*"] = { [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>]], "g* (カーソルを移動しない)" },
                 ["#"] = { [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]], "g# (カーソルを移動しない)" },
+
+                m = { "<cmd>GitMessenger<cr>", "Git履歴表示"},
+                b = { "<cmd>Gitsigns toggle_current_line_blame<cr>", "Git blameの表示切替"},
+                s = { "<cmd>Gitsigns stage_hunk<cr>", "Git stage hunk"},
+                r = { "<cmd>Gitsigns reset_hunk<cr>", "Git reset hunk"},
+                u = { "<cmd>Gitsigns undo_stage_hunk<cr>", "Git undo stage hunk"},
+                p = { "<cmd>Gitsigns preview_hunk_inline<cr>", "Git preview hunk"},
+                d = { "<cmd>Gitsigns diffthis<cr>", "Git diff this"},
             },
 
             L = { function() hop.hint_lines_skip_whitespace({ }) end, "任意の行頭へ移動（空行は無視）" },
@@ -44,7 +53,6 @@ return {
             m = {
                 a = { "<Plug>(EasyAlign)", "指定文字で整列 (*で全一致箇所)"},
                 s = { "<cmd>Switch<cr>", "カーソル下の単語を反転 (true→false等)"},
-                g = { "<cmd>GitMessenger<cr>", "Git履歴表示"},
             },
 
             R = { function() require('substitute').operator() end, {}, "指定したテキストオブジェクトを置換" },
@@ -159,6 +167,9 @@ return {
             g = {
                 ["*"] = { [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>gv]], "g* (カーソルを移動しない)" },
                 ["#"] = { [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>gv]], "g# (カーソルを移動しない)" },
+
+                s = { function() require('gitsigns').stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, "Git stage hunk"},
+                r = { function() require('gitsigns').reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, "Git reset hunk"},
             },
 
             L = { function() hop.hint_lines_skip_whitespace({ }) end, "任意の行頭へ移動" },
