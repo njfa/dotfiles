@@ -58,7 +58,7 @@ if ($mode -eq "i" -or $mode -eq "init" -or $mode -eq "fonts" -or $mode -eq "tool
 
 
 function isInstalledWindowsTerminal() {
-    return Test-Path ($WINDOWS_TERMINAL)
+    return $null -ne $WINDOWS_TERMINAL -and (Test-Path ($WINDOWS_TERMINAL))
 }
 
 
@@ -70,16 +70,17 @@ function isSymbolicLink() {
     return ((Get-Item $args[0]).Attributes.ToString() -match "ReparsePoint")
 }
 
+
 function backup() {
 
     $SOURCE_PATH = $args[0]
     $DEST_PATH = $args[1]
 
     if (-Not (Test-Path $SOURCE_PATH)) {
-        return $(Write-Host "${SOURCE_PATH} doesn't exist")
+        return $(Write-Host "${SOURCE_PATH} does not exist.")
     }
 
-    Write-Host "Back up $((Get-Item $SOURCE_PATH).Name)"
+    Write-Host "Backing up $((Get-Item $SOURCE_PATH).Name)."
     Write-Host "  - Source directory: $((Get-Item $SOURCE_PATH).DirectoryName)"
 
     if (-Not (Test-Path $DEST_PATH)) {
@@ -102,10 +103,8 @@ function backup() {
             return $DEST_PATH
         }
     }
-
-    Write-Host ""
-    Write-Host "Result: Backup failed`r`n"
 }
+
 
 function downloadLatestRelease() {
     if ($args.Length -lt 2) {
@@ -114,12 +113,14 @@ function downloadLatestRelease() {
 
     $REPO_PATH = $args[0]
     $NAME_FORMAT = $args[1]
-    Write-Host "repoOwner/repoName: ${REPO_PATH}, nameFormat: ${NAME_FORMAT}"
+    Write-Host "Downloading the latest release file from ${REPO_PATH}."
+    Write-Host "  - nameFormat: ${NAME_FORMAT}"
     $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/${REPO_PATH}/releases/latest" -Method Get
     $releaseUrl = $($releaseInfo.assets | Where-Object { $_.name -like "${NAME_FORMAT}" } | Select-Object -First 1).browser_download_url
-    Write-Host "download url: $releaseUrl"
-    (New-Object Net.WebClient).DownloadFile($releaseUrl, ".\latestRelease")
+    Write-Host "  - download url: $releaseUrl"
+    Start-BitsTransfer -Source $releaseUrl -Destination ".\latestRelease" -DisplayName "Downloading file" -Description "$releaseUrl"
 }
+
 
 function deployNewSettings() {
     if ($args.Length -lt 3) {
@@ -141,7 +142,7 @@ function deployNewSettings() {
             backup "${DEST_PATH}\${DEST_FILENAME}" "$SOURCE_PATH.$env:COMPUTERNAME.backup" | Out-Null
         }
 
-        Write-Host "Deploy $((Get-Item $SOURCE_PATH).Name)"
+        Write-Host "Deploying $((Get-Item $SOURCE_PATH).Name)."
         Write-Host "  - Source directory: $((Get-Item $SOURCE_PATH).DirectoryName)"
         Write-Host "  - Dest directory: $DEST_PATH"
         Write-Host "  - Dest filename: $DEST_FILENAME"
@@ -279,24 +280,21 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Install-Module PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
     }
 
-    if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic"))) {
-        Write-Host "Download sarasa-gothic.7z"
+    if (-Not (Test-Path ("$env:USERPROFILE\fonts\sarasa-gothic"))) {
         downloadLatestRelease "be5invis/Sarasa-Gothic" "Sarasa-SuperTTC-*.7z"
-        7z x .\latestRelease -o"$env:USERPROFILE\font\sarasa-gothic"
+        7z x .\latestRelease -o"$env:USERPROFILE\fonts\sarasa-gothic"
         Remove-Item latestRelease
     }
 
-    if (-Not (Test-Path ("$env:USERPROFILE\font\UDEV"))) {
-        Write-Host "Download UDEV.zip"
+    if (-Not (Test-Path ("$env:USERPROFILE\fonts\UDEV"))) {
         downloadLatestRelease "yuru7/udev-gothic" "UDEVGothic_NF_*.zip"
-        7z x .\latestRelease -o"$env:USERPROFILE\font\UDEV"
+        7z x .\latestRelease -o"$env:USERPROFILE\fonts\UDEV"
         Remove-Item latestRelease
     }
 
-    if (-Not (Test-Path ("$env:USERPROFILE\font\Moralerspace"))) {
-        Write-Host "Download Moralerspace.zip"
+    if (-Not (Test-Path ("$env:USERPROFILE\fonts\Moralerspace"))) {
         downloadLatestRelease "yuru7/moralerspace" "MoralerspaceHWNF*.zip"
-        7z x .\latestRelease -o"$env:USERPROFILE\font\Moralerspace"
+        7z x .\latestRelease -o"$env:USERPROFILE\fonts\Moralerspace"
         Remove-Item latestRelease
     }
 
@@ -393,6 +391,12 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 } elseif ($mode -eq "profile") {
 
     $DEST_PATH = (Split-Path $PROFILE -Parent)
+
+    if (-Not (Test-Path $DEST_PATH)) {
+        Write-Host "$DEST_PATH does not exist."
+        mkdir $DEST_PATH
+    }
+
     deployNewSettings "$WINDOTFILES\Microsoft.PowerShell_profile.ps1" $DEST_PATH Microsoft.PowerShell_profile.ps1
 
 } elseif ($mode -eq "tools") {
