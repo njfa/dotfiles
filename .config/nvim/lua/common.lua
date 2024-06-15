@@ -75,7 +75,6 @@ M.on_attach_lsp = function(_, bufnr, server_name)
                 t = { function() exec_command_not_floating_window('Lspsaga goto_type_definition') end, "Goto type definition" },
             },
             r = { function() exec_command_not_floating_window('Lspsaga rename') end, "リネーム" },
-            s = { function() exec_command_not_floating_window('GitMessenger') end, "該当行の編集履歴を表示する" },
             h = { function() exec_command_not_floating_window('lua require("lsp_signature").toggle_float_win()') end, "フローティングウィンドウの表示/非表示切替" },
             n = { function() exec_command_not_floating_window('Lspsaga diagnostic_jump_next') end, "次のUiagnosticへ移動" },
             p = { function() exec_command_not_floating_window('Lspsaga diagnostic_jump_prev') end, "前のDiagnosticへ移動" },
