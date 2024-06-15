@@ -68,8 +68,6 @@ jobs:
       run: bin/setup.ps1 init
       env:
         DOTFILES_USE_PROXY: n
-    - name: profile
-      run: bin/setup.ps1 profile
     - name: terminal
       run: bin/setup.ps1 terminal
     - name: vscode
@@ -78,3 +76,5 @@ jobs:
       run: bin/setup.ps1 wslconfig
     - name: tools
       run: bin/setup.ps1 tools
+    - name: profile
+      run: bin/setup.ps1 profile
