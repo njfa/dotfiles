@@ -76,5 +76,11 @@ jobs:
       run: bin/setup.ps1 wslconfig
     - name: tools
       run: bin/setup.ps1 tools
+      env:
+        DOTFILES_USE_PROXY: n
+    - name: fonts
+      run: bin/setup.ps1 fonts
+      env:
+        DOTFILES_USE_PROXY: n
     - name: profile
       run: bin/setup.ps1 profile

@@ -324,20 +324,20 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         Move-Item $env:USERPROFILE\.nerd-fonts\font-patcher $env:USERPROFILE\.nerd-fonts\font-patcher.py
     }
 
-    if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic-ttf"))) {
-        mkdir $env:USERPROFILE\font\sarasa-gothic-ttf
-        Get-ChildItem $env:USERPROFILE\font\sarasa-gothic\*.ttc | ForEach-Object { unitettc64.exe $_.FullName }
-        Move-Item $env:USERPROFILE\font\sarasa-gothic\*017.ttf $env:USERPROFILE\font\sarasa-gothic-ttf
-        Remove-Item $env:USERPROFILE\font\sarasa-gothic\*.ttf
+    if (-Not (Test-Path ("$env:USERPROFILE\fonts\sarasa-gothic-ttf"))) {
+        mkdir $env:USERPROFILE\fonts\sarasa-gothic-ttf
+        Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic\*.ttc | ForEach-Object { unitettc64.exe $_.FullName }
+        Move-Item $env:USERPROFILE\fonts\sarasa-gothic\*017.ttf $env:USERPROFILE\fonts\sarasa-gothic-ttf
+        Remove-Item $env:USERPROFILE\fonts\sarasa-gothic\*.ttf
     }
 
     scoop install "fontforge"
 
-    if (-Not (Test-Path ("$env:USERPROFILE\font\sarasa-gothic-nerd"))) {
-        # Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
-        # Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -l -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
-        # Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w --fontlogos --fontawesome --powerline --powerlineextra -l -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
-        Get-ChildItem $env:USERPROFILE\font\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -c -l --careful -q -out $env:USERPROFILE\font\sarasa-gothic-nerd }
+    if (-Not (Test-Path ("$env:USERPROFILE\fonts\sarasa-gothic-nerd"))) {
+        # Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
+        # Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w -c -l -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
+        # Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -w --fontlogos --fontawesome --powerline --powerlineextra -l -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
+        Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic-ttf | ForEach-Object { fontforge.cmd -script $env:USERPROFILE\.nerd-fonts\font-patcher.py $_.FullName -ext ttf -c -l --careful -q -out $env:USERPROFILE\fonts\sarasa-gothic-nerd }
     }
 
 } elseif ($mode -eq "terminal") {
