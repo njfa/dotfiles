@@ -6,28 +6,28 @@ name: CI
 # events but only for the main branch
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/test-improvement ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build-ubuntu-18_04:
-    runs-on: ubuntu-18.04
+  # build-ubuntu-18_04:
+  #   runs-on: ubuntu-18.04
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: change permission
-      run: chmod +x bin/setup.sh
-    - name: Initialize dotfiles
-      run: bin/setup.sh init
-    - name: Deploy dotfiles
-      run: bin/setup.sh deploy
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: change permission
+  #     run: chmod +x bin/setup.sh
+  #   - name: Initialize dotfiles
+  #     run: bin/setup.sh init
+  #   - name: Deploy dotfiles
+  #     run: bin/setup.sh deploy
 
   build-ubuntu-20_04:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: change permission
       run: chmod +x bin/setup.sh
     - name: Initialize dotfiles
@@ -39,10 +39,40 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: change permission
       run: chmod +x bin/setup.sh
     - name: Initialize dotfiles
       run: bin/setup.sh init
     - name: Deploy dotfiles
       run: bin/setup.sh deploy
+
+  build-ubuntu-24_04:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: change permission
+      run: chmod +x bin/setup.sh
+    - name: Initialize dotfiles
+      run: bin/setup.sh init
+    - name: Deploy dotfiles
+      run: bin/setup.sh deploy
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: init
+      run: echo n | bin/setup.ps1 init
+    - name: profile
+      run: bin/setup.ps1 profile
+    - name: terminal
+      run: bin/setup.ps1 terminal
+    - name: vscode
+      run: bin/setup.ps1 vscode
+    - name: wslconfig
+      run: bin/setup.ps1 wslconfig
+    - name: tools
+      run: bin/setup.ps1 tools
