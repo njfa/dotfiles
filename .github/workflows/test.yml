@@ -65,7 +65,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: init
-      run: echo n | bin/setup.ps1 init
+      run: bin/setup.ps1 init
+      env:
+        DOTFILES_USE_PROXY: n
     - name: profile
       run: bin/setup.ps1 profile
     - name: terminal

@@ -14,15 +14,31 @@ if ($null -eq $Proxy) {
 }
 
 
-if (($mode -eq "i") -Or ($mode -eq "init") -Or ($mode -eq "fonts") -Or ($mode -eq "tools")) {
-    $useProxy = Read-Host "Would you like to use a proxy? (y/n)"
+if ($mode -eq "i" -or $mode -eq "init" -or $mode -eq "fonts" -or $mode -eq "tools") {
+    $useProxy = $env:DOTFILES_USE_PROXY
+    if (-not $useProxy) {
+        $useProxy = Read-Host "Would you like to use a proxy? (y/n)"
+    }
     $useProxy = $useProxy.ToLower()
 
     if ($useProxy -eq "y" -or $useProxy -eq "yes") {
-        $proxyHost = Read-Host "Host"
-        $proxyPort = Read-Host "Port"
-        $proxyUser = Read-Host "Username"
-        $proxyPassword = Read-Host "Password" -AsSecureString
+        $proxyHost = $env:DOTFILES_PROXY_HOST
+        $proxyPort = $env:DOTFILES_PROXY_PORT
+        $proxyUser = $env:DOTFILES_PROXY_USER
+        $proxyPassword = $env:DOTFILES_PROXY_PASSWORD
+
+        if (-not $proxyHost) {
+            $proxyHost = Read-Host "Host"
+        }
+        if (-not $proxyPort) {
+            $proxyPort = Read-Host "Port"
+        }
+        if (-not $proxyUser) {
+            $proxyUser = Read-Host "Username"
+        }
+        if (-not $proxyPassword) {
+            $proxyPassword = Read-Host "Password" -AsSecureString
+        }
 
         if ($proxyHost.Length -gt 0 -And $proxyPort.Length -gt 0) {
             $proxy = New-Object System.Net.WebProxy "http://$($proxyHost):$($proxyPort)/"
