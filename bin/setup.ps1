@@ -10,18 +10,13 @@ $VSCODE_EXE_PATH = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\Code.exe"
 $SCOOP_VSCODE_EXE_PATH = "$env:USERPROFILE\scoop\apps\vscode\current\Code.exe"
 
 
-if ($null -eq $dotfilesProxy) {
-    echo "$dotfilesProxy is null"
-} else {
-    [System.Net.WebRequest]::DefaultWebProxy = $null
-}
-
-
 if ($mode -eq "i" -or $mode -eq "init" -or $mode -eq "fonts" -or $mode -eq "tools") {
     $useProxy = $env:DOTFILES_USE_PROXY
     if (-not $useProxy) {
         $useProxy = (Read-Host "Would you like to use a proxy? (y/n)").ToLower()
     }
+
+    [System.Net.WebRequest]::DefaultWebProxy = $null
 
     if ($useProxy -eq "y" -or $useProxy -eq "yes") {
         $proxyHost = $env:DOTFILES_PROXY_HOST
@@ -179,6 +174,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "$env:USERPROFILE\.dotfiles\bin"
         "$env:USERPROFILE\.cargo\bin"
         "$env:USERPROFILE\scoop\shims"
+        "$env:USERPROFILE\scoop\apps\gcc\current\bin"
         "$env:USERPROFILE\scoop\apps\vscode\current"
         "$env:USERPROFILE\scoop\apps\python\current"
         "$env:USERPROFILE\scoop\apps\python\current\Scripts"
@@ -231,18 +227,19 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     )
 
     $PACKAGES = @(
-        "bat"
-        "fzf"
-        "neovim"
         "powertoys"
-        "jq"
-        "zenhan"
-        "ripgrep"
-        "pwsh"
-        "delta"
-        "PSFzf"
-        "posh-git"
-        "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/oh-my-posh.json"
+        "neovim"
+        "nodejs" # neovimで利用する
+        "zenhan" # neovimで利用する
+        "ripgrep" # neovimで利用する
+        "pwsh" # posh本体
+        "fzf" # poshで利用する
+        "PSFzf" # poshで利用する
+        "posh-git" # poshで利用する
+        "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/oh-my-posh.json" # poshで使用する
+        "bat" # poshで利用するツール
+        "jq" # poshで利用するツール
+        "delta" # poshで利用するツール
     )
 
     scoop install $DEPENDENCIES
@@ -427,6 +424,14 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 } elseif ($mode -eq "tools") {
 
     cargo install hexyl tokei
+
+} elseif ($mode -eq "nvim") {
+
+    if (Test-Path ("$env:USERPROFILE\AppData\Local\nvim")) {
+         Remove-Item -Recurse -Force "$env:USERPROFILE\AppData\Local\nvim"
+    }
+
+    Copy-Item -Path "$DOTFILES\.config\nvim" -Destination "$env:USERPROFILE\AppData\Local\nvim" -Recurse -Force
 
 } else {
 
