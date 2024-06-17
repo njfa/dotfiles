@@ -4,6 +4,18 @@ else
     vim.opt_local.expandtab = false
 end
 
+local function get_config_dir()
+  -- Unlike some other programming languages (e.g. JavaScript)
+  -- lua considers 0 truthy!
+  if vim.fn.has('linux') == 1 then
+    return 'config_linux'
+  elseif vim.fn.has('mac') == 1 then
+    return 'config_mac'
+  else
+    return 'config_win'
+  end
+end
+
 if require('common').is_floating_window() then
     return false
 end
@@ -19,8 +31,15 @@ local jdtls_dap = require("jdtls.dap")
 local jdtls_setup = require("jdtls.setup")
 local home = os.getenv("HOME")
 
-local root_markers = { ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" }
+local root_markers = { ".git" }
 local root_dir = jdtls_setup.find_root(root_markers)
+if root_dir then
+    vim.notify("jdtls root dir: " .. root_dir, vim.log.levels.INFO)
+else
+    vim.notify("jdtls root dir is nil", vim.log.levels.INFO)
+end
+
+
 
 local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
 local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name
@@ -34,7 +53,7 @@ local path_to_jdtls = path_to_mason_packages .. "/jdtls"
 local path_to_jdebug = path_to_mason_packages .. "/java-debug-adapter"
 local path_to_jtest = path_to_mason_packages .. "/java-test"
 
-local path_to_config = path_to_jdtls .. "/config_linux"
+local path_to_config = path_to_jdtls .. '/' .. get_config_dir()
 local lombok_path = path_to_jdtls .. "/lombok.jar"
 
 local path_to_jar = vim.fn.glob(path_to_jdtls .. "/plugins/org.eclipse.equinox.launcher_*.jar", true)
@@ -44,7 +63,6 @@ local bundles = {
 }
 
 vim.list_extend(bundles, vim.split(vim.fn.glob(path_to_jtest .. "/extension/server/*.jar", true), "\n"))
-
 
 -- LSP settings for Java.
 local on_attach = function(client, bufnr)
@@ -108,7 +126,7 @@ config.cmd = {
     "-Declipse.product=org.eclipse.jdt.ls.core.product",
     "-Dlog.protocol=true",
     "-Dlog.level=ALL",
-    "-Xmx1g",
+    "-Xmx2g",
     "-javaagent:" .. lombok_path,
     "--add-modules=ALL-SYSTEM",
     "--add-opens",
@@ -125,34 +143,34 @@ config.cmd = {
 
 config.settings = {
     java = {
-        references = {
-            includeDecompiledSources = true,
-        },
-        eclipse = {
-            downloadSources = true,
-        },
-        maven = {
-            downloadSources = true,
-        },
-        signatureHelp = { enabled = true },
-        contentProvider = { preferred = "fernflower" },
+        -- references = {
+        --     includeDecompiledSources = true,
+        -- },
+        -- eclipse = {
+        --     downloadSources = true,
+        -- },
+        -- maven = {
+        --     downloadSources = true,
+        -- },
+        -- signatureHelp = { enabled = true },
+        -- contentProvider = { preferred = "fernflower" },
         completion = {
-            favoriteStaticMembers = {
-                "org.hamcrest.MatcherAssert.assertThat",
-                "org.hamcrest.Matchers.*",
-                "org.hamcrest.CoreMatchers.*",
-                "org.junit.jupiter.api.Assertions.*",
-                "java.util.Objects.requireNonNull",
-                "java.util.Objects.requireNonNullElse",
-                "org.mockito.Mockito.*",
-            },
-            filteredTypes = {
-                "com.sun.*",
-                "io.micrometer.shaded.*",
-                "java.awt.*",
-                "jdk.*",
-                "sun.*",
-            },
+        --     favoriteStaticMembers = {
+        --         "org.hamcrest.MatcherAssert.assertThat",
+        --         "org.hamcrest.Matchers.*",
+        --         "org.hamcrest.CoreMatchers.*",
+        --         "org.junit.jupiter.api.Assertions.*",
+        --         "java.util.Objects.requireNonNull",
+        --         "java.util.Objects.requireNonNullElse",
+        --         "org.mockito.Mockito.*",
+        --     },
+        --     filteredTypes = {
+        --         "com.sun.*",
+        --         "io.micrometer.shaded.*",
+        --         "java.awt.*",
+        --         "jdk.*",
+        --         "sun.*",
+        --     },
             importOrder = {
                 "java",
                 "javax",
@@ -160,18 +178,18 @@ config.settings = {
                 "org",
             },
         },
-        sources = {
-            organizeImports = {
-                starThreshold = 9999,
-                staticStarThreshold = 9999,
-            },
-        },
-        codeGeneration = {
-            toString = {
-                template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
-            },
-            useBlocks = true,
-        },
+        -- sources = {
+        --     organizeImports = {
+        --         starThreshold = 9999,
+        --         staticStarThreshold = 9999,
+        --     },
+        -- },
+        -- codeGeneration = {
+        --     toString = {
+        --         template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
+        --     },
+        --     useBlocks = true,
+        -- },
         configuration = {
             runtimes = {
                 {
@@ -200,6 +218,7 @@ config.init_options = {
     bundles = bundles,
     extendedClientCapabilities = extendedClientCapabilities,
 }
+config.root_dir = root_dir
 
 -- Start Server
 require('jdtls').start_or_attach(config)
