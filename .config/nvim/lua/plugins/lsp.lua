@@ -28,7 +28,7 @@ return {
         dependencies = {
             'williamboman/mason.nvim',
             'hrsh7th/cmp-nvim-lsp',
-            'mfussenegger/nvim-jdtls',
+            -- 'mfussenegger/nvim-jdtls',
             'simrat39/rust-tools.nvim',
             'nvimdev/lspsaga.nvim',
         },
@@ -56,7 +56,10 @@ return {
                     }
                 end,
 
-                ["jdtls"] = function() end,
+                ["jdtls"] = function()
+                    require('java').setup()
+                    require('lspconfig').jdtls.setup({})
+                end,
 
                 ["rust_analyzer"] = function ()
                     -- local codelldb_path = require("mason-registry").get_package("codelldb"):get_install_path() .. "/extension"
@@ -282,6 +285,29 @@ return {
       opts = {}, -- for default options, refer to the configuration section for custom setup.
       cmd = "Trouble",
       keys = {},
+    },
+
+    {
+        'nvim-java/nvim-java',
+        dependencies = {
+            'nvim-java/lua-async-await',
+            'nvim-java/nvim-java-refactor',
+            'nvim-java/nvim-java-core',
+            'nvim-java/nvim-java-test',
+            'nvim-java/nvim-java-dap',
+            'MunifTanjim/nui.nvim',
+            'neovim/nvim-lspconfig',
+            'mfussenegger/nvim-dap',
+            {
+                'williamboman/mason.nvim',
+                opts = {
+                    registries = {
+                        'github:nvim-java/mason-registry',
+                        'github:mason-org/mason-registry',
+                    },
+                },
+            }
+        },
     }
 
 }
