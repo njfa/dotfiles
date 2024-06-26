@@ -15,22 +15,82 @@ return {
 
     -- LSPサーバー管理
     {
-        "williamboman/mason.nvim",
-        "neovim/nvim-lspconfig",
-        'hrsh7th/cmp-nvim-lsp',
-        'mfussenegger/nvim-jdtls',
-        'simrat39/rust-tools.nvim',
-        "nvimtools/none-ls.nvim",
-    },
-
-    {
         'williamboman/mason-lspconfig.nvim',
         dependencies = {
-            'williamboman/mason.nvim',
+            'neovim/nvim-lspconfig',
             'hrsh7th/cmp-nvim-lsp',
-            -- 'mfussenegger/nvim-jdtls',
             'simrat39/rust-tools.nvim',
-            'nvimdev/lspsaga.nvim',
+            'nvimtools/none-ls.nvim',
+            {
+                'williamboman/mason.nvim',
+                opts = {
+                    registries = {
+                        'github:nvim-java/mason-registry',
+                        'github:mason-org/mason-registry',
+                    },
+                },
+            },
+            {
+                'nvimdev/lspsaga.nvim',
+                dependencies = {
+                    'neovim/nvim-lspconfig',
+                },
+                config = function()
+                    require('lspsaga').setup({
+                        code_action = {
+                            keys = {
+                                quit = {'<esc>', 'q'}
+                            }
+                        },
+                        finder = {
+                            max_height = 0.6,
+                            keys = {
+                                edit = 'o',
+                                vsplit = 'e',
+                                toggle_or_open = '<cr>',
+                                shuttle = '<C-w>'
+                            },
+                            methods = {
+                                tyd = 'textDocument/typeDefinition'
+                            },
+                            default = 'def+ref+imp+tyd',
+                        },
+                        callhierarchy = {
+                            keys = {
+                                edit = 'o',
+                                vsplit = 'e',
+                                toggle_or_open = '<cr>',
+                                shuttle = '<C-w>'
+                            },
+                        },
+                        hover = {
+                            open_cmd = '!browser.sh'
+                        },
+                        lightbulb = {
+                            enable = true,
+                            sign = false,
+                            virtual_text = true,
+                            enable_in_insert = false,
+                        },
+                        outline = {
+                            auto_preview = false,
+                            auto_close = true,
+                            detail = true,
+                            -- layout = 'float',
+                            win_position = 'right',
+                            win_width = 45,
+                            keys = {
+                                jump = '<cr>'
+                            }
+                        },
+                        rename = {
+                            keys = {
+                                quit = '<esc>'
+                            }
+                        }
+                    })
+                end,
+            }
         },
         config = function()
 
@@ -57,7 +117,16 @@ return {
                 end,
 
                 ["jdtls"] = function()
-                    require('java').setup()
+                    require('java').setup({
+                        --  list of file that exists in root of the project
+                        root_markers = {
+                            '.git'
+                        },
+                        jdk = {
+                            -- install jdk using mason.nvim
+                            auto_install = false,
+                        },
+                    })
                     require('lspconfig').jdtls.setup({})
                 end,
 
@@ -178,68 +247,6 @@ return {
     },
 
     {
-        'nvimdev/lspsaga.nvim',
-        dependencies = {
-            'neovim/nvim-lspconfig',
-        },
-        config = function()
-            require('lspsaga').setup({
-                code_action = {
-                    keys = {
-                        quit = {'<esc>', 'q'}
-                    }
-                },
-                finder = {
-                    max_height = 0.6,
-                    keys = {
-                        edit = 'o',
-                        vsplit = 'e',
-                        toggle_or_open = '<cr>',
-                        shuttle = '<C-w>'
-                    },
-                    methods = {
-                        tyd = 'textDocument/typeDefinition'
-                    },
-                    default = 'def+ref+imp+tyd',
-                },
-                callhierarchy = {
-                    keys = {
-                        edit = 'o',
-                        vsplit = 'e',
-                        toggle_or_open = '<cr>',
-                        shuttle = '<C-w>'
-                    },
-                },
-                hover = {
-                    open_cmd = '!browser.sh'
-                },
-                lightbulb = {
-                    enable = true,
-                    sign = false,
-                    virtual_text = true,
-                    enable_in_insert = false,
-                },
-                outline = {
-                    auto_preview = false,
-                    auto_close = true,
-                    detail = true,
-                    -- layout = 'float',
-                    win_position = 'right',
-                    win_width = 45,
-                    keys = {
-                        jump = '<cr>'
-                    }
-                },
-                rename = {
-                    keys = {
-                        quit = '<esc>'
-                    }
-                }
-            })
-        end,
-    },
-
-    {
         "ray-x/lsp_signature.nvim",
         event = "VeryLazy",
         opts = {},
@@ -298,15 +305,7 @@ return {
             'MunifTanjim/nui.nvim',
             'neovim/nvim-lspconfig',
             'mfussenegger/nvim-dap',
-            {
-                'williamboman/mason.nvim',
-                opts = {
-                    registries = {
-                        'github:nvim-java/mason-registry',
-                        'github:mason-org/mason-registry',
-                    },
-                },
-            }
+            'williamboman/mason.nvim',
         },
     }
 
