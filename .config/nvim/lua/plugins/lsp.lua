@@ -21,6 +21,7 @@ return {
             'hrsh7th/cmp-nvim-lsp',
             'simrat39/rust-tools.nvim',
             'nvimtools/none-ls.nvim',
+            'mfussenegger/nvim-jdtls',
             {
                 'williamboman/mason.nvim',
                 opts = {
@@ -117,21 +118,21 @@ return {
                 end,
 
                 ["jdtls"] = function()
-                    require('java').setup({
-                        --  list of file that exists in root of the project
-                        root_markers = {
-                            '.git'
-                        },
-                        jdk = {
-                            -- install jdk using mason.nvim
-                            auto_install = false,
-                        },
-                    })
-                    require('lspconfig').jdtls.setup({
-                        on_attach = function(_, bufnr)
-                            require('common').on_attach_lsp(_, bufnr, "jdtls")
-                        end,
-                    })
+                    -- require('java').setup({
+                    --     --  list of file that exists in root of the project
+                    --     root_markers = {
+                    --         '.git'
+                    --     },
+                    --     jdk = {
+                    --         -- install jdk using mason.nvim
+                    --         auto_install = false,
+                    --     },
+                    -- })
+                    -- require('lspconfig').jdtls.setup({
+                    --     on_attach = function(_, bufnr)
+                    --         require('common').on_attach_lsp(_, bufnr, "jdtls")
+                    --     end,
+                    -- })
                 end,
 
                 ["rust_analyzer"] = function ()
@@ -298,19 +299,19 @@ return {
       keys = {},
     },
 
-    {
-        'nvim-java/nvim-java',
-        dependencies = {
-            'nvim-java/lua-async-await',
-            'nvim-java/nvim-java-refactor',
-            'nvim-java/nvim-java-core',
-            'nvim-java/nvim-java-test',
-            'nvim-java/nvim-java-dap',
-            'MunifTanjim/nui.nvim',
-            'neovim/nvim-lspconfig',
-            'mfussenegger/nvim-dap',
-            'williamboman/mason.nvim',
-        },
-    }
+    -- {
+    --     'nvim-java/nvim-java',
+    --     dependencies = {
+    --         'nvim-java/lua-async-await',
+    --         'nvim-java/nvim-java-refactor',
+    --         'nvim-java/nvim-java-core',
+    --         'nvim-java/nvim-java-test',
+    --         'nvim-java/nvim-java-dap',
+    --         'MunifTanjim/nui.nvim',
+    --         'neovim/nvim-lspconfig',
+    --         'mfussenegger/nvim-dap',
+    --         'williamboman/mason.nvim',
+    --     },
+    -- }
 
 }
