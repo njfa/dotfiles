@@ -127,7 +127,11 @@ return {
                             auto_install = false,
                         },
                     })
-                    require('lspconfig').jdtls.setup({})
+                    require('lspconfig').jdtls.setup({
+                        on_attach = function(_, bufnr)
+                            require('common').on_attach_lsp(_, bufnr, "jdtls")
+                        end,
+                    })
                 end,
 
                 ["rust_analyzer"] = function ()
