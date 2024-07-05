@@ -84,6 +84,8 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+require('highlight')
+
 -- プラグインの読み込み
 require('lazy').setup("plugins", {
     performance = {
