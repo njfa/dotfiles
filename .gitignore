@@ -38,3 +38,5 @@ settings.*.json
 
 # nvim diagnostics
 .luarc.json
+
+lazy-lock.json
