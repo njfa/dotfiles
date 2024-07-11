@@ -53,6 +53,12 @@ return {
             m = {
                 a = { "<Plug>(EasyAlign)", "指定文字で整列 (*で全一致箇所)"},
                 s = { "<cmd>Switch<cr>", "カーソル下の単語を反転 (true→false等)"},
+                m = {
+                    name = "Markdown用コマンド",
+                    s = { "<cmd>SetHeaderNumber<cr>", "ナンバリングを適用"},
+                    u = { "<cmd>UnsetHeaderNumber<cr>", "ナンバリングを削除"},
+                    t = { "<cmd>ToggleHeaderNumber<cr>", "ナンバリングを切替"},
+                },
             },
 
             R = { function() require('substitute').operator() end, {}, "指定したテキストオブジェクトを置換" },

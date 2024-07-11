@@ -85,6 +85,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require('highlight')
+require('command')
 
 -- プラグインの読み込み
 require('lazy').setup("plugins", {
