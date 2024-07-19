@@ -29,6 +29,7 @@ return {
                     augend.integer.alias.hex,       -- nonnegative hex number  (0x01, 0x1a1f, etc.)
                     augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
                     augend.constant.alias.bool,    -- boolean value (true <-> false)
+                    augend.constant.new{ elements = { "True", "False" } }
                 }
             }
 
