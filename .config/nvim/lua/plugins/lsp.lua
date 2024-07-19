@@ -117,6 +117,22 @@ return {
                     }
                 end,
 
+                ["lua_ls"] = function()
+                    require("lspconfig").lua_ls.setup({
+                        settings = {
+                            Lua = {
+                                diagnostics = {
+                                    globals = { "vim" },
+                                },
+                            },
+                        },
+                        on_attach = function(_, bufnr)
+                            require('common').on_attach_lsp(_, bufnr, "lua_ls")
+                        end,
+                        capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+                    })
+                end,
+
                 ["jdtls"] = function()
                     -- require('java').setup({
                     --     --  list of file that exists in root of the project
@@ -188,7 +204,7 @@ return {
                             }
                         },
                         on_attach = function(_, bufnr)
-                            require('common').on_attach_lsp(_, bufnr, _)
+                            require('common').on_attach_lsp(_, bufnr, "pylsp")
                         end,
                         capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
                     }
