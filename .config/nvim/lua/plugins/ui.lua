@@ -161,14 +161,13 @@ return {
                     -- Jump forwards/backwards with '{' and '}'
                     -- Jump up the tree with '[' or ']'
                     local wk = require("which-key")
-                    wk.register({
-                        ["{"] = { "<cmd>AerialNext<CR>", "Next element"},
-                        ["}"] = { "<cmd>AerialPrev<CR>", "Prev element"},
+                    wk.add({
+                        mode = { "n" },
+                        buffer = bufnr,
+                        { "{", "<cmd>AerialNext<CR>", desc = "Next element" },
+                        { "}", "<cmd>AerialPrev<CR>", desc = "Prev element" },
                         -- ["["] = { "<cmd>lua require('aerial').next_up()<CR>", "Next up element"},
                         -- ["]"] = { "<cmd>lua require('aerial').prev_up()<CR>", "Prev up element"},
-                    }, {
-                        mode = "n",
-                        buffer = bufnr
                     })
                 end
             })
