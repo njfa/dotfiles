@@ -61,29 +61,24 @@ M.on_attach_lsp = function(_, bufnr, server_name)
     end
 
     local wk = require("which-key")
-    wk.register({
-        m = {
-            name = "LSP関連のコマンド (利用頻度: 高)",
-            f = { function() exec_command_not_floating_window('Lspsaga finder') end, "定義/呼び出し箇所の検索" },
-            i = { function() exec_command_not_floating_window('Lspsaga incoming_calls') end, "コールヒエラルキー (IN)"},
-            o = { function() exec_command_not_floating_window('Lspsaga outgoing_calls') end, "コールヒエラルキー (OUT)"},
-            d = { function() exec_command_not_floating_window('Lspsaga peek_definition') end, "定義の表示" },
-            t = { function() exec_command_not_floating_window('Lspsaga peek_type_definition') end, "タイプ定義の表示" },
-            g = {
-                name = "移動",
-                d = { function() exec_command_not_floating_window('Lspsaga goto_definition') end, "Goto definition" },
-                t = { function() exec_command_not_floating_window('Lspsaga goto_type_definition') end, "Goto type definition" },
-            },
-            r = { function() exec_command_not_floating_window('Lspsaga rename') end, "リネーム" },
-            h = { function() exec_command_not_floating_window('lua require("lsp_signature").toggle_float_win()') end, "フローティングウィンドウの表示/非表示切替" },
-            n = { function() exec_command_not_floating_window('Lspsaga diagnostic_jump_next') end, "次のUiagnosticへ移動" },
-            p = { function() exec_command_not_floating_window('Lspsaga diagnostic_jump_prev') end, "前のDiagnosticへ移動" },
-        },
-        ["<Tab>"] = { function() exec_command_not_floating_window('Lspsaga code_action') end, "コードアクション" },
-        K = { function() exec_command_not_floating_window('Lspsaga hover_doc ++keep') end, "ドキュメントの表示" },
-    }, {
-        mode = "n",
-        buffer = bufnr
+    wk.add({
+        {
+            mode = "n",
+            buffer = bufnr,
+            { "mf",    function() exec_command_not_floating_window('Lspsaga finder') end,                                  desc = "定義/呼び出し箇所の検索" },
+            { "mi",    function() exec_command_not_floating_window('Lspsaga incoming_calls') end,                          desc = "コールヒエラルキー (IN)"},
+            { "mo",    function() exec_command_not_floating_window('Lspsaga outgoing_calls') end,                          desc = "コールヒエラルキー (OUT)"},
+            { "md",    function() exec_command_not_floating_window('Lspsaga peek_definition') end,                         desc = "定義の表示" },
+            { "mt",    function() exec_command_not_floating_window('Lspsaga peek_type_definition') end,                    desc = "タイプ定義の表示" },
+            { "mgd",   function() exec_command_not_floating_window('Lspsaga goto_definition') end,                         desc = "Goto definition" },
+            { "mgt",   function() exec_command_not_floating_window('Lspsaga goto_type_definition') end,                    desc = "Goto type definition" },
+            { "mr",    function() exec_command_not_floating_window('Lspsaga rename') end,                                  desc = "リネーム" },
+            { "mh",    function() exec_command_not_floating_window('lua require("lsp_signature").toggle_float_win()') end, desc = "フローティングウィンドウの表示/非表示切替" },
+            { "mn",    function() exec_command_not_floating_window('Lspsaga diagnostic_jump_next') end,                    desc = "次のUiagnosticへ移動" },
+            { "mp",    function() exec_command_not_floating_window('Lspsaga diagnostic_jump_prev') end,                    desc = "前のDiagnosticへ移動" },
+            { "<Tab>", function() exec_command_not_floating_window('Lspsaga code_action') end,                             desc = "コードアクション" },
+            { "K",     function() exec_command_not_floating_window('Lspsaga hover_doc ++keep') end,                        desc = "ドキュメントの表示" },
+        }
     })
 
     -- on_attachの利用はdeprecatedとなっているため、lsp.lua側で初期化する
