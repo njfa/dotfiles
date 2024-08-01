@@ -34,22 +34,19 @@ return {
             }
 
             local wk = require("which-key")
-            wk.register({
-                ["<C-a>"] = { require("dial.map").inc_normal(),   "インクリメント (dial.nvim)" },
-                ["<C-x>"] = { require("dial.map").dec_normal(),   "デクリメント (dial.nvim)" },
-                ["g<C-a>"] = { require("dial.map").inc_gnormal(), "インクリメント (dial.nvim)" },
-                ["g<C-x>"] = { require("dial.map").dec_gnormal(), "デクリメント (dial.nvim)" },
-            }, {
-                mode = "n"
-            })
-
-            wk.register({
-                ["<C-a>"] = { require("dial.map").inc_visual(),   "インクリメント (dial.nvim)" },
-                ["<C-x>"] = { require("dial.map").dec_visual(),   "デクリメント (dial.nvim)" },
-                ["g<C-a>"] = { require("dial.map").inc_gvisual(), "インクリメント (dial.nvim)" },
-                ["g<C-x>"] = { require("dial.map").dec_gvisual(), "デクリメント (dial.nvim)" },
-            }, {
-                mode = "x"
+            wk.add({
+                mode = { "n" },
+                { "<C-a>", require("dial.map").inc_normal(),   desc = "インクリメント (dial.nvim)" },
+                { "<C-x>", require("dial.map").dec_normal(),   desc = "デクリメント (dial.nvim)" },
+                { "g<C-a>", require("dial.map").inc_gnormal(), desc = "インクリメント (dial.nvim)" },
+                { "g<C-x>", require("dial.map").dec_gnormal(), desc = "デクリメント (dial.nvim)" },
+            },
+            {
+                mode = { "x" },
+                { "<C-a>", require("dial.map").inc_visual(),   desc = "インクリメント (dial.nvim)" },
+                { "<C-x>", require("dial.map").dec_visual(),   desc = "デクリメント (dial.nvim)" },
+                { "g<C-a>", require("dial.map").inc_gvisual(), desc = "インクリメント (dial.nvim)" },
+                { "g<C-x>", require("dial.map").dec_gvisual(), desc = "デクリメント (dial.nvim)" },
             })
         end
     },
