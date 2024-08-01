@@ -72,7 +72,7 @@ return {
     -- 括弧やクォートの置換機能
     {
         'machakann/vim-sandwich',
-        config = function()
+        init = function()
             vim.g.sandwich_no_default_key_mappings = 1
             vim.g.operator_sandwich_no_default_key_mappings = 1
         end
@@ -81,7 +81,7 @@ return {
     -- undoの拡張
     {
         'mbbill/undotree',
-        config = function()
+        init = function()
             -- バックアップファイルの保存場所
             if vim.fn.has('persistent_undo') ~= 0 then
                 vim.opt.undodir = vim.fn.expand('~/.undo')
