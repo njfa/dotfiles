@@ -29,7 +29,9 @@ return {
                     augend.integer.alias.hex,       -- nonnegative hex number  (0x01, 0x1a1f, etc.)
                     augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
                     augend.constant.alias.bool,    -- boolean value (true <-> false)
-                    augend.constant.new{ elements = { "True", "False" } }
+                    augend.constant.new{ elements = { "True", "False" } },
+                    augend.constant.new{ elements = { "する", "しない" } },
+                    augend.constant.new{ elements = { "できる", "できない" } }
                 }
             }
 
@@ -137,7 +139,7 @@ return {
     {
         "iamcco/markdown-preview.nvim",
         ft = { "markdown", "plantuml" },
-        build = function() vim.fn["mkdp#util#install"]() end,
+        build = "cd app && npm install",
         init = function()
             vim.g.mkdp_filetypes = { "markdown", "plantuml" }
             vim.g.mkdp_preview_options = {
@@ -193,6 +195,7 @@ return {
     {
         'MeanderingProgrammer/markdown.nvim',
         name = 'render-markdown', -- Only needed if you have another plugin named markdown.nvim
+        file_types = { 'markdown', 'vimwiki' },
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
         config = function()
             require('render-markdown').setup({
@@ -207,25 +210,25 @@ return {
                         'my_markdown_h6',
                     },
                 },
-                win_options = {
-                    -- See :h 'conceallevel'
-                    conceallevel = {
-                        -- Used when not being rendered, get user setting
-                        default = vim.api.nvim_get_option_value('conceallevel', {}),
-                        -- Used when being rendered, concealed text is completely hidden
-                        rendered = 0,
-                    },
-                    -- See :h 'concealcursor'
-                    concealcursor = {
-                        -- Used when not being rendered, get user setting
-                        default = vim.api.nvim_get_option_value('concealcursor', {}),
-                        -- Used when being rendered, conceal text in all modes
-                        rendered = '',
-                    },
-                },
-                code = {
-                    highlight = 'my_code_block',
-                },
+                -- win_options = {
+                --     -- See :h 'conceallevel'
+                --     conceallevel = {
+                --         -- Used when not being rendered, get user setting
+                --         default = vim.api.nvim_get_option_value('conceallevel', {}),
+                --         -- Used when being rendered, concealed text is completely hidden
+                --         rendered = 0,
+                --     },
+                --     -- See :h 'concealcursor'
+                --     concealcursor = {
+                --         -- Used when not being rendered, get user setting
+                --         default = vim.api.nvim_get_option_value('concealcursor', {}),
+                --         -- Used when being rendered, conceal text in all modes
+                --         rendered = '',
+                --     },
+                -- },
+                -- code = {
+                --     highlight = 'my_code_block',
+                -- },
             })
         end,
     },
