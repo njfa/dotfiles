@@ -37,8 +37,8 @@ return {
 
                 {
                     { "<leader><leader>t",  group = "Table操作" },
-                    -- { "<leader><leader>tf", "<cmd>TableFormat<CR>",          desc = "Table整形" },
                     { "<leader><leader>tm", "<cmd>TableModeToggle<CR>",      desc = "Tableモード切替" },
+                    { "<leader><leader>ta", "<cmd>TableModeRealign<CR>",     desc = "Table整形" },
                     { "<leader><leader>tt", [[<Plug>(table-mode-tableize)]], desc = "Tableへ変換" },
                 }
             },
