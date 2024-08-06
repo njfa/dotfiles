@@ -196,13 +196,16 @@ return {
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
         config = function()
             require('render-markdown').setup({
-                headings = {"󰼏 ", "󰎨 ", "󰼑 ", "󰎲 ", "󰼓 ", "󰎴 " },
-                callout = {
-                    note = '󰋽 Note ',
-                    tip = '󰌶 Tip ',
-                    important = '󰅾 Important ',
-                    warning = '󰀪 Warning ',
-                    caution = '󰳦 Caution ',
+                heading = {
+                    icons = { "󰼏 ", "󰎨 ", "󰼑 ", "󰎲 ", "󰼓 ", "󰎴 " },
+                    backgrounds = {
+                        'my_markdown_h1',
+                        'my_markdown_h2',
+                        'my_markdown_h3',
+                        'my_markdown_h4',
+                        'my_markdown_h5',
+                        'my_markdown_h6',
+                    },
                 },
                 win_options = {
                     -- See :h 'conceallevel'
@@ -220,20 +223,8 @@ return {
                         rendered = '',
                     },
                 },
-                highlights = {
-                    heading = {
-                        -- Background of heading line
-                        backgrounds = {
-                            'my_markdown_h1',
-                            'my_markdown_h2',
-                            'my_markdown_h3',
-                            'my_markdown_h4',
-                            'my_markdown_h5',
-                            'my_markdown_h6',
-                        },
-                    },
-                    -- Code blocks
-                    code = 'my_code_block',
+                code = {
+                    highlight = 'my_code_block',
                 },
             })
         end,
