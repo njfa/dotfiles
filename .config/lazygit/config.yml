@@ -3,6 +3,6 @@ gui:
   showIcons: true
 
 os:
-  edit: 'nvim --server /tmp/nvim-server.pipe --remote-tab "$(pwd)/{{filename}}"'
+  edit: 'nvim --server /tmp/nvim-server.pipe --remote-tab "{{filename}}"'
   copyToClipboardCmd: 'echo {{text}} | win32yank.exe -i --crlf'
 
