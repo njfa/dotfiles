@@ -14,9 +14,11 @@ if ($PSVersionTable.PSVersion.Major -gt 5) {
 
     # Set-Alias ls lsd
     Set-Alias cat bat
+    Set-Alias vim nvim
 } else {
     # Set-Alias ls lsd -O AllScope
     Set-Alias cat bat -O AllScope
+    Set-Alias vim nvim -O AllScope
 }
 
 oh-my-posh init pwsh --config "$env:USERPROFILE\.dotfiles\etc\os\windows\night-owl.omp.json" | Invoke-Expression
