@@ -63,7 +63,7 @@ M.on_attach_lsp = function(_, bufnr, server_name)
     local wk = require("which-key")
     wk.add({
         {
-            mode = "n",
+            mode = { "n" },
             buffer = bufnr,
             { "mf",    function() exec_command_not_floating_window('Lspsaga finder') end,                                  desc = "定義/呼び出し箇所の検索" },
             { "mi",    function() exec_command_not_floating_window('Lspsaga incoming_calls') end,                          desc = "コールヒエラルキー (IN)"},
@@ -77,7 +77,7 @@ M.on_attach_lsp = function(_, bufnr, server_name)
             { "mn",    function() exec_command_not_floating_window('Lspsaga diagnostic_jump_next') end,                    desc = "次のUiagnosticへ移動" },
             { "mp",    function() exec_command_not_floating_window('Lspsaga diagnostic_jump_prev') end,                    desc = "前のDiagnosticへ移動" },
             { "<Tab>", function() exec_command_not_floating_window('Lspsaga code_action') end,                             desc = "コードアクション" },
-            { "K",     function() exec_command_not_floating_window('Lspsaga hover_doc ++keep') end,                        desc = "ドキュメントの表示" },
+            { "K",     function() exec_command_not_floating_window('Lspsaga hover_doc') end,                               desc = "ドキュメントの表示" },
         }
     })
 

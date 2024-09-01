@@ -8,6 +8,9 @@ return {
         config = function()
             vim.diagnostic.config({
                 virtual_text = false,
+
+                -- error/warn/infoをソート
+                severity_sort = true
             })
             require("lsp_lines").setup()
         end,
@@ -26,8 +29,8 @@ return {
                 'williamboman/mason.nvim',
                 opts = {
                     registries = {
-                        'github:nvim-java/mason-registry',
-                        'github:mason-org/mason-registry',
+                        'file:' .. vim.fn.stdpath('config') .. '/lua/mason-custom-registry',
+                        'github:mason-org/mason-registry'
                     },
                 },
             },
@@ -201,7 +204,23 @@ return {
                                         ignore = {'E501'}
                                     }
                                 }
-                            }
+                            },
+                            plugins = {
+                                -- formatter options
+                                black = { enabled = true },
+                                autopep8 = { enabled = false },
+                                yapf = { enabled = false },
+                                -- linter options
+                                pylint = { enabled = true, executable = "pylint" },
+                                pyflakes = { enabled = false },
+                                pycodestyle = { enabled = false },
+                                -- type checker
+                                pylsp_mypy = { enabled = true },
+                                -- auto-completion options
+                                jedi_completion = { fuzzy = true },
+                                -- import sorting
+                                pyls_isort = { enabled = true },
+                            },
                         },
                         on_attach = function(_, bufnr)
                             require('common').on_attach_lsp(_, bufnr, "pylsp")
@@ -246,7 +265,21 @@ return {
 
             require("mason-null-ls").setup({
                 ensure_installed = {
-                    "markdownlint"
+                    -- markdown
+                    "markdown",
+                    "markdownlint",
+                    -- java
+                    "openjdk-17",
+                    "jdtls",
+                    "lombok-nightly",
+                    -- python
+                    "python-lsp-server",
+                    "pylint",
+                    "isort",
+                    "black",
+                    -- terraform
+                    "terraform-ls",
+                    "tflint"
                 },
                 automatic_installation = false,
                 handlers = {
