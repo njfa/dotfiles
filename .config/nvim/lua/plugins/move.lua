@@ -5,7 +5,7 @@ return {
         version = 'v2.5.1', -- optional but strongly recommended
         opts = {
             yank_register = "*",
-            keys = 'asdfghjkl:weruio'
+            keys = 'asdfghjklweruioxcvm,.'
         }
     },
 

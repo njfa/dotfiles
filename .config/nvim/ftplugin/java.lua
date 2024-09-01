@@ -44,7 +44,7 @@ local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
 local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name
 
 local jdk_runtimes = {}
-local path_to_java21 = vim.fn.glob(home .. "/.sdkman/candidates/java/21.*-amzn/", true)
+local path_to_java21 = vim.fn.glob(home .. "/.sdkman/candidates/java/21.*-amzn/", true, true)[1]
 if path_to_java21 ~= "" then
     table.insert(jdk_runtimes, {
         name = "JavaSE-21",
@@ -52,7 +52,7 @@ if path_to_java21 ~= "" then
     })
 end
 
-local path_to_java17 = vim.fn.glob(home .. "/.sdkman/candidates/java/17.*-amzn/", true)
+local path_to_java17 = vim.fn.glob(home .. "/.sdkman/candidates/java/17.*-amzn/", true, true)[1]
 if path_to_java17 ~= "" then
     table.insert(jdk_runtimes, {
         name = "JavaSE-17",
@@ -60,7 +60,7 @@ if path_to_java17 ~= "" then
     })
 end
 
-local path_to_java11 = vim.fn.glob(home .. "/.sdkman/candidates/java/11.*-amzn/", true)
+local path_to_java11 = vim.fn.glob(home .. "/.sdkman/candidates/java/11.*-amzn/", true, true)[1]
 if path_to_java11 ~= "" then
     table.insert(jdk_runtimes, {
         name = "JavaSE-11",
@@ -68,7 +68,7 @@ if path_to_java11 ~= "" then
     })
 end
 
-local path_to_java8 = vim.fn.glob(home .. "/.sdkman/candidates/java/8.*-amzn/", true)
+local path_to_java8 = vim.fn.glob(home .. "/.sdkman/candidates/java/8.*-amzn/", true, true)[1]
 if path_to_java8 ~= "" then
     table.insert(jdk_runtimes, {
         name = "JavaSE-1.8",
@@ -120,19 +120,16 @@ local on_attach = function(client, bufnr)
 
     require('common').on_attach_lsp(client, bufnr, "nvim-jdtls")
     local wk = require("which-key")
-    wk.register({
-        m = {
-            name = "LSP",
-            i  = { "<Cmd>lua require('jdtls').organize_imports()<CR>", "Organize imports" },
-            e = {
-                name = "Extract variables / constant",
-                v = { "<Cmd>lua require('jdtls').extract_variable()<CR>", "Extract variables" },
-                c = { "<Cmd>lua require('jdtls').extract_constant()<CR>", "Extract constant" },
-            },
-        },
-    }, {
-        mode = "n",
-        buffer = bufnr
+
+    wk.add({
+        {
+            mode = { "n" },
+            buffer = bufnr,
+
+            { "mi", "<Cmd>lua require('jdtls').organize_imports()<CR>", desc = "Organize imports" },
+            { "mev", "<Cmd>lua require('jdtls').extract_variable()<CR>", desc = "Extract variables" },
+            { "mec", "<Cmd>lua require('jdtls').extract_constant()<CR>", desc = "Extract constant" },
+        }
     })
 end
 
@@ -177,15 +174,15 @@ config.cmd = {
 
 config.settings = {
     java = {
-        -- references = {
-        --     includeDecompiledSources = true,
-        -- },
-        -- eclipse = {
-        --     downloadSources = true,
-        -- },
-        -- maven = {
-        --     downloadSources = true,
-        -- },
+        references = {
+            includeDecompiledSources = true,
+        },
+        eclipse = {
+            downloadSources = true,
+        },
+        maven = {
+            downloadSources = true,
+        },
         signatureHelp = { enabled = true },
         contentProvider = { preferred = "fernflower" },
         completion = {
