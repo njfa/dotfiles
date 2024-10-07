@@ -12,7 +12,7 @@ return {
     -- 単語や演算子を反対の意味に切り替える
     {
         'AndrewRadev/switch.vim',
-        init = function ()
+        init = function()
             vim.g.switch_mapping = ""
         end
     },
@@ -22,34 +22,34 @@ return {
         'monaqa/dial.nvim',
         config = function()
             local augend = require("dial.augend")
-            require("dial.config").augends:register_group{
+            require("dial.config").augends:register_group {
                 -- default augends used when no group name is specified
                 default = {
-                    augend.integer.alias.decimal,   -- nonnegative decimal number (0, 1, 2, 3, ...)
-                    augend.integer.alias.hex,       -- nonnegative hex number  (0x01, 0x1a1f, etc.)
-                    augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
+                    augend.integer.alias.decimal,  -- nonnegative decimal number (0, 1, 2, 3, ...)
+                    augend.integer.alias.hex,      -- nonnegative hex number  (0x01, 0x1a1f, etc.)
+                    augend.date.alias["%Y/%m/%d"], -- date (2022/02/19, etc.)
                     augend.constant.alias.bool,    -- boolean value (true <-> false)
-                    augend.constant.new{ elements = { "True", "False" } },
-                    augend.constant.new{ elements = { "する", "しない" } },
-                    augend.constant.new{ elements = { "できる", "できない" } }
+                    augend.constant.new { elements = { "True", "False" } },
+                    augend.constant.new { elements = { "する", "しない" } },
+                    augend.constant.new { elements = { "できる", "できない" } }
                 }
             }
 
             local wk = require("which-key")
             wk.add({
-                mode = { "n" },
-                { "<C-a>", require("dial.map").inc_normal(),   desc = "インクリメント (dial.nvim)" },
-                { "<C-x>", require("dial.map").dec_normal(),   desc = "デクリメント (dial.nvim)" },
-                { "g<C-a>", require("dial.map").inc_gnormal(), desc = "インクリメント (dial.nvim)" },
-                { "g<C-x>", require("dial.map").dec_gnormal(), desc = "デクリメント (dial.nvim)" },
-            },
-            {
-                mode = { "x" },
-                { "<C-a>", require("dial.map").inc_visual(),   desc = "インクリメント (dial.nvim)" },
-                { "<C-x>", require("dial.map").dec_visual(),   desc = "デクリメント (dial.nvim)" },
-                { "g<C-a>", require("dial.map").inc_gvisual(), desc = "インクリメント (dial.nvim)" },
-                { "g<C-x>", require("dial.map").dec_gvisual(), desc = "デクリメント (dial.nvim)" },
-            })
+                    mode = { "n" },
+                    { "<C-a>", require("dial.map").inc_normal(), desc = "インクリメント (dial.nvim)" },
+                    { "<C-x>", require("dial.map").dec_normal(), desc = "デクリメント (dial.nvim)" },
+                    { "g<C-a>", require("dial.map").inc_gnormal(), desc = "インクリメント (dial.nvim)" },
+                    { "g<C-x>", require("dial.map").dec_gnormal(), desc = "デクリメント (dial.nvim)" },
+                },
+                {
+                    mode = { "x" },
+                    { "<C-a>", require("dial.map").inc_visual(), desc = "インクリメント (dial.nvim)" },
+                    { "<C-x>", require("dial.map").dec_visual(), desc = "デクリメント (dial.nvim)" },
+                    { "g<C-a>", require("dial.map").inc_gvisual(), desc = "インクリメント (dial.nvim)" },
+                    { "g<C-x>", require("dial.map").dec_gvisual(), desc = "デクリメント (dial.nvim)" },
+                })
         end
     },
 
@@ -95,7 +95,7 @@ return {
     -- テーブル作成用のモードを追加
     {
         'dhruvasagar/vim-table-mode',
-        init = function ()
+        init = function()
             vim.g.table_mode_map_prefix = '<Leader><Leader>t'
             -- vim.g.table_disable_mappings = 1
             vim.g.table_mode_disable_tableize_mappings = 1
@@ -114,13 +114,13 @@ return {
 
             require("diffview").setup({
                 keymaps = {
-                    view = {
+                    view               = {
                         ["<Esc>"] = "<cmd>DiffviewClose<cr>"
                     },
-                    file_panel = {
+                    file_panel         = {
                         ["<Esc>"] = "<cmd>DiffviewClose<cr>"
                     },
-                    file_history_panel  = {
+                    file_history_panel = {
                         ["<Esc>"] = "<cmd>DiffviewClose<cr>"
                     },
                 }
@@ -131,7 +131,7 @@ return {
     {
         'hashivim/vim-terraform',
         ft = { "terraform" },
-        init = function ()
+        init = function()
             vim.g.terraform_fmt_on_save = 1
         end
     },
@@ -153,7 +153,7 @@ return {
 
     {
         'rhysd/git-messenger.vim',
-        init = function ()
+        init = function()
             vim.g.git_messenger_no_default_mappings = true
             vim.g.git_messenger_include_diff = "current"
             vim.g.git_messenger_floating_win_opts = { border = 'single' }
