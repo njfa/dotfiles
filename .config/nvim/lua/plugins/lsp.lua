@@ -272,6 +272,7 @@ return {
                     "openjdk-17",
                     "jdtls",
                     "lombok-nightly",
+                    "google-java-format",
                     -- python
                     "python-lsp-server",
                     "pylint",
@@ -279,7 +280,13 @@ return {
                     "black",
                     -- terraform
                     "terraform-ls",
-                    "tflint"
+                    "tflint",
+                    -- javascript
+                    "prettier",
+                    -- lua
+                    "stylua",
+                    -- bash
+                    "shfmt"
                 },
                 automatic_installation = false,
                 handlers = {
