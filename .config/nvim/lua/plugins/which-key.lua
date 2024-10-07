@@ -17,6 +17,8 @@ return {
 
                 { "s", '"_s', desc = "s (レジスタを書き換えない)" },
                 { "x", '"_x', desc = "x (レジスタを書き換えない)" },
+                { "n", 'nzz', desc = "次の検索結果へ" },
+                { "N", 'Nzz', desc = "前の検索結果へ" },
 
                 { "L", function() hop.hint_lines_skip_whitespace({ }) end,                desc = "任意の行頭へ移動（空行は無視）" },
                 { "H", function() hop.hint_lines({ }) end,                                desc = "任意の行頭へ移動" },
@@ -58,13 +60,15 @@ return {
                 { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>]], desc = "g* (カーソルを移動しない)" },
                 { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]], desc = "g# (カーソルを移動しない)" },
 
-                { "gm", "<cmd>GitMessenger<cr>",                                         desc = "Git履歴表示"},
-                { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>",                   desc = "Git blameの表示切替"},
-                { "gs", "<cmd>Gitsigns stage_hunk<cr>",                                  desc = "Git stage hunk"},
-                { "gr", "<cmd>Gitsigns reset_hunk<cr>",                                  desc = "Git reset hunk"},
-                { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>",                             desc = "Git undo stage hunk"},
-                { "gp", "<cmd>Gitsigns preview_hunk_inline<cr>",                         desc = "Git preview hunk"},
-                { "gd", "<cmd>Gitsigns diffthis<cr>",                                    desc = "Git diff this"},
+                { "gh", "<cmd>GitMessenger<cr>",                       desc = "Git履歴表示"},
+                { "gn", "<cmd>Gitsigns next_hunk<cr>zz",                 desc = "次のgit hunkへ移動する"},
+                { "gp", "<cmd>Gitsigns prev_hunk<cr>zz",                 desc = "前のgit hunkへ移動する"},
+                { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替"},
+                { "gs", "<cmd>Gitsigns stage_hunk<cr>",                desc = "Git hunkをステージする"},
+                { "gr", "<cmd>Gitsigns reset_hunk<cr>",                desc = "Git hunkをリセットする"},
+                { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>",           desc = "Git ステージしたhunkをundoする"},
+                { "gj", "<cmd>Gitsigns preview_hunk_inline<cr>",       desc = "Git hunkの内容をプレビューする"},
+                { "gk", [[:<c-u>Gitsigns diffthis ]],                  desc = "指定のブランチ/コミットとの差分を確認する"},
 
                 {
                     { "mm",  group = "Markdown編集"},
@@ -72,13 +76,33 @@ return {
                     { "mmu", "<cmd>UnsetHeaderNumber<cr>",  desc = "ナンバリングを削除"},
                     { "mmt", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替"},
                 },
-
+                {
+                    { [[m.]],  group = "設定変更"},
+                    {
+                        [[m.t]],
+                        function ()
+                            vim.bo.expandtab = not(vim.bo.expandtab)
+                            vim.notify("Indent character: " .. (vim.bo.expandtab and "space" or "tab"))
+                        end,
+                        desc = "タブ文字の切替 (space <-> tab)",
+                    },
+                    {
+                        [[m.w]],
+                        function ()
+                            vim.bo.shiftwidth = (vim.bo.shiftwidth  % 4) + 2
+                            vim.notify("Indent width: " .. tostring(vim.bo.shiftwidth))
+                        end,
+                        desc = "インデント幅の変更 (2 <-> 4)",
+                    },
+                    { [[m.f]], "<cmd>Telescope filetypes<CR>", desc = "ファイルタイプの変更" }
+                },
                 { "R",      function() require('substitute').operator() end, desc = "指定したテキストオブジェクトを置換" },
 
                 { "<Esc>", ":noh<cr>",                                      desc = "検索結果のハイライトを削除" },
 
-                { "<A-f>", "<cmd>Neotree float reveal toggle<CR>",          desc = "ファイラーを開く (floating window)"},
-                { "<A-s>", "<cmd>Neotree left reveal toggle<CR>",           desc = "ファイラーを開く"},
+                { "<A-f>", "<cmd>Neotree float reveal toggle<CR>", desc = "ファイラーを開く (floating window)"},
+                { "<A-s>", "<cmd>Neotree left reveal toggle<CR>",  desc = "ファイラーを開く"},
+                { "<A-m>", "<cmd>Mason<CR>",                       desc = "Masonを開く"},
 
                 { "<C-p>", "<cmd>tabp<cr>",                                 desc = "前のタブに移動" },
                 { "<C-n>", "<cmd>tabn<cr>",                                 desc = "次のタブに移動" },
@@ -86,7 +110,7 @@ return {
                 { "<C-l>", "<cmd>BufferLineCycleNext<cr>",                  desc = "次のバッファに移動" },
 
                 {
-                    { "<C-w>", group = "画面操作" },
+                    { "<C-w>",  group = "画面操作" },
                     { "<C-w>e", "<cmd>vsplit<cr>",                                        desc = "画面分割 (縦)" },
                     { "<C-w>i", "<cmd>split<cr>",                                         desc = "画面分割 (横)" },
                     { "<C-w>p", "<cmd>MarkdownPreview<cr>",                               desc = "Markdownのプレビュー" },
@@ -227,6 +251,7 @@ return {
             --    return vim.list_contains({ "<C-V>", "V" }, ctx.mode)
             --end,
             win = {
+                no_overlap = true,
                 -- border = "double",
                 wo = {
                     winblend = 10, -- value between 0-100 0 for fully opaque and 100 for fully transparent
@@ -247,6 +272,5 @@ return {
                 ["<esc>"] = "ESCAPE",
             },
         })
-
     end
 }
