@@ -1,5 +1,5 @@
 local function set_numbering(lines, cursor_line)
-    local numbering = {0, 0, 0, 0, 0, 0}
+    local numbering = { 0, 0, 0, 0, 0, 0 }
     local level = 0
     local start_line = nil
 

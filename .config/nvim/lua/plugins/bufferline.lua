@@ -34,7 +34,7 @@ return {
             },
             options = {
                 numbers = "none",
-                name_formatter = function(buf)  -- buf contains:
+                name_formatter = function(buf) -- buf contains:
                     return buf.name
                 end,
                 get_element_icon = function(element)
@@ -42,7 +42,8 @@ return {
                     -- This can be used to change how bufferline fetches the icon
                     -- for an element e.g. a buffer or a tab.
                     -- e.g.
-                    local icon, hl = require('nvim-web-devicons').get_icon_by_filetype(element.filetype, { default = false })
+                    local icon, hl = require('nvim-web-devicons').get_icon_by_filetype(element.filetype,
+                        { default = false })
                     if icon then
                         return " " .. icon .. " ", hl
                     else
@@ -53,7 +54,7 @@ return {
                 show_close_icon = true,
                 max_name_length = 20,
                 max_prefix_length = 10, -- prefix used when a buffer is de-duplicated
-                truncate_names = true, -- whether or not tab names should be truncated
+                truncate_names = true,  -- whether or not tab names should be truncated
                 tab_size = 10,
                 color_icons = true,
                 sort_by = 'insert_after_current',
@@ -69,7 +70,7 @@ return {
                     local s = ""
                     for e, n in pairs(diagnostics_dict) do
                         local sym = e == "error" and " "
-                        or (e == "warning" and " " or e == "info" and " " or " " )
+                            or (e == "warning" and " " or e == "info" and " " or " ")
                         s = s .. sym .. n .. ''
                     end
                     return s
