@@ -2,14 +2,14 @@
 local M = {}
 
 local function get_path_and_tail(filename)
-  local utils = require('telescope.utils')
-  local bufname_tail = utils.path_tail(filename)
-  local path_without_tail = require('plenary.strings').truncate(filename, #filename - #bufname_tail, '')
-  local path_to_display = utils.transform_path({
-    path_display = { 'truncate' },
-  }, path_without_tail)
+    local utils = require('telescope.utils')
+    local bufname_tail = utils.path_tail(filename)
+    local path_without_tail = require('plenary.strings').truncate(filename, #filename - #bufname_tail, '')
+    local path_to_display = utils.transform_path({
+        path_display = { 'truncate' },
+    }, path_without_tail)
 
-  return bufname_tail, path_to_display
+    return bufname_tail, path_to_display
 end
 
 local status_ok, utils = pcall(require, "telescope.utils")
@@ -70,7 +70,7 @@ local function entry_maker(line, gen)
         local icon, iconhl = utils.get_devicons(tail_raw)
 
         return displayer({
-            { icon, iconhl },
+            { icon,            iconhl },
             tail,
             { path_to_display, 'TelescopeResultsComment' },
         })
@@ -79,7 +79,6 @@ local function entry_maker(line, gen)
 end
 
 M.find_files_from_project_git_root = function(opts)
-
     opts = opts or {}
     if is_git_repo() then
         opts.results_title = '  Project Files: '
@@ -119,7 +118,6 @@ M.find_files_from_project_git_root = function(opts)
 end
 
 M.live_grep_from_project_git_root = function(opts)
-
     opts = opts or {}
     if is_git_repo() then
         opts.results_title = '  Project Files: '
@@ -146,53 +144,53 @@ end
 
 --- - <C-e>: open the command line with the text of the selected.
 M.command_history = function()
-  local builtin = require('telescope.builtin')
+    local builtin = require('telescope.builtin')
 
-  builtin.command_history(require('telescope.themes').get_dropdown({
-    color_devicons = true,
-    winblend = 4,
-    layout_config = {
-      width = function(_, max_columns, _) return math.min(max_columns, 100) end,
-      height = function(_, _, max_lines) return math.min(max_lines, 15) end,
-    },
-    filter_fn = function(cmd)
-      return not vim.tbl_contains({
-        'h',
-        ':',
-        'w',
-        'wa',
-        'q',
-        'qa',
-        'qa!',
-      }, vim.trim(cmd))
-    end
-  }))
+    builtin.command_history(require('telescope.themes').get_dropdown({
+        color_devicons = true,
+        winblend = 4,
+        layout_config = {
+            width = function(_, max_columns, _) return math.min(max_columns, 100) end,
+            height = function(_, _, max_lines) return math.min(max_lines, 15) end,
+        },
+        filter_fn = function(cmd)
+            return not vim.tbl_contains({
+                'h',
+                ':',
+                'w',
+                'wa',
+                'q',
+                'qa',
+                'qa!',
+            }, vim.trim(cmd))
+        end
+    }))
 end
 
 function M.grep_string_visual()
-  local visual_selection = function()
-    local save_previous = vim.fn.getreg('a')
-    vim.api.nvim_command('silent! normal! "ay')
-    local selection = vim.fn.trim(vim.fn.getreg('a'))
-    vim.fn.setreg('a', save_previous)
-    return vim.fn.substitute(selection, [[\n]], [[\\n]], 'g')
-  end
-  require('picker').live_grep_from_project_git_root({
-    default_text = visual_selection(),
-  })
+    local visual_selection = function()
+        local save_previous = vim.fn.getreg('a')
+        vim.api.nvim_command('silent! normal! "ay')
+        local selection = vim.fn.trim(vim.fn.getreg('a'))
+        vim.fn.setreg('a', save_previous)
+        return vim.fn.substitute(selection, [[\n]], [[\\n]], 'g')
+    end
+    require('picker').live_grep_from_project_git_root({
+        default_text = visual_selection(),
+    })
 end
 
 function M.find_files_string_visual()
-  local visual_selection = function()
-    local save_previous = vim.fn.getreg('a')
-    vim.api.nvim_command('silent! normal! "ay')
-    local selection = vim.fn.trim(vim.fn.getreg('a'))
-    vim.fn.setreg('a', save_previous)
-    return vim.fn.substitute(selection, [[\n]], [[\\n]], 'g')
-  end
-  require('picker').find_files_from_project_git_root({
-      default_text = visual_selection()
-  })
+    local visual_selection = function()
+        local save_previous = vim.fn.getreg('a')
+        vim.api.nvim_command('silent! normal! "ay')
+        local selection = vim.fn.trim(vim.fn.getreg('a'))
+        vim.fn.setreg('a', save_previous)
+        return vim.fn.substitute(selection, [[\n]], [[\\n]], 'g')
+    end
+    require('picker').find_files_from_project_git_root({
+        default_text = visual_selection()
+    })
 end
 
 function M.curbuf()
@@ -338,9 +336,9 @@ function M.gen_from_buffer(opts)
         })
 
         return displayer({
-            { entry.bufnr, 'TelescopeResultsNumber' },
+            { entry.bufnr,     'TelescopeResultsNumber' },
             { entry.indicator, 'TelescopeResultsComment' },
-            { icon, hl_group },
+            { icon,            hl_group },
             bufname_tail,
             { path_to_display .. ':' .. entry.lnum, 'TelescopeResultsComment' },
         })
