@@ -3,8 +3,8 @@ local buf_map = require('common').buf_map
 
 -- IMEの自動OFF
 if vim.fn.executable('zenhan.exe') == 1 then
-    vim.api.nvim_create_autocmd({"InsertLeave", "CmdlineLeave"}, {
-        pattern = {"*"},
+    vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
+        pattern = { "*" },
         command = "call system('zenhan.exe 0')",
     })
 end
@@ -18,8 +18,8 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
 })
 
 -- lspsagaのUI上でESCを使えるようにする
-vim.api.nvim_create_autocmd({"FileType"}, {
-    pattern = {"sagafinder"},
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = { "sagafinder" },
     callback = function()
         buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
     end,

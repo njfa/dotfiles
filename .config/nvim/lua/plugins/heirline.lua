@@ -4,32 +4,31 @@ return {
     config = function()
         local conditions = require("heirline.conditions")
         local utils = require("heirline.utils")
-        local colors = require("tokyonight.colors").setup()
 
         local AreaSeparator = {
-            provider  = function()
+            provider = function()
                 return "%="
             end
         }
 
         local SegmentSeparator = {
-            provider  = function()
+            provider = function()
                 return "┃"
             end,
-            hl = { fg = "#1f2335" },
+            hl       = { fg = "#1f2335" },
         }
 
         local Spacer = {
-            provider  = function()
+            provider = function()
                 return " "
             end
         }
 
         local EOL = {
-            provider  = function()
+            provider = function()
                 return '▐'
             end,
-            hl = { fg = "blue", bg = "bg_highlight" },
+            hl       = { fg = "blue", bg = "bg_highlight" },
         }
 
         local ViMode = {
@@ -80,19 +79,19 @@ return {
                     t = "TERMINAL",
                 },
                 mode_colors = {
-                    n = "blue" ,
+                    n = "blue",
                     i = "green2",
                     v = "yellow",
-                    V =  "orange",
-                    ["\22"] =  "red",
-                    c =  "purple",
-                    s =  "purple",
-                    S =  "purple",
-                    ["\19"] =  "purple",
-                    R =  "red1",
-                    r =  "red1",
-                    ["!"] =  "red1",
-                    t =  "blue2",
+                    V = "orange",
+                    ["\22"] = "red",
+                    c = "purple",
+                    s = "purple",
+                    S = "purple",
+                    ["\19"] = "purple",
+                    R = "red1",
+                    r = "red1",
+                    ["!"] = "red1",
+                    t = "blue2",
                 },
             },
 
@@ -113,7 +112,7 @@ return {
                 -- control the padding and make sure our string is always at least 2
                 -- characters long. Plus a nice Icon.
                 provider = function(self)
-                    return " %2("..self.mode_names[self.mode].."%) "
+                    return " %2(" .. self.mode_names[self.mode] .. "%) "
                 end,
                 -- Same goes for the highlight. Now the foreground will change according to the current mode.
                 hl = function(self)
@@ -199,7 +198,7 @@ return {
             hl = function()
                 if vim.bo.modified then
                     -- use `force` because we need to override the child's hl foreground
-                    return { bold = true, force=true }
+                    return { bold = true, force = true }
                 end
             end,
         }
@@ -208,7 +207,7 @@ return {
         FileNameBlock = utils.insert(
             FileNameBlock,
             utils.insert(FileNameModifer, FileName), -- a new table where FileName is a child of FileNameModifier
-            { provider = '%<'} -- this means that the statusline is cut here when there's not enough space
+            { provider = '%<' }                      -- this means that the statusline is cut here when there's not enough space
         )
 
         local FileType = {
@@ -287,7 +286,7 @@ return {
 
         local LSPActive = {
             condition = conditions.lsp_attached,
-            update = {'LspAttach', 'LspDetach', 'BufEnter'},
+            update = { 'LspAttach', 'LspDetach', 'BufEnter' },
             hl = { fg = "teal" },
 
             -- You can keep it simple,
@@ -295,12 +294,12 @@ return {
 
             -- Or complicate things a bit and get the servers names
             {
-                provider  = function()
+                provider = function()
                     return " [ "
                 end
             },
             {
-                provider  = function()
+                provider = function()
                     local names = {}
                     for i, server in pairs(vim.lsp.get_active_clients({ bufnr = 0 })) do
                         table.insert(names, server.name)
@@ -309,7 +308,7 @@ return {
                 end
             },
             {
-                provider  = function()
+                provider = function()
                     return " ]"
                 end
             },
@@ -319,12 +318,13 @@ return {
 
             init = function(self)
                 self.status_dict = vim.b.gitsigns_status_dict
-                self.has_changes = self.status_dict.added ~= 0 or self.status_dict.removed ~= 0 or self.status_dict.changed ~= 0
+                self.has_changes = self.status_dict.added ~= 0 or self.status_dict.removed ~= 0 or
+                self.status_dict.changed ~= 0
             end,
 
             SegmentSeparator,
             Spacer,
-            {   -- git branch name
+            { -- git branch name
                 provider = function(self)
                     -- return "   " .. self.status_dict.head
                     return " " .. self.status_dict.head

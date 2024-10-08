@@ -116,7 +116,7 @@ return {
                             require("common").on_attach_lsp(_, bufnr, server_name)
                         end,
                         capabilities = require("cmp_nvim_lsp").default_capabilities(
-                        vim.lsp.protocol.make_client_capabilities()
+                            vim.lsp.protocol.make_client_capabilities()
                         ),
                     })
                 end,
@@ -134,7 +134,7 @@ return {
                             require("common").on_attach_lsp(_, bufnr, "lua_ls")
                         end,
                         capabilities = require("cmp_nvim_lsp").default_capabilities(
-                        vim.lsp.protocol.make_client_capabilities()
+                            vim.lsp.protocol.make_client_capabilities()
                         ),
                     })
                 end,
@@ -210,7 +210,7 @@ return {
                             require("common").on_attach_lsp(_, bufnr, "pylsp")
                         end,
                         capabilities = require("cmp_nvim_lsp").default_capabilities(
-                        vim.lsp.protocol.make_client_capabilities()
+                            vim.lsp.protocol.make_client_capabilities()
                         ),
                     })
                 end,
@@ -230,127 +230,127 @@ return {
 
             local null_sources = {
                 -- null_ls.builtins.diagnostics.markdownlint.with({
-                    --     extra_args = { "--disable", "MD007", "MD012", "MD013" }
-                    -- })
-                }
+                --     extra_args = { "--disable", "MD007", "MD012", "MD013" }
+                -- })
+            }
 
-                -- for _, package in ipairs(mason_registry.get_installed_packages()) do
-                --     local package_categories = package.spec.categories[1]
-                --     if package_categories == mason_package.Cat.Formatter then
-                --         table.insert(null_sources, null_ls.builtins.formatting[package.name])
-                --     end
-                --     if package_categories == mason_package.Cat.Linter then
-                --         table.insert(null_sources, null_ls.builtins.diagnostics[package.name])
-                --     end
-                -- end
+            -- for _, package in ipairs(mason_registry.get_installed_packages()) do
+            --     local package_categories = package.spec.categories[1]
+            --     if package_categories == mason_package.Cat.Formatter then
+            --         table.insert(null_sources, null_ls.builtins.formatting[package.name])
+            --     end
+            --     if package_categories == mason_package.Cat.Linter then
+            --         table.insert(null_sources, null_ls.builtins.diagnostics[package.name])
+            --     end
+            -- end
 
-                null_ls.setup({
-                    debug = true,
-                    sources = null_sources,
-                })
+            require("mason-null-ls").setup({
+                ensure_installed = {
+                    -- markdown
+                    "markdown",
+                    "markdownlint",
+                    -- java
+                    "openjdk-17",
+                    "jdtls",
+                    "lombok-nightly",
+                    "google-java-format",
+                    -- python
+                    "python-lsp-server",
+                    "pylint",
+                    "isort",
+                    "black",
+                    -- terraform
+                    "terraform-ls",
+                    "tflint",
+                    -- javascript
+                    "prettier",
+                    -- lua
+                    "stylua",
+                    -- bash
+                    "shfmt",
+                },
+                automatic_installation = false,
+                handlers = {
+                    function() end, -- disables automatic setup of all null-ls sources
+                    markdownlint = function(_, _)
+                        null_ls.register(null_ls.builtins.diagnostics.markdownlint.with({
+                            extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051" },
+                        }))
+                    end,
+                    -- shfmt = function(source_name, methods)
+                    --     -- custom logic
+                    --     require('mason-null-ls').default_setup(source_name, methods) -- to maintain default behavior
+                    -- end,
+                },
+            })
 
-                require("mason-null-ls").setup({
-                    ensure_installed = {
-                        -- markdown
-                        "markdown",
-                        "markdownlint",
-                        -- java
-                        "openjdk-17",
-                        "jdtls",
-                        "lombok-nightly",
-                        "google-java-format",
-                        -- python
-                        "python-lsp-server",
-                        "pylint",
-                        "isort",
-                        "black",
-                        -- terraform
-                        "terraform-ls",
-                        "tflint",
-                        -- javascript
-                        "prettier",
-                        -- lua
-                        "stylua",
-                        -- bash
-                        "shfmt",
-                    },
-                    automatic_installation = false,
-                    handlers = {
-                        -- function() end, -- disables automatic setup of all null-ls sources
-                        markdownlint = function(_, _)
-                            null_ls.register(null_ls.builtins.diagnostics.markdownlint.with({
-                                extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051" },
-                            }))
-                        end,
-                        -- shfmt = function(source_name, methods)
-                            --     -- custom logic
-                            --     require('mason-null-ls').default_setup(source_name, methods) -- to maintain default behavior
-                            -- end,
-                        },
-                    })
-                end,
-            },
+            null_ls.setup({
+                debug = true,
+                sources = null_sources,
+            })
+        end,
+    },
 
-            {
-                "ray-x/lsp_signature.nvim",
-                event = "VeryLazy",
-                opts = {},
-                config = function(_, opts)
-                    opts.bind = true
-                    opts.handler_opts = {
-                        border = "rounded",
-                    }
-                    opts.hint_prefix = "󱄑 "
-                    -- opts.hint_prefix = " "
-                    opts.transparency = 10
-                    opts.max_width = 120
-                    opts.floating_window_off_x = function() -- adjust float windows x position.
-                        local colnr = vim.api.nvim_win_get_cursor(0)[2] -- buf col number
-                        return colnr
-                        -- return vim.fn.wincol()
-                    end
-                    opts.floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
-                        -- local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
-                        local pumheight = vim.o.pumheight
-                        local winline = vim.fn.winline() -- line number in the window
-                        local winheight = vim.fn.winheight(0)
+    {
+        "ray-x/lsp_signature.nvim",
+        event = "VeryLazy",
+        opts = {},
+        config = function(_, opts)
+            opts.bind = true
+            opts.handler_opts = {
+                border = "rounded",
+            }
+            opts.hint_prefix = "󱄑 "
+            -- opts.hint_prefix = " "
+            opts.transparency = 10
+            opts.max_width = 120
+            opts.floating_window_off_x = function()             -- adjust float windows x position.
+                local colnr = vim.api.nvim_win_get_cursor(0)[2] -- buf col number
+                return colnr
+                -- return vim.fn.wincol()
+            end
+            opts.floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
+                -- local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
+                local pumheight = vim.o.pumheight
+                local winline = vim.fn.winline() -- line number in the window
+                local winheight = vim.fn.winheight(0)
 
-                        -- window top
-                        if winline - 1 < pumheight then
-                            return pumheight
-                        end
+                -- window top
+                if winline - 1 < pumheight then
+                    return pumheight
+                end
 
-                        -- window bottom
-                        if winheight - winline < pumheight then
-                            return -pumheight
-                        end
-                        return 0
-                    end
+                -- window bottom
+                if winheight - winline < pumheight then
+                    return -pumheight
+                end
+                return 0
+            end
 
-                    require("lsp_signature").setup(opts)
-                end,
-            },
+            require("lsp_signature").setup(opts)
+        end,
+    },
 
-            -- LSPの結果を一覧表示
-            {
-                "folke/trouble.nvim",
-                opts = {}, -- for default options, refer to the configuration section for custom setup.
-                cmd = "Trouble",
-                keys = {},
-            },
+    -- LSPの結果を一覧表示
+    {
+        "folke/trouble.nvim",
+        opts = {}, -- for default options, refer to the configuration section for custom setup.
+        cmd = "Trouble",
+        keys = {},
+    },
 
-            -- {
-                --     'nvim-java/nvim-java',
-                --     dependencies = {
-                    --         'nvim-java/lua-async-await',
-                    --         'nvim-java/nvim-java-refactor',
-                    --         'nvim-java/nvim-java-core',
-                    --         'nvim-java/nvim-java-test',
-                    --         'nvim-java/nvim-java-dap',
-                    --         'MunifTanjim/nui.nvim',
-                    --         'neovim/nvim-lspconfig',
-                    --         'mfussenegger/nvim-dap',
-                    --         'williamboman/mason.nvim',
-                    --     },
-                    -- }
-                }
+    -- {
+    --     'nvim-java/nvim-java',
+    --     dependencies = {
+    --         'nvim-java/lua-async-await',
+    --         'nvim-java/nvim-java-refactor',
+    --         'nvim-java/nvim-java-core',
+    --         'nvim-java/nvim-java-test',
+    --         'nvim-java/nvim-java-dap',
+    --         'MunifTanjim/nui.nvim',
+    --         'neovim/nvim-lspconfig',
+    --         'mfussenegger/nvim-dap',
+    --         'williamboman/mason.nvim',
+    --     },
+    -- }
+}

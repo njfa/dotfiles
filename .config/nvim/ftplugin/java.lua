@@ -5,15 +5,15 @@ else
 end
 
 local function get_config_dir()
-  -- Unlike some other programming languages (e.g. JavaScript)
-  -- lua considers 0 truthy!
-  if vim.fn.has('linux') == 1 then
-    return 'config_linux'
-  elseif vim.fn.has('mac') == 1 then
-    return 'config_mac'
-  else
-    return 'config_win'
-  end
+    -- Unlike some other programming languages (e.g. JavaScript)
+    -- lua considers 0 truthy!
+    if vim.fn.has('linux') == 1 then
+        return 'config_linux'
+    elseif vim.fn.has('mac') == 1 then
+        return 'config_mac'
+    else
+        return 'config_win'
+    end
 end
 
 if require('common').is_floating_window() then
@@ -90,26 +90,25 @@ local path_to_lombok = path_to_mason_packages .. "/lombok-nightly/lombok.jar"
 local path_to_jar = vim.fn.glob(path_to_jdtls .. "/plugins/org.eclipse.equinox.launcher_*.jar", true)
 
 local jar_patterns = {
-  path_to_jdebug .. "/extension/server/com.microsoft.java.debug.plugin-*.jar",
-  path_to_jtest .. "/extension/server/*.jar",
-  path_to_jdecompiler .. '/server/*.jar',
+    path_to_jdebug .. "/extension/server/com.microsoft.java.debug.plugin-*.jar",
+    path_to_jtest .. "/extension/server/*.jar",
+    path_to_jdecompiler .. '/server/*.jar',
 }
 
 local bundles = {}
 for _, jar_pattern in ipairs(jar_patterns) do
-  for _, bundle in ipairs(vim.split(vim.fn.glob(jar_pattern), '\n')) do
-    if not vim.endswith(bundle, 'com.microsoft.java.test.runner-jar-with-dependencies.jar')
-      and not vim.endswith(bundle, 'com.microsoft.java.test.runner.jar')
-      and string.find(bundle, 'junit-platform-commons', 1, true) == nil
-      and string.find(bundle, 'org.apiguardian.api', 1, true) == nil
-      and string.find(bundle, 'junit-platform-engine', 1, true) == nil
-      and string.find(bundle, 'junit-platform-launcher', 1, true) == nil
-      and string.find(bundle, 'org.opentest4j', 1, true) == nil
-      then
-
-      table.insert(bundles, bundle)
+    for _, bundle in ipairs(vim.split(vim.fn.glob(jar_pattern), '\n')) do
+        if not vim.endswith(bundle, 'com.microsoft.java.test.runner-jar-with-dependencies.jar')
+            and not vim.endswith(bundle, 'com.microsoft.java.test.runner.jar')
+            and string.find(bundle, 'junit-platform-commons', 1, true) == nil
+            and string.find(bundle, 'org.apiguardian.api', 1, true) == nil
+            and string.find(bundle, 'junit-platform-engine', 1, true) == nil
+            and string.find(bundle, 'junit-platform-launcher', 1, true) == nil
+            and string.find(bundle, 'org.opentest4j', 1, true) == nil
+        then
+            table.insert(bundles, bundle)
+        end
     end
-  end
 end
 
 -- LSP settings for Java.
@@ -126,7 +125,7 @@ local on_attach = function(client, bufnr)
             mode = { "n" },
             buffer = bufnr,
 
-            { "mi", "<Cmd>lua require('jdtls').organize_imports()<CR>", desc = "Organize imports" },
+            { "mi",  "<Cmd>lua require('jdtls').organize_imports()<CR>", desc = "Organize imports" },
             { "mev", "<Cmd>lua require('jdtls').extract_variable()<CR>", desc = "Extract variables" },
             { "mec", "<Cmd>lua require('jdtls').extract_constant()<CR>", desc = "Extract constant" },
         }
