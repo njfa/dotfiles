@@ -25,6 +25,7 @@ return {
                 { "t", function() hop.hint_camel_case({ current_line_only = false }) end, desc = "任意の単語へ移動" },
                 { "f", function() hop.hint_char1({ current_line_only = true }) end,       desc = "指定文字へ移動 (行中)" },
                 { "F", function() hop.hint_char1({ current_line_only = false }) end,      desc = "指定文字へ移動 (全体)" },
+                { "=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
 
                 {
                     { "m", group = "ファイル編集"},
