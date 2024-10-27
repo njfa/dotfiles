@@ -104,3 +104,8 @@ require('lazy').setup("plugins", {
 require('keymaps')
 -- autocmdの設定
 require('autocmd')
+
+if vim.fn.executable('nvr') == 1 then
+    vim.env.EDITOR = 'nvr -c "set bufhidden=delete" --remote-tab-wait'
+    vim.env.GIT_EDITOR = 'nvr -c "set bufhidden=delete" --remote-tab-wait'
+end

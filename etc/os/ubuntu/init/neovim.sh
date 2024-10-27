@@ -12,11 +12,18 @@ else
     eval "$(pyenv init -)"
 fi
 
-if pip list | grep pynvim >/dev/null 2>&1; then
+if pip list | grep -q "pynvim"; then
     echo "pynvim is installed."
 else
     echo "pynvim is not installed."
     pip install pynvim
+fi
+
+if pip list | grep -q "neovim-remote"; then
+    echo "neovim-remote is installed."
+else
+    echo "neovim-remote is not installed."
+    pip install neovim-remote
 fi
 
 if command -v rg >/dev/null 2>&1; then
