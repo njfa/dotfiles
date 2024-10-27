@@ -27,17 +27,15 @@ return {
                 { "f", function() hop.hint_char1({ current_line_only = true }) end, desc = "指定文字へ移動 (行中)" },
                 { "F", function() hop.hint_char1({ current_line_only = false }) end, desc = "指定文字へ移動 (全体)" },
 
-                { "=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
-
                 {
                     { "m", group = "ファイル編集" },
-                    { "ma", "<Plug>(EasyAlign)", desc = "指定文字で整列 (*で全一致箇所)" },
                     { "m<space>", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
 
                     { "ms", group = "Sandwich" },
                     { "msa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
                     { "msd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
-                    { "msc", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
+                    { "msr", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
+                    { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
                 },
 
                 {
@@ -78,26 +76,6 @@ return {
                     { "mms", "<cmd>SetHeaderNumber<cr>", desc = "ナンバリングを適用" },
                     { "mmu", "<cmd>UnsetHeaderNumber<cr>", desc = "ナンバリングを削除" },
                     { "mmt", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替" },
-                },
-                {
-                    { [[m.]], group = "設定変更" },
-                    {
-                        [[m.t]],
-                        function()
-                            vim.bo.expandtab = not (vim.bo.expandtab)
-                            vim.notify("Indent character: " .. (vim.bo.expandtab and "space" or "tab"))
-                        end,
-                        desc = "タブ文字の切替 (space <-> tab)",
-                    },
-                    {
-                        [[m.w]],
-                        function()
-                            vim.bo.shiftwidth = (vim.bo.shiftwidth % 4) + 2
-                            vim.notify("Indent width: " .. tostring(vim.bo.shiftwidth))
-                        end,
-                        desc = "インデント幅の変更 (2 <-> 4)",
-                    },
-                    { [[m.f]], "<cmd>Telescope filetypes<CR>", desc = "ファイルタイプの変更" }
                 },
                 { "R", function() require('substitute').operator() end, desc = "指定したテキストオブジェクトを置換" },
 
@@ -147,6 +125,44 @@ return {
                     { "<leader>/", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "バッファ内検索" },
                     { "<leader>:", function() require('picker').command_history() end, desc = "コマンド履歴" },
                     { "<leader>.", function() require('reload').reload() end, desc = "Neovim設定ファイル一覧" },
+
+                    {
+                        { "<leader>,", group = "設定変更" },
+                        {
+                            "<leader>,t",
+                            function()
+                                vim.bo.expandtab = not (vim.bo.expandtab)
+                                vim.notify("インデント文字: " .. (vim.bo.expandtab and "space" or "tab"))
+                            end,
+                            desc = "インデント文字の切替 (space <-> tab)",
+                        },
+                        {
+                            "<leader>,o",
+                            function()
+                                if vim.bo.modifiable then
+                                    if vim.bo.fileformat == "unix" then
+                                        vim.bo.fileformat = "dos"
+                                        vim.notify("改行文字: CRLF")
+                                    else
+                                        vim.bo.fileformat = "unix"
+                                        vim.notify("改行文字: LF")
+                                    end
+                                else
+                                    vim.notify("このファイルは編集可能なファイルではありません")
+                                end
+                            end,
+                            desc = "ファイルタイプの切替 (unix <-> dos)",
+                        },
+                        {
+                            "<leader>,w",
+                            function()
+                                vim.bo.shiftwidth = (vim.bo.shiftwidth % 4) + 2
+                                vim.notify("インデント幅: " .. tostring(vim.bo.shiftwidth))
+                            end,
+                            desc = "インデント幅の変更 (2 <-> 4)",
+                        },
+                        { "<leader>,f", "<cmd>Telescope filetypes<CR>", desc = "ファイルタイプの変更" }
+                    },
 
                     {
                         { "<leader>x",  group = "Trouble" },
@@ -212,6 +228,7 @@ return {
                 { "gs", function() require('gitsigns').stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git stage hunk" },
                 { "gr", function() require('gitsigns').reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git reset hunk" },
 
+                { "<cr>", "<Plug>(EasyAlign)", desc = "指定文字で整列 (*で全一致箇所)" },
                 { "<Bar>", ":EasyAlign*<Bar><CR>", desc = "|で整形" },
 
                 { "v", ":lua require('tsht').nodes()<cr>", desc = "選択範囲を拡大" },
@@ -244,6 +261,17 @@ return {
             {
                 mode = { "i" },
                 { "<C-e>", function() require('luasnip').expand() end, desc = "スニペットの展開" },
+
+                { "<C-l>", function()
+                    local line = vim.fn.getline(".")
+                    local col = vim.fn.getpos(".")[3]
+                    local substring = line:sub(1, col - 1)
+                    local result = vim.fn.matchstr(substring, [[\v<(\k(<)@!)*$]])
+                    return "<C-w>" .. result:upper()
+                end,
+                expr = true,
+                desc = "直前の入力を大文字へ変換"
+            }
             }
         })
 
@@ -252,7 +280,8 @@ return {
             preset = "modern",
             triggers = {
                 { "<auto>", mode = "nixsotc" },
-                { "m",      mode = { "n", "v" } },
+                { "m", mode = { "n", "v" } },
+                { "<C-w>", mode = { "n" } },
             },
             -----@param ctx { mode: string, operator: string }
             defer = function(ctx)
