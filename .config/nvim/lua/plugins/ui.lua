@@ -75,12 +75,29 @@ return {
                     filtered_items = {
                         visible = false, -- when true, they will just be displayed differently than normal items
                         hide_dotfiles = false,
+                        hide_gitignored = false,
+                        hide_hidden = true, -- only works on Windows for hidden files/directories
+                        hide_by_name = {
+                          ".git"
+                        },
+                        hide_by_pattern = { -- uses glob style patterns
+                          --"*.meta",
+                          --"*/src/*/tsconfig.json",
+                        },
                     },
                 },
                 window = {
                     mappings = {
                         ["P"] = { "toggle_preview", config = { use_float = true, use_image_nvim = false } },
+                        ["<Esc>"] = { "close_window", config = { use_float = true, use_image_nvim = false } },
                     }
+                },
+                buffers = {
+                    window = {
+                        mappings = {
+                            ["d"] = "buffer_delete",
+                        }
+                    },
                 },
             })
         end

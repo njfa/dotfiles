@@ -104,6 +104,7 @@ return {
                 { "<Esc>", ":noh<cr>", desc = "検索結果のハイライトを削除" },
 
                 { "<A-f>", "<cmd>Neotree float reveal toggle<CR>", desc = "ファイラーを開く (floating window)" },
+                { "<A-j>", "<cmd>Neotree buffers float reveal toggle<CR>", desc = "バッファ一覧を開く (floating window)" },
                 { "<A-s>", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く" },
                 { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
 
