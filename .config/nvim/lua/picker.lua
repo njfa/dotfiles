@@ -128,16 +128,7 @@ M.live_grep_from_project_git_root = function(opts)
         opts.prompt_title = vim.fn.getcwd()
     end
 
-    opts.find_command = {
-        'rg',
-        '--with-filename',
-        '--line-number',
-        '--column',
-        '--smart-case',
-        '--no-ignore',
-        '--hidden',
-        '--trim'
-    }
+    opts.glob_pattern = "!.git"
 
     require("telescope.builtin").live_grep(opts)
 end
