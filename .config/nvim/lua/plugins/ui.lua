@@ -66,6 +66,20 @@ return {
         },
         config = function()
             require('neo-tree').setup({
+                source_selector = {
+                    statusline = true, -- toggle to show selector on statusline
+                    show_scrolled_off_parent_node = false,                    -- boolean
+                    sources = {                                               -- table
+                        {
+                            source = "filesystem",                                -- string
+                            display_name = " 󰉓 Files "                            -- string | nil
+                        },
+                        {
+                            source = "buffers",                                   -- string
+                            display_name = " 󰈚 Buffers "                          -- string | nil
+                        },
+                    },
+                },
                 close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
                 popup_border_style = "rounded",
                 enable_git_status = true,
@@ -85,6 +99,10 @@ return {
                           --"*/src/*/tsconfig.json",
                         },
                     },
+                    follow_current_file = {
+                        enabled = true,
+                        leave_dirs_open = false
+                    }
                 },
                 window = {
                     mappings = {
