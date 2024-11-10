@@ -82,8 +82,9 @@ return {
                 { "<Esc>", ":noh<cr>", desc = "検索結果のハイライトを削除" },
 
                 { "<A-f>", "<cmd>Neotree float reveal toggle<CR>", desc = "ファイラーを開く (floating window)" },
+                { "<A-s>", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
                 { "<A-j>", "<cmd>Neotree buffers float reveal toggle<CR>", desc = "バッファ一覧を開く (floating window)" },
-                { "<A-s>", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く" },
+                { "<A-l>", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (bottom)" },
                 { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
 
                 { "<C-p>", "<cmd>tabp<cr>", desc = "前のタブに移動" },
@@ -102,7 +103,7 @@ return {
 
                 {
                     { "<leader>", group = "leader" },
-                    { "<leader>b", "<cmd>Neotree buffers reveal toggle<CR>", desc = "バッファ一覧を開く (floating window)" },
+                    { "<leader>b", "<cmd>Neotree buffers float reveal toggle<CR>", desc = "バッファ一覧を開く (floating window)" },
                     { "<leader>c", '<cmd>enew<cr>', desc = "バッファ作成" },
                     { "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", desc = "バッファを閉じる" },
                     { "<leader>e", "<cmd>Telescope projects<CR>", desc = "プロジェクト一覧" },
