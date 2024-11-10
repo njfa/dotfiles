@@ -69,18 +69,17 @@ return {
                     },
                     vimgrep_arguments = {
                         'rg',
+                        '--no-heading',
                         '--with-filename',
                         '--line-number',
                         '--column',
                         '--smart-case',
-                        '--no-ignore',
                         '--hidden',
                         '--trim'
                     },
                     file_ignore_patterns = {
-                        "node_modules",
-                        ".git",
-                        "target"
+                        "node_modules/",
+                        "target/"
                     }
                 },
                 extensions = {
