@@ -63,6 +63,15 @@ vim.g.cursorhold_updatetime = 100
 
 vim.opt.completeopt         = { "menu", "menuone", "noselect" }
 
+
+-- ログ設定
+vim.lsp.set_log_level 'warn'
+if vim.fn.has 'nvim-0.5.1' == 1 then
+    vim.notify("set_format_func")
+    require('vim.lsp.log').set_format_func(vim.inspect)
+end
+
+
 -- sign columnに表示する情報を文字ではなくアイコンに変更
 local signs                 = { Error = "", Warn = "", Hint = "", Info = "" }
 for type, icon in pairs(signs) do
