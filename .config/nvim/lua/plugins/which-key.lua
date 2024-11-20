@@ -29,7 +29,7 @@ return {
 
                 {
                     { "m", group = "ファイル編集" },
-                    { "m<space>", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
+                    { "<cr>", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
 
                     { "ms", group = "Sandwich" },
                     { "msa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
