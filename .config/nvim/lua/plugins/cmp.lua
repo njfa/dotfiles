@@ -124,8 +124,8 @@ return {
                             cmp.select_prev_item()
                         elseif require('luasnip').jumpable(-1) then
                             require('luasnip').jump(-1)
-                        elseif vim.fn["vsnip#jumpable"](-1) == 1 then
-                            feedkey("<Plug>(vsnip-jump-prev)", "")
+                        -- elseif vim.fn["vsnip#jumpable"](-1) == 1 then
+                        --     feedkey("<Plug>(vsnip-jump-prev)", "")
                         end
                     end, { "i", "s" }),
                     -- ['<CR>'] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
