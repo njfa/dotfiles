@@ -274,7 +274,7 @@ return {
                     function() end, -- disables automatic setup of all null-ls sources
                     markdownlint = function(_, _)
                         null_ls.register(null_ls.builtins.diagnostics.markdownlint.with({
-                            extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051" },
+                            extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051", "MD038" },
                         }))
                     end,
                     -- shfmt = function(source_name, methods)
