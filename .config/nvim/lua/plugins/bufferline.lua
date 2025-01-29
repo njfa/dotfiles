@@ -75,6 +75,16 @@ return {
                     end
                     return s
                 end,
+                custom_filter = function(buf_number, buf_numbers)
+                    -- filter out filetypes you don't want to see
+                    if vim.bo[buf_number].filetype == "qf" then
+                        return false
+                    elseif vim.bo[buf_number].filetype == "qfreplace" then
+                        return false
+                    else
+                        return true
+                    end
+                end,
                 offsets = {
                     {
                         filetype = "fern",
