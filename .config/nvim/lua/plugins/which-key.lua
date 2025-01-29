@@ -21,24 +21,27 @@ return {
                 { "n", 'nzz', desc = "次の検索結果へ" },
                 { "N", 'Nzz', desc = "前の検索結果へ" },
 
-                { "L", function() hop.hint_lines_skip_whitespace({}) end, desc = "任意の行頭へ移動（空行は無視）" },
-                { "H", function() hop.hint_lines({}) end, desc = "任意の行頭へ移動" },
+                { "g0", function() hop.hint_lines_skip_whitespace({}) end, desc = "任意の行頭へ移動（空行は無視）" },
+                { "g^", function() hop.hint_lines({}) end, desc = "任意の行頭へ移動" },
                 { "t", function() hop.hint_camel_case({ current_line_only = false }) end, desc = "任意の単語へ移動" },
                 { "f", function() hop.hint_char1({ current_line_only = true }) end, desc = "指定文字へ移動 (行中)" },
                 { "F", function() hop.hint_char1({ current_line_only = false }) end, desc = "指定文字へ移動 (全体)" },
 
                 {
                     { "m", group = "ファイル編集" },
-                    { "<cr>", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
+                    { "mm", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
+                },
 
-                    { "ms", group = "Sandwich" },
-                    { "msa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
-                    { "msd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
-                    { "msr", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
+                {
+                    { "s", group = "Sandwich" },
+                    { "sa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
+                    { "sd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
+                    { "sr", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
                     { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
                 },
 
                 { "<A-f>", function() require('telescope.builtin').grep_string() end, desc = "カーソル下/選択中の文字列をGrep検索" },
+
                 {
                     { "<leader><leader>t", group = "Table操作" },
                     { "<leader><leader>tm", "<cmd>TableModeToggle<CR>", desc = "Tableモード切替" },
@@ -73,20 +76,18 @@ return {
                 { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
 
                 {
-                    { "mm", group = "Markdown編集" },
-                    { "mms", "<cmd>SetHeaderNumber<cr>", desc = "ナンバリングを適用" },
-                    { "mmu", "<cmd>UnsetHeaderNumber<cr>", desc = "ナンバリングを削除" },
-                    { "mmt", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替" },
+                    { "mn", group = "ナンバリング" },
+                    { "mns", "<cmd>SetHeaderNumber<cr>", desc = "ナンバリングを適用" },
+                    { "mnu", "<cmd>UnsetHeaderNumber<cr>", desc = "ナンバリングを削除" },
+                    { "mnt", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替" },
                 },
                 { "R", function() require('substitute').operator() end, desc = "指定したテキストオブジェクトを置換" },
 
+
                 { "<Esc>", ":noh<cr>", desc = "検索結果のハイライトを削除" },
 
-                { "<A-f>", "<cmd>Neotree float reveal toggle<CR>", desc = "ファイラーを開く (floating window)" },
                 { "<A-s>", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
-                { "<A-j>", "<cmd>Neotree buffers float reveal toggle<CR>", desc = "バッファ一覧を開く (floating window)" },
-                { "<A-l>", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (bottom)" },
-                { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
+                { "<A-m>", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (right)" },
 
                 { "<C-p>", "<cmd>tabp<cr>", desc = "前のタブに移動" },
                 { "<C-n>", "<cmd>tabn<cr>", desc = "次のタブに移動" },
@@ -98,16 +99,16 @@ return {
                     { "<C-w>e", "<cmd>vsplit<cr>", desc = "画面分割 (縦)" },
                     { "<C-w>i", "<cmd>split<cr>", desc = "画面分割 (横)" },
                     { "<C-w>p", "<cmd>MarkdownPreview<cr>", desc = "Markdownのプレビュー" },
-                    { "<C-w>d", "<cmd>DiffviewFileHistory<cr>", desc = "GitのDiff表示領域を表示" },
+                    { "<C-w>g", "<cmd>DiffviewFileHistory<cr>", desc = "GitのDiff表示領域を表示" },
                     { "<C-w>.", function() require("common").lcd_current_workspace() end, desc = "vimのカレントディレクトリを変更" },
                 },
 
                 {
                     { "<leader>", group = "leader" },
-                    { "<leader>b", "<cmd>Neotree buffers float reveal toggle<CR>", desc = "バッファ一覧を開く (floating window)" },
+                    { "<leader>b", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
                     { "<leader>c", '<cmd>enew<cr>', desc = "バッファ作成" },
                     { "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", desc = "バッファを閉じる" },
-                    { "<leader>e", "<cmd>Telescope projects<CR>", desc = "プロジェクト一覧" },
+                    { "<leader>e", "<cmd>Neotree float reveal<CR>", desc = "ファイラーを開く (floating window)" },
                     { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
                     { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換" },
                     { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
@@ -263,17 +264,18 @@ return {
             {
                 mode = { "i" },
                 { "<C-e>", function() require('luasnip').expand() end, desc = "スニペットの展開" },
-
-                { "<C-l>", function()
-                    local line = vim.fn.getline(".")
-                    local col = vim.fn.getpos(".")[3]
-                    local substring = line:sub(1, col - 1)
-                    local result = vim.fn.matchstr(substring, [[\v<(\k(<)@!)*$]])
-                    return "<C-w>" .. result:upper()
-                end,
-                expr = true,
-                desc = "直前の入力を大文字へ変換"
-            }
+                {
+                    "<C-l>",
+                    function()
+                        local line = vim.fn.getline(".")
+                        local col = vim.fn.getpos(".")[3]
+                        local substring = line:sub(1, col - 1)
+                        local result = vim.fn.matchstr(substring, [[\v<(\k(<)@!)*$]])
+                        return "<C-w>" .. result:upper()
+                    end,
+                    expr = true,
+                    desc = "直前の入力を大文字へ変換"
+                }
             }
         })
 
@@ -282,15 +284,15 @@ return {
             preset = "modern",
             triggers = {
                 { "<auto>", mode = "nixsotc" },
-                { "m", mode = { "n", "v" } },
-                { "<C-w>", mode = { "n" } },
+                { "m",      mode = { "n", "v" } },
+                { "<C-w>",  mode = { "n" } },
             },
             -----@param ctx { mode: string, operator: string }
             defer = function(ctx)
                 -- if vim.list_contains({ "d", "y" }, ctx.operator) then
                 --     return true
                 -- end
-                return vim.list_contains({ "v", "<C-V>", "V" }, ctx.mode)
+                return vim.list_contains({ "s", "v", "<C-V>", "V" }, ctx.mode)
             end,
             win = {
                 no_overlap = true,
