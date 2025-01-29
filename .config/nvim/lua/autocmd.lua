@@ -17,6 +17,28 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
     end,
 })
 
+-- quickfix
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = { "qf" },
+    callback = function()
+        buf_map(0, 'n', "r", "<cmd>Qfreplace<cr>", { noremap = true })
+    end,
+})
+
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = { "qf" },
+    callback = function()
+        buf_map(0, 'n', "q", "<cmd>cclose<cr>", { noremap = true })
+    end,
+})
+
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = { "qfreplace" },
+    callback = function()
+        buf_map(0, 'n', "q", "<cmd>q<cr><cmd>copen<cr>", { noremap = true })
+    end,
+})
+
 -- lspsagaのUI上でESCを使えるようにする
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "sagafinder" },
