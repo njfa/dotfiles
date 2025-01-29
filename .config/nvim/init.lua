@@ -64,10 +64,11 @@ vim.g.cursorhold_updatetime = 100
 vim.opt.completeopt         = { "menu", "menuone", "noselect" }
 
 
--- ログ設定
+-- lsp.logに記録するログレベルを設定
 vim.lsp.set_log_level 'warn'
+
+-- lsp.logの内容を整形する
 if vim.fn.has 'nvim-0.5.1' == 1 then
-    vim.notify("set_format_func")
     require('vim.lsp.log').set_format_func(vim.inspect)
 end
 
