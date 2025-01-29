@@ -128,7 +128,9 @@ M.live_grep_from_project_git_root = function(opts)
         opts.prompt_title = vim.fn.getcwd()
     end
 
-    opts.glob_pattern = "!.git"
+    if not opts.glob_pattern then
+        opts.glob_pattern = "!.git"
+    end
 
     require("telescope.builtin").live_grep(opts)
 end

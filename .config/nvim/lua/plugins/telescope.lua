@@ -75,6 +75,7 @@ return {
                         '--column',
                         '--smart-case',
                         '--hidden',
+                        '--no-ignore',
                         '--trim'
                     },
                     file_ignore_patterns = {
