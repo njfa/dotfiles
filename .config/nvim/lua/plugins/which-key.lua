@@ -38,6 +38,7 @@ return {
                     { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
                 },
 
+                { "<A-f>", function() require('telescope.builtin').grep_string() end, desc = "カーソル下/選択中の文字列をGrep検索" },
                 {
                     { "<leader><leader>t", group = "Table操作" },
                     { "<leader><leader>tm", "<cmd>TableModeToggle<CR>", desc = "Tableモード切替" },
@@ -189,8 +190,8 @@ return {
                         { "<leader><leader>r", [[:<c-u>%s/\v]], desc = "文字列置換 (正規表現)" },
                         { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
                         { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
-                        { "<leader><leader>f", ":lua require('picker').find_files_from_project_git_root( { search_file=\"\" })<left><left><left><left>", desc = "ファイル検索 (ファイルパスを指定)" },
-                        { "<leader><leader>g", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern=\"\" })<left><left><left><left>", desc = "Grep検索 (ファイルパスを指定)" },
+                        { "<leader><leader>f", ":lua require('picker').find_files_from_project_git_root( { search_dirs={\"\"}})<left><left><left><left>", desc = "ファイル検索 (ファイルパスを指定)" },
+                        { "<leader><leader>g", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern={\"!.git\", \"\"}})<left><left><left><left>", desc = "Grep検索 (ファイルパスを指定)" },
 
                     },
 
