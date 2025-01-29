@@ -9,6 +9,11 @@ return {
     -- align機能の追加
     "junegunn/vim-easy-align",
 
+    -- quickfixを利用した編集が可能になる
+    "thinca/vim-qfreplace",
+    -- quickfixを編集可能に変更する
+    "itchyny/vim-qfedit",
+
     -- 単語や演算子を反対の意味に切り替える
     {
         "AndrewRadev/switch.vim",
@@ -298,5 +303,5 @@ return {
                 },
             })
         end,
-    },
+    }
 }

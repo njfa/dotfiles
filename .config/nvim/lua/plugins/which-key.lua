@@ -65,6 +65,12 @@ return {
                 { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>]], desc = "g* (カーソルを移動しない)" },
                 { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]], desc = "g# (カーソルを移動しない)" },
 
+                { "qf", "<cmd>copen<CR>", desc = "quickfixを開く" },
+                { "qp", "<cmd>colder<CR>", desc = "前のquickfixを表示する" },
+                { "qn", "<cmd>cnewer<CR>", desc = "次のquickfixを表示する" },
+                { "H", "<cmd>cp<CR>", desc = "quickfixの前の要素に移動する" },
+                { "L", "<cmd>cn<CR>", desc = "quickfixの次の要素に移動する" },
+
                 { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
                 { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
                 { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
