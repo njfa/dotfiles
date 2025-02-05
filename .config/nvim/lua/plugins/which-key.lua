@@ -174,6 +174,14 @@ return {
                     },
 
                     {
+                        { "<leader>a",  group = "AI" },
+                        { "<leader>af",  group = "コード修正" },
+                        { "<leader>aa", "<cmd>CopilotChatToggle<cr>", desc = "Copilot chat panel (toggle)" },
+                        { "<leader>a.m", "<cmd>CopilotChatModels<cr>", desc = "Select Models" },
+                        { "<leader>a.a", "<cmd>CopilotChatAgents<cr>", desc = "Select Agents" },
+                    },
+
+                    {
                         { "<leader>x",  group = "Trouble" },
                         { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>",                             desc = "Diagnostics (Trouble)" },
                         { "<leader>xb", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",                desc = "Buffer Diagnostics (Trouble)" },
