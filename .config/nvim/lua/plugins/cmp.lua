@@ -17,6 +17,12 @@ return {
             -- 'hrsh7th/cmp-nvim-lsp-signature-help', -- lsp_signagureと役割が重複するのでコメントアウト
             'petertriho/cmp-git',
             'onsails/lspkind.nvim',
+            {
+                "zbirenbaum/copilot-cmp",
+                config = function()
+                    require("copilot_cmp").setup()
+                end
+            }
         },
         config = function()
             -- nvim-cmpの設定
@@ -28,6 +34,7 @@ return {
 
             local source_mapping = {
                 buffer = "[Buf]",
+                copilot = "[AI]",
                 nvim_lsp = "[LSP]",
                 -- vsnip = "[Snip]",
                 luasnip = "[Snip]",
@@ -37,14 +44,9 @@ return {
             }
 
             local has_words_before = function()
-                unpack = unpack or table.unpack
-                local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+                local line, col = table.unpack(vim.api.nvim_win_get_cursor(0))
                 return col ~= 0 and
-                vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
-            end
-
-            local feedkey = function(key, mode)
-                vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
+                    vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
             end
 
             cmp.setup({
@@ -124,24 +126,15 @@ return {
                             cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
                         elseif require('luasnip').jumpable(-1) then
                             require('luasnip').jump(-1)
-                        -- elseif vim.fn["vsnip#jumpable"](-1) == 1 then
-                        --     feedkey("<Plug>(vsnip-jump-prev)", "")
                         end
                     end, { "i", "s" }),
-                    -- ['<CR>'] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-                    -- ['<Tab>'] = vim.schedule_wrap(function(fallback)
-                    --     if cmp.visible() and has_words_before() then
-                    --         cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-                    --     else
-                    --         fallback()
-                    --     end
-                    -- end),
                 }),
 
                 sources = cmp.config.sources({
-                    { name = 'nvim_lsp' },
+                    { name = 'nvim_lsp', group_index = 2 },
+                    { name = 'copilot', group_index = 2 },
                     -- { name = 'vsnip' }, -- For vsnip users.
-                    { name = 'luasnip' }, -- For luasnip users.
+                    { name = 'luasnip', group_index = 2 }, -- For luasnip users.
                     -- { name = 'cmp_tabnine' },
                     { name = 'treesitter' },
                     -- { name = 'nvim_lsp_signature_help' },
