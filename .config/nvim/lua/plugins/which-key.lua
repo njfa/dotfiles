@@ -68,8 +68,8 @@ return {
                 { "qf", "<cmd>copen<CR>", desc = "quickfixを開く" },
                 { "qp", "<cmd>colder<CR>", desc = "前のquickfixを表示する" },
                 { "qn", "<cmd>cnewer<CR>", desc = "次のquickfixを表示する" },
-                { "H", "<cmd>cp<CR>", desc = "quickfixの前の要素に移動する" },
-                { "L", "<cmd>cn<CR>", desc = "quickfixの次の要素に移動する" },
+                { "H", "<cmd>cp<CR>zz", desc = "quickfixの前の要素に移動する" },
+                { "L", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
 
                 { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
                 { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
@@ -82,10 +82,10 @@ return {
                 { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
 
                 {
-                    { "mn", group = "ナンバリング" },
-                    { "mns", "<cmd>SetHeaderNumber<cr>", desc = "ナンバリングを適用" },
-                    { "mnu", "<cmd>UnsetHeaderNumber<cr>", desc = "ナンバリングを削除" },
-                    { "mnt", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替" },
+                    { "me", group = "ナンバリング" },
+                    { "mes", "<cmd>SetHeaderNumber<cr>", desc = "ナンバリングを適用" },
+                    { "meu", "<cmd>UnsetHeaderNumber<cr>", desc = "ナンバリングを削除" },
+                    { "met", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替" },
                 },
                 { "R", function() require('substitute').operator() end, desc = "指定したテキストオブジェクトを置換" },
 
