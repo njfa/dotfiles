@@ -59,8 +59,8 @@ return {
                     documentation = cmp.config.window.bordered(),
                 },
                 mapping = cmp.mapping.preset.insert({
-                    ['<C-p>'] = cmp.mapping.select_prev_item(),
-                    ['<C-n>'] = cmp.mapping.select_next_item(),
+                    ['<C-p>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
+                    ['<C-n>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
                     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
                     ['<C-f>'] = cmp.mapping.scroll_docs(4),
                     ['<C-Space>'] = cmp.mapping.complete(),
@@ -79,7 +79,7 @@ return {
 
                     ["<C-j>"] = cmp.mapping(function(fallback)
                         if cmp.visible() then
-                            cmp.select_next_item()
+                            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
                         elseif require('luasnip').expandable() then
                             require('luasnip').expand()
                         elseif require('luasnip').jumpable(1) then
@@ -95,7 +95,7 @@ return {
 
                     ["<C-k>"] = cmp.mapping(function()
                         if cmp.visible() then
-                            cmp.select_prev_item()
+                            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
                         elseif require('luasnip').jumpable(-1) then
                             require('luasnip').jump(-1)
                             -- elseif vim.fn["vsnip#jumpable"](-1) == 1 then
@@ -105,7 +105,7 @@ return {
 
                     ["<Tab>"] = cmp.mapping(function(fallback)
                         if cmp.visible() then
-                            cmp.select_next_item()
+                            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
                         elseif require('luasnip').expandable() then
                             require('luasnip').expand()
                         elseif require('luasnip').jumpable(1) then
@@ -121,7 +121,7 @@ return {
 
                     ["<S-Tab>"] = cmp.mapping(function()
                         if cmp.visible() then
-                            cmp.select_prev_item()
+                            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
                         elseif require('luasnip').jumpable(-1) then
                             require('luasnip').jump(-1)
                         -- elseif vim.fn["vsnip#jumpable"](-1) == 1 then
