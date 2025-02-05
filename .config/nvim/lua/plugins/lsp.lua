@@ -73,7 +73,7 @@ return {
                         lightbulb = {
                             enable = true,
                             sign = false,
-                            virtual_text = true,
+                            virtual_text = false,
                             enable_in_insert = false,
                         },
                         outline = {
