@@ -2,10 +2,20 @@ local function set_numbering(lines, cursor_line)
     local numbering = { 0, 0, 0, 0, 0, 0 }
     local level = 0
     local start_line = nil
+    local in_code_block = false
+
+    -- Reset in_code_block state
+    for i = 1, cursor_line do
+        if lines[i]:match("^```") then
+            in_code_block = not in_code_block
+        end
+    end
 
     -- Find the start line of the current header
     for i = cursor_line, 1, -1 do
-        if lines[i]:match("^#+") then
+        if lines[i]:match("^```") then
+            in_code_block = not in_code_block
+        elseif not in_code_block and lines[i]:match("^#+") then
             start_line = i
             level = #lines[i]:match("^#+")
             break
@@ -16,19 +26,23 @@ local function set_numbering(lines, cursor_line)
 
     -- Apply numbering to the current header section
     for i = start_line, #lines do
-        local header_level = lines[i]:match("^#+")
-        if header_level then
-            local current_level = #header_level
-            if current_level < level then
-                break
-            else
-                for j = current_level + 1, 6 do
-                    numbering[j] = 0
-                end
+        if lines[i]:match("^```") then
+            in_code_block = not in_code_block
+        elseif not in_code_block then
+            local header_level = lines[i]:match("^#+")
+            if header_level then
+                local current_level = #header_level
+                if current_level < level then
+                    break
+                else
+                    for j = current_level + 1, 6 do
+                        numbering[j] = 0
+                    end
 
-                numbering[current_level] = numbering[current_level] + 1
-                local numbering_str = table.concat(numbering, ".", level, current_level)
-                lines[i] = lines[i]:gsub("^#+%s*[%d+%.]*%s*", header_level .. " " .. numbering_str .. ". ")
+                    numbering[current_level] = numbering[current_level] + 1
+                    local numbering_str = table.concat(numbering, ".", level, current_level)
+                    lines[i] = lines[i]:gsub("^#+%s*[%d+%.]*%s*", header_level .. " " .. numbering_str .. ". ")
+                end
             end
         end
     end
@@ -36,14 +50,22 @@ local function set_numbering(lines, cursor_line)
 end
 
 local function unset_numbering(lines, cursor_line)
-    local start_line = nil
-    local level = 0
+    local in_code_block = false
+
+    -- Reset in_code_block state
+    for i = 1, cursor_line do
+        if lines[i]:match("^```") then
+            in_code_block = not in_code_block
+        end
+    end
 
     -- Find the start line of the current header
+    local start_line = nil
     for i = cursor_line, 1, -1 do
-        if lines[i]:match("^#+") then
+        if lines[i]:match("^```") then
+            in_code_block = not in_code_block
+        elseif not in_code_block and lines[i]:match("^#+") then
             start_line = i
-            level = #lines[i]:match("^#+")
             break
         end
     end
@@ -52,13 +74,12 @@ local function unset_numbering(lines, cursor_line)
 
     -- Remove numbering from the current header section
     for i = start_line, #lines do
-        local header_level = lines[i]:match("^#+")
-        if header_level then
-            local current_level = #header_level
-            if current_level < level then
-                break
-            elseif current_level >= level then
-                lines[i] = lines[i]:gsub("^#+%s*[%d+%.]+%s*", header_level .. " ")
+        if lines[i]:match("^```") then
+            in_code_block = not in_code_block
+        elseif not in_code_block then
+            local header_level = lines[i]:match("^#+")
+            if header_level then
+                lines[i] = lines[i]:gsub("^(#+)%s*[%d+%.]*%s*", "%1 ")
             end
         end
     end
