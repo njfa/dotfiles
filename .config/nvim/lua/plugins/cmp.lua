@@ -8,6 +8,7 @@ return {
             'hrsh7th/cmp-buffer',
             'hrsh7th/cmp-path',
             'hrsh7th/cmp-cmdline',
+            'hrsh7th/cmp-nvim-lsp-signature-help',
             'L3MON4D3/LuaSnip',
             'saadparwaiz1/cmp_luasnip',
             -- 'hrsh7th/cmp-vsnip',
@@ -131,14 +132,12 @@ return {
                 }),
 
                 sources = cmp.config.sources({
-                    { name = 'nvim_lsp', group_index = 2 },
-                    { name = 'copilot', group_index = 2 },
-                    -- { name = 'vsnip' }, -- For vsnip users.
-                    { name = 'luasnip', group_index = 2 }, -- For luasnip users.
-                    -- { name = 'cmp_tabnine' },
-                    { name = 'treesitter' },
-                    -- { name = 'nvim_lsp_signature_help' },
+                    { name = 'copilot' },
+                    { name = 'nvim_lsp_signature_help' },
+                    { name = 'nvim_lsp' },
+                    { name = 'luasnip' }, -- For luasnip users.
                 }, {
+                    { name = 'treesitter' },
                     { name = 'buffer' },
                 }),
                 formatting = {
@@ -161,7 +160,7 @@ return {
                     })
                 },
                 sorting = {
-                    priority_weight = 2,
+                    priority_weight = 3,
                 },
             })
 
