@@ -79,6 +79,7 @@ end
 local path_to_mason_packages = vim.fn.stdpath('data') .. "/mason/packages"
 
 local path_to_openjdk17 = vim.fn.glob(path_to_mason_packages .. "/openjdk-17/jdk-17.*/", true)
+local path_to_openjdk21 = vim.fn.glob(path_to_mason_packages .. "/openjdk-21/jdk-21.*/", true)
 local path_to_jdtls = path_to_mason_packages .. "/jdtls"
 local path_to_jdebug = path_to_mason_packages .. "/java-debug-adapter"
 local path_to_jtest = path_to_mason_packages .. "/java-test"
@@ -153,7 +154,7 @@ local config = {
 }
 
 config.cmd = {
-    path_to_openjdk17 .. 'bin/java', -- or '/path/to/java17_or_newer/bin/java'
+    path_to_openjdk21 .. 'bin/java', -- or '/path/to/java17_or_newer/bin/java'
     -- depends on if `java` is in your $PATH env variable and if it points to the right version.
 
     "-Declipse.application=org.eclipse.jdt.ls.core.id1",
