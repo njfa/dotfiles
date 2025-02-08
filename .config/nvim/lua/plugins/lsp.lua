@@ -250,7 +250,7 @@ return {
                     "markdown",
                     "markdownlint",
                     -- java
-                    "openjdk-17",
+                    "openjdk-21",
                     "jdtls",
                     "lombok-nightly",
                     "google-java-format",
