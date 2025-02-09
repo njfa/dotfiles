@@ -115,9 +115,10 @@ return {
                         on_attach = function(_, bufnr)
                             require("common").on_attach_lsp(_, bufnr, server_name)
                         end,
-                        capabilities = require("cmp_nvim_lsp").default_capabilities(
-                            vim.lsp.protocol.make_client_capabilities()
-                        ),
+                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        -- capabilities = require("cmp_nvim_lsp").default_capabilities(
+                        --     vim.lsp.protocol.make_client_capabilities()
+                        -- ),
                     })
                 end,
 
@@ -133,9 +134,10 @@ return {
                         on_attach = function(_, bufnr)
                             require("common").on_attach_lsp(_, bufnr, "lua_ls")
                         end,
-                        capabilities = require("cmp_nvim_lsp").default_capabilities(
-                            vim.lsp.protocol.make_client_capabilities()
-                        ),
+                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        -- capabilities = require("cmp_nvim_lsp").default_capabilities(
+                        --     vim.lsp.protocol.make_client_capabilities()
+                        -- ),
                     })
                 end,
 
@@ -209,9 +211,10 @@ return {
                         on_attach = function(_, bufnr)
                             require("common").on_attach_lsp(_, bufnr, "pylsp")
                         end,
-                        capabilities = require("cmp_nvim_lsp").default_capabilities(
-                            vim.lsp.protocol.make_client_capabilities()
-                        ),
+                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        -- capabilities = require("cmp_nvim_lsp").default_capabilities(
+                        --     vim.lsp.protocol.make_client_capabilities()
+                        -- ),
                     })
                 end,
             })
@@ -291,45 +294,45 @@ return {
         end,
     },
 
-    {
-        "ray-x/lsp_signature.nvim",
-        event = "VeryLazy",
-        opts = {},
-        config = function(_, opts)
-            opts.bind = true
-            opts.handler_opts = {
-                border = "rounded",
-            }
-            opts.hint_prefix = "󱄑 "
-            -- opts.hint_prefix = " "
-            opts.transparency = 10
-            opts.max_width = 120
-            opts.floating_window_off_x = function()             -- adjust float windows x position.
-                local colnr = vim.api.nvim_win_get_cursor(0)[2] -- buf col number
-                return colnr
-                -- return vim.fn.wincol()
-            end
-            opts.floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
-                -- local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
-                local pumheight = vim.o.pumheight
-                local winline = vim.fn.winline() -- line number in the window
-                local winheight = vim.fn.winheight(0)
+    -- {
+    --     "ray-x/lsp_signature.nvim",
+    --     event = "VeryLazy",
+    --     opts = {},
+    --     config = function(_, opts)
+    --         opts.bind = true
+    --         opts.handler_opts = {
+    --             border = "rounded",
+    --         }
+    --         opts.hint_prefix = "󱄑 "
+    --         -- opts.hint_prefix = " "
+    --         opts.transparency = 10
+    --         opts.max_width = 120
+    --         opts.floating_window_off_x = function()             -- adjust float windows x position.
+    --             local colnr = vim.api.nvim_win_get_cursor(0)[2] -- buf col number
+    --             return colnr
+    --             -- return vim.fn.wincol()
+    --         end
+    --         opts.floating_window_off_y = function() -- adjust float windows y position. e.g. set to -2 can make floating window move up 2 lines
+    --             -- local linenr = vim.api.nvim_win_get_cursor(0)[1] -- buf line number
+    --             local pumheight = vim.o.pumheight
+    --             local winline = vim.fn.winline() -- line number in the window
+    --             local winheight = vim.fn.winheight(0)
 
-                -- window top
-                if winline - 1 < pumheight then
-                    return pumheight
-                end
+    --             -- window top
+    --             if winline - 1 < pumheight then
+    --                 return pumheight
+    --             end
 
-                -- window bottom
-                if winheight - winline < pumheight then
-                    return -pumheight
-                end
-                return 0
-            end
+    --             -- window bottom
+    --             if winheight - winline < pumheight then
+    --                 return -pumheight
+    --             end
+    --             return 0
+    --         end
 
-            require("lsp_signature").setup(opts)
-        end,
-    },
+    --         require("lsp_signature").setup(opts)
+    --     end,
+    -- },
 
     -- LSPの結果を一覧表示
     {
