@@ -2,7 +2,7 @@ return {
     -- easymotion likeな見た目のジャンプ機能
     {
         'smoka7/hop.nvim',
-        version = 'v2.5.1', -- optional but strongly recommended
+        version = '*', -- optional but strongly recommended
         opts = {
             yank_register = "*",
             keys = 'asdfghjklweruioxcvm,.'
@@ -16,7 +16,32 @@ return {
             'smoka7/hop.nvim',
         }
     },
-
+    {
+        "folke/flash.nvim",
+        event = "VeryLazy",
+        config = function()
+            require("flash").setup({
+                labels = "asdfghjklwertyuioxcvbnm,.",
+                label = {
+                    uppercase = true
+                },
+                modes = {
+                    char = {
+                        keys = { "f", "F", [";"] = "<right>", [","] = "<left>" },
+                    }
+                }
+            })
+        end,
+        -- opts = {},
+        -- stylua: ignore
+        -- keys = {
+        --     { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+        --     { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+        --     { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+        --     { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+        --     { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+        -- },
+    },
     {
         "andymass/vim-matchup",
         init = function()

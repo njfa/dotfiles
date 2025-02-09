@@ -199,8 +199,8 @@ return {
                     wk.add({
                         mode = { "n" },
                         buffer = bufnr,
-                        { "{", "<cmd>AerialNext<CR>", desc = "Next element" },
-                        { "}", "<cmd>AerialPrev<CR>", desc = "Prev element" },
+                        -- { "{", "<cmd>AerialNext<CR>", desc = "Next element" },
+                        -- { "}", "<cmd>AerialPrev<CR>", desc = "Prev element" },
                         -- ["["] = { "<cmd>lua require('aerial').next_up()<CR>", "Next up element"},
                         -- ["]"] = { "<cmd>lua require('aerial').prev_up()<CR>", "Prev up element"},
                     })
@@ -208,7 +208,7 @@ return {
             })
 
             map('n', '(', '<cmd>AerialToggle!<CR>', {})
-            map('n', ')', '<cmd>AerialNavToggle<CR>', {})
+            -- map('n', ')', '<cmd>AerialNavToggle<CR>', {})
         end
     },
 
