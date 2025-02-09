@@ -18,6 +18,14 @@ return {
             -- require('plugins.heirline').setup()
 
             vim.cmd.colorscheme("tokyonight")
+            vim.cmd.highlight({ "BlinkCmpMenu", "guibg=#202a42"})
+            vim.cmd.highlight({ "BlinkCmpMenuSelection", "guibg=#324268"})
+            vim.cmd.highlight({ "BlinkCmpDoc", "guibg=#202a42"})
+            vim.cmd.highlight({ "BlinkCmpDocBorder", "guibg=#202a42"})
+            vim.cmd.highlight({ "BlinkCmpDocSeparator", "guibg=#202a42"})
+            vim.cmd.highlight({ "BlinkCmpSignatureHelp", "guibg=#202a42"})
+            vim.cmd.highlight({ "BlinkCmpSignatureHelpBorder", "guibg=#202a42"})
+            vim.cmd.highlight({ "BlinkCmpSignatureHelpActiveParameter", "guibg=#324268"})
         end
     },
 
