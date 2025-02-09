@@ -9,7 +9,6 @@ return {
     end,
     config = function()
         local wk = require("which-key")
-        local hop = require('hop')
         local conform = require("conform")
 
         wk.add({
@@ -21,12 +20,11 @@ return {
                 { "n", 'nzz', desc = "次の検索結果へ" },
                 { "N", 'Nzz', desc = "前の検索結果へ" },
 
-                { "g0", function() hop.hint_lines_skip_whitespace({}) end, desc = "任意の行頭へ移動（空行は無視）" },
-                { "g^", function() hop.hint_lines({}) end, desc = "任意の行頭へ移動" },
-                { "t", function() hop.hint_camel_case({ current_line_only = false }) end, desc = "任意の単語へ移動" },
-                { "f", function() hop.hint_char1({ current_line_only = true }) end, desc = "指定文字へ移動 (行中)" },
-                { "F", function() hop.hint_char1({ current_line_only = false }) end, desc = "指定文字へ移動 (全体)" },
-
+                { ")", function() require('hop').hint_lines_skip_whitespace({}) end, desc = "任意の行頭へ移動（空行は無視）" },
+                { "t", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require'hop.hint'.HintPosition.BEGIN }) end, desc = "任意の単語へ移動" },
+                { "T", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require'hop.hint'.HintPosition.END }) end, desc = "任意の単語へ移動" },
+                { "<Up>", "<cmd>HopVerticalBC<cr>", desc = "任意の行へ移動（上）" },
+                { "<Down>", "<cmd>HopVerticalAC<cr>", desc = "任意の行へ移動（下）" },
                 {
                     { "m", group = "ファイル編集" },
                     { "mm", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
@@ -54,6 +52,8 @@ return {
                 { "0", "^", desc = "行の先頭文字に移動" },
                 { "^", "0", desc = "行頭に移動" },
 
+                { "qq", "<cmd>q<cr>", desc = "ウィンドウを閉じる" },
+
                 { "<C-Up>", '"zdd<Up>"zP', desc = "カーソル行を1行移動 (上)" },
                 { "<C-Down>", '"zdd"zp', desc = "カーソル行を1行移動 (下)" },
 
@@ -65,11 +65,9 @@ return {
                 { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>]], desc = "g* (カーソルを移動しない)" },
                 { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]], desc = "g# (カーソルを移動しない)" },
 
-                { "qf", "<cmd>copen<CR>", desc = "quickfixを開く" },
-                { "qp", "<cmd>colder<CR>", desc = "前のquickfixを表示する" },
-                { "qn", "<cmd>cnewer<CR>", desc = "次のquickfixを表示する" },
-                { "H", "<cmd>cp<CR>zz", desc = "quickfixの前の要素に移動する" },
-                { "L", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
+                { "<leader>q", "<cmd>copen<CR>", desc = "quickfixを開く" },
+                { "{", "<cmd>cp<CR>zz", desc = "quickfixの前の要素に移動する" },
+                { "}", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
 
                 { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
                 { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
@@ -92,11 +90,10 @@ return {
 
                 { "<Esc>", ":noh<cr>", desc = "検索結果のハイライトを削除" },
 
-                { "<A-s>", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
-                { "<A-m>", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (right)" },
+                { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
 
-                { "<C-p>", "<cmd>tabp<cr>", desc = "前のタブに移動" },
-                { "<C-n>", "<cmd>tabn<cr>", desc = "次のタブに移動" },
+                { "H", "<cmd>tabp<cr>", desc = "前のタブに移動" },
+                { "L", "<cmd>tabn<cr>", desc = "次のタブに移動" },
                 { "<C-h>", "<cmd>BufferLineCyclePrev<cr>", desc = "前のバッファに移動" },
                 { "<C-l>", "<cmd>BufferLineCycleNext<cr>", desc = "次のバッファに移動" },
 
@@ -111,34 +108,33 @@ return {
 
                 {
                     { "<leader>", group = "leader" },
-                    { "<leader>b", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
                     { "<leader>c", '<cmd>enew<cr>', desc = "バッファ作成" },
                     { "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", desc = "バッファを閉じる" },
                     { "<leader>e", "<cmd>Neotree float reveal<CR>", desc = "ファイラーを開く (floating window)" },
+                    { "<leader>i", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
                     { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
                     { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換" },
                     { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
                     { "<leader>u", "<cmd>UndotreeToggle<cr>", desc = "ファイル編集履歴 表示切替" },
                     { "<leader>w", "<cmd>w<cr>", desc = "保存" },
-                    { "<leader>q", "<cmd>q<cr>", desc = "ウィンドウを閉じる" },
                     { "<leader>y", "<cmd>HopYankChar1<CR>", desc = "コピー（場所選択）" },
 
+                    { "<leader>b", "<cmd>Telescope buffers<CR>", desc = "タブ一覧を開く" },
                     { "<leader>f", function() require('picker').find_files_from_project_git_root() end, desc = "ファイル検索" },
                     { "<leader>g", function() require('picker').live_grep_from_project_git_root() end, desc = "Grep検索" },
                     { "<leader>h", function() require('picker').find_files_from_project_git_root({ oldfiles = true }) end, desc = "ファイル閲覧履歴" },
-                    { "<leader>i", function() require('telescope.builtin').diagnostics({ bufnr = 0 }) end, desc = "Diagnostics (バッファ内)" },
                     { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
                     { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
                     { "<leader>s", function() require('treesj').split({ split = { recursive = true } }) end, desc = "行分割" },
 
                     { "<leader>/", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "バッファ内検索" },
-                    { "<leader>:", function() require('picker').command_history() end, desc = "コマンド履歴" },
-                    { "<leader>.", function() require('reload').reload() end, desc = "Neovim設定ファイル一覧" },
+                    { "<leader>a", function() require('picker').command_history() end, desc = "コマンド履歴" },
 
                     {
-                        { "<leader>,", group = "設定変更" },
+                        { "<leader>.", group = "設定変更" },
+                        { "<leader>..", function() require('reload').reload() end, desc = "Neovim設定ファイル一覧" },
                         {
-                            "<leader>,t",
+                            "<leader>.t",
                             function()
                                 vim.bo.expandtab = not (vim.bo.expandtab)
                                 vim.notify("インデント文字: " .. (vim.bo.expandtab and "space" or "tab"))
@@ -146,7 +142,7 @@ return {
                             desc = "インデント文字の切替 (space <-> tab)",
                         },
                         {
-                            "<leader>,o",
+                            "<leader>.o",
                             function()
                                 if vim.bo.modifiable then
                                     if vim.bo.fileformat == "unix" then
@@ -163,22 +159,14 @@ return {
                             desc = "ファイルタイプの切替 (unix <-> dos)",
                         },
                         {
-                            "<leader>,w",
+                            "<leader>yw",
                             function()
                                 vim.bo.shiftwidth = (vim.bo.shiftwidth % 4) + 2
                                 vim.notify("インデント幅: " .. tostring(vim.bo.shiftwidth))
                             end,
                             desc = "インデント幅の変更 (2 <-> 4)",
                         },
-                        { "<leader>,f", "<cmd>Telescope filetypes<CR>", desc = "ファイルタイプの変更" }
-                    },
-
-                    {
-                        { "<leader>a",  group = "AI" },
-                        { "<leader>af",  group = "コード修正" },
-                        { "<leader>aa", "<cmd>CopilotChatToggle<cr>", desc = "Copilot chat panel (toggle)" },
-                        { "<leader>a.m", "<cmd>CopilotChatModels<cr>", desc = "Select Models" },
-                        { "<leader>a.a", "<cmd>CopilotChatAgents<cr>", desc = "Select Agents" },
+                        { "<leader>.f", "<cmd>Telescope filetypes<CR>", desc = "ファイルタイプの変更" }
                     },
 
                     {
@@ -193,11 +181,11 @@ return {
 
                     {
                         { "<leader><leader>", group = "leader" },
-                        { "<leader><leader>b", "<cmd>BufferLinePick<CR>", desc = "タブ指定移動" },
                         { "<leader><leader>c", '<cmd>tabnew<cr>', desc = "タブ作成" },
                         { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
+                        { "<leader><leader>i", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (right)" },
                         { "<leader><leader>h", "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", desc = "ファイル閲覧履歴 (頻度考慮)" },
-                        { "<leader><leader>i", "<cmd>lua require('telescope.builtin').diagnostics({})<CR>", desc = "Diagnostics (プロジェクト全体)" },
+                        { "<leader><leader>e", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
                         { "<leader><leader>j", require('treesj').join, desc = "行結合" },
                         { "<leader><leader>m", require('treesj').toggle, desc = "行分割/結合 切替" },
                         { "<leader><leader>s", require('treesj').split, desc = "行分割" },
@@ -290,6 +278,16 @@ return {
                     expr = true,
                     desc = "直前の入力を大文字へ変換"
                 }
+            },
+
+            {
+                mode = { "o" },
+                { "r", function() require("flash").remote() end, desc = "Remote Flash" },
+            },
+
+            {
+                mode = { "o", "x" },
+                { "R", function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
             }
         })
 

@@ -29,6 +29,8 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "qf" },
     callback = function()
         buf_map(0, 'n', "q", "<cmd>cclose<cr>", { noremap = true })
+        buf_map(0, 'n', "<C-n>", "<cmd>cnewer<CR>", { noremap = true })
+        buf_map(0, 'n', "<C-p>", "<cmd>colder<CR>", { noremap = true })
     end,
 })
 
