@@ -257,7 +257,7 @@ zle -N fbr
 zle -N fshow
 zle -N fssh
 bindkey '^f' fzf-z-search
-bindkey '^g' cw
+# bindkey '^g' cw
 bindkey '^b' fbr
 bindkey '^o' fshow
 bindkey '^x' fssh
