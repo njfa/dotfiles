@@ -33,6 +33,17 @@ return {
                 },
 
                 {
+                    { "<leader>k",  group = "AI" },
+                    { "<leader>kk", "[[:<c-u>CodeCompanion /buffer ]]", desc = "Inline Assistantを実行" },
+                    { "<leader>ke", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
+                    { "<leader>kr", "<cmd>CodeCompanion /review<cr>", desc = "コードレビュー" },
+                    { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントの作成" },
+                    { "<leader>kc", "<cmd>CodeCompanion /commit<cr>", desc = "コミットメッセージの作成" },
+                    { "<leader>kf", "<cmd>CodeCompanion /fix<cr>", desc = "コードの修正案作成" },
+                    { "<leader>kl", "<cmd>CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
+                },
+
+                {
                     { "s", group = "Sandwich" },
                     { "sa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
                     { "sd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
@@ -98,6 +109,8 @@ return {
                 { "L", "<cmd>tabn<cr>", desc = "次のタブに移動" },
                 { "<C-h>", "<cmd>BufferLineCyclePrev<cr>", desc = "前のバッファに移動" },
                 { "<C-l>", "<cmd>BufferLineCycleNext<cr>", desc = "次のバッファに移動" },
+
+                { "<A-s>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "AIチャットを開く" },
 
                 {
                     { "<C-w>", group = "画面操作" },
@@ -292,7 +305,6 @@ return {
                 { "R", function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
             }
         })
-
 
         wk.setup({
             preset = "modern",
