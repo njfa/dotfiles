@@ -21,8 +21,10 @@ return {
                 { "N", 'Nzz', desc = "前の検索結果へ" },
 
                 { ")", function() require('hop').hint_lines_skip_whitespace({}) end, desc = "任意の行頭へ移動（空行は無視）" },
-                { "t", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require'hop.hint'.HintPosition.BEGIN }) end, desc = "任意の単語へ移動" },
-                { "T", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require'hop.hint'.HintPosition.END }) end, desc = "任意の単語へ移動" },
+                { "t", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require 'hop.hint'
+                    .HintPosition.BEGIN }) end, desc = "任意の単語へ移動" },
+                { "T", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require 'hop.hint'
+                    .HintPosition.END }) end, desc = "任意の単語へ移動" },
                 { "<Up>", "<cmd>HopVerticalBC<cr>", desc = "任意の行へ移動（上）" },
                 { "<Down>", "<cmd>HopVerticalAC<cr>", desc = "任意の行へ移動（下）" },
                 {
