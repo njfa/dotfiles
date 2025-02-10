@@ -140,7 +140,7 @@ return {
             hl = { fg = "comment" },
             {
                 provider = function()
-                    local status_ok, telescope = pcall(require, "telescope")
+                    local status_ok, _ = pcall(require, "telescope")
                     if not status_ok then
                         return vim.fn.getcwd()
                     end
@@ -301,7 +301,7 @@ return {
             {
                 provider = function()
                     local names = {}
-                    for i, server in pairs(vim.lsp.get_active_clients({ bufnr = 0 })) do
+                    for _, server in pairs(vim.lsp.get_active_clients({ bufnr = 0 })) do
                         table.insert(names, server.name)
                     end
                     return table.concat(names, " ┊ ")
@@ -322,46 +322,49 @@ return {
                     self.status_dict.changed ~= 0
             end,
 
-            SegmentSeparator,
-            Spacer,
-            { -- git branch name
-                provider = function(self)
-                    -- return "   " .. self.status_dict.head
-                    return " " .. self.status_dict.head
-                end,
-                hl = { bold = true }
-            },
-            Spacer,
             {
-                provider = function(self)
-                    if self.has_changes == true then
-                        return "┊ "
-                    else
-                        return ""
-                    end
-                end,
-                hl = { fg = "comment" },
-            },
-            {
-                provider = function(self)
-                    local count = self.status_dict.added or 0
-                    return count > 0 and (" " .. count .. " ")
-                end,
-                hl = { fg = "teal" },
-            },
-            {
-                provider = function(self)
-                    local count = self.status_dict.removed or 0
-                    return count > 0 and (" " .. count .. " ")
-                end,
-                hl = { fg = "red" },
-            },
-            {
-                provider = function(self)
-                    local count = self.status_dict.changed or 0
-                    return count > 0 and ("󰝤 " .. count .. " ")
-                end,
-                hl = { fg = "orange" },
+                SegmentSeparator,
+                Spacer,
+                { -- git branch name
+                    provider = function(self)
+                        -- return "   " .. self.status_dict.head
+                        return " " .. self.status_dict.head
+                    end,
+                    hl = { bold = true }
+                },
+                Spacer,
+                {
+                    provider = function(self)
+                        if self.has_changes == true then
+                            return "┊ "
+                        else
+                            return ""
+                        end
+                    end,
+                    hl = { fg = "comment" },
+                },
+                {
+                    provider = function(self)
+                        local count = self.status_dict.added or 0
+                        return count > 0 and (" " .. count .. " ")
+                    end,
+                    hl = { fg = "teal" },
+                },
+                {
+                    provider = function(self)
+                        local count = self.status_dict.removed or 0
+                        return count > 0 and (" " .. count .. " ")
+                    end,
+                    hl = { fg = "red" },
+                },
+                {
+                    provider = function(self)
+                        local count = self.status_dict.changed or 0
+                        return count > 0 and ("󰝤 " .. count .. " ")
+                    end,
+                    hl = { fg = "orange" },
+                }
+
             }
         }
 
@@ -419,7 +422,7 @@ return {
 
         local DAPMessages = {
             condition = function()
-                local status_ok, dap = pcall(require, "dap")
+                local status_ok, _ = pcall(require, "dap")
                 if not status_ok then
                     return false
                 end
