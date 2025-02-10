@@ -99,7 +99,11 @@ return {
                             },
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
@@ -162,7 +166,11 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
@@ -203,7 +211,11 @@ Use Markdown formatting and include the programming language name at the start o
                         prompts = {
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
@@ -262,7 +274,11 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
@@ -312,7 +328,11 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
@@ -401,7 +421,11 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
@@ -480,7 +504,11 @@ Use Markdown formatting and include the programming language name at the start o
                         prompts = {
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
@@ -514,7 +542,11 @@ Use Markdown formatting and include the programming language name at the start o
                         prompts = {
                             {
                                 role = "user",
-                                content = [[依頼内容への回答は日本語で作成してください。]],
+                                content = [[■前提
+1. 回答はすべて日本語で作成してください。
+2. ですます調ではなく、である調で回答してください。
+
+■依頼内容]],
                             },
                             {
                                 role = "user",
