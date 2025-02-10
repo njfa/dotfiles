@@ -16,7 +16,18 @@ return {
         dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
+            "j-hui/fidget.nvim",
+            {
+                "echasnovski/mini.diff",
+                version = false,
+                config = function()
+                    require("mini.diff").setup()
+                end
+            }
         },
+        init = function()
+            require("plugins.codecompanion.fidget-spinner"):init()
+        end,
         config = function()
             require("codecompanion").setup({
                 opts = {
@@ -24,6 +35,9 @@ return {
                 },
                 strategies = {
                     chat = {
+                        adapter = "copilot",
+                    },
+                    cmd = {
                         adapter = "copilot",
                     },
                     inline = {
@@ -50,6 +64,10 @@ return {
                             show_default_prompt_library = true, -- Show the default prompt library in the action palette?
                         },
                     },
+                    diff = {
+                        enabled = true,
+                        provider = "mini_diff"
+                    }
                 },
                 prompt_library = {
                     ["Explain"] = {
@@ -81,12 +99,16 @@ return {
                             },
                             {
                                 role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
+                            },
+                            {
+                                role = "user",
                                 content = function(context)
                                     local code = require("codecompanion.helpers.actions").get_code(context.start_line,
                                         context.end_line)
 
                                     return string.format(
-                                        [[バッファ %d 中の下記コードを日本語で説明してください。
+                                        [[bufnr が %d である #buffer 中の下記コードを説明してください。
 
 ```%s
 %s
@@ -105,13 +127,13 @@ return {
                     },
                     ["Fix code"] = {
                         strategy = "chat",
-                        description = "選択したコードの修正をお願いする",
+                        description = "選択したコードの修正案の作成をお願いする",
                         opts = {
                             index = 7,
                             is_default = true,
                             is_slash_cmd = false,
                             modes = { "v" },
-                            short_name = "fix",
+                            short_name = "fix_plan",
                             auto_submit = true,
                             user_prompt = false,
                             stop_context_insertion = true,
@@ -140,12 +162,16 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
+                            },
+                            {
+                                role = "user",
                                 content = function(context)
                                     local code = require("codecompanion.helpers.actions").get_code(context.start_line,
                                         context.end_line)
 
                                     return string.format(
-                                        [[バッファ %d 中の下記コードを修正してください。修正内容は日本語で説明してください。
+                                        [[bufnr が %d である #buffer の下記コードの修正案を作成してください。修正内容の説明もお願いします。
 
 ```%s
 %s
@@ -176,15 +202,8 @@ Use Markdown formatting and include the programming language name at the start o
                         },
                         prompts = {
                             {
-                                role = "system",
-                                content = [[When requesting documentation, follow these steps:
-
-1. Identify the programming language.
-2. Describe the purpose of the code and reference core concepts from the programming language.
-3. Explain each function or significant block of code, including parameters and return values.]],
-                                opts = {
-                                    visible = false,
-                                },
+                                role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
                             },
                             {
                                 role = "user",
@@ -193,7 +212,7 @@ Use Markdown formatting and include the programming language name at the start o
                                         context.end_line)
 
                                     return string.format(
-                                        [[バッファ %d 中の下記コードに日本語のコメントドキュメントを追記してください。
+                                        [[@editor bufnr が %d である #buffer 中の下記コードにコメントドキュメントを追記してください。
 
 ```%s
 %s
@@ -243,12 +262,16 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
+                            },
+                            {
+                                role = "user",
                                 content = function(context)
                                     local code = require("codecompanion.helpers.actions").get_code(context.start_line,
                                         context.end_line)
 
                                     return string.format(
-                                        [[バッファ %d 中の下記コードのUnit testsを作成してください。作成した内容は日本語で説明してください。
+                                        [[bufnr が %d である #buffer 中の下記コードのUnit testsを作成してください。作成した内容の説明もお願いします。
 
 ```%s
 %s
@@ -289,6 +312,10 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
+                            },
+                            {
+                                role = "user",
                                 content = function(context)
                                     local diagnostics = require("codecompanion.helpers.actions").get_diagnostics(
                                         context.start_line,
@@ -317,6 +344,7 @@ Use Markdown formatting and include the programming language name at the start o
                                         [[プログラミング言語は %s です。Diagnosticのメッセージは下記の通りです。
 
 %s
+
 ]],
                                         context.filetype,
                                         concatenated_diagnostics
@@ -333,12 +361,102 @@ Use Markdown formatting and include the programming language name at the start o
                                     )
                                     return string.format(
                                         [[
-対象のコードは下記の通りです。Diagnosticの指摘内容を日本語で説明してください。
+対象のコードは下記の通りです。Diagnosticの指摘内容を説明してください。
 
 ```%s
 %s
 ```
 ]],
+                                        context.filetype,
+                                        code
+                                    )
+                                end,
+                                opts = {
+                                    contains_code = true,
+                                },
+                            },
+                        },
+                    },
+                    ["Fix LSP Diagnostics"] = {
+                        strategy = "chat",
+                        description = "Fix the LSP diagnostics for the selected code",
+                        opts = {
+                            index = 19,
+                            is_default = true,
+                            is_slash_cmd = false,
+                            modes = { "v" },
+                            short_name = "fix_diagnostics",
+                            auto_submit = true,
+                            user_prompt = false,
+                            stop_context_insertion = true,
+                        },
+                        prompts = {
+                            {
+                                role = "system",
+                                content =
+                                [[You are an expert coder and helpful assistant who can help debug code diagnostics, such as warning and error messages. When appropriate, give solutions with code snippets as fenced codeblocks with a language identifier to enable syntax highlighting.]],
+                                opts = {
+                                    visible = false,
+                                },
+                            },
+                            {
+                                role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
+                            },
+                            {
+                                role = "user",
+                                content = function(context)
+                                    local diagnostics = require("codecompanion.helpers.actions").get_diagnostics(
+                                        context.start_line,
+                                        context.end_line,
+                                        context.bufnr
+                                    )
+
+                                    local concatenated_diagnostics = ""
+                                    for i, diagnostic in ipairs(diagnostics) do
+                                        concatenated_diagnostics = concatenated_diagnostics
+                                            .. i
+                                            .. ". Issue "
+                                            .. i
+                                            .. "\n  - Location: Line "
+                                            .. diagnostic.line_number
+                                            .. "\n  - Buffer: "
+                                            .. context.bufnr
+                                            .. "\n  - Severity: "
+                                            .. diagnostic.severity
+                                            .. "\n  - Message: "
+                                            .. diagnostic.message
+                                            .. "\n"
+                                    end
+
+                                    return string.format(
+                                        [[プログラミング言語は %s です。Diagnosticのメッセージは下記の通りです。
+
+%s
+
+]],
+                                        context.filetype,
+                                        concatenated_diagnostics
+                                    )
+                                end,
+                            },
+                            {
+                                role = "user",
+                                content = function(context)
+                                    local code = require("codecompanion.helpers.actions").get_code(
+                                        context.start_line,
+                                        context.end_line,
+                                        { show_line_numbers = true }
+                                    )
+                                    return string.format(
+                                        [[
+@editor bufnr が %d である #buffer の対象コードは下記の通りです。Diagnosticの指摘内容を解消してください。
+
+```%s
+%s
+```
+]],
+                                        context.bufnr,
                                         context.filetype,
                                         code
                                     )
@@ -356,21 +474,59 @@ Use Markdown formatting and include the programming language name at the start o
                             index = 10,
                             is_default = true,
                             is_slash_cmd = true,
-                            short_name = "commit",
+                            short_name = "commit_staged",
                             auto_submit = true,
                         },
                         prompts = {
                             {
                                 role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
+                            },
+                            {
+                                role = "user",
                                 content = function()
                                     return string.format(
-                                        [[あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元に日本語でコミットメッセージを生成してください。
+                                        [[あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元にコミットメッセージを作成してください。
 
 ```diff
 %s
 ```
 ]],
                                         vim.fn.system("git diff --no-ext-diff --staged")
+                                    )
+                                end,
+                                opts = {
+                                    contains_code = true,
+                                },
+                            },
+                        },
+                    },
+                    ["Generate a Commit Message (all)"] = {
+                        strategy = "chat",
+                        description = "Generate a commit message",
+                        opts = {
+                            index = 20,
+                            is_default = true,
+                            is_slash_cmd = true,
+                            short_name = "commit_all",
+                            auto_submit = true,
+                        },
+                        prompts = {
+                            {
+                                role = "user",
+                                content = [[依頼内容への回答は日本語で作成してください。]],
+                            },
+                            {
+                                role = "user",
+                                content = function()
+                                    return string.format(
+                                        [[あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元にコミットメッセージを作成してください。
+
+```diff
+%s
+```
+]],
+                                        vim.fn.system("git diff --no-ext-diff")
                                     )
                                 end,
                                 opts = {

@@ -33,12 +33,14 @@ return {
                 },
 
                 {
-                    { "<leader>k",  group = "AI" },
+                    { "<leader>k",  group = "AI機能" },
                     { "<leader>ke", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
                     { "<leader>kr", "<cmd>CodeCompanion /review<cr>", desc = "コードレビュー" },
-                    { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントの作成" },
-                    { "<leader>kc", "<cmd>CodeCompanion /commit<cr>", desc = "コミットメッセージの作成" },
-                    { "<leader>kf", "<cmd>CodeCompanion /fix<cr>", desc = "コードの修正案作成" },
+                    { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
+                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
+                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
+                    { "<leader>kf", "<cmd>CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正 (Diagnostics利用)" },
+                    { "<leader>kp", "<cmd>CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
                     { "<leader>kl", "<cmd>CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
                 },
 
@@ -81,15 +83,15 @@ return {
                 { "{", "<cmd>cp<CR>zz", desc = "quickfixの前の要素に移動する" },
                 { "}", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
 
-                { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
-                { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
-                { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
                 { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
-                { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
-                { "gr", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
-                { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>", desc = "Git ステージしたhunkをundoする" },
-                { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
-                { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
+                -- { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
+                -- { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
+                -- { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
+                -- { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
+                -- { "gr", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
+                -- { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>", desc = "Git ステージしたhunkをundoする" },
+                -- { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
+                -- { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
 
                 {
                     { "me", group = "ナンバリング" },
@@ -140,6 +142,8 @@ return {
                     { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
                     { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
                     { "<leader>s", function() require('treesj').split({ split = { recursive = true } }) end, desc = "行分割" },
+
+                    { "<leader>kk", [[:<c-u>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
 
                     { "<leader>/", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "バッファ内検索" },
                     { "<leader>a", function() require('picker').command_history() end, desc = "コマンド履歴" },
@@ -258,8 +262,10 @@ return {
                     { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
                     { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
                     { "<leader>r", [[:<c-u>'<,'>s/]], desc = "文字列置換" },
-                    { "<leader>kk", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
                     { "<leader><leader>r", [[:<c-u>'<,'>s/\v]], desc = "文字列置換 (正規表現)" },
+
+                    { "<leader>kk", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
+                    { "<leader>ka", [[:<c-u>'<,'>CodeCompanionChat Add<cr>]], desc = "AI Chatに選択範囲を貼り付ける" },
                 },
             },
 
