@@ -34,7 +34,6 @@ return {
 
                 {
                     { "<leader>k",  group = "AI" },
-                    { "<leader>kk", "[[:<c-u>CodeCompanion /buffer ]]", desc = "Inline Assistantを実行" },
                     { "<leader>ke", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
                     { "<leader>kr", "<cmd>CodeCompanion /review<cr>", desc = "コードレビュー" },
                     { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントの作成" },
@@ -259,6 +258,7 @@ return {
                     { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
                     { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
                     { "<leader>r", [[:<c-u>'<,'>s/]], desc = "文字列置換" },
+                    { "<leader>kk", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
                     { "<leader><leader>r", [[:<c-u>'<,'>s/\v]], desc = "文字列置換 (正規表現)" },
                 },
             },
