@@ -437,6 +437,99 @@ return {
             -- see Click-it! section for clickable actions
         }
 
+        local CodeCompanion = {
+            -- condition = function()
+            --     local status_ok, _ = pcall(require, "codecompanion")
+            --     return status_ok
+            -- end,
+            static = {
+                processing = false,
+                colors = function(flag)
+                    if flag then
+                        return "green"
+                    else
+                        return "blue"
+                    end
+                end
+            },
+            update = {
+                "User",
+                pattern = "CodeCompanionRequest*",
+                callback = function(self, args)
+                    if args.match == "CodeCompanionRequestStarted" then
+                        self.processing = true
+                    elseif args.match == "CodeCompanionRequestFinished" then
+                        self.processing = false
+                    end
+                    vim.cmd("redrawstatus")
+                end,
+            },
+            {
+                provider = function(self)
+                    local status_ok, _ = pcall(require, "codecompanion")
+                    if status_ok then
+                        local adapter = require("codecompanion.adapters")
+                        local config = require("codecompanion.config")
+                        local result = "▌ %2("
+                        if self.processing then
+                            result = result .. "󱐋 "
+                        end
+
+                        local function resolve_adapter(strategy)
+                            local resolved = adapter.resolve(config.strategies[strategy].adapter)
+                            return resolved.name, resolved.schema.model.default
+                        end
+
+                        local chat_client, chat_model = resolve_adapter("chat")
+                        local inline_client, inline_model = resolve_adapter("inline")
+                        local cmd_client, cmd_model = resolve_adapter("cmd")
+
+                        local clients = {
+                            [chat_client] = {},
+                            [inline_client] = {},
+                            [cmd_client] = {}
+                        }
+
+                        local function add_model(client, model)
+                            if not vim.tbl_contains(clients[client], model) then
+                                table.insert(clients[client], model)
+                            end
+                        end
+
+                        add_model(chat_client, chat_model)
+                        add_model(inline_client, inline_model)
+                        add_model(cmd_client, cmd_model)
+
+                        local client_models = {}
+                        for client, models in pairs(clients) do
+                            table.insert(client_models, client .. " ┊ " .. table.concat(models, "/") .. "")
+                        end
+
+                        result = result .. table.concat(client_models, " ┃ ") .. "%) "
+
+                        return result
+                    else
+                        return '▐'
+                    end
+                end,
+                hl = function(self)
+                    local status_ok, _ = pcall(require, "codecompanion")
+                    if status_ok then
+                        return {
+                            fg = "#1f2335",
+                            bg = self.colors(self.processing),
+                            bold = true,
+                        }
+                    else
+                        return {
+                            fg = "blue",
+                            bg = "bg_highlight",
+                        }
+                    end
+                end,
+            },
+        }
+
         local StatusLine = {
             hl = { fg = "fg_dark", bg = "bg_highlight" },
             ViMode,
@@ -501,7 +594,7 @@ return {
                 Spacer,
             },
             Git,
-            EOL
+            CodeCompanion
         }
 
         require("heirline").setup({
