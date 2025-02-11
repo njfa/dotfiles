@@ -1,4 +1,3 @@
-local map = require('common').map
 local buf_map = require('common').buf_map
 
 -- IMEの自動OFF
@@ -17,17 +16,11 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
     end,
 })
 
--- quickfix
+-- quickfixの設定
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "qf" },
     callback = function()
         buf_map(0, 'n', "r", "<cmd>Qfreplace<cr>", { noremap = true })
-    end,
-})
-
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "qf" },
-    callback = function()
         buf_map(0, 'n', "q", "<cmd>cclose<cr>", { noremap = true })
         buf_map(0, 'n', "<C-n>", "<cmd>cnewer<CR>", { noremap = true })
         buf_map(0, 'n', "<C-p>", "<cmd>colder<CR>", { noremap = true })
@@ -65,14 +58,27 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     end,
 })
 
--- vim.api.nvim_create_user_command("Format", function(args)
---   local range = nil
---   if args.count ~= -1 then
---     local end_line = vim.api.nvim_buf_get_lines(0, args.line2 - 1, args.line2, true)[1]
---     range = {
---       start = { args.line1, 0 },
---       ["end"] = { args.line2, end_line:len() },
---     }
---   end
---   require("conform").format({ async = true, lsp_fallback = true, range = range })
--- end, { range = true })
+local group = vim.api.nvim_create_augroup("CodeCompanionHooks", {})
+
+-- Inlineの場合、変更的用語にフォーマットする
+-- それ以外の場合、formatterが見つからずエラーになる
+vim.api.nvim_create_autocmd({ "User" }, {
+    pattern = { "CodeCompanionInlineFinished" },
+    group = group,
+    callback = function(request)
+        if request.match == "CodeCompanionInlineFinished" then
+            vim.notify("bufnr(" .. request.buf .. ") is formatting")
+            require("conform").format({
+                timeout_ms = 1000,
+                bufnr = request.data.bufnr,
+                async = true,
+            }, function(err, _)
+                if err then
+                    vim.notify(err, vim.log.levels.ERROR)
+                else
+                    vim.notify("buffer is formatted successfully.")
+                end
+            end)
+        end
+    end,
+})
