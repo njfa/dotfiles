@@ -33,18 +33,6 @@ return {
                 },
 
                 {
-                    { "<leader>k",  group = "AI機能" },
-                    { "<leader>ke", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
-                    { "<leader>kr", "<cmd>CodeCompanion /review<cr>", desc = "コードレビュー" },
-                    { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
-                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
-                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
-                    { "<leader>kf", "<cmd>CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正 (Diagnostics利用)" },
-                    { "<leader>kp", "<cmd>CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
-                    { "<leader>kl", "<cmd>CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
-                },
-
-                {
                     { "s", group = "Sandwich" },
                     { "sa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
                     { "sd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
@@ -52,6 +40,7 @@ return {
                     { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
                 },
 
+                { "<A-s>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "AIチャットを開く" },
                 { "<A-f>", function() require('telescope.builtin').grep_string() end, desc = "カーソル下/選択中の文字列をGrep検索" },
 
                 {
@@ -84,11 +73,11 @@ return {
                 { "}", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
 
                 { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
-                -- { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
-                -- { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
-                -- { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
-                -- { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
-                -- { "gr", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
+                { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
+                { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
+                { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
+                { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
+                { "gS", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
                 -- { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>", desc = "Git ステージしたhunkをundoする" },
                 -- { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
                 -- { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
@@ -111,8 +100,6 @@ return {
                 { "<C-h>", "<cmd>BufferLineCyclePrev<cr>", desc = "前のバッファに移動" },
                 { "<C-l>", "<cmd>BufferLineCycleNext<cr>", desc = "次のバッファに移動" },
 
-                { "<A-s>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "AIチャットを開く" },
-
                 {
                     { "<C-w>", group = "画面操作" },
                     { "<C-w>e", "<cmd>vsplit<cr>", desc = "画面分割 (縦)" },
@@ -120,6 +107,19 @@ return {
                     { "<C-w>p", "<cmd>MarkdownPreview<cr>", desc = "Markdownのプレビュー" },
                     { "<C-w>g", "<cmd>DiffviewFileHistory<cr>", desc = "GitのDiff表示領域を表示" },
                     { "<C-w>.", function() require("common").lcd_current_workspace() end, desc = "vimのカレントディレクトリを変更" },
+                },
+
+                {
+                    { "<leader>k",  group = "AI機能" },
+                    { "<leader>kk", "ggVG:CodeCompanion /buffer ", desc = "Inline Assistantを実行" },
+                    { "<leader>ke", "ggVG:CodeCompanion /explain<cr>", desc = "コードの説明作成" },
+                    { "<leader>kd", "ggVG:CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
+                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
+                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
+                    { "<leader>kf", "ggVG:CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正 (Diagnostics利用)" },
+                    { "<leader>kp", "ggVG:CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
+                    { "<leader>kl", "ggVG:CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
+                    { "<leader>kt", "ggVG:CodeCompanion /tests<cr>", desc = "テストコードの作成" },
                 },
 
                 {
@@ -142,8 +142,6 @@ return {
                     { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
                     { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
                     { "<leader>s", function() require('treesj').split({ split = { recursive = true } }) end, desc = "行分割" },
-
-                    { "<leader>kk", [[:<c-u>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
 
                     { "<leader>/", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "バッファ内検索" },
                     { "<leader>a", function() require('picker').command_history() end, desc = "コマンド履歴" },
@@ -258,14 +256,27 @@ return {
                 { "R", function() require "substitute".visual() end, desc = "選択範囲を置換" },
 
                 {
+                    { "<leader>k",  group = "AI機能" },
+                    { "<leader>kk", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
+                    { "<leader>ka", "<cmd>CodeCompanionChat Add<cr>", desc = "AI Chatに選択範囲を貼り付ける" },
+                    { "<leader>ke", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
+                    { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
+                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
+                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
+                    { "<leader>kf", "<cmd>CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正 (Diagnostics利用)" },
+                    { "<leader>kp", "<cmd>CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
+                    { "<leader>kl", "<cmd>CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
+                    { "<leader>kt", "<cmd>CodeCompanion /tests<cr>", desc = "テストコードの作成" },
+                },
+                {
+                },
+
+                {
                     { "<leader>", group = "leader" },
                     { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
                     { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
                     { "<leader>r", [[:<c-u>'<,'>s/]], desc = "文字列置換" },
                     { "<leader><leader>r", [[:<c-u>'<,'>s/\v]], desc = "文字列置換 (正規表現)" },
-
-                    { "<leader>kk", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
-                    { "<leader>ka", [[:<c-u>'<,'>CodeCompanionChat Add<cr>]], desc = "AI Chatに選択範囲を貼り付ける" },
                 },
             },
 
