@@ -63,22 +63,29 @@ local group = vim.api.nvim_create_augroup("CodeCompanionHooks", {})
 -- Inlineの場合、変更的用語にフォーマットする
 -- それ以外の場合、formatterが見つからずエラーになる
 vim.api.nvim_create_autocmd({ "User" }, {
-    pattern = { "CodeCompanionInlineFinished" },
+    pattern = { "CodeCompanionInlineFinished", "CodeCompanionDiffAttached" },
     group = group,
     callback = function(request)
+        local bufnr
         if request.match == "CodeCompanionInlineFinished" then
-            vim.notify("bufnr(" .. request.buf .. ") is formatting")
+            bufnr = request.buf
+        elseif request.match == "CodeCompanionDiffAttached" then
+            bufnr = request.data.bufnr
+        end
+
+        if bufnr then
+            vim.notify("code formatting has begun for buffer [" .. bufnr .. "]")
             require("conform").format({
                 timeout_ms = 1000,
-                bufnr = request.data.bufnr,
+                bufnr = bufnr,
                 async = true,
             }, function(err, _)
                 if err then
                     vim.notify(err, vim.log.levels.ERROR)
                 else
-                    vim.notify("buffer is formatted successfully.")
+                    vim.notify("code formatting successfully completed for buffer [" .. bufnr .. "]")
                 end
             end)
         end
-    end,
+    end
 })
