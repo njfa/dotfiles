@@ -112,7 +112,8 @@ return {
                                         context.end_line)
 
                                     return string.format(
-                                        [[bufnr が %d である #buffer 中の下記コードを説明してください。
+                                        [[#buffer
+1. 説明対象はbufnrが%dのバッファの下記コードです。
 
 ```%s
 %s
@@ -179,7 +180,9 @@ Use Markdown formatting and include the programming language name at the start o
                                         context.end_line)
 
                                     return string.format(
-                                        [[bufnr が %d である #buffer の下記コードの修正案を作成してください。修正内容の説明もお願いします。
+                                        [[#buffer
+1. 修正対象はbufnrが%dのバッファの下記コードです。
+2. 修正内容の説明もお願いします。
 
 ```%s
 %s
@@ -224,7 +227,10 @@ Use Markdown formatting and include the programming language name at the start o
                                         context.end_line)
 
                                     return string.format(
-                                        [[@editor bufnr が %d である #buffer 中の下記コードにコメントドキュメントを追記してください。
+                                        [[#buffer
+1. ソースコードへのコメントドキュメントの修正案の作成をお願いします。
+2. 修正対象はbufnrが%dのバッファの下記コードです。
+3. コメント内容の説明もお願いします。
 
 ```%s
 %s
@@ -287,7 +293,9 @@ Use Markdown formatting and include the programming language name at the start o
                                         context.end_line)
 
                                     return string.format(
-                                        [[bufnr が %d である #buffer 中の下記コードのUnit testsを作成してください。作成した内容の説明もお願いします。
+                                        [[#buffer
+1. テスト対象はbufnrが%dのバッファの下記コードです。
+2. テスト内容の説明もお願いします。
 
 ```%s
 %s
@@ -439,55 +447,51 @@ Use Markdown formatting and include the programming language name at the start o
                                     local concatenated_diagnostics = ""
                                     for i, diagnostic in ipairs(diagnostics) do
                                         concatenated_diagnostics = concatenated_diagnostics
-                                            .. i
+                                            .. "    " .. i
                                             .. ". Issue "
                                             .. i
-                                            .. "\n  - Location: Line "
+                                            .. "\n        - Location: Line "
                                             .. diagnostic.line_number
-                                            .. "\n  - Buffer: "
+                                            .. "\n        - Buffer: "
                                             .. context.bufnr
-                                            .. "\n  - Severity: "
+                                            .. "\n        - Severity: "
                                             .. diagnostic.severity
-                                            .. "\n  - Message: "
+                                            .. "\n        - Message: "
                                             .. diagnostic.message
                                             .. "\n"
                                     end
 
-                                    return string.format(
-                                        [[プログラミング言語は %s です。Diagnosticのメッセージは下記の通りです。
+                                    if concatenated_diagnostics == "" then
+                                        concatenated_diagnostics = "    - 指摘なし"
+                                    end
 
-%s
-
-]],
-                                        context.filetype,
-                                        concatenated_diagnostics
-                                    )
-                                end,
-                            },
-                            {
-                                role = "user",
-                                content = function(context)
                                     local code = require("codecompanion.helpers.actions").get_code(
                                         context.start_line,
                                         context.end_line,
                                         { show_line_numbers = true }
                                     )
+
                                     return string.format(
-                                        [[
-@editor bufnr が %d である #buffer の対象コードは下記の通りです。Diagnosticの指摘内容を解消してください。
+                                        [[#buffer
+1. プログラミング言語%sで作成されたソースコードのDiagnosticsの指摘内容を解消してください。
+    - Diagnosticsの指定がない場合はより良いソースコードになるような修正案を作成してください。
+2. Diagnosticsのメッセージは下記の通りです。
+%s
+3. 修正対象はbufnrが%dのバッファの下記コードです。
 
 ```%s
 %s
 ```
+
+4. 修正内容の説明もお願いします。
 ]],
+                                        context.filetype,
+                                        concatenated_diagnostics,
                                         context.bufnr,
                                         context.filetype,
                                         code
                                     )
                                 end,
-                                opts = {
-                                    contains_code = true,
-                                },
                             },
                         },
                     },
