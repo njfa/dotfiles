@@ -100,8 +100,11 @@ return {
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
@@ -168,8 +171,11 @@ Use Markdown formatting and include the programming language name at the start o
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
@@ -215,8 +221,11 @@ Use Markdown formatting and include the programming language name at the start o
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
@@ -281,8 +290,11 @@ Use Markdown formatting and include the programming language name at the start o
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
@@ -337,8 +349,11 @@ Use Markdown formatting and include the programming language name at the start o
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
@@ -354,54 +369,48 @@ Use Markdown formatting and include the programming language name at the start o
                                     local concatenated_diagnostics = ""
                                     for i, diagnostic in ipairs(diagnostics) do
                                         concatenated_diagnostics = concatenated_diagnostics
-                                            .. i
+                                            .. "    " .. i
                                             .. ". Issue "
                                             .. i
-                                            .. "\n  - Location: Line "
+                                            .. "\n        - Location: Line "
                                             .. diagnostic.line_number
-                                            .. "\n  - Buffer: "
+                                            .. "\n        - Buffer: "
                                             .. context.bufnr
-                                            .. "\n  - Severity: "
+                                            .. "\n        - Severity: "
                                             .. diagnostic.severity
-                                            .. "\n  - Message: "
+                                            .. "\n        - Message: "
                                             .. diagnostic.message
                                             .. "\n"
                                     end
 
-                                    return string.format(
-                                        [[プログラミング言語は %s です。Diagnosticのメッセージは下記の通りです。
+                                    if concatenated_diagnostics == "" then
+                                        concatenated_diagnostics = "    - 指摘なし"
+                                    end
 
-%s
-
-]],
-                                        context.filetype,
-                                        concatenated_diagnostics
-                                    )
-                                end,
-                            },
-                            {
-                                role = "user",
-                                content = function(context)
                                     local code = require("codecompanion.helpers.actions").get_code(
                                         context.start_line,
                                         context.end_line,
                                         { show_line_numbers = true }
                                     )
+
                                     return string.format(
-                                        [[
-対象のコードは下記の通りです。Diagnosticの指摘内容を説明してください。
+                                        [[#buffer
+1. プログラミング言語%sで作成されたソースコードのDiagnosticsの指摘内容を解消してください。
+2. Diagnosticsのメッセージは下記の通りです。
+%s
+3. 修正対象はbufnrが%dのバッファの下記コードです。
 
 ```%s
 %s
 ```
 ]],
                                         context.filetype,
+                                        concatenated_diagnostics,
+                                        context.bufnr,
+                                        context.filetype,
                                         code
                                     )
                                 end,
-                                opts = {
-                                    contains_code = true,
-                                },
                             },
                         },
                     },
@@ -430,8 +439,11 @@ Use Markdown formatting and include the programming language name at the start o
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
@@ -509,8 +521,12 @@ Use Markdown formatting and include the programming language name at the start o
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. コミットメッセージも日本語で作成してください。
+4. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
@@ -547,8 +563,12 @@ Use Markdown formatting and include the programming language name at the start o
                             {
                                 role = "user",
                                 content = [[■前提
-1. 回答はすべて日本語で作成してください。
-2. ですます調ではなく、である調で回答してください。
+1. 回答文はmarkdown形式でお願いします。
+    - 書式は、@files ~/.config/nvim/template/markdown.md に記載のものを利用してください。
+    - 行頭が`#`で始まる行の前後に空行を入れてください。
+2. 回答中の説明は、すべて日本語で作成してください。
+3. コミットメッセージも日本語で作成してください。
+4. 回答文は、ですます調ではなく、である調で回答してください。
 
 ■依頼内容]],
                             },
