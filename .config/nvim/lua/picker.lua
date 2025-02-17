@@ -93,7 +93,9 @@ M.find_files_from_project_git_root = function(opts)
         "rg",
         "--no-ignore",
         "--hidden",
-        "--files"
+        "--files",
+        "--glob",
+        "!**/.git/*",
     }
 
     local gen = require('telescope.make_entry').gen_from_file(opts)
@@ -126,10 +128,6 @@ M.live_grep_from_project_git_root = function(opts)
     else
         opts.results_title = '  All Files: '
         opts.prompt_title = vim.fn.getcwd()
-    end
-
-    if not opts.glob_pattern then
-        opts.glob_pattern = "!.git"
     end
 
     require("telescope.builtin").live_grep(opts)
