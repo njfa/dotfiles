@@ -111,7 +111,8 @@ return {
 
                 {
                     { "<leader>k",  group = "AI機能" },
-                    { "<leader>kk", "ggVG:CodeCompanion /buffer ", desc = "Inline Assistantを実行" },
+                    { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
+                    { "<leader>kb", "ggVG:CodeCompanion /buffer ", desc = "バッファのInline Assistantを実行" },
                     { "<leader>ke", "ggVG:CodeCompanion /explain<cr>", desc = "コードの説明作成" },
                     { "<leader>kd", "ggVG:CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
                     { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
@@ -257,7 +258,8 @@ return {
 
                 {
                     { "<leader>k",  group = "AI機能" },
-                    { "<leader>kk", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "Inline Assistantを実行" },
+                    { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
+                    { "<leader>kb", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "バッファのInline Assistantを実行" },
                     { "<leader>ka", "<cmd>CodeCompanionChat Add<cr>", desc = "AI Chatに選択範囲を貼り付ける" },
                     { "<leader>ke", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
                     { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
