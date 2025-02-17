@@ -18,14 +18,14 @@ return {
             -- require('plugins.heirline').setup()
 
             vim.cmd.colorscheme("tokyonight")
-            vim.cmd.highlight({ "BlinkCmpMenu", "guibg=#202a42"})
-            vim.cmd.highlight({ "BlinkCmpMenuSelection", "guibg=#324268"})
-            vim.cmd.highlight({ "BlinkCmpDoc", "guibg=#202a42"})
-            vim.cmd.highlight({ "BlinkCmpDocBorder", "guibg=#202a42"})
-            vim.cmd.highlight({ "BlinkCmpDocSeparator", "guibg=#202a42"})
-            vim.cmd.highlight({ "BlinkCmpSignatureHelp", "guibg=#202a42"})
-            vim.cmd.highlight({ "BlinkCmpSignatureHelpBorder", "guibg=#202a42"})
-            vim.cmd.highlight({ "BlinkCmpSignatureHelpActiveParameter", "guibg=#324268"})
+            vim.cmd.highlight({ "BlinkCmpMenu", "guibg=#202a42" })
+            vim.cmd.highlight({ "BlinkCmpMenuSelection", "guibg=#324268" })
+            vim.cmd.highlight({ "BlinkCmpDoc", "guibg=#202a42" })
+            vim.cmd.highlight({ "BlinkCmpDocBorder", "guibg=#202a42" })
+            vim.cmd.highlight({ "BlinkCmpDocSeparator", "guibg=#202a42" })
+            vim.cmd.highlight({ "BlinkCmpSignatureHelp", "guibg=#202a42" })
+            vim.cmd.highlight({ "BlinkCmpSignatureHelpBorder", "guibg=#202a42" })
+            vim.cmd.highlight({ "BlinkCmpSignatureHelpActiveParameter", "guibg=#324268" })
         end
     },
 
@@ -76,15 +76,15 @@ return {
             require('neo-tree').setup({
                 source_selector = {
                     statusline = true, -- toggle to show selector on statusline
-                    show_scrolled_off_parent_node = false,                    -- boolean
-                    sources = {                                               -- table
+                    show_scrolled_off_parent_node = false, -- boolean
+                    sources = { -- table
                         {
-                            source = "filesystem",                                -- string
-                            display_name = " 󰉓 Files "                            -- string | nil
+                            source = "filesystem", -- string
+                            display_name = " 󰉓 Files " -- string | nil
                         },
                         {
-                            source = "buffers",                                   -- string
-                            display_name = " 󰈚 Buffers "                          -- string | nil
+                            source = "buffers", -- string
+                            display_name = " 󰈚 Buffers " -- string | nil
                         },
                     },
                 },
@@ -100,11 +100,11 @@ return {
                         hide_gitignored = false,
                         hide_hidden = true, -- only works on Windows for hidden files/directories
                         hide_by_name = {
-                          ".git"
+                            ".git"
                         },
                         hide_by_pattern = { -- uses glob style patterns
-                          --"*.meta",
-                          --"*/src/*/tsconfig.json",
+                            --"*.meta",
+                            --"*/src/*/tsconfig.json",
                         },
                     },
                     follow_current_file = {
