@@ -210,7 +210,7 @@ return {
                         { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
                         { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
                         { "<leader><leader>f", ":lua require('picker').find_files_from_project_git_root( { search_dirs={\"\"}})<left><left><left><left>", desc = "ファイル検索 (ファイルパスを指定)" },
-                        { "<leader><leader>g", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern={\"!.git\", \"\"}})<left><left><left><left>", desc = "Grep検索 (ファイルパスを指定)" },
+                        { "<leader><leader>g", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern={\"\"}})<left><left><left><left>", desc = "Grep検索 (ファイルパスを指定)" },
 
                     },
 
