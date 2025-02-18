@@ -136,7 +136,7 @@ return {
                     { "<leader>w", "<cmd>w<cr>", desc = "保存" },
                     { "<leader>y", "<cmd>HopYankChar1<CR>", desc = "コピー（場所選択）" },
 
-                    { "<leader>b", "<cmd>Telescope buffers<CR>", desc = "タブ一覧を開く" },
+                    { "<leader>b", "<cmd>Telescope buffers sort_mru=true<CR>", desc = "タブ一覧を開く" },
                     { "<leader>f", function() require('picker').find_files_from_project_git_root() end, desc = "ファイル検索" },
                     { "<leader>g", function() require('picker').live_grep_from_project_git_root() end, desc = "Grep検索" },
                     { "<leader>h", function() require('picker').find_files_from_project_git_root({ oldfiles = true }) end, desc = "ファイル閲覧履歴" },
