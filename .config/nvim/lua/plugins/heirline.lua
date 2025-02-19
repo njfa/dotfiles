@@ -468,7 +468,6 @@ return {
                 provider = function(self)
                     local status_ok, _ = pcall(require, "codecompanion")
                     if status_ok then
-                        local adapter = require("codecompanion.adapters")
                         local config = require("codecompanion.config")
                         local result = "▌ %2("
                         if self.processing then
@@ -476,8 +475,23 @@ return {
                         end
 
                         local function resolve_adapter(strategy)
-                            local resolved = adapter.resolve(config.strategies[strategy].adapter)
-                            return resolved.name, resolved.schema.model.default
+                            local name = config.strategies[strategy].adapter
+                            local model = ""
+
+                            -- adapters[name]が存在し、かつ関数である場合のみ実行
+                            if config.adapters[name] and type(config.adapters[name]) == "function" then
+                                local adapter = config.adapters[name]()
+                                model = adapter.schema and adapter.schema.model and adapter.schema.model.default or ""
+                            end
+
+                            if not model or model == "" then
+                                local success, default_model = pcall(function()
+                                    return require("codecompanion.adapters").resolve(name).schema.model.default
+                                end)
+                                model = success and default_model or ""
+                            end
+
+                            return name, model
                         end
 
                         local chat_client, chat_model = resolve_adapter("chat")
