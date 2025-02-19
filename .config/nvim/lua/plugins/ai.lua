@@ -33,6 +33,34 @@ return {
                 opts = {
                     log_level = "DEBUG", -- or "TRACE"
                 },
+                adapters = {
+                    copilot = function()
+                        local adapter_name = "copilot"
+                        local config_path = vim.fn.stdpath("data")
+                        local file_path = config_path .. "/" .. adapter_name .. "_model.txt"
+
+                        local model_override
+                        local file_exists = vim.fn.filereadable(file_path) == 1
+                        if file_exists then
+                            local content = vim.fn.readfile(file_path)
+                            if content and #content > 0 and content[1] ~= "" then
+                                model_override = content[1]
+                            end
+                        end
+
+                        local base_adapter = require("codecompanion.adapters").extend("copilot", {})
+                        if model_override then
+                            return require("codecompanion.adapters").extend("copilot", {
+                                schema = {
+                                    model = {
+                                        default = model_override,
+                                    },
+                                },
+                            })
+                        end
+                        return base_adapter
+                    end,
+                },
                 strategies = {
                     chat = {
                         adapter = "copilot",
@@ -623,7 +651,7 @@ Use Markdown formatting and include the programming language name at the start o
                                 },
                                 {
                                     role = "user",
-                                content = [[]],
+                                    content = [[]],
                                     opts = {
                                         auto_submit = false,
                                     },

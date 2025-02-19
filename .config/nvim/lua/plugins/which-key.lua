@@ -44,6 +44,14 @@ return {
                 { "<A-f>", function() require('telescope.builtin').grep_string() end, desc = "カーソル下/選択中の文字列をGrep検索" },
 
                 {
+                    { "<leader>k",  group = "AI機能" },
+                    { "<leader>km", function() require('picker').select_strategy_and_model() end, desc = "使用するモデルを変更" },
+                    { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
+                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
+                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
+                },
+
+                {
                     { "<leader><leader>t", group = "Table操作" },
                     { "<leader><leader>tm", "<cmd>TableModeToggle<CR>", desc = "Tableモード切替" },
                     { "<leader><leader>ta", "<cmd>TableModeRealign<CR>", desc = "Table整形" },
@@ -111,12 +119,9 @@ return {
 
                 {
                     { "<leader>k",  group = "AI機能" },
-                    { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
                     { "<leader>kb", "ggVG:CodeCompanion /buffer ", desc = "バッファのInline Assistantを実行" },
                     { "<leader>ke", "ggVG:CodeCompanion /explain<cr>", desc = "コードの説明作成" },
                     { "<leader>kd", "ggVG:CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
-                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
-                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
                     { "<leader>kf", "ggVG:CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正 (Diagnostics利用)" },
                     { "<leader>kp", "ggVG:CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
                     { "<leader>kl", "ggVG:CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
@@ -258,19 +263,14 @@ return {
 
                 {
                     { "<leader>k",  group = "AI機能" },
-                    { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
                     { "<leader>kb", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "バッファのInline Assistantを実行" },
                     { "<leader>ka", "<cmd>CodeCompanionChat Add<cr>", desc = "AI Chatに選択範囲を貼り付ける" },
                     { "<leader>ke", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
                     { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
-                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
-                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
                     { "<leader>kf", "<cmd>CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正 (Diagnostics利用)" },
                     { "<leader>kp", "<cmd>CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
                     { "<leader>kl", "<cmd>CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
                     { "<leader>kt", "<cmd>CodeCompanion /tests<cr>", desc = "テストコードの作成" },
-                },
-                {
                 },
 
                 {

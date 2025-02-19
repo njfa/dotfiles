@@ -372,4 +372,188 @@ function M.gen_from_buffer(opts)
     end
 end
 
+local function get_model_choices(adapter_name)
+    local config = require("codecompanion.config")
+    -- configとadaptersの存在確認
+    if not config or not config.adapters or not config.adapters[adapter_name] then
+        vim.notify("設定が見つかりません", vim.log.levels.ERROR)
+        return {}
+    end
+
+    local choices
+    if type(config.adapters[adapter_name]) == "string" then
+        local adapter = require("codecompanion.adapters").resolve(adapter_name)
+        if not adapter or not adapter.schema or not adapter.schema.model then
+            vim.notify(adapter_name .. "の設定が不正です", vim.log.levels.ERROR)
+            return {}
+        end
+        choices = adapter.schema.model.choices
+    else
+        local adapter_config = config.adapters[adapter_name]()
+        if not adapter_config or not adapter_config.schema or not adapter_config.schema.model then
+            vim.notify(adapter_name .. "の設定が不正です", vim.log.levels.ERROR)
+            return {}
+        end
+        choices = adapter_config.schema.model.choices
+    end
+
+    if not choices or type(choices) ~= "table" then
+        vim.notify("モデルの選択肢が見つかりません", vim.log.levels.ERROR)
+        return {}
+    end
+
+    local items = {}
+    for key, value in pairs(choices) do
+        local display = type(value) == "table" and key or value
+        local actual_value = type(value) == "table" and key or value
+        table.insert(items, {
+            display = display,
+            value = actual_value,
+        })
+    end
+
+    if #items == 0 then
+        vim.notify("利用可能なモデルがありません", vim.log.levels.WARN)
+    end
+    return items
+end
+
+local function save_model_to_file(model, adapter_name)
+    local config_path = vim.fn.stdpath("data")
+    local file_path = config_path .. "/" .. adapter_name .. "_model.txt"
+
+    -- ディレクトリの存在確認と作成
+    local stat = vim.loop.fs_stat(config_path)
+    if not stat then
+        vim.loop.fs_mkdir(config_path, 493) -- 0755
+    end
+
+    -- ファイルに書き込み
+    local file = io.open(file_path, "w")
+    if file then
+        file:write(model)
+        file:close()
+        vim.notify("モデルの設定を保存しました: " .. model, vim.log.levels.INFO)
+    else
+        vim.notify("ファイルの保存に失敗しました", vim.log.levels.ERROR)
+    end
+end
+
+function M.select_model()
+    local pickers = require("telescope.pickers")
+    local finders = require("telescope.finders")
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    local themes = require("telescope.themes")
+
+    -- アダプター名を取得
+    local adapter_name = require("codecompanion.config").strategies['chat'].adapter
+
+    pickers.new(themes.get_dropdown(), {
+        prompt_title = "Select AI Model",
+        finder = finders.new_table({
+            results = get_model_choices(adapter_name),
+            entry_maker = function(entry)
+                return {
+                    value = entry.value,
+                    display = entry.display,
+                    ordinal = entry.display,
+                }
+            end,
+        }),
+        sorter = require("telescope.config").values.generic_sorter({}),
+        attach_mappings = function(prompt_bufnr)
+            actions.select_default:replace(function()
+                local selection = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+                save_model_to_file(selection.value, adapter_name)
+            end)
+            return true
+        end,
+    }):find()
+end
+
+function M.select_strategy_and_model()
+    local pickers = require("telescope.pickers")
+    local finders = require("telescope.finders")
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    local themes = require("telescope.themes")
+    local config = require("codecompanion.config")
+
+    -- アダプター名の重複を削除した一覧を作成
+    local adapter_names = {}
+    local adapter_set = {}
+    for _, strategy in pairs(config.strategies) do
+        if strategy and strategy.adapter then  -- nil チェックを追加
+            if not adapter_set[strategy.adapter] then
+                adapter_set[strategy.adapter] = true
+                table.insert(adapter_names, strategy.adapter)
+            end
+        end
+    end
+
+    -- アダプターが1つの場合は直接モデル選択へ
+    if #adapter_names == 1 then
+        show_model_picker(adapter_names[1])
+        return
+    end
+
+    -- 複数のアダプターがある場合は選択させる
+    pickers.new(themes.get_dropdown(), {
+        prompt_title = "Select Adapter",
+        finder = finders.new_table({
+            results = adapter_names,
+            entry_maker = function(entry)
+                return {
+                    value = entry,
+                    display = entry,
+                    ordinal = entry,
+                }
+            end,
+        }),
+        sorter = require("telescope.config").values.generic_sorter({}),
+        attach_mappings = function(prompt_bufnr)
+            actions.select_default:replace(function()
+                local selection = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+                show_model_picker(selection.value)
+            end)
+            return true
+        end,
+    }):find()
+end
+
+-- モデル選択用の関数を分離
+function show_model_picker(adapter_name)
+    local pickers = require("telescope.pickers")
+    local finders = require("telescope.finders")
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    local themes = require("telescope.themes")
+
+    pickers.new(themes.get_dropdown(), {
+        prompt_title = "Select AI Model",
+        finder = finders.new_table({
+            results = get_model_choices(adapter_name),
+            entry_maker = function(entry)
+                return {
+                    value = entry.value,
+                    display = entry.display,
+                    ordinal = entry.display,
+                }
+            end,
+        }),
+        sorter = require("telescope.config").values.generic_sorter({}),
+        attach_mappings = function(inner_prompt_bufnr)
+            actions.select_default:replace(function()
+                local model_selection = action_state.get_selected_entry()
+                actions.close(inner_prompt_bufnr)
+                save_model_to_file(model_selection.value, adapter_name)
+            end)
+            return true
+        end,
+    }):find()
+end
+
 return M
