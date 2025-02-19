@@ -479,8 +479,16 @@ return {
                             local model = ""
 
                             -- adapters[name]が存在し、かつ関数である場合のみ実行
-                            if config.adapters[name] and type(config.adapters[name]) == "function" then
-                                local adapter = config.adapters[name]()
+                            local adapter
+                            if config.adapters[name] then
+                                if type(config.adapters[name]) == "function" then
+                                    adapter = config.adapters[name]()
+                                elseif type(config.adapters[name]) == "table" then
+                                    adapter = config.adapters[name]
+                                end
+                            end
+
+                            if adapter then
                                 model = adapter.schema and adapter.schema.model and adapter.schema.model.default or ""
                             end
 
