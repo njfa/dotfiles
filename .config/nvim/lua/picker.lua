@@ -389,7 +389,13 @@ local function get_model_choices(adapter_name)
         end
         choices = adapter.schema.model.choices
     else
-        local adapter_config = config.adapters[adapter_name]()
+        local adapter_config
+        if type(config.adapters[adapter_name]) == "function" then
+            adapter_config = config.adapters[adapter_name]()
+        else
+            adapter_config = config.adapters[adapter_name]
+        end
+
         if not adapter_config or not adapter_config.schema or not adapter_config.schema.model then
             vim.notify(adapter_name .. "の設定が不正です", vim.log.levels.ERROR)
             return {}
@@ -485,7 +491,7 @@ function M.select_strategy_and_model()
     local adapter_names = {}
     local adapter_set = {}
     for _, strategy in pairs(config.strategies) do
-        if strategy and strategy.adapter then  -- nil チェックを追加
+        if strategy and strategy.adapter then -- nil チェックを追加
             if not adapter_set[strategy.adapter] then
                 adapter_set[strategy.adapter] = true
                 table.insert(adapter_names, strategy.adapter)

@@ -196,47 +196,6 @@ return {
         end,
     },
 
-    {
-        "MeanderingProgrammer/markdown.nvim",
-        name = "render-markdown", -- Only needed if you have another plugin named markdown.nvim
-        file_types = { "markdown", "vimwiki" },
-        dependencies = { "nvim-treesitter/nvim-treesitter" },
-        config = function()
-            require("render-markdown").setup({
-                heading = {
-                    icons = { "󰼏 ", "󰎨 ", "󰼑 ", "󰎲 ", "󰼓 ", "󰎴 " },
-                    backgrounds = {
-                        "my_markdown_h1",
-                        "my_markdown_h2",
-                        "my_markdown_h3",
-                        "my_markdown_h4",
-                        "my_markdown_h5",
-                        "my_markdown_h6",
-                    },
-                },
-                -- win_options = {
-                --     -- See :h 'conceallevel'
-                --     conceallevel = {
-                --         -- Used when not being rendered, get user setting
-                --         default = vim.api.nvim_get_option_value('conceallevel', {}),
-                --         -- Used when being rendered, concealed text is completely hidden
-                --         rendered = 0,
-                --     },
-                --     -- See :h 'concealcursor'
-                --     concealcursor = {
-                --         -- Used when not being rendered, get user setting
-                --         default = vim.api.nvim_get_option_value('concealcursor', {}),
-                --         -- Used when being rendered, conceal text in all modes
-                --         rendered = '',
-                --     },
-                -- },
-                -- code = {
-                --     highlight = 'my_code_block',
-                -- },
-            })
-        end,
-    },
-
     -- 対応する括弧をわかりやすくする
     {
         "haringsrob/nvim_context_vt",

@@ -195,7 +195,7 @@ return {
                                     pylint = {
                                         enabled = true,
                                         executable = "pylint",
-                                        args = { "-d", "W0702" },
+                                        args = { "-d", "W0702", "C0116" },
                                     },
                                     pyflakes = { enabled = false },
                                     pycodestyle = { enabled = false },

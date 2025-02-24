@@ -137,15 +137,7 @@ return {
             -- Default list of enabled providers defined so that you can extend it
             -- elsewhere in your config, without redefining it, due to `opts_extend`
             sources = {
-                default = { 'path', 'copilot', 'snippets', 'lsp', 'buffer' },
-                cmdline = function()
-                    local type = vim.fn.getcmdtype()
-                    -- Search forward and backward
-                    if type == '/' or type == '?' then return { 'buffer' } end
-                    -- Commands
-                    if type == ':' or type == '@' then return { 'cmdline' } end
-                    return {}
-                end,
+                default = { 'path', 'copilot', 'snippets', 'lsp', 'buffer', 'markdown' },
                 providers = {
                     buffer = {
                         name = "buf",
@@ -166,9 +158,24 @@ return {
                             return items
                         end,
                     },
+                    markdown = {
+                        name = 'RenderMarkdown',
+                        module = 'render-markdown.integ.blink',
+                        fallbacks = { 'lsp' },
+                    },
                 },
             },
 
+            cmdline = {
+                sources = function()
+                    local type = vim.fn.getcmdtype()
+                    -- Search forward and backward
+                    if type == '/' or type == '?' then return { 'buffer' } end
+                    -- Commands
+                    if type == ':' or type == '@' then return { 'cmdline' } end
+                    return {}
+                end
+            },
             snippets = { preset = 'luasnip' },
             signature = {
                 enabled = true,
