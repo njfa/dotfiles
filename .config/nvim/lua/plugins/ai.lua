@@ -1,3 +1,4 @@
+-- 共通の前提部分を定義
 return {
     {
         "zbirenbaum/copilot.lua",
@@ -23,7 +24,38 @@ return {
                 config = function()
                     require("mini.diff").setup()
                 end
-            }
+            },
+            {
+                "MeanderingProgrammer/render-markdown.nvim",
+                ft = { "markdown", "vimwiki", "codecompanion" },
+                dependencies = { "nvim-treesitter/nvim-treesitter" },
+                config = function()
+                    require("render-markdown").setup({
+                        render_modes = true,
+                        code = {
+                            left_pad = 0,
+                            right_pad = 1,
+                            width = "block",
+                        },
+                        heading = {
+                            width = "block",
+                            left_pad = 0,
+                            right_pad = 1,
+                            -- icons = { "󰼏 ", "󰎨 ", "󰼑 ", "󰎲 ", "󰼓 ", "󰎴 " },
+                            icons = {},
+                            backgrounds = {
+                                "my_markdown_h1",
+                                "my_markdown_h2",
+                                "my_markdown_h3",
+                                "my_markdown_h4",
+                                "my_markdown_h5",
+                                "my_markdown_h6",
+                            },
+                        }
+                    })
+                end,
+            },
+
         },
         init = function()
             require("plugins.codecompanion.fidget-spinner"):init()
@@ -58,6 +90,49 @@ return {
             require("codecompanion").setup({
                 opts = {
                     log_level = "DEBUG", -- or "TRACE"
+                    language = 'Japanese',
+                    system_prompt = function(_)
+                        return [[
+あなたは "CodeCompanion" というAIプログラミングアシスタントです。
+現在、Neovimのテキストエディタに統合されており、ユーザーがより効率的に作業できるよう支援します。
+
+## あなたの主なタスク:
+- 一般的なプログラミングの質問に回答する
+- Neovim バッファ内のコードの動作を説明する
+- 選択されたコードのレビューを行う
+- 選択されたコードの単体テストを生成する
+- 問題のあるコードの修正を提案する
+- 新しいワークスペース用のコードを作成する
+- ユーザーの質問に関連するコードを検索する
+- テストの失敗の原因を特定し、修正を提案する
+- Neovim に関する質問に答える
+- 各種ツールを実行する
+
+## 指示:
+1. ユーザーの指示を正確に守ること
+2. 可能な限り簡潔で、要点を押さえた回答を心がけること
+3. 不要なコードを含めず、タスクに関連するコードのみ返すこと
+4. すべての非コードの応答はGitlab Flavored Markdownのスタイルでフォーマットすること
+5. すべての非コードの応答は日本語で行うこと
+6. すべての非コードの応答はですます調ではなく、である調とすること
+8. 文章中の改行には `\n` を使わず、実際の改行を使用すること
+
+## タスクを受けたとき:
+1. ステップごとに考え、詳細な擬似コードまたは計画を説明する（特に指定がない限り）
+2. コードを1つのコードブロックで出力する（適切な言語名を付与）
+3. ユーザーの次のアクションを提案する
+4. 各ターンごとに1つの応答のみを返す
+
+## Gitlab Flavored Markdownスタイルの留意事項:
+1. 回答全体をバッククォートで囲まないこと
+2. トップレベルのヘッダは`###`とすること
+3. 行頭が`#`で始まる行の前後に空行を入れること
+4. 文章中のインデントは ` ` を使用すること
+5. コードブロックの最初にプログラミング言語を明示すること
+6. コードブロック内に行番号を含めないこと
+7. 回答に `　` が含まれていないか注意深く見直し、含まれている場合は インデントを下げた上で `-` を使ったリストの表現に置き換えること
+]]
+                    end,
                 },
                 adapters = {
                     copilot = configure_adapter_with_model_override('copilot')
@@ -65,6 +140,12 @@ return {
                 strategies = {
                     chat = {
                         adapter = "copilot",
+                        roles = {
+                            llm = function(adapter)
+                                return "CodeCompanion (" .. adapter.formatted_name .. ")"
+                            end,
+                            user = 'Me',
+                        }
                     },
                     cmd = {
                         adapter = "copilot",
@@ -96,7 +177,13 @@ return {
                     diff = {
                         enabled = true,
                         provider = "mini_diff"
-                    }
+                    },
+                    chat = {
+                        show_settings = true,
+                        show_keys = true,
+                        show_reference_info = true,
+                        show_system_messages = true,
+                    },
                 },
                 prompt_library = {
                     ["Explain"] = {
@@ -128,32 +215,14 @@ return {
                             },
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function(context)
-                                    local code = require("codecompanion.helpers.actions").get_code(context.start_line,
-                                        context.end_line)
-
                                     return string.format(
-                                        [[#buffer
-1. 説明対象はbufnrが%dのバッファの下記コードです。
+                                        [[### 依頼したいタスク
 
-```%s
-%s
-```
+#buffer:%d-%d の説明をお願いします。
 ]],
-                                        context.bufnr,
-                                        context.filetype,
-                                        code
+                                        context.start_line,
+                                        context.end_line
                                     )
                                 end,
                                 opts = {
@@ -199,33 +268,15 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function(context)
-                                    local code = require("codecompanion.helpers.actions").get_code(context.start_line,
-                                        context.end_line)
-
                                     return string.format(
-                                        [[#buffer
-1. 修正対象はbufnrが%dのバッファの下記コードです。
-2. 修正内容の説明もお願いします。
+                                        [[### 依頼したいタスク
 
-```%s
-%s
-```
+1. #buffer:%d-%d の修正案の作成をお願いします。
+2. 修正内容の説明もお願いします。
 ]],
-                                        context.bufnr,
-                                        context.filetype,
-                                        code
+                                        context.start_line,
+                                        context.end_line
                                     )
                                 end,
                                 opts = {
@@ -249,34 +300,15 @@ Use Markdown formatting and include the programming language name at the start o
                         prompts = {
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function(context)
-                                    local code = require("codecompanion.helpers.actions").get_code(context.start_line,
-                                        context.end_line)
-
                                     return string.format(
-                                        [[#buffer
-1. ソースコードへのコメントドキュメントの修正案の作成をお願いします。
-2. 修正対象はbufnrが%dのバッファの下記コードです。
-3. コメント内容の説明もお願いします。
+                                        [[### 依頼したいタスク
 
-```%s
-%s
-```
+1. #buffer:%d-%d のコメントドキュメントの作成をお願いします。
+2. コメント内容の説明もお願いします。
 ]],
-                                        context.bufnr,
-                                        context.filetype,
-                                        code
+                                        context.start_line,
+                                        context.end_line
                                     )
                                 end,
                                 opts = {
@@ -318,33 +350,15 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function(context)
-                                    local code = require("codecompanion.helpers.actions").get_code(context.start_line,
-                                        context.end_line)
-
                                     return string.format(
-                                        [[#buffer
-1. テスト対象はbufnrが%dのバッファの下記コードです。
-2. テスト内容の説明もお願いします。
+                                        [[### 依頼したいタスク
 
-```%s
-%s
-```
+1. #buffer:%d-%d のUnit Testを作成してください。
+2. テスト内容の説明もお願いします。
 ]],
-                                        context.bufnr,
-                                        context.filetype,
-                                        code
+                                        context.start_line,
+                                        context.end_line
                                     )
                                 end,
                                 opts = {
@@ -377,17 +391,6 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function(context)
                                     local diagnostics = require("codecompanion.helpers.actions").get_diagnostics(
                                         context.start_line,
@@ -416,28 +419,18 @@ Use Markdown formatting and include the programming language name at the start o
                                         concatenated_diagnostics = "    - 指摘なし"
                                     end
 
-                                    local code = require("codecompanion.helpers.actions").get_code(
-                                        context.start_line,
-                                        context.end_line,
-                                        { show_line_numbers = true }
-                                    )
-
                                     return string.format(
-                                        [[#buffer
-1. プログラミング言語%sで作成されたソースコードのDiagnosticsの指摘内容を解消してください。
+                                        [[### 依頼したいタスク
+
+1. プログラミング言語%sで作成された #buffer:%d-%d のDiagnosticsの指摘内容を説明してください。
+    - Diagnosticsの指定がない場合はより良いソースコードになるような修正案を作成してください。
 2. Diagnosticsのメッセージは下記の通りです。
 %s
-3. 修正対象はbufnrが%dのバッファの下記コードです。
-
-```%s
-%s
-```
 ]],
                                         context.filetype,
-                                        concatenated_diagnostics,
-                                        context.bufnr,
-                                        context.filetype,
-                                        code
+                                        context.start_line,
+                                        context.end_line,
+                                        concatenated_diagnostics
                                     )
                                 end,
                                 opts = {
@@ -470,17 +463,6 @@ Use Markdown formatting and include the programming language name at the start o
                             },
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function(context)
                                     local diagnostics = require("codecompanion.helpers.actions").get_diagnostics(
                                         context.start_line,
@@ -509,31 +491,19 @@ Use Markdown formatting and include the programming language name at the start o
                                         concatenated_diagnostics = "    - 指摘なし"
                                     end
 
-                                    local code = require("codecompanion.helpers.actions").get_code(
-                                        context.start_line,
-                                        context.end_line,
-                                        { show_line_numbers = true }
-                                    )
-
                                     return string.format(
-                                        [[#buffer
-1. プログラミング言語%sで作成されたソースコードのDiagnosticsの指摘内容を解消してください。
+                                        [[### 依頼したいタスク
+
+1. プログラミング言語%sで作成された #buffer:%d-%d のDiagnosticsの指摘内容を解消してください。
     - Diagnosticsの指定がない場合はより良いソースコードになるような修正案を作成してください。
-2. Diagnosticsのメッセージは下記の通りです。
+2. 修正内容の説明もお願いします。
+3. Diagnosticsのメッセージは下記の通りです。
 %s
-3. 修正対象はbufnrが%dのバッファの下記コードです。
-
-```%s
-%s
-```
-
-4. 修正内容の説明もお願いします。
 ]],
                                         context.filetype,
-                                        concatenated_diagnostics,
-                                        context.bufnr,
-                                        context.filetype,
-                                        code
+                                        context.start_line,
+                                        context.end_line,
+                                        concatenated_diagnostics
                                     )
                                 end,
                                 opts = {
@@ -555,26 +525,15 @@ Use Markdown formatting and include the programming language name at the start o
                         prompts = {
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. コミットメッセージも日本語で作成してください。
-4. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function()
                                     return string.format(
-                                        [[あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元にコミットメッセージを作成してください。
+                                        [[### 依頼したいタスク
+
+あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元に日本語でコミットメッセージを作成してください。
 
 ```diff
 %s
-```
-]],
+```]],
                                         vim.fn.system("git diff --no-ext-diff --staged")
                                     )
                                 end,
@@ -597,26 +556,15 @@ Use Markdown formatting and include the programming language name at the start o
                         prompts = {
                             {
                                 role = "user",
-                                content = [[■前提
-1. 回答文はGitlab Flavored Markdownのスタイルで作成してください。
-    - 行頭が`#`で始まる行の前後に空行を入れてください。
-    - `**`の強調は使用しないでください。
-2. 回答中の説明は、すべて日本語で作成してください。
-3. コミットメッセージも日本語で作成してください。
-4. 回答文は、ですます調ではなく、である調で回答してください。
-
-■依頼内容]],
-                            },
-                            {
-                                role = "user",
                                 content = function()
                                     return string.format(
-                                        [[あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元にコミットメッセージを作成してください。
+                                        [[### 依頼したいタスク
+
+あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元に日本語でコミットメッセージを作成してください。
 
 ```diff
 %s
-```
-]],
+```]],
                                         vim.fn.system("git diff --no-ext-diff")
                                     )
                                 end,
