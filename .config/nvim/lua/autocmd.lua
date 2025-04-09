@@ -58,19 +58,6 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     end,
 })
 
-local group = vim.api.nvim_create_augroup("CodeCompanionHooks", {})
-
--- Inlineの場合、変更的用語にフォーマットする
--- それ以外の場合、formatterが見つからずエラーになる
-vim.api.nvim_create_autocmd({ "User" }, {
-    pattern = { "CodeCompanionInlineFinished", "CodeCompanionDiffAttached" },
-    group = group,
-    callback = function(request)
-        local bufnr
-        if request.match == "CodeCompanionInlineFinished" then
-            bufnr = request.buf
-        elseif request.match == "CodeCompanionDiffAttached" then
-            bufnr = request.data.bufnr
 local reload = require("plenary.reload")
 
 vim.api.nvim_create_autocmd("BufWritePost", {
@@ -93,23 +80,9 @@ vim.api.nvim_create_autocmd("BufWritePost", {
             end
         end
 
-        if bufnr then
-            vim.notify("code formatting has begun for buffer [" .. bufnr .. "]")
-            require("conform").format({
-                timeout_ms = 1000,
-                bufnr = bufnr,
-                async = true,
-            }, function(err, _)
-                if err then
-                    vim.notify(err, vim.log.levels.ERROR)
-                else
-                    vim.notify("code formatting successfully completed for buffer [" .. bufnr .. "]")
-                end
-            end)
         if not matched_root then
             return -- 対象外のファイル
         end
-    end
 
         local relative_path = full_path:sub(#matched_root + 2) -- `/`を飛ばすため +2
         local module_name = relative_path:gsub("%.lua$", ""):gsub("/", ".")
