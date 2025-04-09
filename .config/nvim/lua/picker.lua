@@ -373,7 +373,7 @@ function M.gen_from_buffer(opts)
 end
 
 local function get_model_choices(adapter_name)
-    local config = require("codecompanion.config")
+    local config = require("codecompanion.config").config
     -- configとadaptersの存在確認
     if not config or not config.adapters or not config.adapters[adapter_name] then
         vim.notify("設定が見つかりません", vim.log.levels.ERROR)
@@ -387,7 +387,7 @@ local function get_model_choices(adapter_name)
             vim.notify(adapter_name .. "の設定が不正です", vim.log.levels.ERROR)
             return {}
         end
-        choices = adapter.schema.model.choices
+        choices = adapter.schema.model.choices()
     else
         local adapter_config
         if type(config.adapters[adapter_name]) == "function" then
@@ -400,7 +400,7 @@ local function get_model_choices(adapter_name)
             vim.notify(adapter_name .. "の設定が不正です", vim.log.levels.ERROR)
             return {}
         end
-        choices = adapter_config.schema.model.choices
+        choices = adapter_config.schema.model.choices()
     end
 
     if not choices or type(choices) ~= "table" then
@@ -453,7 +453,7 @@ function M.select_model()
     local themes = require("telescope.themes")
 
     -- アダプター名を取得
-    local adapter_name = require("codecompanion.config").strategies['chat'].adapter
+    local adapter_name = require("codecompanion.config").config.strategies['chat'].adapter
 
     pickers.new(themes.get_dropdown(), {
         prompt_title = "Select AI Model",
@@ -485,7 +485,7 @@ function M.select_strategy_and_model()
     local actions = require("telescope.actions")
     local action_state = require("telescope.actions.state")
     local themes = require("telescope.themes")
-    local config = require("codecompanion.config")
+    local config = require("codecompanion.config").config
 
     -- アダプター名の重複を削除した一覧を作成
     local adapter_names = {}
