@@ -71,6 +71,26 @@ vim.api.nvim_create_autocmd({ "User" }, {
             bufnr = request.buf
         elseif request.match == "CodeCompanionDiffAttached" then
             bufnr = request.data.bufnr
+local reload = require("plenary.reload")
+
+vim.api.nvim_create_autocmd("BufWritePost", {
+    pattern = "*.lua",
+    callback = function(args)
+        -- パスを正規化（シンボリックリンクや相対パスを解決）
+        local full_path = vim.loop.fs_realpath(args.file)
+        if not full_path then return end
+
+        -- 正規化したターゲットパス
+        local targets = {
+            vim.loop.fs_realpath(vim.fn.expand("~/.config/nvim/lua/")),
+        }
+
+        local matched_root
+        for _, root in ipairs(targets) do
+            if full_path:sub(1, #root) == root then
+                matched_root = root
+                break
+            end
         end
 
         if bufnr then
@@ -86,6 +106,17 @@ vim.api.nvim_create_autocmd({ "User" }, {
                     vim.notify("code formatting successfully completed for buffer [" .. bufnr .. "]")
                 end
             end)
+        if not matched_root then
+            return -- 対象外のファイル
         end
     end
+
+        local relative_path = full_path:sub(#matched_root + 2) -- `/`を飛ばすため +2
+        local module_name = relative_path:gsub("%.lua$", ""):gsub("/", ".")
+
+        reload.reload_module(module_name)
+        require(module_name)
+
+        vim.notify("Reloaded: " .. module_name, vim.log.levels.INFO)
+    end,
 })
