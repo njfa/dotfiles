@@ -37,7 +37,7 @@ return {
                     { "sa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
                     { "sd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
                     { "sr", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
-                    { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
+                    { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 5000, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
                 },
 
                 { "<A-s>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "AIチャットを開く" },
@@ -84,12 +84,12 @@ return {
 
                 { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
                 { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
-                { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
-                { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
+                -- { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
+                -- { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
                 { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
                 { "gS", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
                 -- { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>", desc = "Git ステージしたhunkをundoする" },
-                -- { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
+                { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
                 -- { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
 
                 {
@@ -207,9 +207,9 @@ return {
                         { "<leader><leader>", group = "leader" },
                         { "<leader><leader>c", '<cmd>tabnew<cr>', desc = "タブ作成" },
                         { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
-                        { "<leader><leader>i", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (right)" },
-                        { "<leader><leader>h", "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", desc = "ファイル閲覧履歴 (頻度考慮)" },
                         { "<leader><leader>e", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
+                        { "<leader><leader>i", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (bottom)" },
+                        { "<leader><leader>h", "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", desc = "ファイル閲覧履歴 (頻度考慮)" },
                         { "<leader><leader>j", require('treesj').join, desc = "行結合" },
                         { "<leader><leader>m", require('treesj').toggle, desc = "行分割/結合 切替" },
                         { "<leader><leader>s", require('treesj').split, desc = "行分割" },
