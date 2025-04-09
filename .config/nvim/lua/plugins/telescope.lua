@@ -40,7 +40,8 @@ return {
                 defaults = {
                     mappings = {
                         i = {
-                            ["<esc>"] = actions.close
+                            ["<esc>"] = actions.close,
+                            ["<C-a>"] = actions.select_all
                         },
 
                     },
@@ -59,7 +60,8 @@ return {
                     },
                     file_ignore_patterns = {
                         "node_modules/",
-                        "target/"
+                        "target/",
+                        "**/.git/"
                     }
                 },
                 pickers = {
@@ -90,6 +92,16 @@ return {
                             preview_cutoff = 40,
                             prompt_position = "bottom",
                             width = 0.99
+                        },
+                    },
+                    buffers = {
+                        layout_strategy = "vertical",
+                        layout_config = {
+                            height = 0.99,
+                            preview_cutoff = 40,
+                            prompt_position = "bottom",
+                            width = 0.99,
+                            preview_height = 15,
                         },
                     },
                 },
