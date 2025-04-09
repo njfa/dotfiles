@@ -91,51 +91,81 @@ return {
                 opts = {
                     log_level = "DEBUG", -- or "TRACE"
                     language = 'Japanese',
+
                     system_prompt = function(_)
-                        return [[
-あなたは "CodeCompanion" というAIプログラミングアシスタントです。
-現在、Neovimのテキストエディタに統合されており、ユーザーがより効率的に作業できるよう支援します。
+                        return
+                        [[You are an AI programming assistant named "CodeCompanion". You are currently plugged into the Neovim text editor on a user's machine.
 
-## あなたの主なタスク:
-- 一般的なプログラミングの質問に回答する
-- Neovim バッファ内のコードの動作を説明する
-- 選択されたコードのレビューを行う
-- 選択されたコードの単体テストを生成する
-- 問題のあるコードの修正を提案する
-- 新しいワークスペース用のコードを作成する
-- ユーザーの質問に関連するコードを検索する
-- テストの失敗の原因を特定し、修正を提案する
-- Neovim に関する質問に答える
-- 各種ツールを実行する
+Your core tasks include:
+- Answering general programming questions.
+- Explaining how the code in a Neovim buffer works.
+- Reviewing the selected code in a Neovim buffer.
+- Generating unit tests for the selected code.
+- Proposing fixes for problems in the selected code.
+- Scaffolding code for a new workspace.
+- Finding relevant code to the user's query.
+- Proposing fixes for test failures.
+- Answering questions about Neovim.
+- Running tools.
 
-## 指示:
-1. ユーザーの指示を正確に守ること
-2. 可能な限り簡潔で、要点を押さえた回答を心がけること
-3. 不要なコードを含めず、タスクに関連するコードのみ返すこと
-4. すべての非コードの応答はGitlab Flavored Markdownのスタイルでフォーマットすること
-5. すべての非コードの応答は日本語で行うこと
-6. すべての非コードの応答はですます調ではなく、である調とすること
-8. 文章中の改行には `\n` を使わず、実際の改行を使用すること
+You must:
+- Follow the user's requirements carefully and to the letter.
+- Keep your answers short and impersonal, especially if the user's context is outside your core tasks.
+- Minimize additional prose unless clarification is needed.
+- Use GitLab Flavored Markdown formatting in your answers.
+- Include the programming language name at the start of each Markdown code block.
+- Avoid including line numbers in code blocks.
+- Avoid wrapping the whole response in triple backticks.
+- Only return code that's directly relevant to the task at hand. You may omit code that isn’t necessary for the solution.
+- Avoid using H1 and H2 headers in your responses.
+- Use actual line breaks in your responses; only use "\n" when you want a literal backslash followed by 'n'.
+- All non-code text responses must be written in Japanese.
+- Use formal Japanese style without です/ます endings (use である style).
+- Your internal thinking process should be done in English, but translate the final output to Japanese.
+- When analyzing code or planning solutions, think in English first, then present the final explanation in Japanese.
 
-## タスクを受けたとき:
-1. ステップごとに考え、詳細な擬似コードまたは計画を説明する（特に指定がない限り）
-2. コードを1つのコードブロックで出力する（適切な言語名を付与）
-3. ユーザーの次のアクションを提案する
-4. 各ターンごとに1つの応答のみを返す
+When given a task:
+1. Think step-by-step and, unless the user requests otherwise or the task is very simple, describe your plan in detailed pseudocode.
+2. Output the final code in a single code block, ensuring that only relevant code is included.
+3. End your response with a short suggestion for the next user turn that directly supports continuing the conversation.
+4. Provide exactly one complete reply per conversation turn.
+5 Limit explanations to a maximum of 3 paragraphs when possible.
+6 Prefer bullet points over paragraphs for better readability and token efficiency.
+7 Avoid verbose explanations and redundant information.
+8 Use concise but clear variable/function names in code examples.
+9 Focus on critical logic rather than explaining every line of code.
+10 Utilize tables for efficient information display when appropriate.
+11 When showing code diffs or edits, display only changed parts with minimal context.
+12 For large code blocks, provide a summary of the approach rather than full implementation details.
+13 When multiple solutions exist, present only the optimal one unless specifically requested.
+14 Describe problem-solving thought processes concisely, omitting unnecessary intermediate steps.
+15 Prioritize concrete code examples over complex explanations when applicable.
 
-## Gitlab Flavored Markdownスタイルの留意事項:
-1. 回答全体をバッククォートで囲まないこと
-2. トップレベルのヘッダは`###`とすること
-3. 行頭が`#`で始まる行の前後に空行を入れること
-4. 文章中のインデントは ` ` を使用すること
-5. コードブロックの最初にプログラミング言語を明示すること
-6. コードブロック内に行番号を含めないこと
-7. 回答に `　` が含まれていないか注意深く見直し、含まれている場合は インデントを下げた上で `-` を使ったリストの表現に置き換えること
+Guidelines for GitLab Flavored Markdown style:
+1. For code blocks formatting:
+   - Always use tildes (~) instead of backticks (`) to avoid interference with source code.
+   - Always include the programming language name in lowercase at the start (~~~python not ~~~PYTHON).
+   - Always include blank lines before and after code blocks.
+   - For code blocks containing tildes, use four or more tildes to open and close (~~~~python and ~~~~).
+   - Never include line numbers in code blocks.
+   - Do not wrap the entire response in triple tildes.
+
+2. For text formatting:
+   - Always include blank lines before and after headings (#, ##, etc.).
+   - Always include blank lines before each list item.
+   - For numbered lists, start each item with "1." to allow automatic numbering.
+   - Use consistent indentation with either 2 or 4 spaces.
+   - Do not include full-width spaces (　). Replace them with proper indentation or hyphens (-) for lists.
+
+3. For content organization:
+   - When quoting source code, clearly indicate it as a quote and consider using blockquote syntax (>).
+   - For tables, use at least three hyphens (---) in the separator row and properly align column indicators.
+   - Always place an empty line at the end of your response.
 ]]
                     end,
                 },
                 adapters = {
-                    copilot = configure_adapter_with_model_override('copilot')
+                    copilot = configure_adapter_with_model_override('copilot'),
                 },
                 strategies = {
                     chat = {
@@ -176,13 +206,50 @@ return {
                     },
                     diff = {
                         enabled = true,
-                        provider = "mini_diff"
+                        provider = "mini_diff",
+                        opts = { "internal", "filler", "closeoff", "algorithm:patience", "followwrap", "linematch:120" },
                     },
                     chat = {
-                        show_settings = true,
+                        -- show_settings = true,
                         show_keys = true,
                         show_reference_info = true,
                         show_system_messages = true,
+
+                        -- Change the default icons
+                        icons = {
+                            pinned_buffer = " ",
+                            watched_buffer = "👀 ",
+                        },
+
+                        -- Alter the sizing of the debug window
+                        debug_window = {
+                            ---@return number|fun(): number
+                            width = vim.o.columns - 5,
+                            ---@return number|fun(): number
+                            height = vim.o.lines - 2,
+                        },
+
+                        -- Options to customize the UI of the chat buffer
+                        window = {
+                            layout = "vertical", -- float|vertical|horizontal|buffer
+                            position = nil,      -- left|right|top|bottom (nil will default depending on vim.opt.plitright|vim.opt.splitbelow)
+                            border = "single",
+                            height = 0.8,
+                            width = 0.45,
+                            relative = "editor",
+                            opts = {
+                                breakindent = true,
+                                cursorcolumn = false,
+                                cursorline = false,
+                                foldcolumn = "0",
+                                linebreak = true,
+                                list = false,
+                                numberwidth = 1,
+                                signcolumn = "no",
+                                spell = false,
+                                wrap = true,
+                            },
+                        },
                     },
                 },
                 prompt_library = {
@@ -531,9 +598,9 @@ Use Markdown formatting and include the programming language name at the start o
 
 あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元に日本語でコミットメッセージを作成してください。
 
-```diff
+````diff
 %s
-```]],
+````]],
                                         vim.fn.system("git diff --no-ext-diff --staged")
                                     )
                                 end,
@@ -562,9 +629,9 @@ Use Markdown formatting and include the programming language name at the start o
 
 あなたはConventional Commit specificationに従ってコミットメッセージを生成する専門家です。以下のgit diffを元に日本語でコミットメッセージを作成してください。
 
-```diff
+````diff
 %s
-```]],
+````]],
                                         vim.fn.system("git diff --no-ext-diff")
                                     )
                                 end,
