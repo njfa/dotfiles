@@ -261,6 +261,7 @@ return {
                     },
                     bash = { "shfmt" },
                     java = { "google-java-format" },
+                    markdown = { "markdownlint" },
                 },
             })
         end,
