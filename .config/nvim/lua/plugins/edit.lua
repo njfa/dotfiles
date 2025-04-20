@@ -149,6 +149,7 @@ return {
             vim.g.mkdp_preview_options = {
                 uml = {
                     server = "http://127.0.0.1:18123",
+                    imageFormat = "svg"
                 },
             }
         end,
