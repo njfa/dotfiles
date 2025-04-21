@@ -1,11 +1,14 @@
 -- bufferlineでタブバーを表示する
 -- 設定が多いため、別ファイルに切り出し
+local vscode = require('vscode-utils')
+
 return {
     'akinsho/bufferline.nvim',
     dependencies = {
         'nvim-tree/nvim-web-devicons',
         'tiagovla/scope.nvim',
     },
+    enabled = not vscode.is_vscode,
     config = function()
         local colors = require("tokyonight.colors").setup() -- pass in any of the config options as explained above
 
