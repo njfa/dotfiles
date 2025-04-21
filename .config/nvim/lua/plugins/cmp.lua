@@ -1,3 +1,5 @@
+local vscode = require('vscode-utils')
+
 return {
     {
         'saghen/blink.compat',
@@ -7,6 +9,7 @@ return {
         lazy = true,
         -- make sure to set opts so that lazy.nvim calls blink.compat's setup
         opts = {},
+        enabled = not vscode.is_vscode,
     },
     {
         'saghen/blink.cmp',
@@ -15,6 +18,7 @@ return {
             'L3MON4D3/LuaSnip',
             "giuxtaposition/blink-cmp-copilot",
         },
+        enabled = not vscode.is_vscode,
 
         -- use a release tag to download pre-built binaries
         version = '*',

@@ -1,3 +1,5 @@
+local vscode = require('vscode-utils')
+
 -- キーバインドをわかりやすくする
 return {
     "folke/which-key.nvim",
@@ -10,6 +12,17 @@ return {
     config = function()
         local wk = require("which-key")
         local conform = require("conform")
+
+        if vscode.is_vscode then
+            local vscode_neovim = require("vscode")
+            wk.add({
+                {
+                    mode = { "n" },
+                    { "u", vscode_neovim.action("undo"), desc = "Undo" },
+                    { "<C-r>", vscode_neovim.action("redo"), desc = "Redo" },
+                }
+            })
+        end
 
         wk.add({
             {
