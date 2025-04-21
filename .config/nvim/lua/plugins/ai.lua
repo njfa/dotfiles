@@ -1,9 +1,12 @@
+local vscode = require('vscode-utils')
+
 -- 共通の前提部分を定義
 return {
     {
         "zbirenbaum/copilot.lua",
         cmd = "Copilot",
         event = "InsertEnter",
+        enabled = not vscode.is_vscode,
         config = function()
             require("copilot").setup({
                 suggestion = { enabled = false },
@@ -14,6 +17,7 @@ return {
     },
     {
         "olimorris/codecompanion.nvim",
+        enabled = not vscode.is_vscode,
         dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",

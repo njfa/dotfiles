@@ -1,4 +1,5 @@
 local map = require("common").map
+local vscode = require('vscode-utils')
 -- local buf_map = require('common').buf_map
 
 -- ファイル編集用プラグイン全般
@@ -58,14 +59,15 @@ return {
     },
 
     -- コメント機能の拡張
-    "tpope/vim-commentary",
+    { "tpope/vim-commentary", enabled = not vscode.is_vscode },
     -- textobjectの拡張
-    "wellle/targets.vim",
+    { "wellle/targets.vim", enabled = not vscode.is_vscode },
     -- アスタリスクを拡張
-    "haya14busa/vim-asterisk",
+    { "haya14busa/vim-asterisk", enabled = not vscode.is_vscode },
 
     {
         "gbprod/substitute.nvim",
+        enabled = not vscode.is_vscode,
         config = function()
             require("substitute").setup({
                 -- your configuration comes here
@@ -87,6 +89,7 @@ return {
     -- undoの拡張
     {
         "mbbill/undotree",
+        enabled = not vscode.is_vscode,
         init = function()
             -- バックアップファイルの保存場所
             if vim.fn.has("persistent_undo") ~= 0 then
@@ -99,6 +102,7 @@ return {
     -- テーブル作成用のモードを追加
     {
         "dhruvasagar/vim-table-mode",
+        enabled = not vscode.is_vscode,
         init = function()
             vim.g.table_mode_map_prefix = "<Leader><Leader>t"
             -- vim.g.table_disable_mappings = 1
@@ -110,6 +114,7 @@ return {
     -- Gitのファイル差分を表示する
     {
         "sindrets/diffview.nvim",
+        enabled = not vscode.is_vscode,
         dependencies = {
             "nvim-lua/plenary.nvim",
         },
@@ -135,6 +140,7 @@ return {
     {
         "hashivim/vim-terraform",
         ft = { "terraform" },
+        enabled = not vscode.is_vscode,
         init = function()
             vim.g.terraform_fmt_on_save = 1
         end,
@@ -144,6 +150,7 @@ return {
         "iamcco/markdown-preview.nvim",
         ft = { "markdown", "plantuml" },
         build = "cd app && npm install",
+        enabled = not vscode.is_vscode,
         init = function()
             vim.g.mkdp_filetypes = { "markdown", "plantuml" }
             vim.g.mkdp_preview_options = {
@@ -158,6 +165,7 @@ return {
 
     {
         "rhysd/git-messenger.vim",
+        enabled = not vscode.is_vscode,
         init = function()
             vim.g.git_messenger_no_default_mappings = true
             vim.g.git_messenger_include_diff = "current"
@@ -180,6 +188,7 @@ return {
         dependencies = {
             "rafamadriz/friendly-snippets",
         },
+        enabled = not vscode.is_vscode,
         -- follow latest release.
         version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
         -- install jsregexp (optional!).
@@ -191,6 +200,7 @@ return {
         dependencies = {
             "godlygeek/tabular",
         },
+        enabled = not vscode.is_vscode,
         init = function()
             vim.g.vim_markdown_conceal = 0
             vim.g.vim_markdown_toc_autofit = 0
@@ -203,6 +213,7 @@ return {
         dependencies = {
             "nvim-treesitter/nvim-treesitter",
         },
+        enabled = not vscode.is_vscode,
         -- init = function()
         --     require("nvim-treesitter.parsers")
         -- end,
@@ -220,6 +231,7 @@ return {
         dependencies = {
             "nvim-treesitter/nvim-treesitter",
         },
+        enabled = not vscode.is_vscode,
         config = function()
             require("nvim-ts-autotag").setup({
                 -- filetypes = { "html" , "xml", "markdown" },

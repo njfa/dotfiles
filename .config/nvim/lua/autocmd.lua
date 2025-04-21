@@ -1,4 +1,5 @@
 local buf_map = require('common').buf_map
+local vscode = require('vscode-utils')
 
 -- IMEの自動OFF
 if vim.fn.executable('zenhan.exe') == 1 then
@@ -46,15 +47,17 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     pattern = { "*" },
     callback = function()
-        local prefix = ""
-        if require('picker').is_git_repo() then
-            prefix = "  "
+        if not vscode.is_vscode then
+            local prefix = ""
+            if require('picker').is_git_repo() then
+                prefix = "  "
+            end
+
+            local cwd = require('picker').get_cwd()
+            cwd = vim.fn.pathshorten(cwd)
+
+            vim.api.nvim_tabpage_set_var(0, "name", prefix .. cwd)
         end
-
-        local cwd = require('picker').get_cwd()
-        cwd = vim.fn.pathshorten(cwd)
-
-        vim.api.nvim_tabpage_set_var(0, "name", prefix .. cwd)
     end,
 })
 

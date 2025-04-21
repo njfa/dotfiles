@@ -1,8 +1,11 @@
 -- ファジーファインダー
+local vscode = require('vscode-utils')
+
 return {
     {
         'nvim-telescope/telescope.nvim',
         branch = 'master',
+        enabled = not vscode.is_vscode,
         dependencies = {
             'nvim-lua/plenary.nvim',
             'nvim-telescope/telescope-frecency.nvim',
