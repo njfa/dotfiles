@@ -1,11 +1,11 @@
 -- ファジーファインダー
-local vscode = require('vscode-utils')
+local status_ok, vscode = pcall(require, "vscode")
 
 return {
     {
         'nvim-telescope/telescope.nvim',
         branch = 'master',
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         dependencies = {
             'nvim-lua/plenary.nvim',
             'nvim-telescope/telescope-frecency.nvim',
@@ -105,6 +105,15 @@ return {
                             prompt_position = "bottom",
                             width = 0.99,
                             preview_height = 15,
+                        },
+                    },
+                    current_buffer_fuzzy_find = {
+                        layout_strategy = "vertical",
+                        layout_config = {
+                            height = 0.99,
+                            preview_cutoff = 40,
+                            prompt_position = "bottom",
+                            width = 0.99,
                         },
                     },
                 },
