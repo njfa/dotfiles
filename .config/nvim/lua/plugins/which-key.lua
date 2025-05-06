@@ -1,4 +1,12 @@
-local vscode = require('vscode-utils')
+local status_ok, vscode = pcall(require, "vscode")
+
+local function vscode_mapping(function_native, function_vscode)
+    if status_ok then
+        return function_vscode
+    else
+        return function_native
+    end
+end
 
 -- キーバインドをわかりやすくする
 return {
@@ -13,197 +21,46 @@ return {
         local wk = require("which-key")
         local conform = require("conform")
 
-        if vscode.is_vscode then
-            local vscode_neovim = require("vscode")
+        if status_ok then
             wk.add({
                 {
                     mode = { "n" },
-                    { "u", vscode_neovim.action("undo"), desc = "Undo" },
-                    { "<C-r>", vscode_neovim.action("redo"), desc = "Redo" },
+                    { "u",     vscode.action("undo"), desc = "Undo" },
+                    { "<C-r>", vscode.action("redo"), desc = "Redo" },
                 }
             })
-        end
-
-        wk.add({
-            {
-                mode = { "n", "x" },
-
-                { "s", '"_s', desc = "s (レジスタを書き換えない)" },
-                { "x", '"_x', desc = "x (レジスタを書き換えない)" },
-                { "n", 'nzz', desc = "次の検索結果へ" },
-                { "N", 'Nzz', desc = "前の検索結果へ" },
-
-                { ")", function() require('hop').hint_lines_skip_whitespace({}) end, desc = "任意の行頭へ移動（空行は無視）" },
-                { "t", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require 'hop.hint'
-                    .HintPosition.BEGIN }) end, desc = "任意の単語へ移動" },
-                { "T", function() require('hop').hint_camel_case({ current_line_only = false, hint_position = require 'hop.hint'
-                    .HintPosition.END }) end, desc = "任意の単語へ移動" },
-                { "<Up>", "<cmd>HopVerticalBC<cr>", desc = "任意の行へ移動（上）" },
-                { "<Down>", "<cmd>HopVerticalAC<cr>", desc = "任意の行へ移動（下）" },
+        else
+            wk.add({
                 {
-                    { "m", group = "ファイル編集" },
-                    { "mm", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
-                },
-
-                {
-                    { "s", group = "Sandwich" },
-                    { "sa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
-                    { "sd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
-                    { "sr", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
-                    { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 5000, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
-                },
-
-                { "<A-s>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "AIチャットを開く" },
-                { "<A-f>", function() require('telescope.builtin').grep_string() end, desc = "カーソル下/選択中の文字列をGrep検索" },
-
-                {
-                    { "<leader>k",  group = "AI機能" },
-                    { "<leader>ke", group = "説明" },
-                    { "<leader>kp", group = "修正案の作成" },
-                    { "<leader>km", function() require('picker').select_strategy_and_model() end, desc = "使用するモデルを変更" },
-                    { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
-                    { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
-                    { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
-                },
-
-                {
-                    { "<leader><leader>t", group = "Table操作" },
-                    { "<leader><leader>tm", "<cmd>TableModeToggle<CR>", desc = "Tableモード切替" },
-                    { "<leader><leader>ta", "<cmd>TableModeRealign<CR>", desc = "Table整形" },
-                    { "<leader><leader>tt", [[<Plug>(table-mode-tableize)]], desc = "Tableへ変換" },
-                }
-            },
-            {
-                mode = { "n" },
-                { "0", "^", desc = "行の先頭文字に移動" },
-                { "^", "0", desc = "行頭に移動" },
-
-                { "qq", "<cmd>q<cr>", desc = "ウィンドウを閉じる" },
-
-                { "<C-Up>", '"zdd<Up>"zP', desc = "カーソル行を1行移動 (上)" },
-                { "<C-Down>", '"zdd"zp', desc = "カーソル行を1行移動 (下)" },
-
-                { "<C-j>", 'o<Esc>0"_D', desc = "空行を挿入 (下)" },
-                { "<C-k>", 'O<Esc>0"_D', desc = "空行を挿入 (上)" },
-
-                { "*", [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]], desc = "* (カーソルを移動しない)" },
-                { "#", [[<Plug>(asterisk-z#)<Cmd>lua require('hlslens').start()<CR>]], desc = "# (カーソルを移動しない)" },
-                { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>]], desc = "g* (カーソルを移動しない)" },
-                { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]], desc = "g# (カーソルを移動しない)" },
-
-                { "<leader>q", "<cmd>copen<CR>", desc = "quickfixを開く" },
-                { "{", "<cmd>cp<CR>zz", desc = "quickfixの前の要素に移動する" },
-                { "}", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
-
-                { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
-                { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
-                -- { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
-                -- { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
-                { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
-                { "gS", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
-                -- { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>", desc = "Git ステージしたhunkをundoする" },
-                { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
-                -- { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
-
-                {
-                    { "me", group = "ナンバリング" },
-                    { "mes", "<cmd>SetHeaderNumber<cr>", desc = "ナンバリングを適用" },
-                    { "meu", "<cmd>UnsetHeaderNumber<cr>", desc = "ナンバリングを削除" },
-                    { "met", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替" },
-                },
-                { "R", function() require('substitute').operator() end, desc = "指定したテキストオブジェクトを置換" },
-
-
-                { "<Esc>", ":noh<cr>", desc = "検索結果のハイライトを削除" },
-
-                { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
-
-                { "H", "<cmd>tabp<cr>", desc = "前のタブに移動" },
-                { "L", "<cmd>tabn<cr>", desc = "次のタブに移動" },
-                { "<C-h>", "<cmd>BufferLineCyclePrev<cr>", desc = "前のバッファに移動" },
-                { "<C-l>", "<cmd>BufferLineCycleNext<cr>", desc = "次のバッファに移動" },
-
-                {
-                    { "<C-w>", group = "画面操作" },
-                    { "<C-w>e", "<cmd>vsplit<cr>", desc = "画面分割 (縦)" },
-                    { "<C-w>i", "<cmd>split<cr>", desc = "画面分割 (横)" },
-                    { "<C-w>p", "<cmd>MarkdownPreview<cr>", desc = "Markdownのプレビュー" },
-                    { "<C-w>g", "<cmd>DiffviewFileHistory<cr>", desc = "GitのDiff表示領域を表示" },
-                    { "<C-w>.", function() require("common").lcd_current_workspace() end, desc = "vimのカレントディレクトリを変更" },
-                },
-
-                {
-                    { "<leader>k",  group = "AI機能" },
-                    { "<leader>kb", "ggVG:CodeCompanion /buffer ", desc = "バッファのInline Assistantを実行" },
-                    { "<leader>kee", "ggVG:CodeCompanion /explain<cr>", desc = "コードの説明作成" },
-                    { "<leader>ked", "ggVG:CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
-                    { "<leader>kd", "ggVG:CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
-                    { "<leader>kpd", "ggVG:CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正案の作成 (Diagnostics利用)" },
-                    { "<leader>kpp", "ggVG:CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
-                    { "<leader>kt", "ggVG:CodeCompanion /tests<cr>", desc = "テストコードの作成" },
-                },
-
-                {
-                    { "<leader>", group = "leader" },
-                    { "<leader>c", '<cmd>enew<cr>', desc = "バッファ作成" },
-                    { "<leader>d", "<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", desc = "バッファを閉じる" },
-                    { "<leader>e", "<cmd>Neotree float reveal<CR>", desc = "ファイラーを開く (floating window)" },
-                    { "<leader>i", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
-                    { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
-                    { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換" },
-                    { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
-                    { "<leader>u", "<cmd>UndotreeToggle<cr>", desc = "ファイル編集履歴 表示切替" },
-                    { "<leader>w", "<cmd>w<cr>", desc = "保存" },
-                    { "<leader>y", "<cmd>HopYankChar1<CR>", desc = "コピー（場所選択）" },
-
-                    { "<leader>b", "<cmd>Telescope buffers sort_mru=true<CR>", desc = "タブ一覧を開く" },
-                    { "<leader>f", function() require('picker').find_files_from_project_git_root() end, desc = "ファイル検索" },
-                    { "<leader>g", function() require('picker').live_grep_from_project_git_root() end, desc = "Grep検索" },
-                    { "<leader>h", function() require('picker').find_files_from_project_git_root({ oldfiles = true }) end, desc = "ファイル閲覧履歴" },
-                    { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
-                    { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
-                    { "<leader>s", function() require('treesj').split({ split = { recursive = true } }) end, desc = "行分割" },
-
-                    { "<leader>/", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "バッファ内検索" },
-                    { "<leader>a", function() require('picker').command_history() end, desc = "コマンド履歴" },
+                    mode = { "n", "x" },
+                    { "<A-s>", "<cmd>CodeCompanionChat Toggle<CR>", desc = "AIチャットを開く" },
+                    { "<A-f>", function() require('telescope.builtin').grep_string() end, desc = "カーソル下/選択中の文字列をGrep検索" },
 
                     {
-                        { "<leader>.", group = "設定変更" },
-                        { "<leader>..", function() require('reload').reload() end, desc = "Neovim設定ファイル一覧" },
-                        {
-                            "<leader>.t",
-                            function()
-                                vim.bo.expandtab = not (vim.bo.expandtab)
-                                vim.notify("インデント文字: " .. (vim.bo.expandtab and "space" or "tab"))
-                            end,
-                            desc = "インデント文字の切替 (space <-> tab)",
-                        },
-                        {
-                            "<leader>.o",
-                            function()
-                                if vim.bo.modifiable then
-                                    if vim.bo.fileformat == "unix" then
-                                        vim.bo.fileformat = "dos"
-                                        vim.notify("改行文字: CRLF")
-                                    else
-                                        vim.bo.fileformat = "unix"
-                                        vim.notify("改行文字: LF")
-                                    end
-                                else
-                                    vim.notify("このファイルは編集可能なファイルではありません")
-                                end
-                            end,
-                            desc = "ファイルタイプの切替 (unix <-> dos)",
-                        },
-                        {
-                            "<leader>yw",
-                            function()
-                                vim.bo.shiftwidth = (vim.bo.shiftwidth % 4) + 2
-                                vim.notify("インデント幅: " .. tostring(vim.bo.shiftwidth))
-                            end,
-                            desc = "インデント幅の変更 (2 <-> 4)",
-                        },
-                        { "<leader>.f", "<cmd>Telescope filetypes<CR>", desc = "ファイルタイプの変更" }
+                        { "<leader>k", group = "AI機能" },
+                        { "<leader>ke", group = "説明" },
+                        { "<leader>kp", group = "修正案の作成" },
+                        { "<leader>km", function() require('picker').select_strategy_and_model() end, desc = "使用するモデルを変更" },
+                        { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
+                        { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
+                        { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
+                    },
+                },
+                {
+                    mode = { "n" },
+                    { "<leader>i", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
+                    { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
+                    { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
+
+                    {
+                        { "<leader>k", group = "AI機能" },
+                        { "<leader>kb", "ggVG:CodeCompanion /buffer ", desc = "バッファのInline Assistantを実行" },
+                        { "<leader>kee", "ggVG:CodeCompanion /explain<cr>", desc = "コードの説明作成" },
+                        { "<leader>ked", "ggVG:CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
+                        { "<leader>kd", "ggVG:CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
+                        { "<leader>kpd", "ggVG:CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正案の作成 (Diagnostics利用)" },
+                        { "<leader>kpp", "ggVG:CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
+                        { "<leader>kt", "ggVG:CodeCompanion /tests<cr>", desc = "テストコードの作成" },
                     },
 
                     {
@@ -235,17 +92,404 @@ return {
 
                     },
 
+                    { "<F1>", "<cmd>lua require('telescope').extensions.dap.configurations{}<CR>", desc = "DAPの設定" },
+                    { "<F2>", "<cmd>lua require('telescope').extensions.dap.commands{}<CR>", desc = "DAPのコマンド一覧" },
+                    { "<F3>", "<cmd>lua require('telescope').extensions.dap.list_breakpoints{}<CR>", desc = "ブレークポイントの一覧" },
+                    { "<F4>", "<cmd>lua require('dap').set_breakpoint()<CR>", desc = "ブレークポイントの追加" },
+                    { "<F5>", "<cmd>lua require('dap').toggle_breakpoint()<CR>", desc = "ブレークポイントの切替" },
+                    { "<F6>", "<cmd>lua require('dap').step_into()<CR>", desc = "ステップ実行 (IN)" },
+                    { "<F7>", "<cmd>lua require('dap').continue()<CR>", desc = "実行" },
+                    { "<F8>", "<cmd>lua require('dap').step_over()<CR>", desc = "ステップ実行 (Over)" },
+                    { "<F9>", "<cmd>lua require('dap').step_out()<CR>", desc = "ステップ実行 (OUT)" },
+                    { "<F12>", "<cmd>lua require('dapui').toggle()<CR>", desc = "DAP UIの表示切替" },
                 },
-                { "<F1>", "<cmd>lua require('telescope').extensions.dap.configurations{}<CR>", desc = "DAPの設定" },
-                { "<F2>", "<cmd>lua require('telescope').extensions.dap.commands{}<CR>", desc = "DAPのコマンド一覧" },
-                { "<F3>", "<cmd>lua require('telescope').extensions.dap.list_breakpoints{}<CR>", desc = "ブレークポイントの一覧" },
-                { "<F4>", "<cmd>lua require('dap').set_breakpoint()<CR>", desc = "ブレークポイントの追加" },
-                { "<F5>", "<cmd>lua require('dap').toggle_breakpoint()<CR>", desc = "ブレークポイントの切替" },
-                { "<F6>", "<cmd>lua require('dap').step_into()<CR>", desc = "ステップ実行 (IN)" },
-                { "<F7>", "<cmd>lua require('dap').continue()<CR>", desc = "実行" },
-                { "<F8>", "<cmd>lua require('dap').step_over()<CR>", desc = "ステップ実行 (Over)" },
-                { "<F9>", "<cmd>lua require('dap').step_out()<CR>", desc = "ステップ実行 (OUT)" },
-                { "<F12>", "<cmd>lua require('dapui').toggle()<CR>", desc = "DAP UIの表示切替" },
+                {
+                    mode = { "x" },
+                    { "gs", function() require('gitsigns').stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git stage hunk" },
+                    { "gr", function() require('gitsigns').reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git reset hunk" },
+
+                    {
+                        { "<leader>k", group = "AI機能" },
+                        { "<leader>kb", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "バッファのInline Assistantを実行" },
+                        { "<leader>ka", "<cmd>CodeCompanionChat Add<cr>", desc = "AI Chatに選択範囲を貼り付ける" },
+                        { "<leader>kee", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
+                        { "<leader>ked", "<cmd>CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
+                        { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
+                        { "<leader>kpd", "<cmd>CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正案の作成 (Diagnostics利用)" },
+                        { "<leader>kpp", "<cmd>CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
+                        { "<leader>kt", "<cmd>CodeCompanion /tests<cr>", desc = "テストコードの作成" },
+                    },
+
+                    {
+                        { "<leader>", group = "leader" },
+                        { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
+                        { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
+                    },
+                },
+
+                {
+                    mode = { "i", "s" },
+                    { "<C-j>", function() require('luasnip').jump(1) end, desc = "次の要素へ移動" },
+                    { "<C-k>", function() require('luasnip').jump(-1) end, desc = "前の要素へ移動" },
+                    {
+                        "<C-c>",
+                        function()
+                            if require('luasnip').choice_active() then
+                                require('luasnip').change_choice(1)
+                            end
+                        end,
+                        desc = "選択中の要素を変更"
+                    },
+                },
+
+                {
+                    mode = { "i" },
+                    { "<C-e>", function() require('luasnip').expand() end, desc = "スニペットの展開" },
+                    {
+                        "<C-l>",
+                        function()
+                            local line = vim.fn.getline(".")
+                            local col = vim.fn.getpos(".")[3]
+                            local substring = line:sub(1, col - 1)
+                            local result = vim.fn.matchstr(substring, [[\v<(\k(<)@!)*$]])
+                            return "<C-w>" .. result:upper()
+                        end,
+                        expr = true,
+                        desc = "直前の入力を大文字へ変換"
+                    }
+                },
+            })
+        end
+
+        wk.add({
+            {
+                mode = { "n", "x" },
+
+                { "s", '"_s', desc = "s (レジスタを書き換えない)" },
+                { "x", '"_x', desc = "x (レジスタを書き換えない)" },
+                { "n", 'nzz', desc = "次の検索結果へ" },
+                { "N", 'Nzz', desc = "前の検索結果へ" },
+
+                { ")", function() require('hop').hint_lines_skip_whitespace({}) end, desc = "任意の行頭へ移動（空行は無視）" },
+                {
+                    "t",
+                    function()
+                        require('hop').hint_camel_case({
+                            current_line_only = false,
+                            hint_position = require 'hop.hint'
+                                .HintPosition.BEGIN
+                        })
+                    end,
+                    desc = "任意の単語へ移動"
+                },
+                {
+                    "T",
+                    function()
+                        require('hop').hint_camel_case({
+                            current_line_only = false,
+                            hint_position = require 'hop.hint'
+                                .HintPosition.END
+                        })
+                    end,
+                    desc = "任意の単語へ移動"
+                },
+                { "<Up>", "<cmd>HopVerticalBC<cr>", desc = "任意の行へ移動（上）" },
+                { "<Down>", "<cmd>HopVerticalAC<cr>", desc = "任意の行へ移動（下）" },
+                {
+                    { "m", group = "ファイル編集" },
+                    { "mm", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
+                },
+
+                {
+                    { "s", group = "Sandwich" },
+                    { "sa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
+                    { "sd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
+                    { "sr", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
+                    { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 5000, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
+                },
+                {
+                    { "<leader><leader>t", group = "Table操作" },
+                    { "<leader><leader>tm", "<cmd>TableModeToggle<CR>", desc = "Tableモード切替" },
+                    { "<leader><leader>ta", "<cmd>TableModeRealign<CR>", desc = "Table整形" },
+                    { "<leader><leader>tt", [[<Plug>(table-mode-tableize)]], desc = "Tableへ変換" },
+                }
+            },
+            {
+                mode = { "n" },
+                { "0", "^", desc = "行の先頭文字に移動" },
+                { "^", "0", desc = "行頭に移動" },
+
+                {
+                    "<leader>q",
+                    vscode_mapping(
+                        "<cmd>q<cr>",
+                        function()
+                            vscode.action("workbench.action.closeActiveEditor")
+                        end
+                    ),
+                    desc = "ウィンドウを閉じる",
+                },
+
+                { "<C-Up>", '"zdd<Up>"zP', desc = "カーソル行を1行移動 (上)" },
+                { "<C-Down>", '"zdd"zp', desc = "カーソル行を1行移動 (下)" },
+
+                { "<C-j>", 'o<Esc>0"_D', desc = "空行を挿入 (下)" },
+                { "<C-k>", 'O<Esc>0"_D', desc = "空行を挿入 (上)" },
+
+                { "*", [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>]], desc = "* (カーソルを移動しない)" },
+                { "#", [[<Plug>(asterisk-z#)<Cmd>lua require('hlslens').start()<CR>]], desc = "# (カーソルを移動しない)" },
+                { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>]], desc = "g* (カーソルを移動しない)" },
+                { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>]], desc = "g# (カーソルを移動しない)" },
+
+                { "{", "<cmd>cp<CR>zz", desc = "quickfixの前の要素に移動する" },
+                { "}", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
+
+                { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
+                { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
+                -- { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
+                -- { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
+                { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
+                { "gS", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
+                -- { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>", desc = "Git ステージしたhunkをundoする" },
+                { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
+                -- { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
+
+                {
+                    { "me", group = "ナンバリング" },
+                    { "mes", "<cmd>SetHeaderNumber<cr>", desc = "ナンバリングを適用" },
+                    { "meu", "<cmd>UnsetHeaderNumber<cr>", desc = "ナンバリングを削除" },
+                    { "met", "<cmd>ToggleHeaderNumber<cr>", desc = "ナンバリングを切替" },
+                },
+                { "R", function() require('substitute').operator() end, desc = "指定したテキストオブジェクトを置換" },
+
+
+                { "<Esc>", ":noh<cr>", desc = "検索結果のハイライトを削除" },
+
+                { "H", "<cmd>tabp<cr>", desc = "前のタブに移動" },
+                { "L", "<cmd>tabn<cr>", desc = "次のタブに移動" },
+                { "<C-h>", vscode_mapping("<cmd>BufferLineCyclePrev<cr>", "<cmd>Tabprevious<cr>"), desc = "前のバッファに移動" },
+                { "<C-l>", vscode_mapping("<cmd>BufferLineCycleNext<cr>", "<cmd>Tabnext<cr>"), desc = "次のバッファに移動" },
+
+                {
+                    { "<C-w>", group = "画面操作" },
+                    {
+                        "<C-w>e",
+                        vscode_mapping(
+                            "<cmd>vsplit<cr>",
+                            function()
+                                vscode.action(
+                                    "workbench.action.splitEditor"
+                                )
+                            end
+                        ),
+                        desc = "画面分割 (縦)"
+                    },
+                    {
+                        "<C-w>i",
+                        vscode_mapping(
+                            "<cmd>split<cr>",
+                            function()
+                                vscode.action(
+                                    "workbench.action.splitEditorOrthogonal"
+                                )
+                            end
+                        ),
+                        desc = "画面分割 (横)"
+                    },
+                    {
+                        "<C-w>p",
+                        vscode_mapping(
+                            "<cmd>MarkdownPreview<cr>",
+                            function()
+                                vscode.action(
+                                    "markdown.showPreviewToSide"
+                                )
+                            end
+                        ),
+                        desc = "Markdownのプレビュー"
+                    },
+                    {
+                        "<C-w>g",
+                        vscode_mapping(
+                            "<cmd>DiffviewFileHistory<cr>",
+                            function()
+                                vscode.action(
+                                    "gitlens.openFileHistory"
+                                )
+                            end
+                        ),
+                        desc = "GitのDiff表示領域を表示",
+                    },
+                    {
+                        "<C-w>.",
+                        vscode_mapping(
+                            function() require("common").lcd_current_workspace() end,
+                            function() vscode.action("workbench.action.openWorkspace") end
+                        ),
+                        desc = "vimのカレントディレクトリを変更"
+                    },
+                },
+
+                {
+                    { "<leader>", group = "leader" },
+                    {
+                        "<leader>c",
+                        vscode_mapping('<cmd>enew<cr>', function()
+                            vscode.action(
+                                "workbench.action.files.newUntitledFile")
+                        end),
+                        desc = "バッファ作成"
+                    },
+                    {
+                        "<leader>d",
+                        vscode_mapping("<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", function()
+                            vscode.action(
+                                "workbench.action.closeActiveEditor")
+                        end),
+                        desc = "バッファを閉じる"
+                    },
+                    { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
+                    { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換" },
+                    {
+                        "<leader>u",
+                        vscode_mapping("<cmd>UndotreeToggle<cr>", function()
+                            vscode.action(
+                                "timeline.focus")
+                        end),
+                        desc = "ファイル編集履歴 表示切替"
+                    },
+                    { "<leader>w", "<cmd>w<cr>", desc = "保存" },
+                    { "<leader>y", "<cmd>HopYankChar1<CR>", desc = "コピー（場所選択）" },
+
+                    {
+                        "<leader>b",
+                        vscode_mapping(
+                            "<cmd>Telescope buffers sort_mru=true<CR>",
+                            function() vscode.action("workbench.files.action.focusOpenEditorsView") end
+                        ),
+                        desc = "タブ一覧を開く",
+                    },
+                    {
+                        "<leader>f",
+                        vscode_mapping(
+                            function() require('picker').find_files_from_project_git_root() end,
+                            function() vscode.action("workbench.action.quickOpen") end
+                        ),
+                        desc = "ファイル検索"
+                    },
+                    {
+                        "<leader>g",
+                        vscode_mapping(
+                            function() require('picker').live_grep_from_project_git_root() end,
+                            function() vscode.action("workbench.view.search") end
+                        ),
+                        desc = "Grep検索",
+                    },
+                    {
+                        "<leader>h",
+                        vscode_mapping(
+                            function()
+                                require('picker').find_files_from_project_git_root({ oldfiles = true })
+                            end,
+                            function() vscode.action("workbench.action.quickOpen") end
+                        ),
+                        desc = "ファイル閲覧履歴",
+                    },
+                    { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
+                    { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
+                    { "<leader>s", function() require('treesj').split({ split = { recursive = true } }) end, desc = "行分割" },
+
+                    {
+                        "<leader>e",
+                        vscode_mapping(
+                            "<cmd>Neotree float reveal<CR>",
+                            function(
+                            )
+                                vscode.action(
+                                    "workbench.explorer.fileView.focus"
+                                )
+                            end
+                        ),
+                        desc = "ファイラーを開く (floating window)",
+                    },
+
+                    {
+                        "<leader>/",
+                        vscode_mapping(
+                            "<cmd>Telescope current_buffer_fuzzy_find<CR>",
+                            function() vscode.action("workbench.action.findInFiles") end
+                        ),
+                        desc = "バッファ内検索",
+                    },
+                    {
+                        "<leader>a",
+                        vscode_mapping(
+                            function()
+                                require('picker').command_history()
+                            end,
+                            function() vscode.action("workbench.action.showCommands") end
+                        ),
+                        desc = "コマンド履歴",
+                    },
+
+                    {
+                        { "<leader>.", group = "設定変更" },
+                        { "<leader>..", function() require('reload').reload() end, desc = "Neovim設定ファイル一覧" },
+                        {
+                            "<leader>.t",
+                            function()
+                                vim.bo.expandtab = not (vim.bo.expandtab)
+                                vim.notify("インデント文字: " .. (vim.bo.expandtab and "space" or "tab"))
+                            end,
+                            desc = "インデント文字の切替 (space <-> tab)",
+                        },
+                        {
+                            "<leader>.o",
+                            vscode_mapping(
+                                function()
+                                    if vim.bo.modifiable then
+                                        if vim.bo.fileformat == "unix" then
+                                            vim.bo.fileformat = "dos"
+                                            vim.notify("改行文字: CRLF")
+                                        else
+                                            vim.bo.fileformat = "unix"
+                                            vim.notify("改行文字: LF")
+                                        end
+                                    else
+                                        vim.notify("このファイルは編集可能なファイルではありません")
+                                    end
+                                end,
+                                function()
+                                    vscode.action("workbench.action.editor.changeEncoding")
+                                end
+                            ),
+                            desc = "ファイルタイプの切替 (unix <-> dos)",
+                        },
+                        {
+                            "<leader>.w",
+                            vscode_mapping(
+                                function()
+                                    vim.bo.shiftwidth = (vim.bo.shiftwidth % 4) + 2
+                                    vim.notify("インデント幅: " .. tostring(vim.bo.shiftwidth))
+                                end,
+                                function()
+                                    vscode.action("notebook.selectIndentation")
+                                end
+                            ),
+                            desc = "インデント幅の変更 (2 <-> 4)",
+                        },
+                        {
+                            "<leader>.f",
+                            vscode_mapping(
+                                "<cmd>Telescope filetypes<CR>",
+                                function()
+                                    vscode.action("workbench.action.editor.changeLanguageMode")
+                                end
+                            ),
+                            desc = "ファイルタイプの変更"
+                        }
+                    },
+                },
             },
 
             {
@@ -267,9 +511,6 @@ return {
                 { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "g* (カーソルを移動しない)" },
                 { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "g# (カーソルを移動しない)" },
 
-                { "gs", function() require('gitsigns').stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git stage hunk" },
-                { "gr", function() require('gitsigns').reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git reset hunk" },
-
                 { "<cr>", "<Plug>(EasyAlign)", desc = "指定文字で整列 (*で全一致箇所)" },
                 { "<Bar>", ":EasyAlign*<Bar><CR>", desc = "|で整形" },
 
@@ -277,56 +518,10 @@ return {
                 { "R", function() require "substitute".visual() end, desc = "選択範囲を置換" },
 
                 {
-                    { "<leader>k",  group = "AI機能" },
-                    { "<leader>kb", [[:<c-u>'<,'>CodeCompanion /buffer ]], desc = "バッファのInline Assistantを実行" },
-                    { "<leader>ka", "<cmd>CodeCompanionChat Add<cr>", desc = "AI Chatに選択範囲を貼り付ける" },
-                    { "<leader>kee", "<cmd>CodeCompanion /explain<cr>", desc = "コードの説明作成" },
-                    { "<leader>ked", "<cmd>CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
-                    { "<leader>kd", "<cmd>CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
-                    { "<leader>kpd", "<cmd>CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正案の作成 (Diagnostics利用)" },
-                    { "<leader>kpp", "<cmd>CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
-                    { "<leader>kt", "<cmd>CodeCompanion /tests<cr>", desc = "テストコードの作成" },
-                },
-
-                {
                     { "<leader>", group = "leader" },
-                    { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
-                    { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
                     { "<leader>r", [[:<c-u>'<,'>s/]], desc = "文字列置換" },
                     { "<leader><leader>r", [[:<c-u>'<,'>s/\v]], desc = "文字列置換 (正規表現)" },
                 },
-            },
-
-            {
-                mode = { "i", "s" },
-                { "<C-j>", function() require('luasnip').jump(1) end, desc = "次の要素へ移動" },
-                { "<C-k>", function() require('luasnip').jump(-1) end, desc = "前の要素へ移動" },
-                {
-                    "<C-c>",
-                    function()
-                        if require('luasnip').choice_active() then
-                            require('luasnip').change_choice(1)
-                        end
-                    end,
-                    desc = "選択中の要素を変更"
-                },
-            },
-
-            {
-                mode = { "i" },
-                { "<C-e>", function() require('luasnip').expand() end, desc = "スニペットの展開" },
-                {
-                    "<C-l>",
-                    function()
-                        local line = vim.fn.getline(".")
-                        local col = vim.fn.getpos(".")[3]
-                        local substring = line:sub(1, col - 1)
-                        local result = vim.fn.matchstr(substring, [[\v<(\k(<)@!)*$]])
-                        return "<C-w>" .. result:upper()
-                    end,
-                    expr = true,
-                    desc = "直前の入力を大文字へ変換"
-                }
             },
 
             {
@@ -349,9 +544,10 @@ return {
             },
             -----@param ctx { mode: string, operator: string }
             defer = function(ctx)
-                -- if vim.list_contains({ "d", "y" }, ctx.operator) then
-                --     return true
-                -- end
+                if status_ok then
+                    return false
+                end
+
                 return vim.list_contains({ "s", "v", "<C-V>", "V" }, ctx.mode)
             end,
             win = {

@@ -110,8 +110,6 @@ require('lazy').setup("plugins", {
         },
     },
 })
--- キーマップの設定
-require('keymaps')
 -- autocmdの設定
 require('autocmd')
 

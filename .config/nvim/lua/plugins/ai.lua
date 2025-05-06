@@ -1,4 +1,4 @@
-local vscode = require('vscode-utils')
+local status_ok, vscode = pcall(require, "vscode")
 
 -- 共通の前提部分を定義
 return {
@@ -6,7 +6,7 @@ return {
         "zbirenbaum/copilot.lua",
         cmd = "Copilot",
         event = "InsertEnter",
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             require("copilot").setup({
                 suggestion = { enabled = false },
@@ -17,7 +17,7 @@ return {
     },
     {
         "olimorris/codecompanion.nvim",
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",

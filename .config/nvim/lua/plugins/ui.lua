@@ -1,5 +1,5 @@
 local map = require('common').map
-local vscode = require('vscode-utils')
+local status_ok, vscode = pcall(require, "vscode")
 
 -- UI変更に関連する全般
 return {
@@ -7,7 +7,7 @@ return {
         'folke/tokyonight.nvim',
         lazy = false,
         priority = 1000,
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             require("tokyonight").setup({
                 style = "night",
@@ -33,7 +33,7 @@ return {
     {
         'goolord/alpha-nvim',
         dependencies = { 'nvim-tree/nvim-web-devicons' },
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             require('alpha').setup(require 'alpha.themes.startify'.config)
         end
@@ -42,7 +42,7 @@ return {
     -- 検索結果をわかりやすくする
     {
         'kevinhwang91/nvim-hlslens',
-        enabled = not vscode.is_vscode,
+        -- enabled = not status_ok,
         config = function()
             require('hlslens').setup()
         end
@@ -52,7 +52,7 @@ return {
     {
         'lewis6991/gitsigns.nvim',
         version = 'v0.7', -- To the latest release
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             require('gitsigns').setup({
                 current_line_blame_opts = {
@@ -69,7 +69,7 @@ return {
     {
         "nvim-neo-tree/neo-tree.nvim",
         branch = "v3.x",
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
@@ -139,7 +139,7 @@ return {
     {
         "akinsho/toggleterm.nvim",
         version = '*',
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             require("toggleterm").setup()
 
@@ -165,7 +165,7 @@ return {
     {
         "kdheepak/lazygit.nvim",
         -- optional for floating window border decoration
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         dependencies = {
             "nvim-lua/plenary.nvim",
         },
@@ -177,7 +177,7 @@ return {
     -- アウトライン
     {
         'stevearc/aerial.nvim',
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             require('aerial').setup({
                 backends = { "lsp", "treesitter", "markdown", "man" },
@@ -229,7 +229,7 @@ return {
 
     {
         'NvChad/nvim-colorizer.lua',
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             require('colorizer').setup()
         end
@@ -238,7 +238,7 @@ return {
     {
         "shellRaining/hlchunk.nvim",
         event = { "UIEnter" },
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             local support_filetypes = {
                 "*.sh",
@@ -282,7 +282,7 @@ return {
 
     {
         'b0o/incline.nvim',
-        enabled = not vscode.is_vscode,
+        enabled = not status_ok,
         config = function()
             local helpers = require 'incline.helpers'
             local devicons = require 'nvim-web-devicons'
