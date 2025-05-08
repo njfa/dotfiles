@@ -195,9 +195,9 @@ deploy() {
 
     if [ -f "$DOTFILES_PATH/wsl.conf" ]; then
         if [ ! -z "$(command -v sudo)" ]; then
-            sudo_symlink_cmd $DOTFILES_PATH/wsl.conf /etc/wsl.conf
+            sudo cp $DOTFILES_PATH/wsl.conf /etc/wsl.conf
         elif [ "$UID" -eq 0 ]; then
-            symlink_cmd $DOTFILES_PATH/wsl.conf /etc/wsl.conf
+            cp $DOTFILES_PATH/wsl.conf /etc/wsl.conf
         fi
     fi
 
