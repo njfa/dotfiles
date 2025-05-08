@@ -1,5 +1,3 @@
--- bufferlineでタブバーを表示する
--- 設定が多いため、別ファイルに切り出し
 local vscode_enabled, _ = pcall(require, "vscode")
 
 return {

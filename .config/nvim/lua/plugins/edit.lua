@@ -1,5 +1,3 @@
-local map = require("common").map
--- local buf_map = require('common').buf_map
 local vscode_enabled, _ = pcall(require, "vscode")
 
 -- ファイル編集用プラグイン全般
