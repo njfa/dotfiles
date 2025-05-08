@@ -80,6 +80,18 @@ for type, icon in pairs(signs) do
     vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
 end
 
+local get_llm_enabled = function()
+    local llm_enabled = vim.env.LLM_ENABLED
+    local is_llm_enabled = false
+    local status_ok, _ = pcall(require, "vscode")
+
+    if llm_enabled then
+        is_llm_enabled = string.lower(llm_enabled) == "true"
+    end
+    return is_llm_enabled and (not status_ok)
+end
+vim.g.llm_enabled = get_llm_enabled()
+
 -- lazy.nvimの読み込み
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then

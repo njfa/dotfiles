@@ -1,11 +1,11 @@
 -- ファジーファインダー
-local status_ok, vscode = pcall(require, "vscode")
+local vscode_enabled, _ = pcall(require, "vscode")
 
 return {
     {
         'nvim-telescope/telescope.nvim',
         branch = 'master',
-        enabled = not status_ok,
+        cond = not vscode_enabled,
         dependencies = {
             'nvim-lua/plenary.nvim',
             'nvim-telescope/telescope-frecency.nvim',
