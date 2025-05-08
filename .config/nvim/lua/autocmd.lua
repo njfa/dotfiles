@@ -75,6 +75,18 @@ vim.api.nvim_create_autocmd("BufWritePost", {
             vim.loop.fs_realpath(vim.fn.expand("~/.config/nvim/lua/")),
         }
 
+        -- 環境変数からカンマ区切りのパスを取得して追加
+        local auto_reload_paths = vim.env.NVIM_LUA_AUTO_RELOAD_PATHS
+        if auto_reload_paths then
+            for path in auto_reload_paths:gmatch("[^,]+") do
+                local trimmed_path = path:match("^%s*(.-)%s*$") -- 前後の空白を削除
+                local real_path = vim.loop.fs_realpath(vim.fn.expand(trimmed_path))
+                if real_path then
+                    table.insert(targets, real_path)
+                end
+            end
+        end
+
         local matched_root
         for _, root in ipairs(targets) do
             if full_path:sub(1, #root) == root then
