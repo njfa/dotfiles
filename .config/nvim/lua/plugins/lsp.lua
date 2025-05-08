@@ -1,14 +1,14 @@
-local status_ok, vscode = pcall(require, "vscode")
+local vscode_enabled, _ = pcall(require, "vscode")
 
 return {
     -- 色定義の追加
     "folke/lsp-colors.nvim",
-    enabled = not status_ok,
+    cond = not vscode_enabled,
 
     -- LSPの結果を別行に表示する
     {
         "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-        enabled = not status_ok,
+        cond = not vscode_enabled,
         config = function()
             vim.diagnostic.config({
                 virtual_text = false,
@@ -23,7 +23,7 @@ return {
     -- LSPサーバー管理
     {
         "williamboman/mason-lspconfig.nvim",
-        enabled = not status_ok,
+        cond = not vscode_enabled,
         branch = "v1.x",
         dependencies = {
             "neovim/nvim-lspconfig",
@@ -230,7 +230,7 @@ return {
     -- masonとnone-lsの連携
     {
         "jay-babu/mason-null-ls.nvim",
-        enabled = not status_ok,
+        cond = not vscode_enabled,
         dependencies = {
             "williamboman/mason.nvim",
             "nvimtools/none-ls.nvim",
@@ -344,7 +344,7 @@ return {
     -- LSPの結果を一覧表示
     {
         "folke/trouble.nvim",
-        enabled = not status_ok,
+        cond = not vscode_enabled,
         opts = {}, -- for default options, refer to the configuration section for custom setup.
         cmd = "Trouble",
         keys = {},

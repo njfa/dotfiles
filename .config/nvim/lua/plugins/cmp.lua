@@ -1,4 +1,4 @@
-local status_ok, vscode = pcall(require, "vscode")
+local vscode_enabled, _ = pcall(require, "vscode")
 
 return {
     {
@@ -9,16 +9,16 @@ return {
         lazy = true,
         -- make sure to set opts so that lazy.nvim calls blink.compat's setup
         opts = {},
-        enabled = not status_ok,
+        cond = not vscode_enabled,
     },
     {
         'saghen/blink.cmp',
         -- optional: provides snippets for the snippet source
-        dependencies = {
-            'L3MON4D3/LuaSnip',
+        {
             "giuxtaposition/blink-cmp-copilot",
+            cond = vim.g.llm_enabled
         },
-        enabled = not status_ok,
+        cond = not vscode_enabled,
 
         -- use a release tag to download pre-built binaries
         version = '*',
