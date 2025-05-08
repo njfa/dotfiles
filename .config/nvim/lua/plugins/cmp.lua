@@ -1,5 +1,48 @@
 local vscode_enabled, _ = pcall(require, "vscode")
 
+-- 環境変数で明示的に有効化している場合のみcopilotを利用した補完を利用する
+local cmp_copilot_enabled = function()
+    local cmp_copilot_enabled = vim.env.CMP_COPILOT_ENABLED
+    local is_cmp_copilot_enabled = false
+    if cmp_copilot_enabled then
+        is_cmp_copilot_enabled = string.lower(cmp_copilot_enabled) == "true"
+    end
+
+    return vim.g.llm_enabled and is_cmp_copilot_enabled
+end
+
+local default_sources = { 'path', 'snippets', 'lsp', 'buffer', 'markdown' }
+local source_providers = {
+    buffer = {
+        name = "buf",
+        score_offset = 0,
+    },
+    markdown = {
+        name = 'RenderMarkdown',
+        module = 'render-markdown.integ.blink',
+        fallbacks = { 'lsp' },
+    },
+}
+
+if cmp_copilot_enabled() then
+    table.insert(default_sources, 'copilot')
+    source_providers['copilot'] = {
+        name = "copilot",
+        module = "blink-cmp-copilot",
+        score_offset = 100,
+        async = true,
+        transform_items = function(_, items)
+            local CompletionItemKind = require("blink.cmp.types").CompletionItemKind
+            local kind_idx = #CompletionItemKind + 1
+            CompletionItemKind[kind_idx] = "Copilot"
+            for _, item in ipairs(items) do
+                item.kind = kind_idx
+            end
+            return items
+        end,
+    }
+end
+
 return {
     {
         'saghen/blink.compat',
@@ -14,9 +57,12 @@ return {
     {
         'saghen/blink.cmp',
         -- optional: provides snippets for the snippet source
-        {
-            "giuxtaposition/blink-cmp-copilot",
-            cond = vim.g.llm_enabled
+        dependencies = {
+            'L3MON4D3/LuaSnip',
+            {
+                "giuxtaposition/blink-cmp-copilot",
+                cond = vim.g.cmp_copilot_enabled
+            }
         },
         cond = not vscode_enabled,
 
@@ -141,33 +187,8 @@ return {
             -- Default list of enabled providers defined so that you can extend it
             -- elsewhere in your config, without redefining it, due to `opts_extend`
             sources = {
-                default = { 'path', 'copilot', 'snippets', 'lsp', 'buffer', 'markdown' },
-                providers = {
-                    buffer = {
-                        name = "buf",
-                        score_offset = 0,
-                    },
-                    copilot = {
-                        name = "copilot",
-                        module = "blink-cmp-copilot",
-                        score_offset = 100,
-                        async = true,
-                        transform_items = function(_, items)
-                            local CompletionItemKind = require("blink.cmp.types").CompletionItemKind
-                            local kind_idx = #CompletionItemKind + 1
-                            CompletionItemKind[kind_idx] = "Copilot"
-                            for _, item in ipairs(items) do
-                                item.kind = kind_idx
-                            end
-                            return items
-                        end,
-                    },
-                    markdown = {
-                        name = 'RenderMarkdown',
-                        module = 'render-markdown.integ.blink',
-                        fallbacks = { 'lsp' },
-                    },
-                },
+                default = default_sources,
+                providers = source_providers
             },
 
             cmdline = {
