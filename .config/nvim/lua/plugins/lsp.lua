@@ -24,6 +24,7 @@ return {
     {
         "williamboman/mason-lspconfig.nvim",
         enabled = not status_ok,
+        branch = "v1.x",
         dependencies = {
             "neovim/nvim-lspconfig",
             "hrsh7th/cmp-nvim-lsp",
