@@ -1,12 +1,10 @@
-local status_ok, vscode = pcall(require, "vscode")
-
 -- 共通の前提部分を定義
 return {
     {
         "zbirenbaum/copilot.lua",
         cmd = "Copilot",
         event = "InsertEnter",
-        enabled = not status_ok,
+        enabled = vim.g.llm_enabled,
         config = function()
             require("copilot").setup({
                 suggestion = { enabled = false },
@@ -17,7 +15,7 @@ return {
     },
     {
         "olimorris/codecompanion.nvim",
-        enabled = not status_ok,
+        enabled = vim.g.llm_enabled,
         dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
