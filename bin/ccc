@@ -1,0 +1,214 @@
+#!/bin/bash
+
+# コンテナランナースクリプトのパスを設定
+CR_SCRIPT="${CR_SCRIPT:-$HOME/.dotfiles/bin/container-runner}"
+
+# コンテナランナースクリプトの読み込み
+if [[ -f "$CR_SCRIPT" ]]; then
+    # スクリプトを読み込む
+    . "$CR_SCRIPT"
+else
+    echo "エラー: コンテナランナースクリプトが見つかりません: $CR_SCRIPT" >&2
+    echo "環境変数 CR_SCRIPT を設定するか、デフォルトの場所にスクリプトを配置してください。" >&2
+    exit 1
+fi
+
+# カラー定義（既存のものに追加）
+FRAME_COLOR='\033[1;32m'  # 鮮やかな緑色
+DIMMED='\033[2m'          # テキストを暗く表示
+INFO_COLOR='\033[1;37m'   # 情報表示用のシアン色
+
+# パスを人間が読みやすい形式に変換する関数
+format_path() {
+    local path="$1"
+    # $HOMEパスを~に置き換える
+    if [[ "$path" == "$HOME"* ]]; then
+        echo "~${path#$HOME}"
+    else
+        echo "$path"
+    fi
+}
+
+# 認証情報と設定ファイルのパスを含むロゴを表示する関数
+print_logo() {
+    local credential_path="$1"
+    local config_path="$2"
+
+    # ファイル名のみを取得
+    local cred_basename=$(format_path "$credential_path")
+    local conf_basename=$(format_path "$config_path")
+
+    # 固定幅の枠を作成
+    local frame_width=40
+
+    # 横線を作成する関数
+    create_horizontal_line() {
+        local char="$1"
+        local line=""
+        for ((i=0; i<frame_width; i++)); do
+            line="${line}${char}"
+        done
+        echo "$line"
+    }
+
+    # 上部の枠線
+    echo -e "${FRAME_COLOR}╭$(create_horizontal_line "─")╮${NC}"
+
+    # タイトル行
+    echo -e "${FRAME_COLOR}│ ✻ ${NC}Containered Claude Code (ccc)$(printf '%*s' $((frame_width - 33)) '') ${FRAME_COLOR}│${NC}"
+
+    # 空行
+    echo -e "${FRAME_COLOR}│$(printf '%*s' $((frame_width)) '')│${NC}"
+
+    # サブタイトル行
+    echo -e "${FRAME_COLOR}│${NC}   ${DIMMED}${INFO_COLOR}AI Assistant in Container${NC}$(printf '%*s' $((frame_width - 29)) '') ${FRAME_COLOR}│${NC}"
+
+    # 空行
+    echo -e "${FRAME_COLOR}│$(printf '%*s' $((frame_width)) '')│${NC}"
+
+    # 認証情報行
+    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}credential:${NC} $cred_basename$(printf '%*s' $((frame_width - 16 - ${#cred_basename})) '') ${FRAME_COLOR}│${NC}"
+
+    # 設定ファイル行
+    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}config:${NC} $conf_basename$(printf '%*s' $((frame_width - 12 - ${#conf_basename})) '') ${FRAME_COLOR}│${NC}"
+
+    # 下部の枠線
+    echo -e "${FRAME_COLOR}╰$(create_horizontal_line "─")╯${NC}"
+    echo
+}
+
+# メイン関数
+ccc_main() {
+    # デフォルト値の設定
+    local source_path=$(pwd)
+    local compose_path="$HOME/.dotfiles/compose.yml"
+    local service="containered-claude"
+    local remove_orphans=true # デフォルトでオーファンコンテナを削除
+    local claude_credential_path="$HOME/.claude"
+    local claude_config_path="$HOME/.claude.json"
+    local command_args=("claude") # デフォルトのコマンド
+    local show_logo=true # デフォルトでロゴを表示
+    local show_info=false # デフォルトで設定情報を表示
+    local show_separator=false # デフォルトでセパレータを表示
+    local quiet=true # デフォルトは静かモード
+
+    # オプションと引数の解析
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -s | --source-path)
+                source_path="$2"
+                shift 2
+                ;;
+            -c | --compose-path)
+                compose_path="$2"
+                shift 2
+                ;;
+            -S | --service)
+                service="$2"
+                shift 2
+                ;;
+            --credential-path)
+                claude_credential_path="$2"
+                shift 2
+                ;;
+            --config-path)
+                claude_config_path="$2"
+                shift 2
+                ;;
+            --keep-orphans)
+                remove_orphans=false
+                shift
+                ;;
+            --no-logo)
+                show_logo=false
+                shift
+                ;;
+            --info)
+                show_info=true
+                shift
+                ;;
+            --separator)
+                show_separator=true
+                shift
+                ;;
+            -v | --verbose)
+                quiet=false
+                shift
+                ;;
+            -h | --help)
+                show_ccc_help
+                return 0
+                ;;
+            --)
+                shift
+                # "--" 以降の引数があればそれをコマンドとして使用
+                if [ $# -gt 0 ]; then
+                    command_args=("$@")
+                fi
+                break
+                ;;
+            *)
+                log_error "不明なオプション: $1"
+                show_ccc_help
+                return 1
+                ;;
+        esac
+    done
+
+    # ロゴの表示（--no-logoが指定されていなければ）
+    if [ "$show_logo" = true ]; then
+        print_logo "$claude_credential_path" "$claude_config_path"
+    fi
+
+    # 認証情報ディレクトリと設定ファイルの存在確認
+    if [ ! -d "$claude_credential_path" ]; then
+        log_warning "認証情報ディレクトリ '$claude_credential_path' が見つからない。"
+    fi
+
+    if [ ! -f "$claude_config_path" ]; then
+        log_warning "設定ファイル '$claude_config_path' が見つからない。"
+    fi
+
+    # 環境変数を準備
+    local env_vars=(
+    "CLAUDE_CREDENTIAL_PATH=$claude_credential_path"
+    "CLAUDE_CONFIG_PATH=$claude_config_path"
+)
+
+    # 統合されたコンテナランナー関数を利用
+    run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "${env_vars[@]}" "${command_args[@]}"
+    return $?
+}
+
+# ヘルプメッセージも更新
+show_ccc_help() {
+    print_logo
+    echo -e "\
+        ${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
+
+    ${BOLD}オプション:${NC}
+    ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (デフォルト: 現在のディレクトリ)
+    ${GREEN}-c, --compose-path PATH${NC}     Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
+    ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
+    ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
+    ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
+    ${GREEN}--keep-orphans${NC}              オーファンコンテナを削除しない (デフォルトは削除)
+    ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
+    ${GREEN}--info${NC}                      設定情報の表示を有効化する
+    ${GREEN}--separator${NC}                 区切り線の表示を有効化する
+    ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
+    ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
+    ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
+
+    ${BOLD}説明:${NC}
+    Claude AIをローカルコンテナで実行するためのユーティリティ。
+    \"--\" 以降の引数はコンテナ内で実行するコマンドとして渡される。
+    コマンドが指定されない場合は \"claude\" が実行される。"
+    return 0
+}
+
+# スクリプトが直接実行された場合のみメイン処理を実行
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    ccc_main "$@"
+    exit $?
+fi

@@ -1,0 +1,344 @@
+#!/bin/bash
+
+# カラー定義
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+# 情報ログ表示関数
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1" >&2
+}
+
+# ASCII文字のみを使用した区切り線表示関数
+print_separator() {
+    local term_width
+    term_width=$(tput cols) 2>/dev/null || term_width=80
+    echo
+    printf '%*s\n' "${term_width}" '' | tr ' ' '-'
+    echo
+}
+
+# ヘッダー表示関数
+print_header() {
+    local title="$1"
+    local term_width
+    term_width=$(tput cols) 2>/dev/null || term_width=80
+    local padding=$(((term_width - ${#title} - 2) / 2))
+
+    # 最低でも1文字のパディングを確保
+    [ $padding -lt 1 ] && padding=1
+
+    local left_pad=$(printf '%*s' "$padding" '' | tr ' ' '=')
+    local right_pad=$(printf '%*s' "$padding" '' | tr ' ' '=')
+
+    echo
+    echo "$left_pad $title $right_pad"
+    echo
+}
+
+# コンテナ実行関数
+run_container() {
+    local source_path="$1"
+    local compose_path="$2"
+    local service="$3" 
+    local remove_orphans="$4"
+    local cmd_mode="$5"  # "run" または "up"
+    local detached="$6"  # up実行時: trueなら-d付き、falseなら-dなし
+    local show_info="$7" # 設定情報表示: trueなら表示、falseなら非表示
+    local show_separator="$8" # セパレータ表示: trueなら表示、falseなら非表示
+    local quiet="$9"     # 静かモード: trueなら出力を最小限に
+    local env_vars=("${@:10:$((${#@} - 10))}")  # 10番目から最後から1つ前までの引数
+    local command_args=("${@: -1}")           # 最後の引数（配列）
+
+    # パスの存在確認
+    if [ ! -d "$source_path" ]; then
+        log_error "指定されたソースパス '$source_path' が存在しないか、ディレクトリではない。"
+        return 1
+    fi
+
+    if [ ! -f "$compose_path" ]; then
+        log_error "指定されたComposeファイル '$compose_path' が見つからない。"
+        return 1
+    fi
+
+    # サービス名必須チェック
+    if [ -z "$service" ]; then
+        log_error "サービス名が指定されていない。"
+        return 1
+    fi
+
+    # オーファンコンテナの処理オプションを設定
+    local orphan_option=""
+    if [ "$remove_orphans" = true ]; then
+        orphan_option="--remove-orphans"
+    fi
+
+    # 静かモードのオプションを設定
+    local quiet_option=""
+    if [ "$quiet" = true ]; then
+        quiet_option="--quiet-pull" # イメージプル時のメッセージを抑制
+    fi
+
+    # 設定情報を表示
+    if [ "$show_info" = true ]; then
+        print_header "CONTAINER RUNNER"
+        log_info "設定情報:"
+        echo -e "  • ${BOLD}Docker Compose ファイル:${NC} ${compose_path}"
+        echo -e "  • ${BOLD}ソースパス:${NC} ${source_path}"
+        echo -e "  • ${BOLD}サービス:${NC} ${service}"
+        echo -e "  • ${BOLD}実行モード:${NC} ${cmd_mode}"
+
+        if [ "$cmd_mode" = "up" ]; then
+            if [ "$detached" = true ]; then
+                echo -e "  • ${BOLD}実行方法:${NC} デタッチドモード (-d)"
+            else
+                echo -e "  • ${BOLD}実行方法:${NC} フォアグラウンド"
+            fi
+        fi
+
+        # コマンドが空の配列でない場合のみ表示
+        if [ "$cmd_mode" = "run" ] && [ ${#command_args[@]} -gt 0 ] && [ -n "${command_args[0]}" ]; then
+            echo -e "  • ${BOLD}実行コマンド:${NC} ${command_args[*]}"
+        elif [ "$cmd_mode" = "run" ]; then
+            echo -e "  • ${BOLD}実行コマンド:${NC} (デフォルト)"
+        fi
+
+        if [ ${#env_vars[@]} -gt 0 ]; then
+            echo -e "  • ${BOLD}環境変数:${NC}"
+            for env_var in "${env_vars[@]}"; do
+                echo -e "    - $env_var"
+            done
+        fi
+
+        if [ "$remove_orphans" = true ]; then
+            echo -e "  • ${BOLD}オーファンコンテナ:${NC} 自動削除する"
+        else
+            echo -e "  • ${BOLD}オーファンコンテナ:${NC} 保持する"
+        fi
+
+        if [ "$quiet" = true ]; then
+            echo -e "  • ${BOLD}出力モード:${NC} 最小限（静かモード）"
+        else
+            echo -e "  • ${BOLD}出力モード:${NC} 詳細（冗長モード）"
+        fi
+    fi
+
+    # セパレータを表示
+    if [ "$show_separator" = true ] && [ "$show_info" = true ]; then
+        print_separator
+    fi
+
+    # コマンド実行
+    if [ "$show_info" = true ]; then
+        log_info "コンテナを起動しています..."
+        echo
+    fi
+
+    # 環境変数を設定
+    export SOURCE_PATH="$source_path"
+    for env_var in "${env_vars[@]}"; do
+        export "$env_var"
+    done
+
+    # Docker Composeコマンドの実行
+    local exit_code
+
+    # 出力リダイレクト用設定
+    local temp_error_file=""
+
+    if [ "$quiet" = true ]; then
+        # 一時ファイルを作成 (エラー出力用)
+        temp_error_file=$(mktemp)
+    fi
+
+    if [ "$cmd_mode" = "run" ]; then
+        # runモードでの実行
+        if [ ${#command_args[@]} -gt 0 ] && [ -n "${command_args[0]}" ]; then
+            if [ "$quiet" = true ]; then
+                docker compose -f "$compose_path" run $quiet_option $orphan_option "$service" "${command_args[@]}" 2> "$temp_error_file"
+            else
+                docker compose -f "$compose_path" run $orphan_option "$service" "${command_args[@]}"
+            fi
+        else
+            if [ "$quiet" = true ]; then
+                docker compose -f "$compose_path" run $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+            else
+                docker compose -f "$compose_path" run $orphan_option "$service"
+            fi
+        fi
+    elif [ "$cmd_mode" = "up" ]; then
+        # upモードでの実行
+        if [ "$detached" = true ]; then
+            if [ "$quiet" = true ]; then
+                docker compose -f "$compose_path" up -d $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+            else
+                docker compose -f "$compose_path" up -d $orphan_option "$service"
+            fi
+        else
+            if [ "$quiet" = true ]; then
+                docker compose -f "$compose_path" up $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+            else
+                docker compose -f "$compose_path" up $orphan_option "$service"
+            fi
+        fi
+    else
+        log_error "不明な実行モード: $cmd_mode"
+        [ -n "$temp_error_file" ] && rm -f "$temp_error_file"
+        return 1
+    fi
+
+    exit_code=$?
+
+    # エラーがあれば表示
+    if [ "$quiet" = true ] && [ -f "$temp_error_file" ]; then
+        if [ $exit_code -ne 0 ] && [ -s "$temp_error_file" ]; then
+            cat "$temp_error_file" >&2
+        fi
+        rm -f "$temp_error_file"
+    fi
+
+    # 終了メッセージとセパレータを表示
+    if [ "$show_info" = true ]; then
+        echo
+        if [ $exit_code -eq 0 ]; then
+            log_success "コンテナは正常に終了しました。"
+        else
+            log_error "コンテナは終了コード $exit_code で終了しました。"
+        fi
+    fi
+
+    if [ "$show_separator" = true ] && [ "$show_info" = true ]; then
+        print_separator
+    fi
+
+    return $exit_code
+}
+
+# メイン関数
+cr_main() {
+    # デフォルト値の設定
+    local source_path=$(pwd)
+    local compose_path="$HOME/.dotfiles/compose.yml"
+    local service=""
+    local remove_orphans=true # デフォルトでオーファンコンテナを削除
+    local cmd_mode="run"      # デフォルトはrunモード
+    local detached=true       # upモード時のデフォルトはデタッチド
+    local show_info=true      # デフォルトで設定情報を表示
+    local show_separator=true # デフォルトでセパレータを表示
+    local quiet=true          # デフォルトは静かモード
+    local env_vars=()
+    local command_args=()
+
+    # オプションと引数の解析
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -s | --source-path)
+                source_path="$2"
+                shift 2
+                ;;
+            -c | --compose-path)
+                compose_path="$2"
+                shift 2
+                ;;
+            -S | --service)
+                service="$2"
+                shift 2
+                ;;
+            -e | --env)
+                env_vars+=("$2")
+                shift 2
+                ;;
+            --keep-orphans)
+                remove_orphans=false
+                shift
+                ;;
+            --up)
+                cmd_mode="up"
+                shift
+                ;;
+            --no-detach)
+                detached=false
+                shift
+                ;;
+            --no-info)
+                show_info=false
+                shift
+                ;;
+            --no-separator)
+                show_separator=false
+                shift
+                ;;
+            -v | --verbose)
+                quiet=false
+                shift
+                ;;
+            -h | --help)
+                show_cr_help
+                return 0
+                ;;
+            --)
+                shift
+                command_args=("$@")
+                break
+                ;;
+            *)
+                log_error "不明なオプション: $1"
+                show_cr_help
+                return 1
+                ;;
+        esac
+    done
+
+    # コンテナを実行
+    run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "${env_vars[@]}" "${command_args[@]}"
+    return $?
+}
+
+# ヘルプメッセージ表示関数
+show_cr_help() {
+    echo -e "\
+        ${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
+
+    ${BOLD}オプション:${NC}
+    ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (デフォルト: 現在のディレクトリ)
+    ${GREEN}-c, --compose-path PATH${NC}     Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
+    ${GREEN}-S, --service NAME${NC}          実行するサービス名 (必須)
+    ${GREEN}-e, --env KEY=VALUE${NC}         環境変数を設定 (複数指定可)
+    ${GREEN}--keep-orphans${NC}              オーファンコンテナを削除しない (デフォルトは削除)
+    ${GREEN}--up${NC}                        コンテナをupコマンドで実行 (デフォルト: run)
+    ${GREEN}--no-detach${NC}                 upモード時にデタッチドモードを使用しない
+    ${GREEN}--no-info${NC}                   設定情報の表示を無効化する
+    ${GREEN}--no-separator${NC}              区切り線の表示を無効化する
+    ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
+    ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
+    ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はrunモード時のコマンドとして扱われる
+
+    ${BOLD}説明:${NC}
+    Docker Composeを使用してコンテナを実行するための汎用ユーティリティ。
+    デフォルトではrunモードでコンテナを実行します。--upオプションを指定するとupモードで実行します。
+    upモード時はデフォルトでデタッチドモード(-d)で実行されます。--no-detachを指定するとフォアグラウンドで実行します。
+    \"--\" 以降の引数はrunモード時のコンテナ内で実行するコマンドとして渡されます。"
+    return 0
+}
+
+# スクリプトが直接実行された場合のみメイン処理を実行
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    cr_main "$@"
+    exit $?
+fi
