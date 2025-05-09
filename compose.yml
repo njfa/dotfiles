@@ -1,0 +1,40 @@
+name: mcp-server
+
+services:
+  containered-claude:
+    container_name: containered-claude
+    image: my-claude-code:latest
+    build:
+      context: ./etc/dockerfiles/claude-code/
+      args:
+        USERID: ${USERID:-1000}
+        GROUPID: ${GROUPID:-1000}
+    network_mode: "host"
+    develop:
+      watch:
+        - action: rebuild
+          path: ./etc/dockerfiles/claude-code/Dockerfile
+    volumes:
+      - type: bind
+        source: ${SOURCE_PATH:-.}
+        target: /workspace/
+      - type: bind
+        source: ${CLAUDE_CREDENCIAL_PATH:-~/.claude}
+        target: /home/node/.claude
+      - type: bind
+        source: ${CLAUDE_CONFIG_PATH:-~/.claude.json}
+        target: /home/node/.claude.json
+    tty: true
+    command: ["zsh"]
+
+  memory:
+    container_name: memory
+    image: mcp/memory
+    volumes:
+      - type: bind
+        source: tmp/memory.json
+        target: /app/dist/memory.json
+
+  sequentialthinking:
+    container_name: sequentialthinking
+    image: mcp/sequentialthinking
