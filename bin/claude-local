@@ -1,0 +1,197 @@
+#!/bin/bash
+
+# カラー定義
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+# デフォルト値の設定
+SOURCE_PATH=$(pwd)
+COMPOSE_PATH="$HOME/.dotfiles/compose.yml"
+SERVICE="claude-local"
+COMMAND="claude"
+REMOVE_ORPHANS=true # デフォルトでオーファンコンテナを削除
+CLAUDE_CREDENCIAL_PATH="$HOME/.claude"
+CLAUDE_CONFIG_PATH="$HOME/.claude.json"
+
+# ヘルプメッセージ
+show_help() {
+    echo -e "\
+${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
+
+${BOLD}オプション:${NC}
+  ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (デフォルト: 現在のディレクトリ)
+  ${GREEN}-c, --compose-path PATH${NC}     Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
+  ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: claude-local)
+  ${GREEN}--credential-path PATH${NC}      Claude認証情報ファイルのパスを指定 (デフォルト: ~/.claude)
+  ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
+  ${GREEN}--keep-orphans${NC}              オーファンコンテナを削除しない (デフォルトは削除)
+  ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
+  ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
+
+${BOLD}説明:${NC}
+  Claude AIをローカルコンテナで実行するためのユーティリティ。
+  \"--\" 以降の引数はコンテナ内で実行するコマンドとして渡される。
+  コマンドが指定されない場合は \"claude\" が実行される。"
+    exit 0
+}
+
+# 情報ログ表示関数
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1" >&2
+}
+
+# ASCII文字のみを使用した区切り線表示関数
+print_separator() {
+    local term_width
+    term_width=$(tput cols) 2>/dev/null || term_width=80
+    echo
+    printf '%*s\n' "${term_width}" '' | tr ' ' '-'
+    echo
+}
+
+# ヘッダー表示関数
+print_header() {
+    local title="$1"
+    local term_width
+    term_width=$(tput cols) 2>/dev/null || term_width=80
+    local padding=$(((term_width - ${#title} - 2) / 2))
+
+    # 最低でも1文字のパディングを確保
+    [ $padding -lt 1 ] && padding=1
+
+    local left_pad=$(printf '%*s' "$padding" '' | tr ' ' '=')
+    local right_pad=$(printf '%*s' "$padding" '' | tr ' ' '=')
+
+    echo
+    echo "$left_pad $title $right_pad"
+    echo
+}
+
+# オプションと引数の解析
+COMMAND_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case $1 in
+    -s | --source-path)
+        SOURCE_PATH="$2"
+        shift 2
+        ;;
+    -c | --compose-path)
+        COMPOSE_PATH="$2"
+        shift 2
+        ;;
+    -S | --service)
+        SERVICE="$2"
+        shift 2
+        ;;
+    --credential-path)
+        CLAUDE_CREDENCIAL_PATH="$2"
+        shift 2
+        ;;
+    --config-path)
+        CLAUDE_CONFIG_PATH="$2"
+        shift 2
+        ;;
+    --keep-orphans)
+        REMOVE_ORPHANS=false
+        shift
+        ;;
+    -h | --help)
+        show_help
+        ;;
+    --)
+        shift
+        COMMAND_ARGS=("$@")
+        break
+        ;;
+    *)
+        log_error "不明なオプション: $1"
+        show_help
+        ;;
+    esac
+done
+
+# パスの存在確認
+if [ ! -d "$SOURCE_PATH" ]; then
+    log_error "指定されたソースパス '$SOURCE_PATH' が存在しないか、ディレクトリではない。"
+    exit 1
+fi
+
+if [ ! -f "$COMPOSE_PATH" ]; then
+    log_error "指定されたComposeファイル '$COMPOSE_PATH' が見つからない。"
+    exit 1
+fi
+
+# 認証情報と設定ファイルの存在確認
+if [ ! -f "$CLAUDE_CREDENCIAL_PATH" ]; then
+    log_warning "認証情報ファイル '$CLAUDE_CREDENCIAL_PATH' が見つからない。"
+fi
+
+if [ ! -f "$CLAUDE_CONFIG_PATH" ]; then
+    log_warning "設定ファイル '$CLAUDE_CONFIG_PATH' が見つからない。"
+fi
+
+# コマンド引数の処理
+if [ ${#COMMAND_ARGS[@]} -gt 0 ]; then
+    # "--" 以降の引数があればそれをコマンドとして使用
+    COMMAND_WITH_ARGS=("${COMMAND_ARGS[@]}")
+else
+    # デフォルトのコマンドを使用
+    COMMAND_WITH_ARGS=("$COMMAND")
+fi
+
+# オーファンコンテナの処理オプションを設定
+ORPHAN_OPTION=""
+if [ "$REMOVE_ORPHANS" = true ]; then
+    ORPHAN_OPTION="--remove-orphans"
+fi
+
+# 設定情報を表示
+print_header "CLAUDE CONTAINER LAUNCHER"
+log_info "設定情報:"
+echo -e "  • ${BOLD}Docker Compose ファイル:${NC} ${COMPOSE_PATH}"
+echo -e "  • ${BOLD}ソースパス:${NC} ${SOURCE_PATH}"
+echo -e "  • ${BOLD}サービス:${NC} ${SERVICE}"
+echo -e "  • ${BOLD}実行コマンド:${NC} ${COMMAND_WITH_ARGS[*]}"
+echo -e "  • ${BOLD}認証情報ファイル:${NC} ${CLAUDE_CREDENCIAL_PATH}"
+echo -e "  • ${BOLD}設定ファイル:${NC} ${CLAUDE_CONFIG_PATH}"
+if [ "$REMOVE_ORPHANS" = true ]; then
+    echo -e "  • ${BOLD}オーファンコンテナ:${NC} 自動削除する"
+else
+    echo -e "  • ${BOLD}オーファンコンテナ:${NC} 保持する"
+fi
+print_separator
+
+# コマンド実行
+log_info "コンテナを起動しています..."
+echo
+
+# Docker Composeコマンドの実行
+export SOURCE_PATH="$SOURCE_PATH"
+export CLAUDE_CREDENCIAL_PATH="$CLAUDE_CREDENCIAL_PATH"
+export CLAUDE_CONFIG_PATH="$CLAUDE_CONFIG_PATH"
+docker compose -f "$COMPOSE_PATH" run $ORPHAN_OPTION "$SERVICE" "${COMMAND_WITH_ARGS[@]}"
+EXIT_CODE=$?
+
+echo
+if [ $EXIT_CODE -eq 0 ]; then
+    log_success "コンテナは正常に終了しました。"
+else
+    log_error "コンテナは終了コード $EXIT_CODE で終了しました。"
+fi
+print_separator
