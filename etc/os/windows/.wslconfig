@@ -1,5 +1,7 @@
 [wsl2]
-localhostForwarding=true
+dnsTunneling=true
+networkingMode=mirrored
+autoProxy=true
 
 [experimental]
 sparseVhd=true
