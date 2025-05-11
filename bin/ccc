@@ -3,6 +3,35 @@
 # コンテナランナースクリプトのパスを設定
 CR_SCRIPT="${CR_SCRIPT:-$HOME/.dotfiles/bin/container-runner}"
 
+# 必要なコマンドの確認
+check_command() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo "エラー: 必要なコマンド '$1' が見つかりません。" >&2
+        echo "インストールしてから再試行してください。" >&2
+        return 1
+    fi
+    return 0
+}
+
+# 必須コマンドのチェック
+check_dependencies() {
+    local missing_deps=0
+
+    for cmd in docker yq jq; do
+        if ! check_command "$cmd"; then
+            missing_deps=$((missing_deps + 1))
+        fi
+    done
+
+    if [ $missing_deps -gt 0 ]; then
+        echo "エラー: 依存関係が満たされていません。必要なパッケージをインストールしてください。" >&2
+        exit 1
+    fi
+}
+
+# 依存関係チェック
+check_dependencies
+
 # コンテナランナースクリプトの読み込み
 if [[ -f "$CR_SCRIPT" ]]; then
     # スクリプトを読み込む
@@ -17,6 +46,7 @@ fi
 FRAME_COLOR='\033[1;32m'  # 鮮やかな緑色
 DIMMED='\033[2m'          # テキストを暗く表示
 INFO_COLOR='\033[1;37m'   # 情報表示用のシアン色
+UPDATE_COLOR='\033[1;33m' # 更新表示用の黄色
 
 # パスを人間が読みやすい形式に変換する関数
 format_path() {
@@ -77,6 +107,51 @@ print_logo() {
     echo
 }
 
+# Claudeイメージの更新確認関数
+check_claude_update() {
+    log_info "Claudeイメージの更新を確認中..."
+
+    # npmでインストールされたclaude-codeの最新バージョンを取得
+    local latest_version=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
+    if [ -z "$latest_version" ]; then
+        log_error "最新バージョンの取得に失敗しました"
+        return 1
+    fi
+
+    # コンテナ内のclaude-codeバージョンを取得
+    local container_version=""
+    container_version=$(docker run --rm my-claude-code:latest npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
+
+    if [ -z "$container_version" ] || [ "$container_version" = "null" ]; then
+        log_warning "コンテナ内のバージョン情報を取得できませんでした"
+        echo -e "${UPDATE_COLOR}利用可能なアップデート:${NC} 不明 → $latest_version"
+        return 0
+    fi
+
+    # バージョン比較
+    if [ "$container_version" != "$latest_version" ]; then
+        echo -e "${UPDATE_COLOR}利用可能なアップデート:${NC} $container_version → $latest_version"
+        return 0
+    else
+        echo -e "${GREEN}Claudeは最新バージョンです:${NC} $container_version"
+        return 0
+    fi
+}
+
+# Claudeイメージの更新関数
+update_claude_image() {
+    log_info "Claudeイメージを更新中..."
+
+    # イメージの再ビルド
+    if ! docker compose -f "$HOME/.dotfiles/compose.yml" build containered-claude; then
+        log_error "イメージの更新に失敗しました"
+        return 1
+    fi
+
+    log_success "Claudeイメージが正常に更新されました"
+    return 0
+}
+
 # メイン関数
 ccc_main() {
     # デフォルト値の設定
@@ -93,6 +168,8 @@ ccc_main() {
     local quiet=true # デフォルトは静かモード
     local workdir=""          # 作業ディレクトリ (--workdir)
     local source_path_specified=false # ソースパスが指定されたかどうかのフラグ
+    local check_update=false # 更新確認フラグ
+    local do_update=false # 更新実行フラグ
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -138,6 +215,14 @@ ccc_main() {
                 show_separator=true
                 shift
                 ;;
+            --check-update)
+                check_update=true
+                shift
+                ;;
+            --update)
+                do_update=true
+                shift
+                ;;
             -v | --verbose)
                 quiet=false
                 shift
@@ -162,6 +247,18 @@ ccc_main() {
         esac
     done
 
+    # 更新確認が要求された場合
+    if [ "$check_update" = true ]; then
+        check_claude_update
+        return $?
+    fi
+
+    # 更新が要求された場合
+    if [ "$do_update" = true ]; then
+        update_claude_image
+        return $?
+    fi
+
     # source_pathsが空の場合は現在のディレクトリを使用
     if [ ${#source_paths[@]} -eq 0 ]; then
         source_paths=($(pwd))
@@ -181,11 +278,59 @@ ccc_main() {
         log_warning "設定ファイル '$claude_config_path' が見つからない。"
     fi
 
+    # 起動時に自動で更新確認（1日以上経過している場合）
+    local update_check_file="$HOME/.claude_update_check"
+    local last_check=0
+    local current_time=$(date +%s)
+    local one_day=$((24 * 60 * 60)) # 1日の秒数
+
+    # 最終確認日時を読み込む
+    if [ -f "$update_check_file" ]; then
+        last_check=$(cat "$update_check_file" 2>/dev/null)
+        # 数字でない場合はデフォルト値を使用
+        if ! [[ "$last_check" =~ ^[0-9]+$ ]]; then
+            last_check=0
+        fi
+    fi
+
+    # 1日以上経過している場合は更新確認
+    if [ $((current_time - last_check)) -gt $one_day ]; then
+        # 更新確認ファイルを更新
+        echo "$current_time" > "$update_check_file"
+
+        # 静かに更新を確認し、新しいバージョンがあれば通知
+        echo
+        echo "起動前の自動更新確認を実行中..."
+
+        # npmでインストールされたclaude-codeの最新バージョンを取得
+        local latest_version=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
+        if [ -n "$latest_version" ]; then
+            # コンテナ内のclaude-codeバージョンを取得
+            local container_version=""
+            container_version=$(docker run --rm my-claude-code:latest npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
+
+            if [ -n "$container_version" ] && [ "$container_version" != "null" ] && [ "$container_version" != "$latest_version" ]; then
+                echo -e "${UPDATE_COLOR}新しいバージョンのClaudeが利用可能です:${NC} $container_version → $latest_version"
+                echo -e "更新するには次のコマンドを実行: ${GREEN}$(basename "$0") --update${NC}"
+                echo
+            fi
+        fi
+    fi
+
     # 環境変数を準備
     local env_vars=(
     "CLAUDE_CREDENTIAL_PATH=$claude_credential_path"
     "CLAUDE_CONFIG_PATH=$claude_config_path"
-)
+    )
+
+    # タイムゾーン情報を取得して設定
+    local tz
+    if command -v timedatectl >/dev/null 2>&1; then
+        tz=$(timedatectl | grep "Time zone" | awk '{print $3}')
+        if [ -n "$tz" ]; then
+            env_vars+=("TZ=$tz")
+        fi
+    fi
 
     # SOURCE_PATH環境変数は-sオプションが指定されていない場合のみ設定
     if [ "$source_path_specified" = false ]; then
@@ -194,21 +339,48 @@ ccc_main() {
 
     # 一時ファイルの作成
     local temp_compose_file=$(mktemp)
-    cp "$compose_path" "$temp_compose_file"
+
+    # composeファイルのコピーと存在確認
+    if [ ! -f "$compose_path" ]; then
+        log_error "指定されたComposeファイル '$compose_path' が見つかりません。"
+        return 1
+    fi
+
+    cp "$compose_path" "$temp_compose_file" || {
+        log_error "Composeファイルのコピーに失敗しました: $compose_path"
+        return 1
+    }
 
     # ユーザーが-s/--source-pathを指定した場合、デフォルトのマウント設定を削除
     if [ "$source_path_specified" = true ]; then
-        yq eval 'del(.services.containered-claude.volumes[] | select(.target == "/workspace/"))' -i "$temp_compose_file"
+        if ! yq eval 'del(.services.containered-claude.volumes[] | select(.target == "/workspace/"))' -i "$temp_compose_file" 2>/dev/null; then
+            log_error "yqコマンドの実行に失敗しました。yqが正しくインストールされているか確認してください。"
+            rm -f "$temp_compose_file"
+            return 1
+        fi
     fi
 
     # ソースパスが指定されている場合、マウント設定を追加
     if [ "$source_path_specified" = true ]; then
+        # 各ソースパスの存在確認
+        for src_path in "${source_paths[@]}"; do
+            if [ ! -d "$src_path" ]; then
+                log_error "指定されたソースパス '$src_path' が存在しないか、ディレクトリではありません。"
+                rm -f "$temp_compose_file"
+                return 1
+            fi
+        done
+
         # 既に使用されているマウント先ディレクトリ名を追跡
         declare -A target_dirs
 
         # ソースパスが1つの場合は直接 /workspace/ にマウント
         if [ ${#source_paths[@]} -eq 1 ]; then
-            yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"${source_paths[0]}\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file"
+            if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"${source_paths[0]}\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                log_error "マウント設定の追加に失敗しました: ${source_paths[0]}"
+                rm -f "$temp_compose_file"
+                return 1
+            fi
         else
             # ソースパスが複数の場合は、すべてbasename形式でマウント
             for ((i=0; i<${#source_paths[@]}; i++)); do
@@ -228,7 +400,13 @@ ccc_main() {
                 local target_path="/workspace/$target_name"
 
                 # yqを使って新しいマウントポイントを追加
-                yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"$target_path\"}]" -i "$temp_compose_file"
+                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"$target_path\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                    log_error "マウント設定の追加に失敗しました: $src_path -> $target_path"
+                    rm -f "$temp_compose_file"
+                    return 1
+                fi
+
+                log_info "ソースパスをマウント: $src_path -> $target_path"
             done
         fi
     fi
@@ -267,6 +445,8 @@ show_ccc_help() {
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
     ${GREEN}--separator${NC}                 区切り線の表示を有効化する
+    ${GREEN}--check-update${NC}              Claudeイメージの更新を確認する
+    ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる

@@ -9,6 +9,7 @@ services:
       args:
         USERID: ${USERID:-1000}
         GROUPID: ${GROUPID:-1000}
+        TZ: ${TZ:-Asia/Tokyo}
     network_mode: "host"
     develop:
       watch:
@@ -19,7 +20,7 @@ services:
         source: ${SOURCE_PATH:-.}
         target: /workspace/
       - type: bind
-        source: ${CLAUDE_CREDENCIAL_PATH:-~/.claude}
+        source: ${CLAUDE_CREDENTIAL_PATH:-~/.claude}
         target: /home/node/.claude
       - type: bind
         source: ${CLAUDE_CONFIG_PATH:-~/.claude.json}
