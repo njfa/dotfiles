@@ -80,7 +80,7 @@ print_logo() {
 # メイン関数
 ccc_main() {
     # デフォルト値の設定
-    local source_path=$(pwd)
+    local source_paths=()
     local compose_path="$HOME/.dotfiles/compose.yml"
     local service="containered-claude"
     local remove_orphans=true # デフォルトでオーファンコンテナを削除
@@ -91,12 +91,14 @@ ccc_main() {
     local show_info=false # デフォルトで設定情報を表示
     local show_separator=false # デフォルトでセパレータを表示
     local quiet=true # デフォルトは静かモード
+    local source_path_specified=false # ソースパスが指定されたかどうかのフラグ
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
         case $1 in
             -s | --source-path)
-                source_path="$2"
+                source_paths+=("$2")
+                source_path_specified=true
                 shift 2
                 ;;
             -c | --compose-path)
@@ -155,6 +157,11 @@ ccc_main() {
         esac
     done
 
+    # source_pathsが空の場合は現在のディレクトリを使用
+    if [ ${#source_paths[@]} -eq 0 ]; then
+        source_paths=($(pwd))
+    fi
+
     # ロゴの表示（--no-logoが指定されていなければ）
     if [ "$show_logo" = true ]; then
         print_logo "$claude_credential_path" "$claude_config_path"
@@ -175,9 +182,66 @@ ccc_main() {
     "CLAUDE_CONFIG_PATH=$claude_config_path"
 )
 
-    # 統合されたコンテナランナー関数を利用
-    run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "${env_vars[@]}" "${command_args[@]}"
-    return $?
+    # SOURCE_PATH環境変数は-sオプションが指定されていない場合のみ設定
+    if [ "$source_path_specified" = false ]; then
+        env_vars+=("SOURCE_PATH=${source_paths[0]}")
+    fi
+
+    # 一時ファイルの作成
+    local temp_compose_file=$(mktemp)
+    cp "$compose_path" "$temp_compose_file"
+
+    # ユーザーが-s/--source-pathを指定した場合、デフォルトのマウント設定を削除
+    if [ "$source_path_specified" = true ]; then
+        yq eval 'del(.services.containered-claude.volumes[] | select(.target == "/workspace/"))' -i "$temp_compose_file"
+    fi
+
+    # ソースパスが指定されている場合、マウント設定を追加
+    if [ "$source_path_specified" = true ]; then
+        # 既に使用されているマウント先ディレクトリ名を追跡
+        declare -A target_dirs
+
+        # ソースパスが1つの場合は直接 /workspace/ にマウント
+        if [ ${#source_paths[@]} -eq 1 ]; then
+            yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"${source_paths[0]}\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file"
+        else
+            # ソースパスが複数の場合は、すべてbasename形式でマウント
+            for ((i=0; i<${#source_paths[@]}; i++)); do
+                local src_path="${source_paths[$i]}"
+                local dir_name=$(basename "$src_path")
+                local target_name="$dir_name"
+                local counter=1
+
+                # ディレクトリ名が重複する場合、連番を付与
+                while [[ ${target_dirs[$target_name]} ]]; do
+                    target_name="${dir_name}-${counter}"
+                    ((counter++))
+                done
+
+                # 使用したディレクトリ名を記録
+                target_dirs[$target_name]=1
+                local target_path="/workspace/$target_name"
+
+                # yqを使って新しいマウントポイントを追加
+                yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"$target_path\"}]" -i "$temp_compose_file"
+            done
+        fi
+    fi
+
+    # デバッグ用に一時ファイルの内容を表示（quiet=falseの場合）
+    if [ "$quiet" = false ]; then
+        echo "Modified compose file:"
+        cat "$temp_compose_file"
+    fi
+
+    # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
+    run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "${env_vars[@]}" "${command_args[@]}"
+    local exit_code=$?
+
+    # 一時ファイルの削除
+    rm -f "$temp_compose_file"
+
+    return $exit_code
 }
 
 # ヘルプメッセージも更新
@@ -187,7 +251,9 @@ show_ccc_help() {
         ${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
 
     ${BOLD}オプション:${NC}
-    ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (デフォルト: 現在のディレクトリ)
+    ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
+    1つだけの場合は /workspace/ に直接マウント
+    2つ以上の場合はすべて /workspace/<basename> 形式でマウント
     ${GREEN}-c, --compose-path PATH${NC}     Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
     ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
