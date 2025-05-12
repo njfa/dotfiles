@@ -26,38 +26,7 @@ return {
                 config = function()
                     require("mini.diff").setup()
                 end
-            },
-            {
-                "MeanderingProgrammer/render-markdown.nvim",
-                ft = { "markdown", "vimwiki", "codecompanion" },
-                dependencies = { "nvim-treesitter/nvim-treesitter" },
-                config = function()
-                    require("render-markdown").setup({
-                        render_modes = true,
-                        code = {
-                            left_pad = 0,
-                            right_pad = 1,
-                            width = "block",
-                        },
-                        heading = {
-                            width = "block",
-                            left_pad = 0,
-                            right_pad = 1,
-                            -- icons = { "󰼏 ", "󰎨 ", "󰼑 ", "󰎲 ", "󰼓 ", "󰎴 " },
-                            icons = {},
-                            backgrounds = {
-                                "my_markdown_h1",
-                                "my_markdown_h2",
-                                "my_markdown_h3",
-                                "my_markdown_h4",
-                                "my_markdown_h5",
-                                "my_markdown_h6",
-                            },
-                        }
-                    })
-                end,
-            },
-
+            }
         },
         init = function()
             require("plugins.codecompanion.fidget-spinner"):init()
