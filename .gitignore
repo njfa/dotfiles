@@ -42,3 +42,5 @@ settings.*.json
 lazy-lock.json
 
 package-lock.json
+
+.config/nvim/lua/plugins/dev.lua
