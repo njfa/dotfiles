@@ -63,8 +63,20 @@ run_container() {
     local show_info="$7" # 設定情報表示: trueなら表示、falseなら非表示
     local show_separator="$8" # セパレータ表示: trueなら表示、falseなら非表示
     local quiet="$9"     # 静かモード: trueなら出力を最小限に
-    local env_vars=("${@:10:$((${#@} - 10))}")  # 10番目から最後から1つ前までの引数
-    local command_args=("${@: -1}")           # 最後の引数（配列）
+
+    # 引数の総数をチェック
+    if [ ${#@} -ge 10 ]; then
+        local env_vars=("${@:10:$((${#@} - 10))}")
+    else
+        local env_vars=()
+    fi
+
+    # 最後の引数を取得（引数が10未満の場合は空になる可能性あり）
+    if [ ${#@} -ge 10 ]; then
+        local command_args=("${@: -1}")
+    else
+        local command_args=()
+    fi
 
     # パスの存在確認
     if [ ! -d "$source_path" ]; then
@@ -133,9 +145,9 @@ run_container() {
         fi
 
         if [ "$quiet" = true ]; then
-            echo -e "  • ${BOLD}出力モード:${NC} 最小限（静かモード）"
+            echo -e "  • ${BOLD}出力モード:${NC} 最小限"
         else
-            echo -e "  • ${BOLD}出力モード:${NC} 詳細（冗長モード）"
+            echo -e "  • ${BOLD}出力モード:${NC} 詳細"
         fi
     fi
 

@@ -38,3 +38,9 @@ services:
   sequentialthinking:
     container_name: sequentialthinking
     image: mcp/sequentialthinking
+
+  plantuml:
+    container_name: plantuml
+    image: plantuml/plantuml-server:jetty
+    ports:
+      - 18123:8080
