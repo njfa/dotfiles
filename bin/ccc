@@ -91,6 +91,7 @@ ccc_main() {
     local show_info=false # デフォルトで設定情報を表示
     local show_separator=false # デフォルトでセパレータを表示
     local quiet=true # デフォルトは静かモード
+    local workdir=""          # 作業ディレクトリ (--workdir)
     local source_path_specified=false # ソースパスが指定されたかどうかのフラグ
 
     # オプションと引数の解析
@@ -115,6 +116,10 @@ ccc_main() {
                 ;;
             --config-path)
                 claude_config_path="$2"
+                shift 2
+                ;;
+            --workdir)
+                workdir="$2"
                 shift 2
                 ;;
             --keep-orphans)
@@ -235,7 +240,7 @@ ccc_main() {
     fi
 
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
-    run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "${env_vars[@]}" "${command_args[@]}"
+    run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "${env_vars[@]}" "${command_args[@]}"
     local exit_code=$?
 
     # 一時ファイルの削除
