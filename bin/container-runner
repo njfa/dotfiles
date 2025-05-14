@@ -56,26 +56,43 @@ print_header() {
 run_container() {
     local source_path="$1"
     local compose_path="$2"
-    local service="$3" 
+    local service="$3"
     local remove_orphans="$4"
     local cmd_mode="$5"  # "run" または "up"
     local detached="$6"  # up実行時: trueなら-d付き、falseなら-dなし
     local show_info="$7" # 設定情報表示: trueなら表示、falseなら非表示
     local show_separator="$8" # セパレータ表示: trueなら表示、falseなら非表示
     local quiet="$9"     # 静かモード: trueなら出力を最小限に
+    local user="${10}"   # ユーザー指定 (-u/--user)
+    local workdir="${11}" # 作業ディレクトリ (--workdir)
+    local entrypoint="${12}" # エントリーポイント (--entrypoint)
 
-    # 引数の総数をチェック
-    if [ ${#@} -ge 10 ]; then
-        local env_vars=("${@:10:$((${#@} - 10))}")
-    else
-        local env_vars=()
-    fi
+    # 環境変数と最後のコマンド引数を分離して処理
+    local env_vars=()
+    local command_args=()
+    local process_env=true
+    local has_double_dash=false
 
-    # 最後の引数を取得（引数が10未満の場合は空になる可能性あり）
-    if [ ${#@} -ge 10 ]; then
-        local command_args=("${@: -1}")
-    else
-        local command_args=()
+    # 13番目以降の引数を処理
+    if [ ${#@} -ge 13 ]; then
+        shift 12  # 最初の12の引数をスキップ
+
+        # -- が見つかるまで環境変数として処理し、-- 以降はコマンド引数として処理
+        while [[ $# -gt 0 ]]; do
+            if [[ "$1" = "--" && "$process_env" = true ]]; then
+                process_env=false
+                has_double_dash=true
+                shift
+                continue
+            fi
+
+            if [[ "$process_env" = true ]]; then
+                env_vars+=("$1")
+            else
+                command_args+=("$1")
+            fi
+            shift
+        done
     fi
 
     # パスの存在確認
@@ -125,10 +142,23 @@ run_container() {
         fi
 
         # コマンドが空の配列でない場合のみ表示
-        if [ "$cmd_mode" = "run" ] && [ ${#command_args[@]} -gt 0 ] && [ -n "${command_args[0]}" ]; then
+        if [ "$cmd_mode" = "run" ] && [ ${#command_args[@]} -gt 0 ]; then
             echo -e "  • ${BOLD}実行コマンド:${NC} ${command_args[*]}"
         elif [ "$cmd_mode" = "run" ]; then
             echo -e "  • ${BOLD}実行コマンド:${NC} (デフォルト)"
+        fi
+
+        # オプション指定を表示
+        if [ -n "$user" ]; then
+            echo -e "  • ${BOLD}ユーザー:${NC} ${user}"
+        fi
+
+        if [ -n "$workdir" ]; then
+            echo -e "  • ${BOLD}作業ディレクトリ:${NC} ${workdir}"
+        fi
+
+        if [ -n "$entrypoint" ]; then
+            echo -e "  • ${BOLD}エントリーポイント:${NC} ${entrypoint}"
         fi
 
         if [ ${#env_vars[@]} -gt 0 ]; then
@@ -139,9 +169,9 @@ run_container() {
         fi
 
         if [ "$remove_orphans" = true ]; then
-            echo -e "  • ${BOLD}オーファンコンテナ:${NC} 自動削除する"
+            echo -e "  • ${BOLD}オーファンコンテナ:${NC} 自動削除"
         else
-            echo -e "  • ${BOLD}オーファンコンテナ:${NC} 保持する"
+            echo -e "  • ${BOLD}オーファンコンテナ:${NC} 保持"
         fi
 
         if [ "$quiet" = true ]; then
@@ -164,9 +194,14 @@ run_container() {
 
     # 環境変数を設定
     export SOURCE_PATH="$source_path"
-    for env_var in "${env_vars[@]}"; do
-        export "$env_var"
-    done
+    if [ ${#env_vars[@]} -gt 0 ]; then
+        for env_var in "${env_vars[@]}"; do
+            # 環境変数形式（KEY=VALUE）かどうかをチェック
+            if [[ "$env_var" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
+                export "$env_var"
+            fi
+        done
+    fi
 
     # Docker Composeコマンドの実行
     local exit_code
@@ -179,19 +214,36 @@ run_container() {
         temp_error_file=$(mktemp)
     fi
 
+    # 追加オプションの設定
+    local user_option=""
+    local workdir_option=""
+    local entrypoint_option=""
+
+    if [ -n "$user" ]; then
+        user_option="--user $user"
+    fi
+
+    if [ -n "$workdir" ]; then
+        workdir_option="--workdir $workdir"
+    fi
+
+    if [ -n "$entrypoint" ]; then
+        entrypoint_option="--entrypoint $entrypoint"
+    fi
+
     if [ "$cmd_mode" = "run" ]; then
         # runモードでの実行
-        if [ ${#command_args[@]} -gt 0 ] && [ -n "${command_args[0]}" ]; then
+        if [ ${#command_args[@]} -gt 0 ]; then
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" run $quiet_option $orphan_option "$service" "${command_args[@]}" 2> "$temp_error_file"
+                docker compose -f "$compose_path" run $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" run $orphan_option "$service" "${command_args[@]}"
+                docker compose -f "$compose_path" run $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}"
             fi
         else
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" run $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+                docker compose -f "$compose_path" run $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" run $orphan_option "$service"
+                docker compose -f "$compose_path" run $orphan_option $user_option $workdir_option $entrypoint_option "$service"
             fi
         fi
     elif [ "$cmd_mode" = "up" ]; then
@@ -254,8 +306,12 @@ cr_main() {
     local show_info=true      # デフォルトで設定情報を表示
     local show_separator=true # デフォルトでセパレータを表示
     local quiet=true          # デフォルトは静かモード
+    local user=""             # ユーザー指定 (-u/--user)
+    local workdir=""          # 作業ディレクトリ (--workdir)
+    local entrypoint=""       # エントリーポイント (--entrypoint)
     local env_vars=()
     local command_args=()
+    local has_double_dash=false
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -274,6 +330,18 @@ cr_main() {
                 ;;
             -e | --env)
                 env_vars+=("$2")
+                shift 2
+                ;;
+            -u | --user)
+                user="$2"
+                shift 2
+                ;;
+            --workdir)
+                workdir="$2"
+                shift 2
+                ;;
+            --entrypoint)
+                entrypoint="$2"
                 shift 2
                 ;;
             --keep-orphans)
@@ -305,7 +373,9 @@ cr_main() {
                 return 0
                 ;;
             --)
+                has_double_dash=true
                 shift
+                # 残りの全ての引数をコマンド引数として扱う
                 command_args=("$@")
                 break
                 ;;
@@ -318,7 +388,12 @@ cr_main() {
     done
 
     # コンテナを実行
-    run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "${env_vars[@]}" "${command_args[@]}"
+    # ここで -- 以降の引数を別途渡すようにする
+    if [ "$has_double_dash" = true ]; then
+        run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "$user" "$workdir" "$entrypoint" "${env_vars[@]}" -- "${command_args[@]}"
+    else
+        run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "$user" "$workdir" "$entrypoint" "${env_vars[@]}"
+    fi
     return $?
 }
 
@@ -332,7 +407,10 @@ show_cr_help() {
     ${GREEN}-c, --compose-path PATH${NC}     Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (必須)
     ${GREEN}-e, --env KEY=VALUE${NC}         環境変数を設定 (複数指定可)
-    ${GREEN}--keep-orphans${NC}              オーファンコンテナを削除しない (デフォルトは削除)
+    ${GREEN}-u, --user USER${NC}             指定したユーザーでコンテナを実行 (例: 1000:1000)
+    ${GREEN}--workdir PATH${NC}              コンテナ内の作業ディレクトリを指定
+    ${GREEN}--entrypoint CMD${NC}            コンテナのエントリーポイントを指定
+    ${GREEN}--keep-orphans${NC}              オーファンコンテナを保持 (デフォルトは自動削除)
     ${GREEN}--up${NC}                        コンテナをupコマンドで実行 (デフォルト: run)
     ${GREEN}--no-detach${NC}                 upモード時にデタッチドモードを使用しない
     ${GREEN}--no-info${NC}                   設定情報の表示を無効化する
