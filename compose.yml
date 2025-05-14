@@ -44,3 +44,10 @@ services:
     image: plantuml/plantuml-server:jetty
     ports:
       - 18123:8080
+
+  playwright:
+    container_name: playwright
+    image: my-playwright-mcp:latest
+    network_mode: "host"
+    build:
+      context: ./etc/dockerfiles/playwright-mcp/
