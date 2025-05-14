@@ -24,8 +24,6 @@ services:
       - type: bind
         source: ${CLAUDE_CONFIG_PATH:-~/.claude.json}
         target: /home/node/.claude.json
-    tty: true
-    command: ["zsh"]
 
   memory:
     container_name: memory
