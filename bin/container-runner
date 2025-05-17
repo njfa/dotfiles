@@ -235,15 +235,15 @@ run_container() {
         # runモードでの実行
         if [ ${#command_args[@]} -gt 0 ]; then
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" run $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}" 2> "$temp_error_file"
+                docker compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" run $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}"
+                docker compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}"
             fi
         else
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" run $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" 2> "$temp_error_file"
+                docker compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" run $orphan_option $user_option $workdir_option $entrypoint_option "$service"
+                docker compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service"
             fi
         fi
     elif [ "$cmd_mode" = "up" ]; then

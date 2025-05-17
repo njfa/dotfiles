@@ -21,6 +21,7 @@
   - 自動更新確認機能（1日に1回）
   - カラフルなロゴ表示と使いやすいインターフェース
   - 複数ソースパスのマウント
+  - コンテナ自動削除機能（--rm付き実行）
 - `bin/diagnose-claude.sh`: Claude環境を診断するユーティリティ
 - `bin/container-runner`: Dockerコンテナを実行するための汎用ユーティリティ
 - `compose.yml`: コンテナ化環境のDocker Compose設定
@@ -49,6 +50,9 @@
 
 # Claudeイメージを更新
 ./bin/ccc --update
+
+# 孤立したコンテナも削除（デフォルトは削除しない）
+./bin/ccc --rm-orphans
 ```
 
 ### Claude環境の診断

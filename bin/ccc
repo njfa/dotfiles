@@ -158,7 +158,7 @@ ccc_main() {
     local source_paths=()
     local compose_path="$HOME/.dotfiles/compose.yml"
     local service="containered-claude"
-    local remove_orphans=true # デフォルトでオーファンコンテナを削除
+    local remove_orphans=false # デフォルトでオーファンコンテナを削除しない
     local claude_credential_path="$HOME/.claude"
     local claude_config_path="$HOME/.claude.json"
     local command_args=("claude") # デフォルトのコマンド
@@ -199,8 +199,8 @@ ccc_main() {
                 workdir="$2"
                 shift 2
                 ;;
-            --keep-orphans)
-                remove_orphans=false
+            --rm-orphans)
+                remove_orphans=true
                 shift
                 ;;
             --no-logo)
@@ -418,7 +418,12 @@ ccc_main() {
     fi
 
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
-    run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "${env_vars[@]}" "${command_args[@]}"
+    # 環境変数とコマンド引数の間に -- を追加
+    if [ ${#command_args[@]} -gt 0 ]; then
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "${env_vars[@]}" -- "${command_args[@]}"
+    else
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "${env_vars[@]}"
+    fi
     local exit_code=$?
 
     # 一時ファイルの削除
@@ -441,7 +446,7 @@ show_ccc_help() {
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
     ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
     ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
-    ${GREEN}--keep-orphans${NC}              オーファンコンテナを削除しない (デフォルトは削除)
+    ${GREEN}--rm-orphans${NC}                オーファンコンテナを削除する (デフォルトは削除しない)
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
     ${GREEN}--separator${NC}                 区切り線の表示を有効化する
