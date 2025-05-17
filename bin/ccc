@@ -142,8 +142,8 @@ check_claude_update() {
 update_claude_image() {
     log_info "Claudeイメージを更新中..."
 
-    # イメージの再ビルド
-    if ! docker compose -f "$HOME/.dotfiles/compose.yml" build containered-claude; then
+    # イメージの再ビルド（--no-cacheオプションを追加）
+    if ! docker compose -f "$HOME/.dotfiles/compose.yml" build --no-cache containered-claude; then
         log_error "イメージの更新に失敗しました"
         return 1
     fi
