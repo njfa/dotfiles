@@ -1,4 +1,4 @@
-name: mcp-server
+name: tools
 
 services:
   containered-claude:
