@@ -128,7 +128,7 @@ Invoke-Command -ScriptBlock ([scriptblock]::Create((new-object net.webclient).do
 
 すべてのコミットメッセージは[Conventional Commit specification](https://www.conventionalcommits.org/)に従って記述します：
 
-```
+```txt
 <type>[optional scope]: <description>
 
 [optional body]
@@ -151,11 +151,11 @@ Invoke-Command -ScriptBlock ([scriptblock]::Create((new-object net.webclient).do
 
 ### コミットメッセージの例
 
-```
+```txt
 feat: デプロイメント自動化スクリプトを追加
 ```
 
-```
+```txt
 fix: 環境変数の読み込みエラーを修正
 
 環境変数が設定されていない場合のデフォルト値を追加。
@@ -169,3 +169,4 @@ fix: 環境変数の読み込みエラーを修正
 - コミットメッセージは日本語で記述します
 - 最初の行は50文字以内に収めます
 - 本文が必要な場合は空行を挟んで記述します
+
