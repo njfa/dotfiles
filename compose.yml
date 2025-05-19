@@ -25,6 +25,9 @@ services:
       - type: bind
         source: ${CLAUDE_CONFIG_PATH:-~/.claude.json}
         target: /home/node/.claude.json
+      - type: bind
+        source: ${AWS_CONFIG_PATH:-~/.aws}
+        target: /home/node/.aws
 
   memory:
     container_name: memory

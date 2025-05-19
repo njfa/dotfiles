@@ -173,6 +173,7 @@ ccc_main() {
     local claude_credential_path="$HOME/.claude"
     local claude_config_path="$HOME/.claude.json"
     local command_args=("claude") # デフォルトのコマンド
+    local bedrock_args=() # Bedrock用の追加引数
     local show_logo=true # デフォルトでロゴを表示
     local show_info=false # デフォルトで設定情報を表示
     local show_separator=false # デフォルトでセパレータを表示
@@ -182,6 +183,8 @@ ccc_main() {
     local check_update=false # 更新確認フラグ
     local do_update=false # 更新実行フラグ
     local use_cache=false # ビルド時のキャッシュ使用フラグ
+    local use_bedrock=false # Bedrock使用フラグ
+    local bedrock_region="" # Bedrockリージョン
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -238,6 +241,16 @@ ccc_main() {
             --use-cache)
                 use_cache=true
                 shift
+                ;;
+            --bedrock)
+                use_bedrock=true
+                bedrock_args+=("--bedrock")
+                shift
+                ;;
+            --bedrock-region)
+                bedrock_region="$2"
+                bedrock_args+=("--region" "$2")
+                shift 2
                 ;;
             -v | --verbose)
                 quiet=false
@@ -343,6 +356,37 @@ ccc_main() {
     "CLAUDE_CONFIG_PATH=$claude_config_path"
 )
 
+    # Bedrock使用時の環境変数設定
+    if [ "$use_bedrock" = true ]; then
+        # AWS環境変数をコンテナに渡す
+        if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+            env_vars+=("AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID")
+        fi
+        if [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+            env_vars+=("AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY")
+        fi
+        if [ -n "$AWS_SESSION_TOKEN" ]; then
+            env_vars+=("AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN")
+        fi
+        if [ -n "$AWS_PROFILE" ]; then
+            env_vars+=("AWS_PROFILE=$AWS_PROFILE")
+        fi
+        
+        # リージョンの設定（指定があればそれを使用、なければ環境変数から、さらになければデフォルト）
+        if [ -n "$bedrock_region" ]; then
+            env_vars+=("AWS_REGION=$bedrock_region")
+        elif [ -n "$AWS_REGION" ]; then
+            env_vars+=("AWS_REGION=$AWS_REGION")
+        else
+            # デフォルトリージョンとしてus-east-1を設定
+            env_vars+=("AWS_REGION=us-east-1")
+            log_info "AWSリージョンが指定されていないため、デフォルトのus-east-1を使用します"
+        fi
+        
+        # Bedrockを使用するフラグをコンテナに伝える
+        env_vars+=("USE_BEDROCK=true")
+    fi
+
     # タイムゾーン情報を取得して設定
     local tz
     if command -v timedatectl >/dev/null 2>&1; then
@@ -437,6 +481,11 @@ ccc_main() {
         cat "$temp_compose_file"
     fi
 
+    # Bedrock引数をコマンド引数に追加
+    if [ ${#bedrock_args[@]} -gt 0 ]; then
+        command_args+=("${bedrock_args[@]}")
+    fi
+
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
     # 環境変数とコマンド引数の間に -- を追加
     if [ ${#command_args[@]} -gt 0 ]; then
@@ -473,6 +522,8 @@ show_ccc_help() {
     ${GREEN}--check-update${NC}              Claudeイメージの更新を確認する
     ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する (デフォルトはキャッシュ無効)
     ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
+    ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
+    ${GREEN}--bedrock-region REGION${NC}     Bedrockのリージョンを指定 (デフォルト: AWS_REGIONまたはus-east-1)
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
