@@ -53,6 +53,12 @@
 
 # 孤立したコンテナも削除（デフォルトは削除しない）
 ./bin/ccc --rm-orphans
+
+# compose.yml内に定義されたMCPサービスをClaudeで利用可能にする
+./bin/ccc --mcp memory --mcp playwright
+
+# AWS Bedrockと特定のMCPを組み合わせて使用
+./bin/ccc --bedrock --mcp sequentialthinking
 ```
 
 ### Claude環境の診断

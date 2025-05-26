@@ -28,6 +28,9 @@ services:
       - type: bind
         source: ${AWS_CONFIG_PATH:-~/.aws}
         target: /home/node/.aws
+      - type: bind
+        source: ~/.ccc
+        target: /home/node/.ccc
 
   memory:
     container_name: memory
@@ -53,3 +56,7 @@ services:
     network_mode: "host"
     build:
       context: ./etc/dockerfiles/playwright-mcp/
+    # ports:
+    #   - 8931:8931
+    command:
+      ["-q", "--headless", "--browser", "chrome", "--host", "0.0.0.0", "--port", "8931"]

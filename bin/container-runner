@@ -66,6 +66,7 @@ run_container() {
     local user="${10}"   # ユーザー指定 (-u/--user)
     local workdir="${11}" # 作業ディレクトリ (--workdir)
     local entrypoint="${12}" # エントリーポイント (--entrypoint)
+    local docker_log_level="${13}" # Dockerログレベル
 
     # 環境変数と最後のコマンド引数を分離して処理
     local env_vars=()
@@ -73,9 +74,9 @@ run_container() {
     local process_env=true
     local has_double_dash=false
 
-    # 13番目以降の引数を処理
-    if [ ${#@} -ge 13 ]; then
-        shift 12  # 最初の12の引数をスキップ
+    # 14番目以降の引数を処理
+    if [ ${#@} -ge 14 ]; then
+        shift 13  # 最初の13の引数をスキップ
 
         # -- が見つかるまで環境変数として処理し、-- 以降はコマンド引数として処理
         while [[ $# -gt 0 ]]; do
@@ -231,34 +232,40 @@ run_container() {
         entrypoint_option="--entrypoint $entrypoint"
     fi
 
+    # Dockerコマンドの構築
+    local docker_cmd="docker"
+    if [ -n "$docker_log_level" ]; then
+        docker_cmd="docker -l $docker_log_level"
+    fi
+
     if [ "$cmd_mode" = "run" ]; then
         # runモードでの実行
         if [ ${#command_args[@]} -gt 0 ]; then
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}"
+                $docker_cmd compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}"
             fi
         else
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service"
+                $docker_cmd compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service"
             fi
         fi
     elif [ "$cmd_mode" = "up" ]; then
         # upモードでの実行
         if [ "$detached" = true ]; then
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" up -d $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" up -d $quiet_option $orphan_option "$service" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" up -d $orphan_option "$service"
+                $docker_cmd compose -f "$compose_path" up -d $orphan_option "$service"
             fi
         else
             if [ "$quiet" = true ]; then
-                docker compose -f "$compose_path" up $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" up $quiet_option $orphan_option "$service" 2> "$temp_error_file"
             else
-                docker compose -f "$compose_path" up $orphan_option "$service"
+                $docker_cmd compose -f "$compose_path" up $orphan_option "$service"
             fi
         fi
     else
@@ -281,9 +288,9 @@ run_container() {
     if [ "$show_info" = true ]; then
         echo
         if [ $exit_code -eq 0 ]; then
-            log_success "コンテナは正常に終了しました。"
+            log_success "コマンドは正常に終了しました。"
         else
-            log_error "コンテナは終了コード $exit_code で終了しました。"
+            log_error "コマンドは終了コード $exit_code で終了しました。"
         fi
     fi
 
@@ -309,6 +316,7 @@ cr_main() {
     local user=""             # ユーザー指定 (-u/--user)
     local workdir=""          # 作業ディレクトリ (--workdir)
     local entrypoint=""       # エントリーポイント (--entrypoint)
+    local docker_log_level="" # Dockerログレベル
     local env_vars=()
     local command_args=()
     local has_double_dash=false
@@ -364,6 +372,10 @@ cr_main() {
                 show_separator=false
                 shift
                 ;;
+            --log-level)
+                docker_log_level="$2"
+                shift 2
+                ;;
             -v | --verbose)
                 quiet=false
                 shift
@@ -390,9 +402,9 @@ cr_main() {
     # コンテナを実行
     # ここで -- 以降の引数を別途渡すようにする
     if [ "$has_double_dash" = true ]; then
-        run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "$user" "$workdir" "$entrypoint" "${env_vars[@]}" -- "${command_args[@]}"
+        run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "$user" "$workdir" "$entrypoint" "$docker_log_level" "${env_vars[@]}" -- "${command_args[@]}"
     else
-        run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "$user" "$workdir" "$entrypoint" "${env_vars[@]}"
+        run_container "$source_path" "$compose_path" "$service" "$remove_orphans" "$cmd_mode" "$detached" "$show_info" "$show_separator" "$quiet" "$user" "$workdir" "$entrypoint" "$docker_log_level" "${env_vars[@]}"
     fi
     return $?
 }
@@ -415,6 +427,7 @@ show_cr_help() {
     ${GREEN}--no-detach${NC}                 upモード時にデタッチドモードを使用しない
     ${GREEN}--no-info${NC}                   設定情報の表示を無効化する
     ${GREEN}--no-separator${NC}              区切り線の表示を無効化する
+    ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はrunモード時のコマンドとして扱われる

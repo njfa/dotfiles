@@ -1,0 +1,30 @@
+# MCP (Model Context Protocol) Configuration File
+# このファイルでMCPサーバーの設定を定義できます
+
+# MCPサーバーの設定
+mcp_servers:
+  # compose.yml内のサービスを使用する場合
+  - name: memory
+    type: service
+    port: 8080  # オプション: ポート番号を指定（省略時はデフォルト）
+
+  - name: playwright
+    type: url
+    # portを省略した場合はデフォルトポートを使用
+    url: http://127.0.0.1:8931/sse
+
+  # # コマンドを直接指定する場合
+  # - name: memory-server
+  #   type: command
+  #   command: npx -y @modelcontextprotocol/server-memory
+
+# オプション: デフォルト設定
+defaults:
+  service_port: 8080  # サービスのデフォルトポート
+  auto_start: true    # サービスを自動起動するか
+
+# オプション: 環境ごとの設定
+environments:
+  development:
+    enabled:
+      - playwright
