@@ -53,12 +53,13 @@ RUN ARCH=$(dpkg --print-architecture) && \
   sudo dpkg -i "git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb" && \
   rm "git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb"
 
-# Install pyenv dependencies
+# Install pyenv dependencies & jq
 RUN apt-get update && \
     apt-get install -y \
     make build-essential libssl-dev zlib1g-dev \
     libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
+    jq
 
 # Set up non-root user
 USER node
@@ -91,7 +92,8 @@ RUN curl -fsSL https://pyenv.run | bash && \
     pyenv install ${PYTHON_VERSION} && \
     pyenv global ${PYTHON_VERSION} && \
     pip install --upgrade pip && \
-    pip install uv
+    pip install uv && \
+    pip install yq
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
