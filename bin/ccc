@@ -174,8 +174,6 @@ ccc_main() {
     local claude_config_path="$HOME/.claude.json"
     local command_args=("claude") # デフォルトのコマンド
     local bedrock_args=() # Bedrock用の追加引数
-    local mcp_args=() # MCP用の追加引数
-    local mcp_services=() # 追加するMCPサービス名
     local show_logo=true # デフォルトでロゴを表示
     local show_info=false # デフォルトで設定情報を表示
     local show_separator=false # デフォルトでセパレータを表示
@@ -187,8 +185,6 @@ ccc_main() {
     local use_cache=false # ビルド時のキャッシュ使用フラグ
     local use_bedrock=false # Bedrock使用フラグ
     local bedrock_region="" # Bedrockリージョン
-    local mcp_config_file="$HOME/.ccc/mcp.yml" # MCP設定ファイル（デフォルト）
-    local mcp_environment="" # MCP環境設定
     local docker_log_level="" # Dockerログレベル
 
     # オプションと引数の解析
@@ -247,14 +243,6 @@ ccc_main() {
                 use_cache=true
                 shift
                 ;;
-            --mcp-config)
-                mcp_config_file="$2"
-                shift 2
-                ;;
-            --mcp-env)
-                mcp_environment="$2"
-                shift 2
-                ;;
             --bedrock)
                 use_bedrock=true
                 bedrock_args+=("--bedrock")
@@ -276,6 +264,12 @@ ccc_main() {
             -h | --help)
                 show_ccc_help
                 return 0
+                ;;
+            mcp)
+                # mcpサブコマンドが指定された場合
+                shift
+                command_args=("claude" "mcp" "$@")
+                break
                 ;;
             --)
                 shift
@@ -498,291 +492,11 @@ ccc_main() {
         cat "$temp_compose_file"
     fi
 
-    # MCP設定ファイルが存在する場合、読み込んで処理
-    if [ -f "$mcp_config_file" ]; then
-        log_info "MCP設定ファイルを読み込んでいます: $mcp_config_file"
 
-        # YAMLファイルからMCPサーバー設定を読み込む
-        local server_count=$(yq eval '.mcp_servers | length' "$mcp_config_file" 2>/dev/null)
-        if [ -z "$server_count" ] || [ "$server_count" = "0" ]; then
-            log_warning "MCP設定ファイルにサーバー定義が見つかりません"
-        else
-            # 環境が指定されていない場合、環境が1つだけなら自動選択
-            if [ -z "$mcp_environment" ]; then
-                local env_count=$(yq eval '.environments | keys | length' "$mcp_config_file" 2>/dev/null)
-                if [ "$env_count" = "1" ]; then
-                    mcp_environment=$(yq eval '.environments | keys | .[0]' "$mcp_config_file" 2>/dev/null)
-                    log_info "環境設定が1つのため、自動的に '${mcp_environment}' を選択しました"
-                fi
-            fi
 
-            # 環境が指定されている場合、有効なサーバーのみをフィルタリング
-            local enabled_servers=()
-            if [ -n "$mcp_environment" ]; then
-                # 指定された環境の有効なサーバーリストを取得
-                mapfile -t enabled_servers < <(yq eval ".environments.${mcp_environment}.enabled[]" "$mcp_config_file" 2>/dev/null)
-                if [ ${#enabled_servers[@]} -eq 0 ]; then
-                    log_warning "環境 '${mcp_environment}' の設定が見つからないか、有効なサーバーがありません"
-                else
-                    log_info "環境 '${mcp_environment}' の設定を使用します"
-                fi
-            fi
-
-            # 各MCPサーバー設定を処理
-            for ((i=0; i<$server_count; i++)); do
-                local server_name=$(yq eval ".mcp_servers[$i].name" "$mcp_config_file" 2>/dev/null)
-                local server_type=$(yq eval ".mcp_servers[$i].type" "$mcp_config_file" 2>/dev/null)
-
-                # 環境が指定されている場合、有効なサーバーのみを処理
-                if [ ${#enabled_servers[@]} -gt 0 ]; then
-                    local is_enabled=false
-                    for enabled in "${enabled_servers[@]}"; do
-                        if [ "$enabled" = "$server_name" ]; then
-                            is_enabled=true
-                            break
-                        fi
-                    done
-                    if [ "$is_enabled" = false ]; then
-                        continue
-                    fi
-                fi
-
-                case "$server_type" in
-                    "service")
-                        # まずURLが明示的に指定されているかチェック
-                        local explicit_url=$(yq eval ".mcp_servers[$i].url // empty" "$mcp_config_file" 2>/dev/null)
-                        if [ -n "$explicit_url" ] && [ "$explicit_url" != "null" ]; then
-                            # URLが指定されている場合はそれを使用（名前も含めて保存）
-                            mcp_services+=("${server_name}|url:${explicit_url}")
-                            log_info "サービスタイプMCP（カスタムURL）を追加: ${server_name} -> ${explicit_url}"
-                        else
-                            # URLが指定されていない場合は従来の処理
-                            local port=$(yq eval ".mcp_servers[$i].port // empty" "$mcp_config_file" 2>/dev/null)
-                            if [ -n "$port" ] && [ "$port" != "null" ]; then
-                                mcp_services+=("${server_name}:${port}")
-                            else
-                                mcp_services+=("${server_name}")
-                            fi
-                            log_info "サービスタイプMCPを追加: ${server_name}"
-                        fi
-                        ;;
-                    "url")
-                        local url=$(yq eval ".mcp_servers[$i].url" "$mcp_config_file" 2>/dev/null)
-                        if [ -n "$url" ] && [ "$url" != "null" ]; then
-                            # 名前も含めて保存
-                            mcp_services+=("${server_name}|url:${url}")
-                            log_info "URLタイプMCPを追加: ${server_name} -> ${url}"
-                        else
-                            log_warning "MCPサーバー '${server_name}' のURLが指定されていません"
-                        fi
-                        ;;
-                    "command")
-                        local command=$(yq eval ".mcp_servers[$i].command" "$mcp_config_file" 2>/dev/null)
-                        if [ -n "$command" ] && [ "$command" != "null" ]; then
-                            # 名前も含めて保存
-                            mcp_services+=("${server_name}|cmd:${command}")
-                            log_info "コマンドタイプMCPを追加: ${server_name} -> ${command}"
-                        else
-                            log_warning "MCPサーバー '${server_name}' のコマンドが指定されていません"
-                        fi
-                        ;;
-                    *)
-                        log_warning "不明なMCPサーバータイプ: ${server_type} (${server_name})"
-                        ;;
-                esac
-            done
-        fi
-    fi
-
-    # MCP配列が空でない場合、compose.ymlからサービス情報を取得してMCP引数を作成
-    if [ ${#mcp_services[@]} -gt 0 ]; then
-        log_info "指定されたMCPサービスを追加しています..."
-
-        for mcp_service in "${mcp_services[@]}"; do
-            # 新しいフォーマット（名前|タイプ:値）を処理
-            if [[ "$mcp_service" == *"|url:"* ]]; then
-                # 名前とURLを分離
-                local service_name="${mcp_service%%|*}"
-                local url="${mcp_service#*|url:}"
-                # 名前とURLを保存
-                mcp_args+=("${service_name}|${url}")
-                log_info "外部MCPサーバー追加: ${service_name} (${url})"
-                continue
-            fi
-
-            # コマンドが指定されている場合（新フォーマット）
-            if [[ "$mcp_service" == *"|cmd:"* ]]; then
-                # 名前とコマンドを分離
-                local service_name="${mcp_service%%|*}"
-                local cmd="${mcp_service#*|cmd:}"
-                # 名前とコマンドを保存（コマンドはcmd:プレフィックス付きで保存）
-                mcp_args+=("${service_name}|cmd:${cmd}")
-                log_info "MCPコマンド追加: ${service_name} (${cmd})"
-                continue
-            fi
-
-            # 古いフォーマット（後方互換性のため残す）
-            if [[ "$mcp_service" == url:* ]]; then
-                # "url:"プレフィックスを削除してURLを取得
-                local url="${mcp_service#url:}"
-                # URLからホスト名を抽出して名前として使用
-                local service_name=$(echo "$url" | sed -E 's|^https?://([^/:]+).*|\1|')
-                # 名前とURLを保存
-                mcp_args+=("${service_name}|${url}")
-                log_info "外部MCPサーバー追加: ${service_name} (${url})"
-                continue
-            fi
-
-            # コマンドが指定されている場合（古いフォーマット）
-            if [[ "$mcp_service" == cmd:* ]]; then
-                # "cmd:"プレフィックスを削除してコマンドを取得
-                local cmd="${mcp_service#cmd:}"
-                # コマンドから実行ファイル名を抽出して名前として使用
-                local service_name=$(echo "$cmd" | awk '{print $1}' | xargs basename)
-                # 名前とコマンドを保存（コマンドはcmd:プレフィックス付きで保存）
-                mcp_args+=("${service_name}|cmd:${cmd}")
-                log_info "MCPコマンド追加: ${service_name} (${cmd})"
-                continue
-            fi
-
-            # ポートを取得（デフォルトは8080）
-            local port="8080"
-
-            # ポート番号が指定されているか確認
-            local specified_port=""
-            if [[ "$mcp_service" == *":"* ]]; then
-                specified_port=$(echo "$mcp_service" | cut -d':' -f2)
-                mcp_service=$(echo "$mcp_service" | cut -d':' -f1)
-                port="${specified_port}"
-                log_info "MCPサービス '${mcp_service}' に指定されたポート: ${port}"
-            fi
-
-            # サービスがcompose.ymlに存在するか確認
-            if ! yq eval ".services.${mcp_service}" "$temp_compose_file" > /dev/null 2>&1; then
-                log_warning "指定されたMCPサービス '${mcp_service}' が compose.yml に存在しません。スキップします。"
-                continue
-            fi
-
-            # サービスのコンテナ名とネットワークモードを取得
-            local container_name=$(yq eval ".services.${mcp_service}.container_name" "$temp_compose_file" 2>/dev/null)
-            local network_mode=$(yq eval ".services.${mcp_service}.network_mode" "$temp_compose_file" 2>/dev/null)
-
-            # コンテナ名が設定されていない場合はサービス名を使用
-            if [ -z "$container_name" ] || [ "$container_name" = "null" ]; then
-                container_name="${mcp_service}"
-            fi
-
-            # ネットワークモードに基づいてホストを決定
-            local host="localhost"
-            if [ "$network_mode" = "host" ]; then
-                host="localhost"
-            else
-                # ホストモード以外の場合はコンテナ名をホストとして使用
-                # ポート指定を含む場合はコンテナ名部分のみを使用
-                if [[ "$container_name" == *":"* ]]; then
-                    host=$(echo "$container_name" | cut -d':' -f1)
-                else
-                    host="${container_name}"
-                fi
-            fi
-
-            local exposed_port=$(yq eval ".services.${mcp_service}.ports[] | select(. | test(\".*:8080\")) | split(\":\")[0]" "$temp_compose_file" 2>/dev/null)
-            if [ -n "$exposed_port" ] && [ "$exposed_port" != "null" ]; then
-                port="${exposed_port}"
-            fi
-
-            # MCPサーバーURLを作成
-            local mcp_url="http://${host}:${port}/sse"
-            # ホスト名がポート番号を含んでいる場合は修正（ホスト:ポート:ポート の問題を解決）
-            if [[ "$host" == *":"* ]]; then
-                host=$(echo "$host" | cut -d':' -f1)
-                mcp_url="http://${host}:${port}/sse"
-            fi
-            # 名前とURLを保存
-            mcp_args+=("${mcp_service}|${mcp_url}")
-
-            log_info "MCPサーバー追加: ${mcp_service} (${mcp_url})"
-        done
-    fi
-
-    # BedrockおよびMCP引数の設定
+    # Bedrock引数の設定
     if [ ${#bedrock_args[@]} -gt 0 ]; then
         command_args+=("${bedrock_args[@]}")
-    fi
-
-    # MCP設定を適用するための新アプローチ
-    # MCPサーバーがある場合、まず指定されたMCPサービスを起動し、その後Claudeに登録する
-    if [ ${#mcp_args[@]} -gt 0 ]; then
-        log_info "MCPサーバーを起動および登録しています..."
-
-        # 各MCPサービスを順に処理
-        for mcp_info in "${mcp_args[@]}"; do
-            local service_name="${mcp_info%%|*}"  # | の前の部分がサービス名
-            local url="${mcp_info#*|}"            # | の後の部分がURL
-
-            # 外部URLかコマンドかを判定
-            local is_external_url=false
-            local is_command=false
-            
-            if [[ "$url" == cmd:* ]]; then
-                # コマンドの場合
-                is_command=true
-            elif [[ "$url" =~ ^https?:// ]] && ! [[ "$url" =~ localhost|127\.0\.0\.1|^\[::1\] ]]; then
-                # compose.yml内のサービス名と一致しない場合は外部URLと判定
-                if ! yq eval ".services.${service_name}" "$temp_compose_file" > /dev/null 2>&1; then
-                    is_external_url=true
-                fi
-            fi
-
-            # 外部URLでもコマンドでもない場合のみMCPサービスを起動
-            if [ "$is_external_url" = false ] && [ "$is_command" = false ]; then
-                # MCPサービスを起動（デタッチモードで実行）
-                log_info "MCPサービス '${service_name}' を起動しています..."
-                # remove_orphansフラグに基づいて--remove-orphansオプションを設定
-                local docker_args=()
-                if [ -n "$docker_log_level" ]; then
-                    docker_args+=("-l" "$docker_log_level")
-                fi
-                docker_args+=("compose" "-f" "$temp_compose_file" "up" "-d")
-                if [ "$remove_orphans" = true ]; then
-                    docker_args+=("--remove-orphans")
-                fi
-                docker_args+=("$service_name")
-                
-                docker "${docker_args[@]}"
-
-                # 起動状態を確認
-                if docker compose -f "$temp_compose_file" ps --services --filter "status=running" | grep -q "$service_name"; then
-                    log_success "MCPサービス '${service_name}' が正常に起動しました"
-                else
-                    log_warning "MCPサービス '${service_name}' の起動確認ができませんでした"
-                fi
-            else
-                if [ "$is_command" = true ]; then
-                    log_info "MCPコマンドのため起動をスキップ: ${service_name}"
-                else
-                    log_info "外部MCPサーバーのため起動をスキップ: ${service_name}"
-                fi
-            fi
-
-            # Claudeコンテナ内でMCPサーバーを登録
-            if [ "$is_command" = true ]; then
-                # コマンドの場合はstdioタイプで登録
-                local cmd="${url#cmd:}"
-                log_info "MCP追加 (stdio): ${service_name} -> ${cmd}"
-                docker compose -f "$temp_compose_file" run --rm \
-                    -e CLAUDE_CREDENTIAL_PATH="$claude_credential_path" \
-                    -e CLAUDE_CONFIG_PATH="$claude_config_path" \
-                    "$service" claude mcp add -t stdio "$service_name" $cmd
-            else
-                # URLの場合はsseタイプで登録
-                log_info "MCP追加 (sse): ${service_name} -> ${url}"
-                docker compose -f "$temp_compose_file" run --rm \
-                    -e CLAUDE_CREDENTIAL_PATH="$claude_credential_path" \
-                    -e CLAUDE_CONFIG_PATH="$claude_config_path" \
-                    "$service" claude mcp add -t sse "$service_name" "$url"
-            fi
-            done
     fi
 
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
@@ -821,8 +535,6 @@ show_ccc_help() {
     ${GREEN}--check-update${NC}              Claudeイメージの更新を確認する
     ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する (デフォルトはキャッシュ無効)
     ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
-    ${GREEN}--mcp-config FILE${NC}           MCP設定をYAMLファイルから読み込む (デフォルト: ~/.ccc/mcp.yml)
-    ${GREEN}--mcp-env ENVIRONMENT${NC}       MCP設定ファイル内の特定の環境設定を使用 (例: development, production)
     環境が1つのみ定義されている場合は自動的に選択される
     ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
     ${GREEN}--bedrock-region REGION${NC}     Bedrockのリージョンを指定 (デフォルト: AWS_REGIONまたはus-east-1)
