@@ -28,21 +28,6 @@ services:
       - type: bind
         source: ${AWS_CONFIG_PATH:-~/.aws}
         target: /home/node/.aws
-      - type: bind
-        source: ~/.ccc
-        target: /home/node/.ccc
-
-  memory:
-    container_name: memory
-    image: mcp/memory
-    volumes:
-      - type: bind
-        source: tmp/memory.json
-        target: /app/dist/memory.json
-
-  sequentialthinking:
-    container_name: sequentialthinking
-    image: mcp/sequentialthinking
 
   plantuml:
     container_name: plantuml
@@ -53,10 +38,19 @@ services:
   playwright:
     container_name: playwright
     image: my-playwright-mcp:latest
-    network_mode: "host"
+    environment:
+      DISPLAY: :0
+    ipc: host
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
     build:
       context: ./etc/dockerfiles/playwright-mcp/
-    # ports:
-    #   - 8931:8931
-    command:
-      ["-q", "--headless", "--browser", "chrome", "--host", "0.0.0.0", "--port", "8931"]
+    ports:
+      - 8931:8931
+    entrypoint:
+      ["node", "cli.js", "--browser", "chromium", "--no-sandbox", "--port", "8931"]
+      # ["node", "cli.js", "--browser", "chromium", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "chromium", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "chrome", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "msedge", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "webkit", "--no-sandbox"]
