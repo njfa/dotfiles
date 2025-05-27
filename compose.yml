@@ -10,6 +10,7 @@ services:
         USERID: ${USERID:-1000}
         GROUPID: ${GROUPID:-1000}
         TZ: ${TZ:-Asia/Tokyo}
+        ADDITIONAL_CA_CERT_PATH: ${ADDITIONAL_CA_CERT_PATH:-}
     network_mode: "host"
     develop:
       watch:

@@ -4,10 +4,23 @@ ARG TZ
 ARG PYTHON_VERSION
 ARG UV_VERSION
 ARG GIT_DELTA_VERSION
+ARG ADDITIONAL_CA_CERT_PATH
 
 ENV TZ="$TZ"
 ENV PYTHON_VERSION="${PYTHON_VERSION:-3.12}"
 ENV GIT_DELTA_VERSION="${GIT_DELTA_VERSION:-0.18.2}"
+
+# カスタムCA証明書の追加（指定された場合）
+COPY ${ADDITIONAL_CA_CERT_PATH:-/dev/null} /tmp/additional-ca-cert.crt
+RUN if [ -s /tmp/additional-ca-cert.crt ]; then \
+    cp /tmp/additional-ca-cert.crt /usr/local/share/ca-certificates/ && \
+    update-ca-certificates && \
+    # Node.js用の環境変数設定
+    export NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/additional-ca-cert.crt && \
+    # npmの証明書設定
+    npm config set cafile /usr/local/share/ca-certificates/additional-ca-cert.crt; \
+    fi && \
+    rm -f /tmp/additional-ca-cert.crt
 
 # Install basic development tools and iptables/ipset
 RUN apt update && apt install -y less \
