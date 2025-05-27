@@ -267,8 +267,101 @@ ccc_main() {
                 ;;
             mcp)
                 # mcpサブコマンドが指定された場合
+                # ロゴの表示（--no-logoが指定されていなければ）
+                if [ "$show_logo" = true ]; then
+                    print_logo "$claude_credential_path" "$claude_config_path"
+                fi
                 shift
-                command_args=("claude" "mcp" "$@")
+                # 残りの引数を処理して add-json-file を検出
+                local mcp_args=()
+                local processing_json_file=false
+                local json_file_processed=false
+
+                while [[ $# -gt 0 ]]; do
+                    if [ "$processing_json_file" = true ]; then
+                        # add-json-fileの次の引数（サービス名）を処理
+                        mcp_args+=("$1")
+                        processing_json_file=false
+                        json_file_processed=true
+                        shift
+                        if [[ $# -gt 0 ]]; then
+                            # JSONファイル名を処理
+                            local json_file="$1"
+                            local service_name="${mcp_args[-1]}" # 直前に追加したサービス名を取得
+
+                            if [ -f "$json_file" ]; then
+                                # jqでJSONファイルを読み込み、1行のJSON文字列に変換
+                                local json_content=$(jq -rc . "$json_file" 2>/dev/null)
+                                if [ $? -eq 0 ] && [ -n "$json_content" ]; then
+                                    # MCP環境変数要件定義ファイルのパス
+                                    local mcp_env_req_file="$HOME/.dotfiles/etc/mcp-env-requirements.yml"
+
+                                    # YAMLファイルが存在する場合のみ検証を実行
+                                    if [ -f "$mcp_env_req_file" ]; then
+                                        # argsに設定されたMCPを確認
+                                        local args_array=$(echo "$json_content" | jq -r '.args[]?' 2>/dev/null)
+
+                                        # 各argsに対してYAMLファイルから必須環境変数を取得
+                                        while IFS= read -r mcp_arg; do
+                                            # YAMLファイルから該当MCPの必須環境変数リストを取得
+                                            local required_envs=$(yq eval ".\"$mcp_arg\" // []" "$mcp_env_req_file" 2>/dev/null)
+
+                                            # 必須環境変数が定義されている場合
+                                            if [ -n "$required_envs" ] && [ "$required_envs" != "[]" ]; then
+                                                # 各必須環境変数をチェック
+                                                while IFS= read -r env_name; do
+                                                    # "- "プレフィックスを削除
+                                                    env_name=$(echo "$env_name" | sed 's/^- //')
+
+                                                    # 既存の環境変数値を取得
+                                                    local env_value=$(echo "$json_content" | jq -r ".env.${env_name} // empty" 2>/dev/null)
+
+                                                    # 環境変数が未設定の場合、入力を求める
+                                                    if [ -z "$env_value" ]; then
+                                                        echo -n "${env_name}を入力してください: "
+                                                        read -r env_value < /dev/tty
+                                                        if [ -z "$env_value" ]; then
+                                                            log_error "${env_name}は必須です"
+                                                            return 1
+                                                        fi
+                                                        # JSONコンテンツに環境変数を追加
+                                                        json_content=$(echo "$json_content" | jq --arg key "$env_name" --arg val "$env_value" '.env[$key] = $val')
+                                                    fi
+                                                done <<< "$required_envs"
+                                                break # 最初にマッチしたMCPの設定のみを処理
+                                            fi
+                                        done <<< "$args_array"
+                                    fi
+
+                                    # 処理したJSONをmcp_argsに追加
+                                    mcp_args+=("$json_content")
+                                else
+                                    log_error "JSONファイルの読み込みまたは解析に失敗しました: $json_file"
+                                    return 1
+                                fi
+                            else
+                                log_error "JSONファイルが見つかりません: $json_file"
+                                return 1
+                            fi
+                            shift
+                        else
+                            log_error "add-json-fileの後にJSONファイル名が指定されていません"
+                            return 1
+                        fi
+                    elif [ "$1" = "add-json-file" ] && [ "$json_file_processed" = false ]; then
+                        # add-json-fileコマンドを検出
+                        mcp_args+=("add-json")
+                        processing_json_file=true
+                        shift
+                    else
+                        # その他の引数はそのまま追加
+                        mcp_args+=("$1")
+                        shift
+                    fi
+                done
+
+                command_args=("claude" "mcp" "${mcp_args[@]}")
+                show_logo=false  # 既にロゴを表示したので、後続の表示をスキップ
                 break
                 ;;
             --)
@@ -519,6 +612,7 @@ show_ccc_help() {
     print_logo
     echo -e "\
         ${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
+              $(basename "$0") mcp <MCPサブコマンド> [引数...]
 
     ${BOLD}オプション:${NC}
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
@@ -542,6 +636,44 @@ show_ccc_help() {
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
+
+    ${BOLD}MCPサブコマンド:${NC}
+    ${GREEN}mcp list${NC}                    利用可能なMCPサーバーの一覧を表示
+    ${GREEN}mcp add <name>${NC}              MCPサーバーを追加
+    ${GREEN}mcp add-json <name> <json>${NC}  JSON形式でMCPサーバーを追加
+    ${GREEN}mcp add-json-file <name> <file>${NC}  JSONファイルからMCPサーバーを追加 (ccc固有機能)
+    ${GREEN}mcp remove <name>${NC}           MCPサーバーを削除
+    ${GREEN}mcp enable <name>${NC}           MCPサーバーを有効化
+    ${GREEN}mcp disable <name>${NC}          MCPサーバーを無効化
+
+    ${BOLD}mcp add-json-fileの詳細 (ccc固有機能):${NC}
+    JSONファイルからMCPサーバー設定を読み込んで追加する機能である。
+
+    ${DIMMED}使用例:${NC}
+    $(basename "$0") mcp add-json-file gitlab ./mcp.gitlab.json
+
+    ${DIMMED}JSONファイル形式:${NC}
+    {
+      \"command\": \"npx\",
+      \"args\": [\"@modelcontextprotocol/server-gitlab\"],
+      \"env\": {
+        \"GITLAB_PERSONAL_ACCESS_TOKEN\": \"your-token\",
+        \"GITLAB_API_URL\": \"https://gitlab.com/api/v4\"
+      }
+    }
+
+    ${DIMMED}MCP環境変数自動検証機能:${NC}
+    ~/.dotfiles/etc/mcp-env-requirements.yml に定義されたMCPの環境変数要件に基づいて
+    自動的に必須環境変数を検証する。
+
+    検証内容:
+    - YAMLファイルに定義された必須環境変数が未設定の場合、対話的に入力を求める
+    - 入力された値は自動的に -e オプションとして claude mcp add-json コマンドに渡される
+
+    YAMLファイル形式:
+    \"@modelcontextprotocol/server-gitlab\":
+      - GITLAB_PERSONAL_ACCESS_TOKEN
+      - GITLAB_API_URL
 
     ${BOLD}説明:${NC}
     Claude AIをローカルコンテナで実行するためのユーティリティ。
