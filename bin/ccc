@@ -79,16 +79,8 @@ print_logo() {
         docker_image="unknown"
     fi
 
-    # Claudeバージョンを取得
-    local claude_version=""
-    if [ "$docker_image" != "unknown" ] && docker image inspect "$docker_image" >/dev/null 2>&1; then
-        claude_version=$(docker run --rm "$docker_image" npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
-        if [ -z "$claude_version" ] || [ "$claude_version" = "null" ]; then
-            claude_version="unknown"
-        fi
-    else
-        claude_version="not installed"
-    fi
+    # 最初にLoadingと表示しておく
+    local claude_version="Loading"
 
     # 固定幅の枠を作成
     local frame_width=50
@@ -160,6 +152,48 @@ print_logo() {
     # 下部の枠線
     echo -e "${FRAME_COLOR}╰$(create_horizontal_line "─")╯${NC}"
     echo
+
+    # バージョン取得処理（ロゴ表示後に実行）
+    if [ "$docker_image" != "unknown" ] && docker image inspect "$docker_image" >/dev/null 2>&1; then
+        # カーソルを保存して、バージョン行に移動（上に7行、右に25文字）
+        echo -ne "\033[s\033[7A\033[25C"
+
+        # カーソルを非表示にする。Claude Codeが起動したタイミングで再表示されるため、本スクリプト内では再表示しない。
+        echo -ne "\033[?25l"
+
+        # スピナーアニメーション
+        local spinners=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+        local spinner_count=${#spinners[@]}
+
+        # バックグラウンドでバージョンを取得
+        (docker run --rm "$docker_image" npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null) > /tmp/claude_version_$$ &
+        local pid=$!
+
+        # スピナーを表示しながら待機
+        local i=0
+        while kill -0 $pid 2>/dev/null; do
+            local spinner=${spinners[$((i % spinner_count))]}
+            # スピナーを緑色で、Loadingを通常の色で表示
+            echo -ne "\r\033[25C${FRAME_COLOR}${spinner}${NC} Loading$(printf '%*s' $((17)) '')"
+            sleep 0.1
+            ((i++))
+        done
+
+        # バージョンを読み込む
+        wait $pid
+        local new_version=$(cat /tmp/claude_version_$$ 2>/dev/null)
+        rm -f /tmp/claude_version_$$
+
+        if [ -z "$new_version" ] || [ "$new_version" = "null" ]; then
+            new_version="unknown"
+        fi
+
+        # バージョンを表示（空白でパディング）
+        echo -ne "\r\033[25C$new_version$(printf '%*s' $((25 - ${#new_version})) '')"
+
+        # カーソルを元の位置に戻す
+        echo -ne "\033[u"
+    fi
 }
 
 # MCPサブコマンドの処理関数
