@@ -67,6 +67,8 @@ print_logo() {
     local aws_config_path="$4"
     local compose_path="$5"
     local service="$6"
+    shift 6
+    local mount_paths=("$@")
 
     # compose.ymlからイメージ名を取得
     local docker_image=""
@@ -149,14 +151,55 @@ print_logo() {
         echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Auth:${NC} $auth_method$(printf '%*s' $((frame_width - 14 - ${#auth_method})) '') ${FRAME_COLOR}│${NC}"
     fi
 
+    # マウントパスの表示（存在する場合）
+    if [ ${#mount_paths[@]} -gt 0 ]; then
+        # 区切り線
+        echo -e "${FRAME_COLOR}│${DIMMED}$(create_horizontal_line "─")${NC}${FRAME_COLOR}│${NC}"
+
+        # マウントパスのヘッダー
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Mount Paths:${NC}$(printf '%*s' $((frame_width - 16)) '') ${FRAME_COLOR}│${NC}"
+
+        # 各マウントパスを表示
+        for i in "${!mount_paths[@]}"; do
+            local src_path="${mount_paths[$i]}"
+            local formatted_path=$(format_path "$src_path")
+
+            # マウント先のパスを決定
+            if [ ${#mount_paths[@]} -eq 1 ]; then
+                local target_path="/workspace/"
+            else
+                local target_path="/workspace/$(basename "$src_path")"
+            fi
+
+            # パスが長すぎる場合は省略
+            local max_path_length=$((frame_width - 7))
+            if [ ${#formatted_path} -gt ${max_path_length} ]; then
+                # 省略するために`: -`とする必要があるため、空白は削除しないこと
+                formatted_path="...${formatted_path: -$((max_path_length - 3))}"
+            fi
+
+            echo -e "${FRAME_COLOR}│${NC}     $formatted_path$(printf '%*s' $((frame_width - 6 - ${#formatted_path})) '') ${FRAME_COLOR}│${NC}"
+        done
+    fi
+
     # 下部の枠線
     echo -e "${FRAME_COLOR}╰$(create_horizontal_line "─")╯${NC}"
     echo
 
     # バージョン取得処理（ロゴ表示後に実行）
     if [ "$docker_image" != "unknown" ] && docker image inspect "$docker_image" >/dev/null 2>&1; then
-        # カーソルを保存して、バージョン行に移動（上に7行、右に25文字）
-        echo -ne "\033[s\033[7A\033[25C"
+        # カーソルを保存
+        echo -ne "\033[s"
+
+        # バージョン行までの移動行数を計算
+        local lines_to_move=7
+        if [ ${#mount_paths[@]} -gt 0 ]; then
+            # マウントパスのヘッダー行（2行）+ 各マウントパス行
+            lines_to_move=$((lines_to_move + 2 + ${#mount_paths[@]}))
+        fi
+
+        # バージョン行に移動（上にlines_to_move行、右に25文字）
+        echo -ne "\033[${lines_to_move}A\033[25C"
 
         # カーソルを非表示にする。Claude Codeが起動したタイミングで再表示されるため、本スクリプト内では再表示しない。
         echo -ne "\033[?25l"
@@ -686,8 +729,6 @@ ccc_main() {
                     rm -f "$temp_compose_file"
                     return 1
                 fi
-
-                log_info "ソースパスをマウント: $src_path -> $target_path"
             done
         fi
     fi
@@ -724,7 +765,7 @@ ccc_main() {
 
     # ロゴの表示（--no-logoが指定されていなければ）
     if [ "$show_logo" = true ]; then
-        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$aws_config_path" "$temp_compose_file" "$service"
+        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$aws_config_path" "$temp_compose_file" "$service" "${source_paths[@]}"
     fi
 
     if [ ${#mcp_subcommand_args[@]} -gt 0 ]; then
