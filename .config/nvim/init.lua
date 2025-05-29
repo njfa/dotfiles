@@ -4,7 +4,7 @@ vim.g.mapleader             = " "
 -- 見栄え
 vim.opt.termguicolors       = true
 vim.opt.number              = true --行番号を表示
-vim.opt.laststatus          = 3 --ステータスバーにウィンドウ毎のステータスを表示する
+vim.opt.laststatus          = 3    --ステータスバーにウィンドウ毎のステータスを表示する
 vim.opt.splitright          = true --画面を縦分割する際に右に開く
 vim.opt.list                = true
 vim.opt.listchars           = {
@@ -18,8 +18,8 @@ vim.opt.listchars           = {
 -- インデント
 vim.opt.autoindent          = true --改行時に自動でインデントする
 vim.opt.smartindent         = true --改行時に自動でインデントする
-vim.opt.tabstop             = 4 --タブを何文字の空白に変換するか
-vim.opt.shiftwidth          = 4 --自動インデント時に入力する空白の数
+vim.opt.tabstop             = 4    --タブを何文字の空白に変換するか
+vim.opt.shiftwidth          = 4    --自動インデント時に入力する空白の数
 vim.opt.expandtab           = true --タブ入力を空白に変換
 
 -- 検索系の設定
@@ -74,7 +74,7 @@ end
 
 
 -- sign columnに表示する情報を文字ではなくアイコンに変更
-local signs                 = { Error = "", Warn = "", Hint = "", Info = "" }
+local signs = { Error = "", Warn = "", Hint = "", Info = "" }
 for type, icon in pairs(signs) do
     local hl = "DiagnosticSign" .. type
     vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })

@@ -6,20 +6,55 @@ return {
     cond = not vscode_enabled,
 
     -- LSPの結果を別行に表示する
+    -- {
+    --     "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+    --     cond = not vscode_enabled,
+    --     config = function()
+    --         vim.diagnostic.config({
+    --             virtual_text = false,
+
+    --             -- error/warn/infoをソート
+    --             severity_sort = true,
+
+    --             -- 下線の設定
+    --             underline = true,
+
+    --             -- エラーと警告の下線スタイルを設定
+    --             signs = true,
+    --         })
+
+    --         require("lsp_lines").setup()
+    --     end,
+    -- },
     {
-        "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-        cond = not vscode_enabled,
+        "rachartier/tiny-inline-diagnostic.nvim",
+        event = "VeryLazy", -- Or `LspAttach`
+        priority = 1000,    -- needs to be loaded in first
         config = function()
+            require('tiny-inline-diagnostic').setup({
+                options = {
+                    multilines = {
+                        -- Enable multiline diagnostic messages
+                        enabled = true,
+
+                        -- Always show messages on all lines for multiline diagnostics
+                        always_show = true,
+                    },
+                }
+            })
             vim.diagnostic.config({
                 virtual_text = false,
-
                 -- error/warn/infoをソート
                 severity_sort = true,
-            })
-            require("lsp_lines").setup()
-        end,
-    },
 
+                -- 下線の設定
+                underline = true,
+
+                -- エラーと警告の下線スタイルを設定
+                signs = true,
+            }) -- Only if needed in your configuration, if you already have native LSP diagnostics
+        end
+    },
     -- LSPサーバー管理
     {
         "williamboman/mason-lspconfig.nvim",
@@ -121,7 +156,8 @@ return {
                         on_attach = function(_, bufnr)
                             require("common").on_attach_lsp(_, bufnr, server_name)
                         end,
-                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol
+                            .make_client_capabilities())
                         -- capabilities = require("cmp_nvim_lsp").default_capabilities(
                         --     vim.lsp.protocol.make_client_capabilities()
                         -- ),
@@ -140,7 +176,8 @@ return {
                         on_attach = function(_, bufnr)
                             require("common").on_attach_lsp(_, bufnr, "lua_ls")
                         end,
-                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol
+                            .make_client_capabilities())
                         -- capabilities = require("cmp_nvim_lsp").default_capabilities(
                         --     vim.lsp.protocol.make_client_capabilities()
                         -- ),
@@ -188,21 +225,25 @@ return {
                     }
                 end,
 
+                ["ruff"] = function()
+                    require('lspconfig').ruff.setup {
+                        init_options = {
+                            configuration = "~/.ruff.toml"
+                        }
+                    }
+                end,
+
                 ["pylsp"] = function()
                     require("lspconfig").pylsp.setup({
                         settings = {
                             pylsp = {
                                 plugins = {
                                     -- formatter options
-                                    black = { enabled = true },
+                                    black = { enabled = false },
                                     autopep8 = { enabled = false },
                                     yapf = { enabled = false },
                                     -- linter options
-                                    pylint = {
-                                        enabled = true,
-                                        executable = "pylint",
-                                        args = { "-d", "W0702", "C0116" },
-                                    },
+                                    pylint = { enabled = false, },
                                     pyflakes = { enabled = false },
                                     pycodestyle = { enabled = false },
                                     -- type checker
@@ -210,14 +251,15 @@ return {
                                     -- auto-completion options
                                     jedi_completion = { fuzzy = true },
                                     -- import sorting
-                                    pyls_isort = { enabled = true },
+                                    pyls_isort = { enabled = false },
                                 },
                             },
                         },
                         on_attach = function(_, bufnr)
                             require("common").on_attach_lsp(_, bufnr, "pylsp")
                         end,
-                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
+                        capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol
+                            .make_client_capabilities())
                         -- capabilities = require("cmp_nvim_lsp").default_capabilities(
                         --     vim.lsp.protocol.make_client_capabilities()
                         -- ),
@@ -266,9 +308,10 @@ return {
                     "google-java-format",
                     -- python
                     "python-lsp-server",
-                    "pylint",
-                    "isort",
-                    "black",
+                    -- "pylint",
+                    -- "isort",
+                    -- "black",
+                    "ruff",
                     -- terraform
                     "terraform-ls",
                     "tflint",
