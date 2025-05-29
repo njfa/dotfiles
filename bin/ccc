@@ -59,6 +59,32 @@ format_path() {
     fi
 }
 
+# Claude Codeのバージョンを取得する関数
+get_claude_version() {
+    local docker_image="$1"
+    
+    if [ "$docker_image" != "unknown" ] && docker image inspect "$docker_image" >/dev/null 2>&1; then
+        local version=$(docker run --rm "$docker_image" npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
+        if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "unknown"
+        else
+            echo "$version"
+        fi
+    else
+        echo "unknown"
+    fi
+}
+
+# 最新のClaude Codeバージョンを取得する関数
+get_latest_claude_version() {
+    local latest_version=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
+    if [ -z "$latest_version" ]; then
+        echo "unknown"
+    else
+        echo "$latest_version"
+    fi
+}
+
 # 認証情報と設定ファイルのパスを含むロゴを表示する関数
 print_logo() {
     local credential_path="$1"
@@ -67,22 +93,10 @@ print_logo() {
     local aws_config_path="$4"
     local compose_path="$5"
     local service="$6"
-    shift 6
+    local claude_version="$7"
+    local latest_version="$8"
+    shift 8
     local mount_paths=("$@")
-
-    # compose.ymlからイメージ名を取得
-    local docker_image=""
-    if [ -f "$compose_path" ] && [ -n "$service" ]; then
-        docker_image=$(yq eval ".services.\"$service\".image" "$compose_path" 2>/dev/null)
-        if [ "$docker_image" = "null" ] || [ -z "$docker_image" ]; then
-            docker_image="unknown"
-        fi
-    else
-        docker_image="unknown"
-    fi
-
-    # 最初にLoadingと表示しておく
-    local claude_version="Loading"
 
     # 固定幅の枠を作成
     local frame_width=50
@@ -107,7 +121,32 @@ print_logo() {
     echo -e "${FRAME_COLOR}│$(printf '%*s' $((frame_width)) '')│${NC}"
 
     # バージョン行
-    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} $claude_version$(printf '%*s' $((frame_width - 25 - ${#claude_version})) '') ${FRAME_COLOR}│${NC}"
+    local version_display=""
+    
+    # バージョン比較と表示テキストの設定
+    if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
+        if [ "$claude_version" = "$latest_version" ]; then
+            version_display="$claude_version ${GREEN}✓${NC}"
+        else
+            version_display="$claude_version ${UPDATE_COLOR}(最新: $latest_version)${NC}"
+        fi
+    else
+        version_display="$claude_version"
+    fi
+    
+    # バージョン表示部分の実際の長さを計算（エスケープシーケンスを除く）
+    local version_display_length
+    if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
+        if [ "$claude_version" = "$latest_version" ]; then
+            version_display_length=$((${#claude_version} + 2))  # スペース + ✓
+        else
+            version_display_length=$((${#claude_version} + 7 + ${#latest_version}))  # " (最新: " + latest_version + ")"
+        fi
+    else
+        version_display_length=${#claude_version}
+    fi
+    
+    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} ${version_display}$(printf '%*s' $((frame_width - 25 - version_display_length)) '') ${FRAME_COLOR}│${NC}"
 
     # プロバイダー行
     if [ "$use_bedrock" = true ]; then
@@ -185,58 +224,6 @@ print_logo() {
     # 下部の枠線
     echo -e "${FRAME_COLOR}╰$(create_horizontal_line "─")╯${NC}"
     echo
-
-    # バージョン取得処理（ロゴ表示後に実行）
-    if [ "$docker_image" != "unknown" ] && docker image inspect "$docker_image" >/dev/null 2>&1; then
-        # カーソルを保存
-        echo -ne "\033[s"
-
-        # バージョン行までの移動行数を計算
-        local lines_to_move=7
-        if [ ${#mount_paths[@]} -gt 0 ]; then
-            # マウントパスのヘッダー行（2行）+ 各マウントパス行
-            lines_to_move=$((lines_to_move + 2 + ${#mount_paths[@]}))
-        fi
-
-        # バージョン行に移動（上にlines_to_move行、右に25文字）
-        echo -ne "\033[${lines_to_move}A\033[25C"
-
-        # カーソルを非表示にする。Claude Codeが起動したタイミングで再表示されるため、本スクリプト内では再表示しない。
-        echo -ne "\033[?25l"
-
-        # スピナーアニメーション
-        local spinners=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
-        local spinner_count=${#spinners[@]}
-
-        # バックグラウンドでバージョンを取得
-        (docker run --rm "$docker_image" npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null) > /tmp/claude_version_$$ &
-        local pid=$!
-
-        # スピナーを表示しながら待機
-        local i=0
-        while kill -0 $pid 2>/dev/null; do
-            local spinner=${spinners[$((i % spinner_count))]}
-            # スピナーを緑色で、Loadingを通常の色で表示
-            echo -ne "\r\033[25C${FRAME_COLOR}${spinner}${NC} Loading$(printf '%*s' $((17)) '')"
-            sleep 0.1
-            ((i++))
-        done
-
-        # バージョンを読み込む
-        wait $pid
-        local new_version=$(cat /tmp/claude_version_$$ 2>/dev/null)
-        rm -f /tmp/claude_version_$$
-
-        if [ -z "$new_version" ] || [ "$new_version" = "null" ]; then
-            new_version="unknown"
-        fi
-
-        # バージョンを表示（空白でパディング）
-        echo -ne "\r\033[25C$new_version$(printf '%*s' $((25 - ${#new_version})) '')"
-
-        # カーソルを元の位置に戻す
-        echo -ne "\033[u"
-    fi
 }
 
 # MCPサブコマンドの処理関数
@@ -439,13 +426,47 @@ ccc_main() {
                 source_path_specified=true
                 shift 2
                 ;;
-            -c | --compose-path)
+            -c)
+                # Claudeの--continueオプションとして扱う
+                command_args+=("--continue")
+                shift
+                ;;
+            --continue)
+                # Claudeの--continueオプション
+                command_args+=("--continue")
+                shift
+                ;;
+            --compose-path)
                 compose_path="$2"
                 shift 2
                 ;;
             -S | --service)
                 service="$2"
                 shift 2
+                ;;
+            -r)
+                # Claudeの--resumeオプションとして扱う
+                if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
+                    # セッションIDが指定されている場合
+                    command_args+=("--resume" "$2")
+                    shift 2
+                else
+                    # セッションIDが省略されている場合
+                    command_args+=("--resume")
+                    shift
+                fi
+                ;;
+            --resume)
+                # Claudeの--resumeオプション
+                if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
+                    # セッションIDが指定されている場合
+                    command_args+=("--resume" "$2")
+                    shift 2
+                else
+                    # セッションIDが省略されている場合
+                    command_args+=("--resume")
+                    shift
+                fi
                 ;;
             --credential-path)
                 claude_credential_path="$2"
@@ -795,9 +816,60 @@ ccc_main() {
         done
     fi
 
-    # ロゴの表示（--no-logoが指定されていなければ）
+    # バージョン取得とロゴの表示（--no-logoが指定されていなければ）
     if [ "$show_logo" = true ]; then
-        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$aws_config_path" "$temp_compose_file" "$service" "${source_paths[@]}"
+        # compose.ymlからイメージ名を取得
+        local docker_image=""
+        if [ -f "$temp_compose_file" ] && [ -n "$service" ]; then
+            docker_image=$(yq eval ".services.\"$service\".image" "$temp_compose_file" 2>/dev/null)
+            if [ "$docker_image" = "null" ] || [ -z "$docker_image" ]; then
+                docker_image="unknown"
+            fi
+        else
+            docker_image="unknown"
+        fi
+
+        # コンテナ起動前にスピナーを表示
+        echo -e "${INFO_COLOR}Claudeコンテナを起動しています...${NC}"
+        
+        # スピナーアニメーション
+        local spinners=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+        local spinner_count=${#spinners[@]}
+        
+        # バックグラウンドで現在のバージョンと最新バージョンを取得
+        get_claude_version "$docker_image" > /tmp/claude_version_$$ &
+        local version_pid=$!
+        get_latest_claude_version > /tmp/claude_latest_version_$$ &
+        local latest_pid=$!
+        
+        # スピナーを表示しながら待機
+        local i=0
+        while kill -0 $version_pid 2>/dev/null || kill -0 $latest_pid 2>/dev/null; do
+            local spinner=${spinners[$((i % spinner_count))]}
+            echo -ne "\r${FRAME_COLOR}${spinner}${NC} バージョン情報を取得中..."
+            sleep 0.1
+            ((i++))
+        done
+        
+        # バージョンを読み込む
+        wait $version_pid
+        wait $latest_pid
+        local claude_version=$(cat /tmp/claude_version_$$ 2>/dev/null)
+        local latest_version=$(cat /tmp/claude_latest_version_$$ 2>/dev/null)
+        rm -f /tmp/claude_version_$$ /tmp/claude_latest_version_$$
+        
+        if [ -z "$claude_version" ]; then
+            claude_version="unknown"
+        fi
+        if [ -z "$latest_version" ]; then
+            latest_version="unknown"
+        fi
+        
+        # スピナー行をクリア
+        echo -ne "\r\033[K"
+        
+        # ロゴを表示
+        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$aws_config_path" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${source_paths[@]}"
     fi
 
     if [ ${#mcp_subcommand_args[@]} -gt 0 ]; then
@@ -836,7 +908,8 @@ ccc_main() {
 
 # ヘルプメッセージも更新
 show_ccc_help() {
-    print_logo
+    # ヘルプ用の簡易ロゴ表示（バージョンは省略）
+    print_logo "$HOME/.claude" "$HOME/.claude.json" "false" "" "" "" "N/A" "N/A"
     echo -e "\
         ${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
               $(basename "$0") mcp <MCPサブコマンド> [引数...]
@@ -845,8 +918,10 @@ show_ccc_help() {
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
     1つだけの場合は /workspace/ に直接マウント
     2つ以上の場合はすべて /workspace/<basename> 形式でマウント
-    ${GREEN}-c, --compose-path PATH${NC}     Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
+    ${GREEN}--compose-path PATH${NC}         Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
+    ${GREEN}-c, --continue${NC}              前のセッションの続きから開始する (Claudeに直接渡される)
+    ${GREEN}-r, --resume [sessionId]${NC}    特定のセッションを再開する (Claudeに直接渡される)
     ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
     ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
     ${GREEN}--aws-config-path PATH${NC}      AWS設定ディレクトリのパスを指定 (Bedrock使用時に有効)
