@@ -1,0 +1,15 @@
+# MCP環境変数要件定義
+# MCPごとに必須となる環境変数を定義します
+#
+# 形式:
+#   MCP識別子:
+#     - 環境変数名1
+#     - 環境変数名2
+
+"@modelcontextprotocol/server-gitlab":
+  - GITLAB_PERSONAL_ACCESS_TOKEN
+  - GITLAB_API_URL
+
+"mcp/gitlab":
+  - GITLAB_PERSONAL_ACCESS_TOKEN
+  - GITLAB_API_URL
