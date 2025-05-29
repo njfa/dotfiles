@@ -1,0 +1,3 @@
+[submodule "etc/dockerfiles/playwright-mcp"]
+	path = etc/dockerfiles/playwright-mcp
+	url = git@github.com:njfa/playwright-mcp
