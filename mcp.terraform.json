@@ -1,0 +1,10 @@
+{
+    "type": "stdio",
+    "command": "uvx",
+    "args": [
+        "awslabs.terraform-mcp-server@latest"
+    ],
+    "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+    }
+}

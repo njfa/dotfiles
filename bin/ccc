@@ -3,6 +3,35 @@
 # コンテナランナースクリプトのパスを設定
 CR_SCRIPT="${CR_SCRIPT:-$HOME/.dotfiles/bin/container-runner}"
 
+# 必要なコマンドの確認
+check_command() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo "エラー: 必要なコマンド '$1' が見つかりません。" >&2
+        echo "インストールしてから再試行してください。" >&2
+        return 1
+    fi
+    return 0
+}
+
+# 必須コマンドのチェック
+check_dependencies() {
+    local missing_deps=0
+
+    for cmd in docker yq jq; do
+        if ! check_command "$cmd"; then
+            missing_deps=$((missing_deps + 1))
+        fi
+    done
+
+    if [ $missing_deps -gt 0 ]; then
+        echo "エラー: 依存関係が満たされていません。必要なパッケージをインストールしてください。" >&2
+        exit 1
+    fi
+}
+
+# 依存関係チェック
+check_dependencies
+
 # コンテナランナースクリプトの読み込み
 if [[ -f "$CR_SCRIPT" ]]; then
     # スクリプトを読み込む
@@ -17,6 +46,7 @@ fi
 FRAME_COLOR='\033[1;32m'  # 鮮やかな緑色
 DIMMED='\033[2m'          # テキストを暗く表示
 INFO_COLOR='\033[1;37m'   # 情報表示用のシアン色
+UPDATE_COLOR='\033[1;33m' # 更新表示用の黄色
 
 # パスを人間が読みやすい形式に変換する関数
 format_path() {
@@ -33,13 +63,29 @@ format_path() {
 print_logo() {
     local credential_path="$1"
     local config_path="$2"
+    local use_bedrock="$3"
+    local aws_config_path="$4"
+    local compose_path="$5"
+    local service="$6"
+    shift 6
+    local mount_paths=("$@")
 
-    # ファイル名のみを取得
-    local cred_basename=$(format_path "$credential_path")
-    local conf_basename=$(format_path "$config_path")
+    # compose.ymlからイメージ名を取得
+    local docker_image=""
+    if [ -f "$compose_path" ] && [ -n "$service" ]; then
+        docker_image=$(yq eval ".services.\"$service\".image" "$compose_path" 2>/dev/null)
+        if [ "$docker_image" = "null" ] || [ -z "$docker_image" ]; then
+            docker_image="unknown"
+        fi
+    else
+        docker_image="unknown"
+    fi
+
+    # 最初にLoadingと表示しておく
+    local claude_version="Loading"
 
     # 固定幅の枠を作成
-    local frame_width=40
+    local frame_width=50
 
     # 横線を作成する関数
     create_horizontal_line() {
@@ -60,21 +106,301 @@ print_logo() {
     # 空行
     echo -e "${FRAME_COLOR}│$(printf '%*s' $((frame_width)) '')│${NC}"
 
-    # サブタイトル行
-    echo -e "${FRAME_COLOR}│${NC}   ${DIMMED}${INFO_COLOR}AI Assistant in Container${NC}$(printf '%*s' $((frame_width - 29)) '') ${FRAME_COLOR}│${NC}"
+    # バージョン行
+    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} $claude_version$(printf '%*s' $((frame_width - 25 - ${#claude_version})) '') ${FRAME_COLOR}│${NC}"
 
-    # 空行
-    echo -e "${FRAME_COLOR}│$(printf '%*s' $((frame_width)) '')│${NC}"
+    # プロバイダー行
+    if [ "$use_bedrock" = true ]; then
+        local provider_text="AWS Bedrock"
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Provider:${NC} ${UPDATE_COLOR}$provider_text${NC}$(printf '%*s' $((frame_width - 14 - ${#provider_text})) '') ${FRAME_COLOR}│${NC}"
+    else
+        local provider_text="Anthropic"
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Provider:${NC} $provider_text$(printf '%*s' $((frame_width - 14 - ${#provider_text})) '') ${FRAME_COLOR}│${NC}"
+    fi
 
-    # 認証情報行
-    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}credential:${NC} $cred_basename$(printf '%*s' $((frame_width - 16 - ${#cred_basename})) '') ${FRAME_COLOR}│${NC}"
+    # 区切り線
+    echo -e "${FRAME_COLOR}│${DIMMED}$(create_horizontal_line "─")${NC}${FRAME_COLOR}│${NC}"
 
-    # 設定ファイル行
-    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}config:${NC} $conf_basename$(printf '%*s' $((frame_width - 12 - ${#conf_basename})) '') ${FRAME_COLOR}│${NC}"
+    # Anthropicの場合の認証情報
+    if [ "$use_bedrock" != true ]; then
+        # ファイル名のみを取得
+        local cred_basename=$(format_path "$credential_path")
+        local conf_basename=$(format_path "$config_path")
+
+        # 認証情報行
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Credential:${NC} $cred_basename$(printf '%*s' $((frame_width - 16 - ${#cred_basename})) '') ${FRAME_COLOR}│${NC}"
+
+        # 設定ファイル行
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Config:${NC} $conf_basename$(printf '%*s' $((frame_width - 12 - ${#conf_basename})) '') ${FRAME_COLOR}│${NC}"
+    else
+        # Bedrockの場合のAWS設定情報
+        if [ -n "$aws_config_path" ]; then
+            local aws_conf_basename=$(format_path "$aws_config_path")
+            echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Config:${NC} $aws_conf_basename$(printf '%*s' $((frame_width - 16 - ${#aws_conf_basename})) '') ${FRAME_COLOR}│${NC}"
+        fi
+
+        # AWS認証情報の確認
+        local auth_method=""
+        if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+            auth_method="Environment Variables"
+        elif [ -n "$AWS_PROFILE" ]; then
+            auth_method="Profile: $AWS_PROFILE"
+        else
+            auth_method="Default Credentials"
+        fi
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Auth:${NC} $auth_method$(printf '%*s' $((frame_width - 14 - ${#auth_method})) '') ${FRAME_COLOR}│${NC}"
+    fi
+
+    # マウントパスの表示（存在する場合）
+    if [ ${#mount_paths[@]} -gt 0 ]; then
+        # 区切り線
+        echo -e "${FRAME_COLOR}│${DIMMED}$(create_horizontal_line "─")${NC}${FRAME_COLOR}│${NC}"
+
+        # マウントパスのヘッダー
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Mount Paths:${NC}$(printf '%*s' $((frame_width - 16)) '') ${FRAME_COLOR}│${NC}"
+
+        # 各マウントパスを表示
+        for i in "${!mount_paths[@]}"; do
+            local src_path="${mount_paths[$i]}"
+            local formatted_path=$(format_path "$src_path")
+
+            # マウント先のパスを決定
+            if [ ${#mount_paths[@]} -eq 1 ]; then
+                local target_path="/workspace/"
+            else
+                local target_path="/workspace/$(basename "$src_path")"
+            fi
+
+            # パスが長すぎる場合は省略
+            local max_path_length=$((frame_width - 7))
+            if [ ${#formatted_path} -gt ${max_path_length} ]; then
+                # 省略するために`: -`とする必要があるため、空白は削除しないこと
+                formatted_path="...${formatted_path: -$((max_path_length - 3))}"
+            fi
+
+            echo -e "${FRAME_COLOR}│${NC}     $formatted_path$(printf '%*s' $((frame_width - 6 - ${#formatted_path})) '') ${FRAME_COLOR}│${NC}"
+        done
+    fi
 
     # 下部の枠線
     echo -e "${FRAME_COLOR}╰$(create_horizontal_line "─")╯${NC}"
     echo
+
+    # バージョン取得処理（ロゴ表示後に実行）
+    if [ "$docker_image" != "unknown" ] && docker image inspect "$docker_image" >/dev/null 2>&1; then
+        # カーソルを保存
+        echo -ne "\033[s"
+
+        # バージョン行までの移動行数を計算
+        local lines_to_move=7
+        if [ ${#mount_paths[@]} -gt 0 ]; then
+            # マウントパスのヘッダー行（2行）+ 各マウントパス行
+            lines_to_move=$((lines_to_move + 2 + ${#mount_paths[@]}))
+        fi
+
+        # バージョン行に移動（上にlines_to_move行、右に25文字）
+        echo -ne "\033[${lines_to_move}A\033[25C"
+
+        # カーソルを非表示にする。Claude Codeが起動したタイミングで再表示されるため、本スクリプト内では再表示しない。
+        echo -ne "\033[?25l"
+
+        # スピナーアニメーション
+        local spinners=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+        local spinner_count=${#spinners[@]}
+
+        # バックグラウンドでバージョンを取得
+        (docker run --rm "$docker_image" npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null) > /tmp/claude_version_$$ &
+        local pid=$!
+
+        # スピナーを表示しながら待機
+        local i=0
+        while kill -0 $pid 2>/dev/null; do
+            local spinner=${spinners[$((i % spinner_count))]}
+            # スピナーを緑色で、Loadingを通常の色で表示
+            echo -ne "\r\033[25C${FRAME_COLOR}${spinner}${NC} Loading$(printf '%*s' $((17)) '')"
+            sleep 0.1
+            ((i++))
+        done
+
+        # バージョンを読み込む
+        wait $pid
+        local new_version=$(cat /tmp/claude_version_$$ 2>/dev/null)
+        rm -f /tmp/claude_version_$$
+
+        if [ -z "$new_version" ] || [ "$new_version" = "null" ]; then
+            new_version="unknown"
+        fi
+
+        # バージョンを表示（空白でパディング）
+        echo -ne "\r\033[25C$new_version$(printf '%*s' $((25 - ${#new_version})) '')"
+
+        # カーソルを元の位置に戻す
+        echo -ne "\033[u"
+    fi
+}
+
+# MCPサブコマンドの処理関数
+process_mcp_subcommand() {
+    # 引数をローカル変数として受け取る
+    local -a args=("$@")
+
+    # MCPサブコマンド用の引数配列
+    local -a mcp_args=()
+    local processing_json_file=false
+    local json_file_processed=false
+
+    # 引数のインデックス
+    local i=0
+
+    while [ $i -lt ${#args[@]} ]; do
+        local arg="${args[$i]}"
+
+        if [ "$processing_json_file" = true ]; then
+            # add-json-fileの次の引数（サービス名）を処理
+            mcp_args+=("$arg")
+            processing_json_file=false
+            json_file_processed=true
+            ((i++))
+
+            if [ $i -ge ${#args[@]} ]; then
+                log_error "add-json-fileの後にJSONファイル名が指定されていません"
+                return 1
+            fi
+
+            # JSONファイル名を処理
+            local json_file="${args[$i]}"
+            local service_name="${mcp_args[-1]}" # 直前に追加したサービス名を取得
+
+            # JSONファイルの存在確認
+            if [ ! -f "$json_file" ]; then
+                log_error "JSONファイルが見つかりません: $json_file"
+                return 1
+            fi
+
+            # jqでJSONファイルを読み込み、1行のJSON文字列に変換
+            local json_content=$(jq -rc . "$json_file" 2>/dev/null)
+            if [ $? -ne 0 ] || [ -z "$json_content" ]; then
+                log_error "JSONファイルの読み込みまたは解析に失敗しました: $json_file"
+                return 1
+            fi
+
+            # MCP環境変数要件定義ファイルのパス
+            local mcp_env_req_file="$HOME/.dotfiles/etc/mcp-env-requirements.yml"
+
+            # YAMLファイルが存在する場合のみ検証を実行
+            if [ -f "$mcp_env_req_file" ]; then
+                # argsに設定されたMCPを確認
+                local args_array=$(echo "$json_content" | jq -r '.args[]?' 2>/dev/null)
+
+                if [ -n "$args_array" ]; then
+                    # 各argsに対してYAMLファイルから必須環境変数を取得
+                    while IFS= read -r mcp_arg; do
+                        # YAMLファイルから該当MCPの必須環境変数リストを取得
+                        local required_envs=$(yq eval ".\"$mcp_arg\" // []" "$mcp_env_req_file" 2>/dev/null)
+
+                        # 必須環境変数が定義されている場合
+                        if [ -n "$required_envs" ] && [ "$required_envs" != "[]" ]; then
+                            # 各必須環境変数をチェック
+                            while IFS= read -r env_name; do
+                                # "- "プレフィックスを削除
+                                env_name=$(echo "$env_name" | sed 's/^- //')
+
+                                # 既存の環境変数値を取得
+                                local env_value=$(echo "$json_content" | jq -r ".env.${env_name} // empty" 2>/dev/null)
+
+                                # 環境変数が未設定の場合、入力を求める
+                                if [ -z "$env_value" ]; then
+                                    echo -n "${env_name}を入力してください: "
+                                    read -r env_value < /dev/tty
+                                    if [ -z "$env_value" ]; then
+                                        log_error "${env_name}は必須です"
+                                        return 1
+                                    fi
+                                    # JSONコンテンツに環境変数を追加
+                                    json_content=$(echo "$json_content" | jq --arg key "$env_name" --arg val "$env_value" '.env[$key] = $val')
+                                fi
+                            done <<< "$required_envs"
+                            break # 最初にマッチしたMCPの設定のみを処理
+                        fi
+                    done <<< "$args_array"
+                fi
+            fi
+
+            # 処理したJSONをmcp_argsに追加
+            mcp_args+=("$json_content")
+
+        elif [ "$arg" = "add-json-file" ] && [ "$json_file_processed" = false ]; then
+            # add-json-fileコマンドを検出
+            mcp_args+=("add-json")
+            processing_json_file=true
+        else
+            # その他の引数はそのまま追加
+            mcp_args+=("$arg")
+        fi
+
+        ((i++))
+    done
+
+    # command_argsに設定（グローバル変数を想定）
+    command_args=("claude" "mcp" "${mcp_args[@]}")
+
+    return 0
+}
+
+# Claudeイメージの更新確認関数
+check_claude_update() {
+    log_info "Claudeイメージの更新を確認中..."
+
+    # npmでインストールされたclaude-codeの最新バージョンを取得
+    local latest_version=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
+    if [ -z "$latest_version" ]; then
+        log_error "最新バージョンの取得に失敗しました"
+        return 1
+    fi
+
+    # コンテナ内のclaude-codeバージョンを取得
+    local container_version=""
+    container_version=$(docker run --rm my-claude-code:latest npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
+
+    if [ -z "$container_version" ] || [ "$container_version" = "null" ]; then
+        log_warning "コンテナ内のバージョン情報を取得できませんでした"
+        echo -e "${UPDATE_COLOR}利用可能なアップデート:${NC} 不明 → $latest_version"
+        return 0
+    fi
+
+    # バージョン比較
+    if [ "$container_version" != "$latest_version" ]; then
+        echo -e "${UPDATE_COLOR}利用可能なアップデート:${NC} $container_version → $latest_version"
+        return 0
+    else
+        echo -e "${GREEN}Claudeは最新バージョンです:${NC} $container_version"
+        return 0
+    fi
+}
+
+# Claudeイメージの更新関数
+update_claude_image() {
+    local use_cache="$1"
+    log_info "Claudeイメージを更新中..."
+
+    local build_args=()
+
+    # use_cacheフラグをチェック
+    if [ "$use_cache" = "use_cache" ]; then
+        log_info "キャッシュを使用してビルドします"
+    else
+        log_info "キャッシュを無効化してビルドします"
+        build_args+=("--no-cache")
+    fi
+
+    # イメージの再ビルド
+    if ! docker compose -f "$HOME/.dotfiles/compose.yml" build "${build_args[@]}" containered-claude; then
+        log_error "イメージの更新に失敗しました"
+        return 1
+    fi
+
+    log_success "Claudeイメージが正常に更新されました"
+    return 0
 }
 
 # メイン関数
@@ -83,16 +409,27 @@ ccc_main() {
     local source_paths=()
     local compose_path="$HOME/.dotfiles/compose.yml"
     local service="containered-claude"
-    local remove_orphans=true # デフォルトでオーファンコンテナを削除
+    local remove_orphans=true # デフォルトでオーファンコンテナを削除する
     local claude_credential_path="$HOME/.claude"
     local claude_config_path="$HOME/.claude.json"
     local command_args=("claude") # デフォルトのコマンド
+    local bedrock_args=() # Bedrock用の追加引数
     local show_logo=true # デフォルトでロゴを表示
     local show_info=false # デフォルトで設定情報を表示
     local show_separator=false # デフォルトでセパレータを表示
     local quiet=true # デフォルトは静かモード
     local workdir=""          # 作業ディレクトリ (--workdir)
     local source_path_specified=false # ソースパスが指定されたかどうかのフラグ
+    local check_update=false # 更新確認フラグ
+    local do_update=false # 更新実行フラグ
+    local use_cache=false # ビルド時のキャッシュ使用フラグ
+    local use_bedrock=false # Bedrock使用フラグ
+    local bedrock_region="" # Bedrockリージョン
+    local docker_log_level="" # Dockerログレベル
+    local aws_config_path="" # AWS設定ディレクトリパス
+    local mcp_subcommand_args=() # MCPサブコマンド用引数
+    local mcp_services=() # 起動するMCPサービスのリスト
+    local stop_mcp_services=false # MCPサービス停止フラグ
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -118,11 +455,15 @@ ccc_main() {
                 claude_config_path="$2"
                 shift 2
                 ;;
+            --aws-config-path)
+                aws_config_path="$2"
+                shift 2
+                ;;
             --workdir)
                 workdir="$2"
                 shift 2
                 ;;
-            --keep-orphans)
+            --no-rm-orphans)
                 remove_orphans=false
                 shift
                 ;;
@@ -138,6 +479,40 @@ ccc_main() {
                 show_separator=true
                 shift
                 ;;
+            --check-update)
+                check_update=true
+                shift
+                ;;
+            --update)
+                do_update=true
+                shift
+                ;;
+            --use-cache)
+                use_cache=true
+                shift
+                ;;
+            --bedrock)
+                use_bedrock=true
+                bedrock_args+=("--bedrock")
+                shift
+                ;;
+            --bedrock-region)
+                bedrock_region="$2"
+                bedrock_args+=("--region" "$2")
+                shift 2
+                ;;
+            --log-level)
+                docker_log_level="$2"
+                shift 2
+                ;;
+            --mcp)
+                mcp_services+=("$2")
+                shift 2
+                ;;
+            --stop-mcp)
+                stop_mcp_services=true
+                shift
+                ;;
             -v | --verbose)
                 quiet=false
                 shift
@@ -145,6 +520,15 @@ ccc_main() {
             -h | --help)
                 show_ccc_help
                 return 0
+                ;;
+            mcp)
+                # mcpサブコマンドが指定された場合
+                shift
+                # 残りの引数を関数に渡して処理を任せる
+                if [ $# -gt 0 ]; then
+                    mcp_subcommand_args=("$@")
+                fi
+                break
                 ;;
             --)
                 shift
@@ -162,14 +546,25 @@ ccc_main() {
         esac
     done
 
+    # 更新確認が要求された場合
+    if [ "$check_update" = true ]; then
+        check_claude_update
+        return $?
+    fi
+
+    # 更新が要求された場合
+    if [ "$do_update" = true ]; then
+        if [ "$use_cache" = true ]; then
+            update_claude_image "use_cache"
+        else
+            update_claude_image
+        fi
+        return $?
+    fi
+
     # source_pathsが空の場合は現在のディレクトリを使用
     if [ ${#source_paths[@]} -eq 0 ]; then
         source_paths=($(pwd))
-    fi
-
-    # ロゴの表示（--no-logoが指定されていなければ）
-    if [ "$show_logo" = true ]; then
-        print_logo "$claude_credential_path" "$claude_config_path"
     fi
 
     # 認証情報ディレクトリと設定ファイルの存在確認
@@ -181,11 +576,95 @@ ccc_main() {
         log_warning "設定ファイル '$claude_config_path' が見つからない。"
     fi
 
+    # 起動時に自動で更新確認（1日以上経過している場合）
+    local update_check_file="$HOME/.claude_update_check"
+    local last_check=0
+    local current_time=$(date +%s)
+    local one_day=$((24 * 60 * 60)) # 1日の秒数
+
+    # 最終確認日時を読み込む
+    if [ -f "$update_check_file" ]; then
+        last_check=$(cat "$update_check_file" 2>/dev/null)
+        # 数字でない場合はデフォルト値を使用
+        if ! [[ "$last_check" =~ ^[0-9]+$ ]]; then
+            last_check=0
+        fi
+    fi
+
+    # 1日以上経過している場合は更新確認
+    if [ $((current_time - last_check)) -gt $one_day ]; then
+        # 更新確認ファイルを更新
+        echo "$current_time" > "$update_check_file"
+
+        # 静かに更新を確認し、新しいバージョンがあれば通知
+        echo
+        echo "起動前の自動更新確認を実行中..."
+
+        # npmでインストールされたclaude-codeの最新バージョンを取得
+        local latest_version=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
+        if [ -n "$latest_version" ]; then
+            # コンテナ内のclaude-codeバージョンを取得
+            local container_version=""
+            container_version=$(docker run --rm my-claude-code:latest npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
+
+            if [ -n "$container_version" ] && [ "$container_version" != "null" ] && [ "$container_version" != "$latest_version" ]; then
+                echo -e "${UPDATE_COLOR}新しいバージョンのClaudeが利用可能です:${NC} $container_version → $latest_version"
+                echo -e "更新するには次のコマンドを実行: ${GREEN}$(basename "$0") --update${NC}"
+                echo
+            fi
+        fi
+    fi
+
     # 環境変数を準備
     local env_vars=(
     "CLAUDE_CREDENTIAL_PATH=$claude_credential_path"
     "CLAUDE_CONFIG_PATH=$claude_config_path"
 )
+
+    # AWS設定パスが指定されている場合
+    if [ -n "$aws_config_path" ]; then
+        env_vars+=("AWS_CONFIG_PATH=$aws_config_path")
+    fi
+
+    # Bedrock使用時の環境変数設定
+    if [ "$use_bedrock" = true ]; then
+        # AWS環境変数をコンテナに渡す
+        if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+            env_vars+=("AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID")
+        fi
+        if [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+            env_vars+=("AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY")
+        fi
+        if [ -n "$AWS_SESSION_TOKEN" ]; then
+            env_vars+=("AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN")
+        fi
+        if [ -n "$AWS_PROFILE" ]; then
+            env_vars+=("AWS_PROFILE=$AWS_PROFILE")
+        fi
+
+        # リージョンの設定（指定があればそれを使用、なければ環境変数から、さらになければデフォルト）
+        if [ -n "$bedrock_region" ]; then
+            env_vars+=("AWS_REGION=$bedrock_region")
+        elif [ -n "$AWS_REGION" ]; then
+            env_vars+=("AWS_REGION=$AWS_REGION")
+        else
+            # デフォルトリージョンとしてus-east-1を設定
+            env_vars+=("AWS_REGION=us-east-1")
+            log_info "AWSリージョンが指定されていないため、デフォルトのus-east-1を使用します"
+        fi
+
+        # Bedrockを使用するフラグをコンテナに伝える
+        env_vars+=("USE_BEDROCK=true")
+    fi
+
+    # タイムゾーン情報を取得して設定
+    local tz
+    if command -v timedatectl >/dev/null 2>&1; then
+        tz=$(timedatectl | grep "Time zone" | awk '{print $3}')
+        if [ -n "$tz" ]; then
+            env_vars+=("TZ=$tz")
+        fi
+    fi
 
     # SOURCE_PATH環境変数は-sオプションが指定されていない場合のみ設定
     if [ "$source_path_specified" = false ]; then
@@ -194,21 +673,48 @@ ccc_main() {
 
     # 一時ファイルの作成
     local temp_compose_file=$(mktemp)
-    cp "$compose_path" "$temp_compose_file"
+
+    # composeファイルのコピーと存在確認
+    if [ ! -f "$compose_path" ]; then
+        log_error "指定されたComposeファイル '$compose_path' が見つかりません。"
+        return 1
+    fi
+
+    cp "$compose_path" "$temp_compose_file" || {
+        log_error "Composeファイルのコピーに失敗しました: $compose_path"
+            return 1
+        }
 
     # ユーザーが-s/--source-pathを指定した場合、デフォルトのマウント設定を削除
     if [ "$source_path_specified" = true ]; then
-        yq eval 'del(.services.containered-claude.volumes[] | select(.target == "/workspace/"))' -i "$temp_compose_file"
+        if ! yq eval 'del(.services.containered-claude.volumes[] | select(.target == "/workspace/"))' -i "$temp_compose_file" 2>/dev/null; then
+            log_error "yqコマンドの実行に失敗しました。yqが正しくインストールされているか確認してください。"
+            rm -f "$temp_compose_file"
+            return 1
+        fi
     fi
 
     # ソースパスが指定されている場合、マウント設定を追加
     if [ "$source_path_specified" = true ]; then
+        # 各ソースパスの存在確認
+        for src_path in "${source_paths[@]}"; do
+            if [ ! -d "$src_path" ]; then
+                log_error "指定されたソースパス '$src_path' が存在しないか、ディレクトリではありません。"
+                rm -f "$temp_compose_file"
+                return 1
+            fi
+        done
+
         # 既に使用されているマウント先ディレクトリ名を追跡
         declare -A target_dirs
 
         # ソースパスが1つの場合は直接 /workspace/ にマウント
         if [ ${#source_paths[@]} -eq 1 ]; then
-            yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"${source_paths[0]}\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file"
+            if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"${source_paths[0]}\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                log_error "マウント設定の追加に失敗しました: ${source_paths[0]}"
+                rm -f "$temp_compose_file"
+                return 1
+            fi
         else
             # ソースパスが複数の場合は、すべてbasename形式でマウント
             for ((i=0; i<${#source_paths[@]}; i++)); do
@@ -228,9 +734,32 @@ ccc_main() {
                 local target_path="/workspace/$target_name"
 
                 # yqを使って新しいマウントポイントを追加
-                yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"$target_path\"}]" -i "$temp_compose_file"
+                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"$target_path\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                    log_error "マウント設定の追加に失敗しました: $src_path -> $target_path"
+                    rm -f "$temp_compose_file"
+                    return 1
+                fi
             done
         fi
+    fi
+
+    # AWS設定ディレクトリのマウント設定を追加
+    if [ -n "$aws_config_path" ]; then
+        # 指定されたパスの存在確認
+        if [ ! -d "$aws_config_path" ]; then
+            log_error "指定されたAWS設定ディレクトリが存在しません: $aws_config_path"
+            rm -f "$temp_compose_file"
+            return 1
+        fi
+
+        # AWS設定ディレクトリをマウント
+        if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$aws_config_path\", \"target\": \"/home/node/.aws\"}]" -i "$temp_compose_file" 2>/dev/null; then
+            log_error "AWS設定ディレクトリのマウント設定の追加に失敗しました: $aws_config_path"
+            rm -f "$temp_compose_file"
+            return 1
+        fi
+
+        log_info "AWS設定ディレクトリをマウント: $aws_config_path -> /home/node/.aws"
     fi
 
     # デバッグ用に一時ファイルの内容を表示（quiet=falseの場合）
@@ -239,12 +768,68 @@ ccc_main() {
         cat "$temp_compose_file"
     fi
 
+    # Bedrock引数の設定
+    if [ ${#bedrock_args[@]} -gt 0 ]; then
+        command_args+=("${bedrock_args[@]}")
+    fi
+
+    # MCPサービスの起動処理
+    local mcp_containers=()
+    if [ ${#mcp_services[@]} -gt 0 ]; then
+        log_info "MCPサービスを起動中..."
+        
+        # 各MCPサービスを並行して起動
+        for mcp_service in "${mcp_services[@]}"; do
+            # サービスが存在するか確認
+            if yq eval ".services.\"$mcp_service\"" "$temp_compose_file" >/dev/null 2>&1; then
+                log_info "MCPサービス '$mcp_service' を起動しています..."
+                if docker compose -f "$temp_compose_file" up -d "$mcp_service" >/dev/null 2>&1; then
+                    mcp_containers+=("$mcp_service")
+                    log_success "MCPサービス '$mcp_service' が起動しました"
+                else
+                    log_error "MCPサービス '$mcp_service' の起動に失敗しました"
+                fi
+            else
+                log_warning "MCPサービス '$mcp_service' がcompose.ymlに定義されていません"
+            fi
+        done
+    fi
+
+    # ロゴの表示（--no-logoが指定されていなければ）
+    if [ "$show_logo" = true ]; then
+        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$aws_config_path" "$temp_compose_file" "$service" "${source_paths[@]}"
+    fi
+
+    if [ ${#mcp_subcommand_args[@]} -gt 0 ]; then
+        process_mcp_subcommand "${mcp_subcommand_args[@]}"
+        if [ $? -ne 0 ]; then
+            return 1
+        fi
+    fi
+
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
-    run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "${env_vars[@]}" "${command_args[@]}"
+    # 環境変数とコマンド引数の間に -- を追加
+    if [ ${#command_args[@]} -gt 0 ]; then
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "$docker_log_level" "${env_vars[@]}" -- "${command_args[@]}"
+    else
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "$docker_log_level" "${env_vars[@]}"
+    fi
     local exit_code=$?
 
     # 一時ファイルの削除
     rm -f "$temp_compose_file"
+
+    # MCPサービスの停止処理（--stop-mcpが指定された場合のみ）
+    if [ "$stop_mcp_services" = true ] && [ ${#mcp_containers[@]} -gt 0 ]; then
+        log_info "MCPサービスを停止中..."
+        for mcp_service in "${mcp_containers[@]}"; do
+            if docker compose -f "$compose_path" stop "$mcp_service" >/dev/null 2>&1; then
+                log_success "MCPサービス '$mcp_service' を停止しました"
+            else
+                log_warning "MCPサービス '$mcp_service' の停止に失敗しました"
+            fi
+        done
+    fi
 
     return $exit_code
 }
@@ -254,6 +839,7 @@ show_ccc_help() {
     print_logo
     echo -e "\
         ${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
+              $(basename "$0") mcp <MCPサブコマンド> [引数...]
 
     ${BOLD}オプション:${NC}
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
@@ -263,18 +849,76 @@ show_ccc_help() {
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
     ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
     ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
-    ${GREEN}--keep-orphans${NC}              オーファンコンテナを削除しない (デフォルトは削除)
+    ${GREEN}--aws-config-path PATH${NC}      AWS設定ディレクトリのパスを指定 (Bedrock使用時に有効)
+    ${GREEN}--no-rm-orphans${NC}             オーファンコンテナの削除を無効化する (デフォルトは削除する)
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
     ${GREEN}--separator${NC}                 区切り線の表示を有効化する
+    ${GREEN}--check-update${NC}              Claudeイメージの更新を確認する
+    ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する (デフォルトはキャッシュ無効)
+    ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
+    環境が1つのみ定義されている場合は自動的に選択される
+    ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
+    ${GREEN}--bedrock-region REGION${NC}     Bedrockのリージョンを指定 (デフォルト: AWS_REGIONまたはus-east-1)
+    ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
+    ${GREEN}--mcp SERVICE${NC}               起動するMCPサービスを指定 (複数指定可能)
+    ${GREEN}--stop-mcp${NC}                  終了時にMCPサービスも停止する (デフォルトは停止しない)
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
 
+    ${BOLD}MCPサブコマンド:${NC}
+    ${GREEN}mcp list${NC}                    利用可能なMCPサーバーの一覧を表示
+    ${GREEN}mcp add <name>${NC}              MCPサーバーを追加
+    ${GREEN}mcp add-json <name> <json>${NC}  JSON形式でMCPサーバーを追加
+    ${GREEN}mcp add-json-file <name> <file>${NC}  JSONファイルからMCPサーバーを追加 (ccc固有機能)
+    ${GREEN}mcp remove <name>${NC}           MCPサーバーを削除
+    ${GREEN}mcp enable <name>${NC}           MCPサーバーを有効化
+    ${GREEN}mcp disable <name>${NC}          MCPサーバーを無効化
+
+    ${BOLD}mcp add-json-fileの詳細 (ccc固有機能):${NC}
+    JSONファイルからMCPサーバー設定を読み込んで追加する機能である。
+
+    ${DIMMED}使用例:${NC}
+    $(basename "$0") mcp add-json-file gitlab ./mcp.gitlab.json
+
+    ${DIMMED}JSONファイル形式:${NC}
+    {
+      \"command\": \"npx\",
+      \"args\": [\"@modelcontextprotocol/server-gitlab\"],
+      \"env\": {
+        \"GITLAB_PERSONAL_ACCESS_TOKEN\": \"your-token\",
+        \"GITLAB_API_URL\": \"https://gitlab.com/api/v4\"
+      }
+    }
+
+    ${DIMMED}MCP環境変数自動検証機能:${NC}
+    ~/.dotfiles/etc/mcp-env-requirements.yml に定義されたMCPの環境変数要件に基づいて
+    自動的に必須環境変数を検証する。
+
+    検証内容:
+    - YAMLファイルに定義された必須環境変数が未設定の場合、対話的に入力を求める
+    - 入力された値は自動的に -e オプションとして claude mcp add-json コマンドに渡される
+
+    YAMLファイル形式:
+    \"@modelcontextprotocol/server-gitlab\":
+      - GITLAB_PERSONAL_ACCESS_TOKEN
+      - GITLAB_API_URL
+
     ${BOLD}説明:${NC}
     Claude AIをローカルコンテナで実行するためのユーティリティ。
     \"--\" 以降の引数はコンテナ内で実行するコマンドとして渡される。
-    コマンドが指定されない場合は \"claude\" が実行される。"
+    コマンドが指定されない場合は \"claude\" が実行される。
+
+    ${BOLD}MCPサービスの使用例:${NC}
+    ${DIMMED}# playwrightサービスを起動してClaudeを実行${NC}
+    $(basename "$0") --mcp playwright
+
+    ${DIMMED}# 複数のMCPサービスを起動${NC}
+    $(basename "$0") --mcp memory --mcp playwright
+
+    ${DIMMED}# 終了時にMCPサービスを停止${NC}
+    $(basename "$0") --mcp playwright --stop-mcp"
     return 0
 }
 
