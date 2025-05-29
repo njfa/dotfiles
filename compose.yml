@@ -1,4 +1,4 @@
-name: mcp-server
+name: tools
 
 services:
   containered-claude:
@@ -9,6 +9,8 @@ services:
       args:
         USERID: ${USERID:-1000}
         GROUPID: ${GROUPID:-1000}
+        TZ: ${TZ:-Asia/Tokyo}
+        ADDITIONAL_CA_CERT_PATH: ${ADDITIONAL_CA_CERT_PATH:-}
     network_mode: "host"
     develop:
       watch:
@@ -19,23 +21,11 @@ services:
         source: ${SOURCE_PATH:-.}
         target: /workspace/
       - type: bind
-        source: ${CLAUDE_CREDENCIAL_PATH:-~/.claude}
+        source: ${CLAUDE_CREDENTIAL_PATH:-~/.claude}
         target: /home/node/.claude
       - type: bind
         source: ${CLAUDE_CONFIG_PATH:-~/.claude.json}
         target: /home/node/.claude.json
-
-  memory:
-    container_name: memory
-    image: mcp/memory
-    volumes:
-      - type: bind
-        source: tmp/memory.json
-        target: /app/dist/memory.json
-
-  sequentialthinking:
-    container_name: sequentialthinking
-    image: mcp/sequentialthinking
 
   plantuml:
     container_name: plantuml
@@ -46,6 +36,21 @@ services:
   playwright:
     container_name: playwright
     image: my-playwright-mcp:latest
-    network_mode: "host"
+    environment:
+      DISPLAY: :0
+    ipc: host
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
     build:
       context: ./etc/dockerfiles/playwright-mcp/
+    ports:
+      - 8931:8931
+    entrypoint:
+      ["node", "cli.js", "--headless", "--browser", "chrome", "--no-sandbox", "--port", "8931"]
+      # ["node", "cli.js", "--browser", "chrome", "--no-sandbox", "--port", "8931", "--block-service-workers", "--blocked-origins", "github.githubassets.com/assets/*.js;googletagmanager.com;google-analytics.com;doubleclick.net;facebook.com;twitter.com"]
+      # ["node", "cli.js", "--browser", "chromium", "--no-sandbox", "--port", "8931"]
+      # ["node", "cli.js", "--browser", "chromium", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "chromium", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "chrome", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "msedge", "--no-sandbox"]
+      # ["node", "cli.js", "--headless", "--browser", "webkit", "--no-sandbox"]
