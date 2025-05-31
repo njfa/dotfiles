@@ -33,20 +33,20 @@ services:
     ports:
       - 18123:8080
 
-  playwright:
-    container_name: playwright
-    image: my-playwright-mcp:latest
-    environment:
-      DISPLAY: :0
-    ipc: host
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-    build:
-      context: ./etc/dockerfiles/playwright-mcp/
-    ports:
-      - 8931:8931
-    entrypoint:
-      ["node", "cli.js", "--headless", "--browser", "chrome", "--no-sandbox", "--port", "8931"]
+  # playwright:
+  #   container_name: playwright
+  #   image: my-playwright-mcp:latest
+  #   environment:
+  #     DISPLAY: :0
+  #   ipc: host
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix
+  #   build:
+  #     context: ./etc/dockerfiles/playwright-mcp/
+  #   ports:
+  #     - 8931:8931
+  #   entrypoint:
+  #     ["node", "cli.js", "--headless", "--browser", "chrome", "--no-sandbox", "--port", "8931"]
       # ["node", "cli.js", "--browser", "chrome", "--no-sandbox", "--port", "8931", "--block-service-workers", "--blocked-origins", "github.githubassets.com/assets/*.js;googletagmanager.com;google-analytics.com;doubleclick.net;facebook.com;twitter.com"]
       # ["node", "cli.js", "--browser", "chromium", "--no-sandbox", "--port", "8931"]
       # ["node", "cli.js", "--browser", "chromium", "--no-sandbox"]
