@@ -59,6 +59,29 @@
     "schemes": 
     [
         {
+            "background": "#1A1B26",
+            "black": "#0A101A",
+            "blue": "#22E8DF",
+            "brightBlack": "#495162",
+            "brightBlue": "#91FFF4",
+            "brightCyan": "#BCF3FF",
+            "brightGreen": "#98C379",
+            "brightPurple": "#DA70D6",
+            "brightRed": "#FE9EA1",
+            "brightWhite": "#FFFFFF",
+            "brightYellow": "#F9E46B",
+            "cursorColor": "#7DCFFF",
+            "cyan": "#56B6C2",
+            "foreground": "#F5F5F5",
+            "green": "#00BD9C",
+            "name": "000000",
+            "purple": "#DC396A",
+            "red": "#FF6B7F",
+            "selectionBackground": "#220525",
+            "white": "#F1F1F1",
+            "yellow": "#E6C62F"
+        },
+        {
             "background": "#262A33",
             "black": "#000000",
             "blue": "#2472C8",
