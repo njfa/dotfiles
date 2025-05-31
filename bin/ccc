@@ -62,7 +62,7 @@ format_path() {
 # Claude Codeのバージョンを取得する関数
 get_claude_version() {
     local docker_image="$1"
-    
+
     if [ "$docker_image" != "unknown" ] && docker image inspect "$docker_image" >/dev/null 2>&1; then
         local version=$(docker run --rm "$docker_image" npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
         if [ -z "$version" ] || [ "$version" = "null" ]; then
@@ -122,7 +122,7 @@ print_logo() {
 
     # バージョン行
     local version_display=""
-    
+
     # バージョン比較と表示テキストの設定
     if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
         if [ "$claude_version" = "$latest_version" ]; then
@@ -133,7 +133,7 @@ print_logo() {
     else
         version_display="$claude_version"
     fi
-    
+
     # バージョン表示部分の実際の長さを計算（エスケープシーケンスを除く）
     local version_display_length
     if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
@@ -145,7 +145,7 @@ print_logo() {
     else
         version_display_length=${#claude_version}
     fi
-    
+
     echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} ${version_display}$(printf '%*s' $((frame_width - 25 - version_display_length)) '') ${FRAME_COLOR}│${NC}"
 
     # プロバイダー行
@@ -796,22 +796,114 @@ ccc_main() {
 
     # MCPサービスの起動処理
     local mcp_containers=()
+    local container_prerequisites=()  # コンテナ内で実行する前提条件を保存
+
     if [ ${#mcp_services[@]} -gt 0 ]; then
         log_info "MCPサービスを起動中..."
-        
-        # 各MCPサービスを並行して起動
+
+        # MCP環境変数要件定義ファイルのパス
+        local mcp_env_req_file="$HOME/.dotfiles/etc/mcp-env-requirements.yml"
+
+        # 各MCPサービスの処理
         for mcp_service in "${mcp_services[@]}"; do
-            # サービスが存在するか確認
+            local service_in_compose=false
+            local service_started=false
+
+            # 1. compose.ymlにサービスが定義されているか確認
             if yq eval ".services.\"$mcp_service\"" "$temp_compose_file" >/dev/null 2>&1; then
+                service_in_compose=true
+            fi
+
+            # 2. mcp-env-requirements.ymlの前提条件をチェックして実行（compose.ymlの定義有無に関係なく）
+            if [ -f "$mcp_env_req_file" ]; then
+                # 前提条件が定義されているか確認
+                local prerequisites=$(yq eval ".\"$mcp_service\".prerequisites // []" "$mcp_env_req_file" 2>/dev/null)
+
+                if [ -n "$prerequisites" ] && [ "$prerequisites" != "[]" ]; then
+                    log_info "MCPサービス '$mcp_service' の前提条件を確認中..."
+
+                    # 各前提条件を処理
+                    local prereq_count=$(echo "$prerequisites" | yq eval '. | length' -)
+                    for ((i=0; i<$prereq_count; i++)); do
+                        local command=$(echo "$prerequisites" | yq eval ".[$i].command" -)
+                        local description=$(echo "$prerequisites" | yq eval ".[$i].description // \"\"" -)
+                        local check=$(echo "$prerequisites" | yq eval ".[$i].check // \"\"" -)
+                        local is_host=$(echo "$prerequisites" | yq eval ".[$i].host // false" -)
+
+                        # チェックコマンドが定義されている場合、まず確認
+                        local need_execute=true
+                        if [ -n "$check" ] && [ "$check" != "null" ]; then
+                            if eval "$check" >/dev/null 2>&1; then
+                                need_execute=false
+                                log_info "✓ $description (既に設定済み)"
+                            fi
+                        fi
+
+                        # 前提条件を実行
+                        if [ "$need_execute" = true ]; then
+                            if [ -n "$description" ] && [ "$description" != "null" ]; then
+                                log_info "実行: $description"
+                            fi
+
+                            if [ "$is_host" = "true" ]; then
+                                # ホスト側で実行
+                                if eval "$command"; then
+                                    log_success "前提条件を実行しました: $command"
+                                else
+                                    log_warning "前提条件の実行に失敗しました: $command"
+                                fi
+                            else
+                                # コンテナ内で実行するために保存
+                                container_prerequisites+=("{\"service\":\"$mcp_service\",\"command\":\"$command\",\"description\":\"$description\"}")
+                                log_info "コンテナ起動後に実行予定: $command"
+                            fi
+                        fi
+                    done
+                fi
+            fi
+
+            # 3. compose.ymlに定義がある場合はMCPサービスを起動
+            if [ "$service_in_compose" = true ]; then
                 log_info "MCPサービス '$mcp_service' を起動しています..."
                 if docker compose -f "$temp_compose_file" up -d "$mcp_service" >/dev/null 2>&1; then
                     mcp_containers+=("$mcp_service")
+                    service_started=true
                     log_success "MCPサービス '$mcp_service' が起動しました"
+
+                    # コンテナ内で実行する前提条件があれば実行
+                    for prereq_json in "${container_prerequisites[@]}"; do
+                        local prereq_service=$(echo "$prereq_json" | jq -r '.service')
+                        if [ "$prereq_service" = "$mcp_service" ]; then
+                            local prereq_command=$(echo "$prereq_json" | jq -r '.command')
+                            local prereq_description=$(echo "$prereq_json" | jq -r '.description')
+
+                            log_info "コンテナ内で前提条件を実行: $prereq_description"
+                            if docker exec "$mcp_service" sh -c "$prereq_command"; then
+                                log_success "コンテナ内で前提条件を実行しました: $prereq_command"
+                            else
+                                log_warning "コンテナ内での前提条件の実行に失敗しました: $prereq_command"
+                            fi
+                        fi
+                    done
                 else
                     log_error "MCPサービス '$mcp_service' の起動に失敗しました"
                 fi
-            else
-                log_warning "MCPサービス '$mcp_service' がcompose.ymlに定義されていません"
+            fi
+
+            # 4. compose.ymlに定義がなく、mcp-env-requirements.ymlにも定義がない場合は警告
+            if [ "$service_in_compose" = false ] && [ "$service_started" = false ]; then
+                # mcp-env-requirements.ymlに何らかの定義があるかチェック
+                local has_mcp_definition=false
+                if [ -f "$mcp_env_req_file" ]; then
+                    local mcp_definition=$(yq eval ".\"$mcp_service\" // null" "$mcp_env_req_file" 2>/dev/null)
+                    if [ "$mcp_definition" != "null" ]; then
+                        has_mcp_definition=true
+                    fi
+                fi
+
+                if [ "$has_mcp_definition" = false ]; then
+                    log_warning "MCPサービス '$mcp_service' はcompose.ymlおよびmcp-env-requirements.ymlに定義されていません"
+                fi
             fi
         done
     fi
@@ -831,17 +923,17 @@ ccc_main() {
 
         # コンテナ起動前にスピナーを表示
         echo -e "${INFO_COLOR}Claudeコンテナを起動しています...${NC}"
-        
+
         # スピナーアニメーション
         local spinners=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
         local spinner_count=${#spinners[@]}
-        
+
         # バックグラウンドで現在のバージョンと最新バージョンを取得
         get_claude_version "$docker_image" > /tmp/claude_version_$$ &
         local version_pid=$!
         get_latest_claude_version > /tmp/claude_latest_version_$$ &
         local latest_pid=$!
-        
+
         # スピナーを表示しながら待機
         local i=0
         while kill -0 $version_pid 2>/dev/null || kill -0 $latest_pid 2>/dev/null; do
@@ -850,24 +942,24 @@ ccc_main() {
             sleep 0.1
             ((i++))
         done
-        
+
         # バージョンを読み込む
         wait $version_pid
         wait $latest_pid
         local claude_version=$(cat /tmp/claude_version_$$ 2>/dev/null)
         local latest_version=$(cat /tmp/claude_latest_version_$$ 2>/dev/null)
         rm -f /tmp/claude_version_$$ /tmp/claude_latest_version_$$
-        
+
         if [ -z "$claude_version" ]; then
             claude_version="unknown"
         fi
         if [ -z "$latest_version" ]; then
             latest_version="unknown"
         fi
-        
+
         # スピナー行をクリア
         echo -ne "\r\033[K"
-        
+
         # ロゴを表示
         print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$aws_config_path" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${source_paths[@]}"
     fi
@@ -911,13 +1003,13 @@ show_ccc_help() {
     # ヘルプ用の簡易ロゴ表示（バージョンは省略）
     print_logo "$HOME/.claude" "$HOME/.claude.json" "false" "" "" "" "N/A" "N/A"
     echo -e "\
-        ${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
-              $(basename "$0") mcp <MCPサブコマンド> [引数...]
+${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
+    $(basename "$0") mcp <MCPサブコマンド> [引数...]
 
-    ${BOLD}オプション:${NC}
+${BOLD}オプション:${NC}
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
-    1つだけの場合は /workspace/ に直接マウント
-    2つ以上の場合はすべて /workspace/<basename> 形式でマウント
+                                             1つだけの場合は /workspace/ に直接マウント
+                                             2つ以上の場合はすべて /workspace/<basename> 形式でマウント
     ${GREEN}--compose-path PATH${NC}         Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
     ${GREEN}-c, --continue${NC}              前のセッションの続きから開始する (Claudeに直接渡される)
@@ -932,7 +1024,7 @@ show_ccc_help() {
     ${GREEN}--check-update${NC}              Claudeイメージの更新を確認する
     ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する (デフォルトはキャッシュ無効)
     ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
-    環境が1つのみ定義されている場合は自動的に選択される
+                                             環境が1つのみ定義されている場合は自動的に選択される
     ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
     ${GREEN}--bedrock-region REGION${NC}     Bedrockのリージョンを指定 (デフォルト: AWS_REGIONまたはus-east-1)
     ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
@@ -942,7 +1034,7 @@ show_ccc_help() {
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
 
-    ${BOLD}MCPサブコマンド:${NC}
+${BOLD}MCPサブコマンド:${NC}
     ${GREEN}mcp list${NC}                    利用可能なMCPサーバーの一覧を表示
     ${GREEN}mcp add <name>${NC}              MCPサーバーを追加
     ${GREEN}mcp add-json <name> <json>${NC}  JSON形式でMCPサーバーを追加
@@ -951,41 +1043,36 @@ show_ccc_help() {
     ${GREEN}mcp enable <name>${NC}           MCPサーバーを有効化
     ${GREEN}mcp disable <name>${NC}          MCPサーバーを無効化
 
-    ${BOLD}mcp add-json-fileの詳細 (ccc固有機能):${NC}
+${BOLD}mcp add-json-fileの詳細 (ccc固有機能):${NC}
     JSONファイルからMCPサーバー設定を読み込んで追加する機能である。
 
-    ${DIMMED}使用例:${NC}
+${DIMMED}使用例:${NC}
     $(basename "$0") mcp add-json-file gitlab ./mcp.gitlab.json
 
-    ${DIMMED}JSONファイル形式:${NC}
+${DIMMED}JSONファイル形式:${NC}
     {
-      \"command\": \"npx\",
-      \"args\": [\"@modelcontextprotocol/server-gitlab\"],
-      \"env\": {
-        \"GITLAB_PERSONAL_ACCESS_TOKEN\": \"your-token\",
-        \"GITLAB_API_URL\": \"https://gitlab.com/api/v4\"
-      }
+        \"command\": \"npx\",
+        \"args\": [\"@modelcontextprotocol/server-gitlab\"],
+        \"env\": {
+            \"GITLAB_PERSONAL_ACCESS_TOKEN\": \"your-token\",
+            \"GITLAB_API_URL\": \"https://gitlab.com/api/v4\"
+        }
     }
 
-    ${DIMMED}MCP環境変数自動検証機能:${NC}
+${DIMMED}MCP環境変数自動検証機能:${NC}
     ~/.dotfiles/etc/mcp-env-requirements.yml に定義されたMCPの環境変数要件に基づいて
     自動的に必須環境変数を検証する。
 
     検証内容:
-    - YAMLファイルに定義された必須環境変数が未設定の場合、対話的に入力を求める
-    - 入力された値は自動的に -e オプションとして claude mcp add-json コマンドに渡される
+        - YAMLファイルに定義された必須環境変数が未設定の場合、対話的に入力を求める
+        - 入力された値は自動的に -e オプションとして claude mcp add-json コマンドに渡される
 
     YAMLファイル形式:
-    \"@modelcontextprotocol/server-gitlab\":
-      - GITLAB_PERSONAL_ACCESS_TOKEN
-      - GITLAB_API_URL
+        \"@modelcontextprotocol/server-gitlab\":
+            - GITLAB_PERSONAL_ACCESS_TOKEN
+            - GITLAB_API_URL
 
-    ${BOLD}説明:${NC}
-    Claude AIをローカルコンテナで実行するためのユーティリティ。
-    \"--\" 以降の引数はコンテナ内で実行するコマンドとして渡される。
-    コマンドが指定されない場合は \"claude\" が実行される。
-
-    ${BOLD}MCPサービスの使用例:${NC}
+${BOLD}MCPサービスの使用例:${NC}
     ${DIMMED}# playwrightサービスを起動してClaudeを実行${NC}
     $(basename "$0") --mcp playwright
 
@@ -994,8 +1081,8 @@ show_ccc_help() {
 
     ${DIMMED}# 終了時にMCPサービスを停止${NC}
     $(basename "$0") --mcp playwright --stop-mcp"
-    return 0
-}
+        return 0
+    }
 
 # スクリプトが直接実行された場合のみメイン処理を実行
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
