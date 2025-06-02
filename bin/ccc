@@ -46,7 +46,7 @@ fi
 FRAME_COLOR='\033[1;32m'  # 鮮やかな緑色
 DIMMED='\033[2m'          # テキストを暗く表示
 INFO_COLOR='\033[1;37m'   # 情報表示用のシアン色
-UPDATE_COLOR='\033[1;33m' # 更新表示用の黄色
+UPDATE_COLOR='\033[1;34m' # 更新表示用の黄色
 
 # パスを人間が読みやすい形式に変換する関数
 format_path() {
@@ -128,7 +128,7 @@ print_logo() {
         if [ "$claude_version" = "$latest_version" ]; then
             version_display="$claude_version ${GREEN}✓${NC}"
         else
-            version_display="$claude_version ${UPDATE_COLOR}(最新: $latest_version)${NC}"
+            version_display="$claude_version ${UPDATE_COLOR}(latest: $latest_version)${NC}"
         fi
     else
         version_display="$claude_version"
@@ -140,7 +140,7 @@ print_logo() {
         if [ "$claude_version" = "$latest_version" ]; then
             version_display_length=$((${#claude_version} + 2))  # スペース + ✓
         else
-            version_display_length=$((${#claude_version} + 7 + ${#latest_version}))  # " (最新: " + latest_version + ")"
+            version_display_length=$((${#claude_version} + 11 + ${#latest_version}))  # " (latest: " + latest_version + ")"
         fi
     else
         version_display_length=${#claude_version}
