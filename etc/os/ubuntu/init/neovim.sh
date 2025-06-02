@@ -3,6 +3,9 @@
 PYENV_ROOT="$HOME/.pyenv"
 PATH="$PYENV_ROOT/bin:$PATH"
 
+# Pythonの警告を抑制
+export PYTHONWARNINGS="ignore::BrokenPipeError"
+
 if command -v pip >/dev/null 2>&1; then
     echo "pip is installed."
 else
@@ -12,14 +15,14 @@ else
     eval "$(pyenv init -)"
 fi
 
-if pip list | grep -q "pynvim"; then
+if pip list 2>/dev/null | grep -q "pynvim" 2>/dev/null; then
     echo "pynvim is installed."
 else
     echo "pynvim is not installed."
     pip install pynvim
 fi
 
-if pip list | grep -q "neovim-remote"; then
+if pip list 2>/dev/null | grep -q "neovim-remote" 2>/dev/null; then
     echo "neovim-remote is installed."
 else
     echo "neovim-remote is not installed."
@@ -58,7 +61,42 @@ if ! $is_installed; then
     if [ ! -d "$HOME/.nvim/$NEOVIM_VERSION" ]; then
         echo "neovim is not downloaded."
 
-        curl -Lo nvim.appimage https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim.appimage
+        # CPUアーキテクチャを検出
+        arch=$(uname -m)
+        case "$arch" in
+            x86_64)
+                arch_suffix="linux-x86_64"
+                ;;
+            aarch64|arm64)
+                arch_suffix="linux-arm64"
+                ;;
+            *)
+                echo "Unsupported architecture: $arch"
+                exit 1
+                ;;
+        esac
+
+        # バージョンによってファイル名を決定
+        # 新しいバージョンでは nvim-{arch}.appimage、古いバージョンでは nvim.appimage
+        appimage_filename="nvim-${arch_suffix}.appimage"
+        download_url="https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/${appimage_filename}"
+
+        # 新しいファイル名でダウンロードを試みる
+        echo "Detected architecture: $arch"
+        echo "Trying to download: ${download_url}"
+        if ! curl -fLo nvim.appimage "$download_url"; then
+            echo "Failed to download ${appimage_filename}, trying legacy filename..."
+            # 古いファイル名で再試行（アーキテクチャ非依存）
+            appimage_filename="nvim.appimage"
+            download_url="https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/${appimage_filename}"
+            echo "Trying to download: ${download_url}"
+            if ! curl -fLo nvim.appimage "$download_url"; then
+                echo "Error: Failed to download Neovim AppImage from both URLs"
+                echo "Please check if version ${NEOVIM_VERSION} exists and supports your architecture"
+                exit 1
+            fi
+        fi
+
         chmod u+x nvim.appimage && ./nvim.appimage --appimage-extract
         mv squashfs-root ~/.nvim/$NEOVIM_VERSION
         rm nvim.appimage
