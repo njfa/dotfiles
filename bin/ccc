@@ -415,7 +415,6 @@ ccc_main() {
     local quiet=true # デフォルトは静かモード
     local workdir=""          # 作業ディレクトリ (--workdir)
     local source_path_specified=false # ソースパスが指定されたかどうかのフラグ
-    local check_update=false # 更新確認フラグ
     local do_update=false # 更新実行フラグ
     local use_cache=false # ビルド時のキャッシュ使用フラグ
     local use_bedrock=false # Bedrock使用フラグ
@@ -508,10 +507,6 @@ ccc_main() {
                 show_separator=true
                 shift
                 ;;
-            --check-update)
-                check_update=true
-                shift
-                ;;
             --update)
                 do_update=true
                 shift
@@ -575,12 +570,6 @@ ccc_main() {
         esac
     done
 
-    # 更新確認が要求された場合
-    if [ "$check_update" = true ]; then
-        check_claude_update
-        return $?
-    fi
-
     # 更新が要求された場合
     if [ "$do_update" = true ]; then
         if [ "$use_cache" = true ]; then
@@ -617,30 +606,6 @@ ccc_main() {
         # 数字でない場合はデフォルト値を使用
         if ! [[ "$last_check" =~ ^[0-9]+$ ]]; then
             last_check=0
-        fi
-    fi
-
-    # 1日以上経過している場合は更新確認
-    if [ $((current_time - last_check)) -gt $one_day ]; then
-        # 更新確認ファイルを更新
-        echo "$current_time" > "$update_check_file"
-
-        # 静かに更新を確認し、新しいバージョンがあれば通知
-        echo
-        echo "起動前の自動更新確認を実行中..."
-
-        # npmでインストールされたclaude-codeの最新バージョンを取得
-        local latest_version=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
-        if [ -n "$latest_version" ]; then
-            # コンテナ内のclaude-codeバージョンを取得
-            local container_version=""
-            container_version=$(docker run --rm my-claude-code:latest npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
-
-            if [ -n "$container_version" ] && [ "$container_version" != "null" ] && [ "$container_version" != "$latest_version" ]; then
-                echo -e "${UPDATE_COLOR}新しいバージョンのClaudeが利用可能です:${NC} $container_version → $latest_version"
-                echo -e "更新するには次のコマンドを実行: ${GREEN}$(basename "$0") --update${NC}"
-                echo
-            fi
         fi
     fi
 
