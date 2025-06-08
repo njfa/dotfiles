@@ -424,6 +424,7 @@ ccc_main() {
     local mcp_subcommand_args=() # MCPサブコマンド用引数
     local mcp_services=() # 起動するMCPサービスのリスト
     local stop_mcp_services=false # MCPサービス停止フラグ
+    local container_user="" # コンテナ実行ユーザー
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -536,6 +537,10 @@ ccc_main() {
             --stop-mcp)
                 stop_mcp_services=true
                 shift
+                ;;
+            --user)
+                container_user="$2"
+                shift 2
                 ;;
             -v | --verbose)
                 quiet=false
@@ -981,9 +986,9 @@ ccc_main() {
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
     # 環境変数とコマンド引数の間に -- を追加
     if [ ${#command_args[@]} -gt 0 ]; then
-        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "$docker_log_level" "${env_vars[@]}" -- "${command_args[@]}"
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "${env_vars[@]}" -- "${command_args[@]}"
     else
-        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "" "$workdir" "" "$docker_log_level" "${env_vars[@]}"
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "${env_vars[@]}"
     fi
     local exit_code=$?
 
@@ -1037,6 +1042,7 @@ ${BOLD}オプション:${NC}
     ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
     ${GREEN}--mcp SERVICE${NC}               起動するMCPサービスを指定 (複数指定可能)
     ${GREEN}--stop-mcp${NC}                  終了時にMCPサービスも停止する (デフォルトは停止しない)
+    ${GREEN}--user USER${NC}                 コンテナ実行時のユーザーを指定 (例: 1000:1000, root)
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
