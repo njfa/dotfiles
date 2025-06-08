@@ -1,0 +1,19 @@
+{
+    "permissions": {
+        "allow": [
+            "mcp__playwright"
+        ],
+        "deny": [
+            "Bash(curl:*)",
+            "Bash(wget:*)",
+            "Read(**/.env)",
+            "mcp__playwright__browser_install"
+        ]
+    },
+    "env": {
+        "DISABLE_AUTOUPDATER": "1",
+        "DISABLE_TELEMETRY": "1",
+        "MCP_TIMEOUT": 5000
+    },
+    "includeCoAuthoredBy": false
+}
