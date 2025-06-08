@@ -85,6 +85,7 @@ RUN apt-get update && \
     unzip \
     wget \
     zsh \
+    nano \
     # Python実行に必要な最小限のライブラリ
     libssl3 libsqlite3-0 libbz2-1.0 libreadline8 libncursesw6 \
     libffi8 liblzma5 tk && \
