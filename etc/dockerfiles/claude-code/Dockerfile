@@ -33,17 +33,40 @@ RUN curl -fsSL https://pyenv.run | bash && \
     rm -rf $PYENV_ROOT/sources
 
 # ========================================
-# ビルドステージ: git-deltaのダウンロード
+# ビルドステージ: git-delta、neovimのダウンロード
 # ========================================
-FROM node:20-slim AS delta-downloader
+FROM node:20-slim AS downloader
 
 ARG GIT_DELTA_VERSION
 ENV GIT_DELTA_VERSION="${GIT_DELTA_VERSION:-0.18.2}"
 
+# git-deltaのダウンロード
 RUN apt-get update && \
     apt-get install -y --no-install-recommends wget ca-certificates && \
     ARCH=$(dpkg --print-architecture) && \
     wget "https://github.com/dandavison/delta/releases/download/${GIT_DELTA_VERSION}/git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb" -O /tmp/git-delta.deb
+
+# neovimのダウンロードと展開
+RUN arch=$(uname -m) && \
+    case "$arch" in \
+        x86_64) \
+            arch_suffix="linux-x86_64" \
+            ;; \
+        aarch64|arm64) \
+            arch_suffix="linux-arm64" \
+            ;; \
+        *) \
+            echo "Unsupported architecture: $arch" \
+            exit 1 \
+            ;; \
+    esac && \
+    if ! wget "https://github.com/neovim/neovim/releases/latest/download/nvim-${arch_suffix}.appimage" -O /tmp/nvim.appimage; then \
+        echo "Failed to download nvim-${arch_suffix}.appimage, trying legacy filename..." && \
+        wget "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage" -O /tmp/nvim.appimage; \
+    fi && \
+    chmod u+x /tmp/nvim.appimage && \
+    /tmp/nvim.appimage --appimage-extract && \
+    mv squashfs-root /tmp/squashfs-root
 
 # ========================================
 # 最終ステージ: 実行環境
@@ -61,6 +84,7 @@ ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
 ENV PYENV_ROOT=/usr/local/share/pyenv
 ENV PATH=$PYENV_ROOT/bin:$PATH:/usr/local/share/npm-global/bin
 ENV SHELL="/bin/zsh"
+ENV EDITOR="nvim"
 
 # カスタムCA証明書の追加（指定された場合）
 COPY ${ADDITIONAL_CA_CERT_PATH:-.empty} /tmp/additional-ca-cert.crt
@@ -85,7 +109,6 @@ RUN apt-get update && \
     unzip \
     wget \
     zsh \
-    nano \
     # Python実行に必要な最小限のライブラリ
     libssl3 libsqlite3-0 libbz2-1.0 libreadline8 libncursesw6 \
     libffi8 liblzma5 tk && \
@@ -108,9 +131,16 @@ RUN apt-get update && \
     echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
     chmod 0440 /etc/sudoers.d/node-firewall
 
-# git-deltaをコピー
-COPY --from=delta-downloader /tmp/git-delta.deb /tmp/
+# git-deltaをインストール
+COPY --from=downloader /tmp/git-delta.deb /tmp/
 RUN dpkg -i /tmp/git-delta.deb && rm /tmp/git-delta.deb
+
+# neovimをコピー
+COPY --from=downloader /tmp/squashfs-root /usr/local/nvim
+
+# vimコマンドのシンボリックリンクを作成
+RUN ln -s /usr/local/nvim/usr/bin/nvim /usr/local/bin/vim && \
+    ln -s /usr/local/nvim/usr/bin/nvim /usr/local/bin/nvim
 
 # ビルド済みのPython環境をコピー
 COPY --from=python-builder --chown=node:node $PYENV_ROOT $PYENV_ROOT
