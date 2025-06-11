@@ -342,7 +342,7 @@ typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=8
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
-alias nvim='nvim --listen /tmp/nvimsocket'
+# alias nvim='nvim --listen /tmp/nvimsocket'
 
 if [ -n "${EDITOR}" ]; then
     alias vi=${EDITOR}

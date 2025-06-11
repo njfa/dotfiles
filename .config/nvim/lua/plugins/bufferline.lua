@@ -4,7 +4,13 @@ return {
     'akinsho/bufferline.nvim',
     dependencies = {
         'nvim-tree/nvim-web-devicons',
-        'tiagovla/scope.nvim',
+        -- バッファをタブ毎にグルーピングをする
+        {
+            'tiagovla/scope.nvim',
+            config = function()
+                require("scope").setup()
+            end
+        }
     },
     cond = not vscode_enabled,
     config = function()
