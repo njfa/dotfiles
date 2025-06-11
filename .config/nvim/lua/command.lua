@@ -131,3 +131,31 @@ vim.api.nvim_create_user_command("ToggleHeaderNumber", function()
     local new_lines = toggle_numbering(lines, cursor_line)
     vim.api.nvim_buf_set_lines(0, 0, -1, false, new_lines)
 end, {})
+
+-- Color replacement commands
+local color_replacer = require('color-replacer')
+
+vim.api.nvim_create_user_command("ColorReplace", function(opts)
+    local args = vim.split(opts.args, " ")
+    if #args >= 2 then
+        color_replacer.replace_color(args[1], args[2])
+    else
+        print("Usage: :ColorReplace <old_color> <new_color>")
+    end
+end, { nargs = "*" })
+
+vim.api.nvim_create_user_command("ColorFind", function(opts)
+    if opts.args ~= "" then
+        color_replacer.find_color(opts.args)
+    else
+        print("Usage: :ColorFind <color>")
+    end
+end, { nargs = 1 })
+
+vim.api.nvim_create_user_command("ColorSave", function(opts)
+    if opts.args ~= "" then
+        color_replacer.save_color_overrides(opts.args)
+    else
+        color_replacer.save_color_overrides()
+    end
+end, { nargs = "?" })

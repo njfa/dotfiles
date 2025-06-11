@@ -2,34 +2,15 @@ local vscode_enabled, _ = pcall(require, "vscode")
 
 return {
     -- 色定義の追加
-    "folke/lsp-colors.nvim",
-    cond = not vscode_enabled,
-
-    -- LSPの結果を別行に表示する
-    -- {
-    --     "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-    --     cond = not vscode_enabled,
-    --     config = function()
-    --         vim.diagnostic.config({
-    --             virtual_text = false,
-
-    --             -- error/warn/infoをソート
-    --             severity_sort = true,
-
-    --             -- 下線の設定
-    --             underline = true,
-
-    --             -- エラーと警告の下線スタイルを設定
-    --             signs = true,
-    --         })
-
-    --         require("lsp_lines").setup()
-    --     end,
-    -- },
+    {
+        "folke/lsp-colors.nvim",
+        cond = not vscode_enabled,
+    },
     {
         "rachartier/tiny-inline-diagnostic.nvim",
         event = "VeryLazy", -- Or `LspAttach`
         priority = 1000,    -- needs to be loaded in first
+        cond = not vscode_enabled,
         config = function()
             require('tiny-inline-diagnostic').setup({
                 options = {

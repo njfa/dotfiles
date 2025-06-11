@@ -40,7 +40,7 @@ return {
                         { "<leader>k", group = "AI機能" },
                         { "<leader>ke", group = "説明" },
                         { "<leader>kp", group = "修正案の作成" },
-                        { "<leader>km", function() require('picker').select_strategy_and_model() end, desc = "使用するモデルを変更" },
+                        -- { "<leader>km", function() require('picker').select_strategy_and_model() end, desc = "使用するモデルを変更" },
                         { "<leader>kk", "<cmd>CodeCompanionActions<cr>", desc = "Actionsを起動" },
                         { "<leader>kc", "<cmd>CodeCompanion /commit_staged<cr>", desc = "コミットメッセージの作成 (Stagedのみ)" },
                         { "<leader>kC", "<cmd>CodeCompanion /commit_all<cr>", desc = "コミットメッセージの作成 (差分すべて)" },
@@ -48,65 +48,65 @@ return {
                 },
                 {
                     mode = { "n" },
-                    { "<leader>i", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
-                    { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
-                    { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
+                   { "<leader>i", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
+                   { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
+        --            { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
 
-                    {
-                        { "<leader>k", group = "AI機能" },
-                        { "<leader>kb", "ggVG:CodeCompanion /buffer ", desc = "バッファのInline Assistantを実行" },
-                        { "<leader>kee", "ggVG:CodeCompanion /explain<cr>", desc = "コードの説明作成" },
-                        { "<leader>ked", "ggVG:CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
-                        { "<leader>kd", "ggVG:CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
-                        { "<leader>kpd", "ggVG:CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正案の作成 (Diagnostics利用)" },
-                        { "<leader>kpp", "ggVG:CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
-                        { "<leader>kt", "ggVG:CodeCompanion /tests<cr>", desc = "テストコードの作成" },
-                    },
+                   {
+                       { "<leader>k", group = "AI機能" },
+                       { "<leader>kb", "ggVG:CodeCompanion /buffer ", desc = "バッファのInline Assistantを実行" },
+                       { "<leader>kee", "ggVG:CodeCompanion /explain<cr>", desc = "コードの説明作成" },
+                       { "<leader>ked", "ggVG:CodeCompanion /lsp<cr>", desc = "Diagnosticsの内容説明" },
+                       { "<leader>kd", "ggVG:CodeCompanion /docs<cr>", desc = "コメントドキュメントの作成" },
+                       { "<leader>kpd", "ggVG:CodeCompanion /fix_diagnostics<cr>", desc = "コードの修正案の作成 (Diagnostics利用)" },
+                       { "<leader>kpp", "ggVG:CodeCompanion /fix_plan<cr>", desc = "コードの修正案の作成" },
+                       { "<leader>kt", "ggVG:CodeCompanion /tests<cr>", desc = "テストコードの作成" },
+                   },
 
-                    {
-                        { "<leader>x",  group = "Trouble" },
-                        { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>",                             desc = "Diagnostics (Trouble)" },
-                        { "<leader>xb", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",                desc = "Buffer Diagnostics (Trouble)" },
-                        { "<leader>xs", "<cmd>Trouble symbols toggle focus=false win.position=bottom<cr>", desc = "Symbols (Trouble)" },
-                        { "<leader>xl", "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",      desc = "LSP Definitions / references / ... (Trouble)" },
-                        { "<leader>xq", "<cmd>Trouble qflist toggle<cr>",                                  desc = "Quickfix List (Trouble)" },
-                        { "<leader>xL", "<cmd>Trouble loclist toggle<cr>",                                 desc = "Location List (Trouble)" },
-                    },
+                   {
+                       { "<leader>x",  group = "Trouble" },
+                       { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>",                             desc = "Diagnostics (Trouble)" },
+                       { "<leader>xb", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",                desc = "Buffer Diagnostics (Trouble)" },
+                       { "<leader>xs", "<cmd>Trouble symbols toggle focus=false win.position=bottom<cr>", desc = "Symbols (Trouble)" },
+                       { "<leader>xl", "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",      desc = "LSP Definitions / references / ... (Trouble)" },
+                       { "<leader>xq", "<cmd>Trouble qflist toggle<cr>",                                  desc = "Quickfix List (Trouble)" },
+                       { "<leader>xL", "<cmd>Trouble loclist toggle<cr>",                                 desc = "Location List (Trouble)" },
+                   },
 
-                    {
-                        { "<leader><leader>", group = "leader" },
-                        { "<leader><leader>c", '<cmd>tabnew<cr>', desc = "タブ作成" },
-                        { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
-                        { "<leader><leader>e", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
-                        { "<leader><leader>i", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (bottom)" },
-                        { "<leader><leader>h", "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", desc = "ファイル閲覧履歴 (頻度考慮)" },
-                        { "<leader><leader>j", require('treesj').join, desc = "行結合" },
-                        { "<leader><leader>m", require('treesj').toggle, desc = "行分割/結合 切替" },
-                        { "<leader><leader>s", require('treesj').split, desc = "行分割" },
-                        { "<leader><leader>p", "<cmd>Telescope registers<CR>", desc = "クリップボード履歴" },
-                        { "<leader><leader>r", [[:<c-u>%s/\v]], desc = "文字列置換 (正規表現)" },
-                        { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
-                        { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
-                        { "<leader><leader>f", ":lua require('picker').find_files_from_project_git_root( { search_dirs={\"\"}})<left><left><left><left>", desc = "ファイル検索 (ファイルパスを指定)" },
-                        { "<leader><leader>g", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern={\"\"}})<left><left><left><left>", desc = "Grep検索 (ファイルパスを指定)" },
+        --            {
+                       { "<leader><leader>", group = "leader" },
+                       { "<leader><leader>c", '<cmd>tabnew<cr>', desc = "タブ作成" },
+                       { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
+                       { "<leader><leader>e", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
+                       { "<leader><leader>i", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (bottom)" },
+        --                { "<leader><leader>h", "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", desc = "ファイル閲覧履歴 (頻度考慮)" },
+                       { "<leader><leader>j", require('treesj').join, desc = "行結合" },
+                       { "<leader><leader>J", require('treesj').split, desc = "行分割" },
+                       { "<leader><leader>m", require('treesj').toggle, desc = "行分割/結合 切替" },
+        --                { "<leader><leader>p", "<cmd>Telescope registers<CR>", desc = "クリップボード履歴" },
+                       { "<leader><leader>r", [[:<c-u>%s/\v]], desc = "文字列置換 (正規表現)" },
+                       { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
+                       { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
+        --                { "<leader><leader>f", ":lua require('picker').find_files_from_project_git_root( { search_dirs={\"\"}})<left><left><left><left>", desc = "ファイル検索 (ファイルパスを指定)" },
+        --                { "<leader><leader>g", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern={\"\"}})<left><left><left><left>", desc = "Grep検索 (ファイルパスを指定)" },
 
-                    },
+        --            },
 
-                    { "<F1>", "<cmd>lua require('telescope').extensions.dap.configurations{}<CR>", desc = "DAPの設定" },
-                    { "<F2>", "<cmd>lua require('telescope').extensions.dap.commands{}<CR>", desc = "DAPのコマンド一覧" },
-                    { "<F3>", "<cmd>lua require('telescope').extensions.dap.list_breakpoints{}<CR>", desc = "ブレークポイントの一覧" },
-                    { "<F4>", "<cmd>lua require('dap').set_breakpoint()<CR>", desc = "ブレークポイントの追加" },
-                    { "<F5>", "<cmd>lua require('dap').toggle_breakpoint()<CR>", desc = "ブレークポイントの切替" },
-                    { "<F6>", "<cmd>lua require('dap').step_into()<CR>", desc = "ステップ実行 (IN)" },
-                    { "<F7>", "<cmd>lua require('dap').continue()<CR>", desc = "実行" },
-                    { "<F8>", "<cmd>lua require('dap').step_over()<CR>", desc = "ステップ実行 (Over)" },
-                    { "<F9>", "<cmd>lua require('dap').step_out()<CR>", desc = "ステップ実行 (OUT)" },
-                    { "<F12>", "<cmd>lua require('dapui').toggle()<CR>", desc = "DAP UIの表示切替" },
+        --            { "<F1>", "<cmd>lua require('telescope').extensions.dap.configurations{}<CR>", desc = "DAPの設定" },
+        --            { "<F2>", "<cmd>lua require('telescope').extensions.dap.commands{}<CR>", desc = "DAPのコマンド一覧" },
+        --            { "<F3>", "<cmd>lua require('telescope').extensions.dap.list_breakpoints{}<CR>", desc = "ブレークポイントの一覧" },
+        --            { "<F4>", "<cmd>lua require('dap').set_breakpoint()<CR>", desc = "ブレークポイントの追加" },
+        --            { "<F5>", "<cmd>lua require('dap').toggle_breakpoint()<CR>", desc = "ブレークポイントの切替" },
+        --            { "<F6>", "<cmd>lua require('dap').step_into()<CR>", desc = "ステップ実行 (IN)" },
+        --            { "<F7>", "<cmd>lua require('dap').continue()<CR>", desc = "実行" },
+        --            { "<F8>", "<cmd>lua require('dap').step_over()<CR>", desc = "ステップ実行 (Over)" },
+        --            { "<F9>", "<cmd>lua require('dap').step_out()<CR>", desc = "ステップ実行 (OUT)" },
+        --            { "<F12>", "<cmd>lua require('dapui').toggle()<CR>", desc = "DAP UIの表示切替" },
                 },
                 {
                     mode = { "x" },
-                    { "gs", function() require('gitsigns').stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git stage hunk" },
-                    { "gr", function() require('gitsigns').reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git reset hunk" },
+        --            { "gs", function() require('gitsigns').stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git stage hunk" },
+        --            { "gr", function() require('gitsigns').reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git reset hunk" },
 
                     {
                         { "<leader>k", group = "AI機能" },
@@ -120,26 +120,26 @@ return {
                         { "<leader>kt", "<cmd>CodeCompanion /tests<cr>", desc = "テストコードの作成" },
                     },
 
-                    {
-                        { "<leader>", group = "leader" },
-                        { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
-                        { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
-                    },
-                },
+        --            {
+        --                { "<leader>", group = "leader" },
+        --                { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
+        --                { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
+        --            },
+               },
 
-                {
-                    mode = { "i", "s" },
-                    { "<C-j>", function() require('luasnip').jump(1) end, desc = "次の要素へ移動" },
-                    { "<C-k>", function() require('luasnip').jump(-1) end, desc = "前の要素へ移動" },
-                    {
-                        "<C-c>",
-                        function()
-                            if require('luasnip').choice_active() then
-                                require('luasnip').change_choice(1)
-                            end
-                        end,
-                        desc = "選択中の要素を変更"
-                    },
+               {
+                   mode = { "i", "s" },
+                   { "<C-j>", function() require('luasnip').jump(1) end, desc = "次の要素へ移動" },
+                   { "<C-k>", function() require('luasnip').jump(-1) end, desc = "前の要素へ移動" },
+                   {
+                       "<C-c>",
+                       function()
+                           if require('luasnip').choice_active() then
+                               require('luasnip').change_choice(1)
+                           end
+                       end,
+                       desc = "選択中の要素を変更"
+                   },
                 },
 
                 {
@@ -177,7 +177,7 @@ return {
                         require('hop').hint_camel_case({
                             current_line_only = false,
                             hint_position = require 'hop.hint'
-                                .HintPosition.BEGIN
+                            .HintPosition.BEGIN
                         })
                     end,
                     desc = "任意の単語へ移動"
@@ -185,10 +185,10 @@ return {
                 {
                     "T",
                     function()
-                        require('hop').hint_camel_case({
+                       require('hop').hint_camel_case({
                             current_line_only = false,
                             hint_position = require 'hop.hint'
-                                .HintPosition.END
+                            .HintPosition.END
                         })
                     end,
                     desc = "任意の単語へ移動"
@@ -246,13 +246,6 @@ return {
 
                 { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
                 { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
-                -- { "gn", "<cmd>Gitsigns next_hunk<cr>zz", desc = "次のgit hunkへ移動する" },
-                -- { "gp", "<cmd>Gitsigns prev_hunk<cr>zz", desc = "前のgit hunkへ移動する" },
-                { "gs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Git hunkをステージする" },
-                { "gS", "<cmd>Gitsigns reset_hunk<cr>", desc = "Git hunkをリセットする" },
-                -- { "gu", "<cmd>Gitsigns undo_stage_hunk<cr>", desc = "Git ステージしたhunkをundoする" },
-                { "gP", "<cmd>Gitsigns preview_hunk_inline<cr>", desc = "Git hunkの内容をプレビューする" },
-                -- { "gl", [[:<c-u>Gitsigns diffthis ]], desc = "指定のブランチ/コミットとの差分を確認する" },
 
                 {
                     { "me", group = "ナンバリング" },
@@ -320,14 +313,6 @@ return {
                         ),
                         desc = "GitのDiff表示領域を表示",
                     },
-                    {
-                        "<C-w>.",
-                        vscode_mapping(
-                            function() require("common").lcd_current_workspace() end,
-                            function() vscode.action("workbench.action.openWorkspace") end
-                        ),
-                        desc = "vimのカレントディレクトリを変更"
-                    },
                 },
 
                 {
@@ -340,101 +325,39 @@ return {
                         end),
                         desc = "バッファ作成"
                     },
-                    {
-                        "<leader>d",
-                        vscode_mapping("<cmd>bp<bar>sp<bar>bn<bar>bd!<cr>", function()
-                            vscode.action(
-                                "workbench.action.closeActiveEditor")
-                        end),
-                        desc = "バッファを閉じる"
-                    },
                     { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
                     { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換" },
-                    {
-                        "<leader>u",
-                        vscode_mapping("<cmd>UndotreeToggle<cr>", function()
-                            vscode.action(
-                                "timeline.focus")
-                        end),
-                        desc = "ファイル編集履歴 表示切替"
-                    },
-                    { "<leader>w", "<cmd>w<cr>", desc = "保存" },
-                    { "<leader>y", "<cmd>HopYankChar1<CR>", desc = "コピー（場所選択）" },
+                   {
+                       "<leader>U",
+                       vscode_mapping("<cmd>UndotreeToggle<cr>", function()
+                           vscode.action(
+                               "timeline.focus")
+                       end),
+                       desc = "ファイル編集履歴 表示切替"
+                   },
+                   { "<leader>w", "<cmd>w<cr>", desc = "保存" },
+                   { "<leader>y", "<cmd>HopYankChar1<CR>", desc = "コピー（場所選択）" },
 
-                    {
-                        "<leader>b",
-                        vscode_mapping(
-                            "<cmd>Telescope buffers sort_mru=true<CR>",
-                            function() vscode.action("workbench.files.action.focusOpenEditorsView") end
-                        ),
-                        desc = "タブ一覧を開く",
-                    },
-                    {
-                        "<leader>f",
-                        vscode_mapping(
-                            function() require('picker').find_files_from_project_git_root() end,
-                            function() vscode.action("workbench.action.quickOpen") end
-                        ),
-                        desc = "ファイル検索"
-                    },
-                    {
-                        "<leader>g",
-                        vscode_mapping(
-                            function() require('picker').live_grep_from_project_git_root() end,
-                            function() vscode.action("workbench.view.search") end
-                        ),
-                        desc = "Grep検索",
-                    },
-                    {
-                        "<leader>h",
-                        vscode_mapping(
-                            function()
-                                require('picker').find_files_from_project_git_root({ oldfiles = true })
-                            end,
-                            function() vscode.action("workbench.action.quickOpen") end
-                        ),
-                        desc = "ファイル閲覧履歴",
-                    },
-                    { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
-                    { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
-                    { "<leader>s", function() require('treesj').split({ split = { recursive = true } }) end, desc = "行分割" },
+                   { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
+                   { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
+                   { "<leader>J", function() require('treesj').split({ split = { recursive = true } }) end, desc = "行分割" },
 
-                    {
-                        "<leader>e",
-                        vscode_mapping(
-                            "<cmd>Neotree float reveal<CR>",
-                            function(
-                            )
-                                vscode.action(
-                                    "workbench.explorer.fileView.focus"
-                                )
-                            end
-                        ),
-                        desc = "ファイラーを開く (floating window)",
-                    },
-
-                    {
-                        "<leader>/",
-                        vscode_mapping(
-                            "<cmd>Telescope current_buffer_fuzzy_find<CR>",
-                            function() vscode.action("workbench.action.findInFiles") end
-                        ),
-                        desc = "バッファ内検索",
-                    },
-                    {
-                        "<leader>a",
-                        vscode_mapping(
-                            function()
-                                require('picker').command_history()
-                            end,
-                            function() vscode.action("workbench.action.showCommands") end
-                        ),
-                        desc = "コマンド履歴",
-                    },
+                   {
+                       "<leader>e",
+                       vscode_mapping(
+                           "<cmd>Neotree float reveal<CR>",
+                           function(
+                           )
+                               vscode.action(
+                                   "workbench.explorer.fileView.focus"
+                               )
+                           end
+                       ),
+                       desc = "ファイラーを開く (floating window)",
+                   },
 
                     {
                         { "<leader>.", group = "設定変更" },
-                        { "<leader>..", function() require('reload').reload() end, desc = "Neovim設定ファイル一覧" },
                         {
                             "<leader>.t",
                             function()
@@ -506,16 +429,16 @@ return {
                 { "<C-Up>", '"zx<Up>"zP`[V`]', desc = "カーソル行を1行移動 (上)" },
                 { "<C-Down>", '"zx"zp`[V`]', desc = "カーソル行を1行移動 (下)" },
 
-                { "*", [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "* (カーソルを移動しない)" },
-                { "#", [[<Plug>(asterisk-z#)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "# (カーソルを移動しない)" },
-                { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "g* (カーソルを移動しない)" },
-                { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "g# (カーソルを移動しない)" },
+               { "*", [[<Plug>(asterisk-z*)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "* (カーソルを移動しない)" },
+               { "#", [[<Plug>(asterisk-z#)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "# (カーソルを移動しない)" },
+               { "g*", [[<Plug>(asterisk-gz*)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "g* (カーソルを移動しない)" },
+               { "g#", [[<Plug>(asterisk-gz#)<Cmd>lua require('hlslens').start()<CR>gv]], desc = "g# (カーソルを移動しない)" },
 
-                { "<cr>", "<Plug>(EasyAlign)", desc = "指定文字で整列 (*で全一致箇所)" },
-                { "<Bar>", ":EasyAlign*<Bar><CR>", desc = "|で整形" },
+               { "<cr>", "<Plug>(EasyAlign)", desc = "指定文字で整列 (*で全一致箇所)" },
+               { "<Bar>", ":EasyAlign*<Bar><CR>", desc = "|で整形" },
 
-                { "v", ":lua require('tsht').nodes()<cr>", desc = "選択範囲を拡大" },
-                { "R", function() require "substitute".visual() end, desc = "選択範囲を置換" },
+               { "v", ":lua require('tsht').nodes()<cr>", desc = "選択範囲を拡大" },
+               { "R", function() require "substitute".visual() end, desc = "選択範囲を置換" },
 
                 {
                     { "<leader>", group = "leader" },
@@ -524,15 +447,15 @@ return {
                 },
             },
 
-            {
-                mode = { "o" },
-                { "r", function() require("flash").remote() end, desc = "Remote Flash" },
-            },
+           {
+               mode = { "o" },
+               { "r", function() require("flash").remote() end, desc = "Remote Flash" },
+           },
 
-            {
-                mode = { "o", "x" },
-                { "R", function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-            }
+           {
+               mode = { "o", "x" },
+               { "R", function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+           }
         })
 
         wk.setup({

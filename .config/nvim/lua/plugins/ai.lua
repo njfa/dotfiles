@@ -19,7 +19,6 @@ return {
         dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
-            "j-hui/fidget.nvim",
             {
                 "echasnovski/mini.diff",
                 version = false,
@@ -28,9 +27,6 @@ return {
                 end
             }
         },
-        init = function()
-            require("plugins.codecompanion.fidget-spinner"):init()
-        end,
         config = function()
             local function configure_adapter_with_model_override(adapter_name)
                 local config_path = vim.fn.stdpath("data")
