@@ -8,6 +8,11 @@ local function vscode_mapping(function_native, function_vscode)
     end
 end
 
+local function get_text()
+    local visual = require("snacks.picker").util.visual()
+    return visual and visual.text or ""
+end
+
 -- キーバインドをわかりやすくする
 return {
     "folke/which-key.nvim",
@@ -73,7 +78,7 @@ return {
                        { "<leader>xL", "<cmd>Trouble loclist toggle<cr>",                                 desc = "Location List (Trouble)" },
                    },
 
-        --            {
+                   {
                        { "<leader><leader>", group = "leader" },
                        { "<leader><leader>c", '<cmd>tabnew<cr>', desc = "タブ作成" },
                        { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
@@ -87,10 +92,8 @@ return {
                        { "<leader><leader>r", [[:<c-u>%s/\v]], desc = "文字列置換 (正規表現)" },
                        { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
                        { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
-        --                { "<leader><leader>f", ":lua require('picker').find_files_from_project_git_root( { search_dirs={\"\"}})<left><left><left><left>", desc = "ファイル検索 (ファイルパスを指定)" },
-        --                { "<leader><leader>g", ":lua require('picker').live_grep_from_project_git_root( { glob_pattern={\"\"}})<left><left><left><left>", desc = "Grep検索 (ファイルパスを指定)" },
 
-        --            },
+                   },
 
         --            { "<F1>", "<cmd>lua require('telescope').extensions.dap.configurations{}<CR>", desc = "DAPの設定" },
         --            { "<F2>", "<cmd>lua require('telescope').extensions.dap.commands{}<CR>", desc = "DAPのコマンド一覧" },
@@ -120,11 +123,22 @@ return {
                         { "<leader>kt", "<cmd>CodeCompanion /tests<cr>", desc = "テストコードの作成" },
                     },
 
-        --            {
-        --                { "<leader>", group = "leader" },
-        --                { "<leader>f", function() require('picker').find_files_string_visual() end, desc = "ファイル検索 (選択範囲の文字利用)" },
-        --                { "<leader>g", function() require('picker').grep_string_visual() end, desc = "Grep検索 (選択範囲の文字利用)" },
-        --            },
+                    {
+                        { "<leader>", group = "leader" },
+                        { "<leader>f", function()
+                            local text = get_text()
+                            vscode_mapping(
+                                Snacks.picker.files({ hidden=true, ignored=true, pattern=text }),
+                                "workbench.action.quickOpen"
+                            )
+                        end, desc = "ファイル検索 (選択範囲の文字利用)" },
+                        { "<leader>g", function()
+                            local text = get_text()
+                            vscode_mapping(Snacks.picker.grep({hidden=true, ignored=true, on_show = function()
+                                vim.api.nvim_put({ text }, "c", true, true)
+                            end}), "workbench.view.search")
+                        end, desc = "Grep検索 (選択範囲の文字利用)" },
+                    },
                },
 
                {
