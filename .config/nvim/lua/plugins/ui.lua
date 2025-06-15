@@ -402,6 +402,8 @@ return {
                     vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(notif.msg, "\n"))
                 end
             },
+            words = { enabled = true },
+            win = { enabled = true },
         },
         keys = {
             { "<leader>.b",  function() Snacks.scratch() end, desc = "Toggle Scratch Buffer" },
