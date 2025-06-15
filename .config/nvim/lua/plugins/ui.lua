@@ -89,6 +89,11 @@ return {
             -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
         },
         config = function()
+            local function on_move(data)
+                Snacks.rename.on_rename_file(data.source, data.destination)
+            end
+            local events = require("neo-tree.events")
+
             require('neo-tree').setup({
                 source_selector = {
                     statusline = true, -- toggle to show selector on statusline
@@ -109,6 +114,10 @@ return {
                 -- popup_border_style = { "⋅", "⋯", "⋅", "┆", "⋅", "⋯", "⋅", "┆" },
                 enable_git_status = true,
                 enable_diagnostics = true,
+                event_handlers = {
+                    { event = events.FILE_MOVED, handler = on_move },
+                    { event = events.FILE_RENAMED, handler = on_move },
+                },
                 open_files_do_not_replace_types = { "terminal", "trouble", "qf", "sagafinder" }, -- when opening files, do not use windows containing these filetypes or buftypes
                 filesystem = {
                     filtered_items = {
