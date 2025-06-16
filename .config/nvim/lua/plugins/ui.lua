@@ -402,6 +402,12 @@ return {
                     vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(notif.msg, "\n"))
                 end
             },
+            toggle = {
+                wk_desc = {
+                    enabled = "無効化 ",
+                    disabled = "有効化 ",
+                },
+            },
             words = { enabled = true },
             win = { enabled = true },
         },
@@ -415,7 +421,7 @@ return {
             { "<leader>f", function() vscode_mapping(Snacks.picker.files({hidden=true, ignored=true}), "workbench.action.quickOpen") end, desc = "ファイル検索" },
             { "<leader>g", function() vscode_mapping(Snacks.picker.grep({hidden=true, ignored=true}), "workbench.view.search") end, desc = "Grep検索" },
             { "<leader>h", function() vscode_mapping(Snacks.picker.recent({hidden=true, ignored=true}), "workbench.action.quickOpen") end, desc = "最近開いたファイル" },
-            { "<leader>n", function() Snacks.picker.notifications() end, desc = "Notification History" },
+            { "<leader>n", function() Snacks.picker.notifications() end, desc = "Notification履歴検索" },
             { "<leader>/", function() vscode_mapping(Snacks.picker.lines(), "workbench.action.findInFiles") end, desc = "検索 (バッファ内)" },
             { "<leader>..", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config"), hidden=true, ignored=true }) end, desc = "設定ファイル一覧" },
             { "<leader>:", function() vscode_mapping(Snacks.picker.command_history({layout="vscode"}), "workbench.action.showCommands") end, desc = "コマンド履歴" },
@@ -425,23 +431,23 @@ return {
             { "<leader><leader>/", function() Snacks.picker.grep_buffers() end, desc = "検索 (全バッファ内)" },
 
             { "<leader>s/", function() Snacks.picker.search_history() end, desc = "検索履歴" },
-            { "<leader>sa", function() Snacks.picker.autocmds() end, desc = "Autocmd一覧" },
-            { "<leader>sc", function() Snacks.picker.commands() end, desc = "Commands" },
-            { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
-            { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Buffer Diagnostics" },
-            { "<leader>sh", function() Snacks.picker.help() end, desc = "Help Pages" },
-            { "<leader>sH", function() Snacks.picker.highlights() end, desc = "Highlights" },
-            { "<leader>si", function() Snacks.picker.icons() end, desc = "Icons" },
-            { "<leader>sj", function() Snacks.picker.jumps() end, desc = "Jumps" },
-            { "<leader>sk", function() Snacks.picker.keymaps() end, desc = "Keymaps" },
-            { "<leader>sl", function() Snacks.picker.loclist() end, desc = "Location List" },
-            { "<leader>sm", function() Snacks.picker.marks() end, desc = "Marks" },
-            { "<leader>sM", function() Snacks.picker.man() end, desc = "Man Pages" },
-            { "<leader>sp", function() Snacks.picker.lazy() end, desc = "Search for Plugin Spec" },
-            { "<leader>sq", function() Snacks.picker.qflist() end, desc = "Quickfix List" },
-            { "<leader>sR", function() Snacks.picker.resume() end, desc = "Resume" },
-            { "<leader>su", function() Snacks.picker.undo() end, desc = "Undo History" },
-            { "<leader>sC", function() Snacks.picker.colorschemes() end, desc = "Colorschemes" },
+            { "<leader>sa", function() Snacks.picker.autocmds() end, desc = "Autocmd検索" },
+            { "<leader>sc", function() Snacks.picker.commands() end, desc = "コマンド検索" },
+            { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics検索" },
+            { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Diagnostics検索 (バッファ内)" },
+            { "<leader>sh", function() Snacks.picker.help() end, desc = "ヘルプ検索" },
+            { "<leader>sH", function() Snacks.picker.highlights() end, desc = "Highlight検索" },
+            { "<leader>si", function() Snacks.picker.icons() end, desc = "アイコン検索" },
+            { "<leader>sj", function() Snacks.picker.jumps() end, desc = "ジャンプ先検索" },
+            { "<leader>sk", function() Snacks.picker.keymaps() end, desc = "キーマップ検索" },
+            { "<leader>sl", function() Snacks.picker.loclist() end, desc = "Location List検索" },
+            { "<leader>sm", function() Snacks.picker.marks() end, desc = "Mark検索" },
+            { "<leader>sM", function() Snacks.picker.man() end, desc = "マニュアル検索" },
+            { "<leader>sp", function() Snacks.picker.lazy() end, desc = "プラグイン検索" },
+            { "<leader>sq", function() Snacks.picker.qflist() end, desc = "Quickfix List検索" },
+            { "<leader>sR", function() Snacks.picker.resume() end, desc = "最後に使用したPickerを呼び出し" },
+            { "<leader>su", function() Snacks.picker.undo() end, desc = "Undo履歴検索" },
+            { "<leader>sC", function() Snacks.picker.colorschemes() end, desc = "Colorscheme検索" },
 
             { "<leader>d", function() vscode_mapping(Snacks.bufdelete(), "workbench.action.closeActiveEditor") end, desc = "バッファを閉じる" },
             { "<leader>D", function() vscode_mapping(Snacks.bufdelete.other(), "workbench.action.closeActiveEditor") end, desc = "他のバッファを全て閉じる" },
@@ -462,12 +468,12 @@ return {
                     -- Create some toggle mappings
                     Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
                     Snacks.toggle.option("wrap", { name = "行折り返し" }):map("<leader>uw")
-                    Snacks.toggle.option("relativenumber", { name = "相対行番号" }):map("<leader>uL")
+                    Snacks.toggle.option("relativenumber", { off = false, on = true, name = "相対行番号表示" }):map("<leader>uL")
                     Snacks.toggle.diagnostics():map("<leader>ud")
-                    Snacks.toggle.line_number():map("<leader>ul")
+                    Snacks.toggle.option("number", { off = false, on = true, name = "行番号表示" }):map("<leader>ul")
                     Snacks.toggle.option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 }):map("<leader>uc")
                     Snacks.toggle.treesitter():map("<leader>uT")
-                    Snacks.toggle.option("background", { off = "light", on = "dark", name = "Dark Background" }):map("<leader>ub")
+                    Snacks.toggle.option("background", { off = "light", on = "dark", name = "ダークテーマ" }):map("<leader>ub")
                     Snacks.toggle.inlay_hints():map("<leader>uh")
                     Snacks.toggle.indent():map("<leader>ug")
                     Snacks.toggle.dim():map("<leader>uD")
