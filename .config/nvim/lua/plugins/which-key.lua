@@ -82,7 +82,21 @@ return {
                        { "<leader><leader>", group = "leader" },
                        { "<leader><leader>c", '<cmd>tabnew<cr>', desc = "タブ作成" },
                        { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
-                       { "<leader><leader>e", "<cmd>Neotree left reveal toggle<CR>", desc = "ファイラーを開く (left)" },
+                       {
+                           "<leader><leader>e",
+                           function()
+                               require('neo-tree.command').execute({
+                                   action = "focus",          -- OPTIONAL, this is the default value
+                                   source = "filesystem",     -- OPTIONAL, this is the default value
+                                   position = "left",         -- OPTIONAL, this is the default value
+                                   toggle = true,
+                                   dir = require('common').get_cwd(),
+                                   reveal = true, -- path to file or folder to reveal
+                                   reveal_force_cwd = false,   -- change cwd without asking if needed
+                               })
+                           end,
+                           desc = "ファイラーを開く (left)",
+                       },
                        { "<leader><leader>i", "<cmd>Neotree buffers bottom reveal toggle<CR>", desc = "バッファ一覧を開く (bottom)" },
         --                { "<leader><leader>h", "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", desc = "ファイル閲覧履歴 (頻度考慮)" },
                        { "<leader><leader>j", require('treesj').join, desc = "行結合" },
@@ -359,7 +373,17 @@ return {
                    {
                        "<leader>e",
                        vscode_mapping(
-                           "<cmd>Neotree float reveal<CR>",
+                           function()
+                               require('neo-tree.command').execute({
+                                   action = "focus",          -- OPTIONAL, this is the default value
+                                   source = "filesystem",     -- OPTIONAL, this is the default value
+                                   position = "float",         -- OPTIONAL, this is the default value
+                                   toggle = true,
+                                   dir = require('common').get_cwd(),
+                                   reveal = true, -- path to file or folder to reveal
+                                   reveal_force_cwd = false,   -- change cwd without asking if needed
+                               })
+                           end,
                            function(
                            )
                                vscode.action(
