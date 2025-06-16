@@ -75,7 +75,6 @@ FROM node:20-slim
 
 ARG TZ
 ARG UV_VERSION
-ARG ADDITIONAL_CA_CERT_PATH
 ARG USERNAME=node
 
 ENV TZ="$TZ"
@@ -85,9 +84,6 @@ ENV PYENV_ROOT=/usr/local/share/pyenv
 ENV PATH=$PYENV_ROOT/bin:$PATH:/usr/local/share/npm-global/bin
 ENV SHELL="/bin/zsh"
 ENV EDITOR="nvim"
-
-# カスタムCA証明書の追加（指定された場合）
-COPY ${ADDITIONAL_CA_CERT_PATH:-.empty} /tmp/additional-ca-cert.crt
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
@@ -114,14 +110,6 @@ RUN apt-get update && \
     libffi8 liblzma5 tk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    # 証明書のインストール
-    if [ -s /tmp/additional-ca-cert.crt ] && [ -f /tmp/additional-ca-cert.crt ] && [ "$(head -c 1 /tmp/additional-ca-cert.crt | wc -c)" -gt 0 ] && ! grep -q "^# This is an empty placeholder" /tmp/additional-ca-cert.crt; then \
-        cp /tmp/additional-ca-cert.crt /usr/local/share/ca-certificates/ && \
-        update-ca-certificates && \
-        export NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/additional-ca-cert.crt && \
-        npm config set cafile /usr/local/share/ca-certificates/additional-ca-cert.crt; \
-    fi && \
-    rm -f /tmp/additional-ca-cert.crt && \
     # ディレクトリの作成と権限設定
     mkdir -p /usr/local/share/npm-global /workspace /home/node/.claude /commandhistory && \
     touch /commandhistory/.bash_history && \

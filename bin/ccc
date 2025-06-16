@@ -408,7 +408,6 @@ ccc_main() {
     local claude_credential_path="$HOME/.claude"
     local claude_config_path="$HOME/.claude.json"
     local command_args=("claude") # デフォルトのコマンド
-    local bedrock_args=() # Bedrock用の追加引数
     local show_logo=true # デフォルトでロゴを表示
     local show_info=false # デフォルトで設定情報を表示
     local show_separator=false # デフォルトでセパレータを表示
@@ -518,12 +517,12 @@ ccc_main() {
                 ;;
             --bedrock)
                 use_bedrock=true
-                bedrock_args+=("--bedrock")
+                # --bedrockオプションはccc専用でClaudeコマンドには渡さない
                 shift
                 ;;
             --bedrock-region)
                 bedrock_region="$2"
-                bedrock_args+=("--region" "$2")
+                # リージョンは環境変数AWS_REGIONとして設定される
                 shift 2
                 ;;
             --log-level)
@@ -626,6 +625,9 @@ ccc_main() {
     fi
 
     # Bedrock使用時の環境変数設定
+    # 優先順位: 環境変数 > AWS config/credential
+    # AWS SDKは環境変数を優先的に使用するため、環境変数が設定されている場合は
+    # AWS config/credentialファイルの内容より環境変数の値が使用される
     if [ "$use_bedrock" = true ]; then
         # AWS環境変数をコンテナに渡す
         if [ -n "$AWS_ACCESS_KEY_ID" ]; then
@@ -767,10 +769,7 @@ ccc_main() {
         cat "$temp_compose_file"
     fi
 
-    # Bedrock引数の設定
-    if [ ${#bedrock_args[@]} -gt 0 ]; then
-        command_args+=("${bedrock_args[@]}")
-    fi
+    # Bedrock引数の設定は削除（環境変数で制御するため）
 
     # MCPサービスの起動処理
     local mcp_containers=()
