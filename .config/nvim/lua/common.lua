@@ -1,5 +1,25 @@
 local M = {}
 
+local function is_git_repo()
+    vim.fn.system("git rev-parse --is-inside-work-tree")
+
+    return vim.v.shell_error == 0
+end
+
+local function get_git_root()
+    local dot_git_path = vim.fn.finddir(".git", ".;")
+
+    return vim.fn.fnamemodify(dot_git_path, ":h")
+end
+
+local function getcwd()
+    local cwd = get_git_root()
+    if cwd == '.' then
+        cwd = vim.fn.getcwd()
+    end
+    return vim.fn.fnamemodify(cwd, ":~:.")
+end
+
 -- Functional wrapper for mapping custom keybindings
 M.map = function(mode, lhs, rhs, opts)
     local options = { noremap = true }
@@ -19,9 +39,17 @@ M.buf_map = function(num, mode, lhs, rhs, opts)
     -- vim.api.nvim_buf_set_keymap(num, mode, lhs, rhs, options)
 end
 
+M.is_git_repo = function()
+    return is_git_repo()
+end
+
+M.get_cwd = function()
+    return getcwd()
+end
+
 M.lcd_current_workspace = function()
     if vim.bo.filetype ~= 'fern' and vim.bo.filetype ~= '' then
-        local cwd = require('picker').get_cwd()
+        local cwd = M.get_cwd()
 
         vim.notify("Current workspace: " .. cwd)
 
@@ -52,12 +80,10 @@ local function exec_command_not_floating_window(command)
     end
 end
 
-M.on_attach_lsp = function(_, bufnr, server_name)
+M.on_attach_lsp = function(_, bufnr)
     -- フローティングウィンドウかどうかを判定し、フローティングウィンドウの場合はキーバインドを設定しない
     if M.is_floating_window() then
         return
-    else
-        vim.notify("Load LSP config: " .. server_name)
     end
 
     local wk = require("which-key")
@@ -80,10 +106,6 @@ M.on_attach_lsp = function(_, bufnr, server_name)
             { "K", function() exec_command_not_floating_window('Lspsaga hover_doc') end, desc = "ドキュメントの表示" },
         }
     })
-
-    -- on_attachの利用はdeprecatedとなっているため、lsp.lua側で初期化する
-    -- require("lsp_signature").on_attach({
-    -- }, bufnr)
 end
 
 return M
