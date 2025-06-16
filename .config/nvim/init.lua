@@ -61,7 +61,7 @@ vim.opt.writebackup         = false
 -- vim.opt.updatetime = 300
 vim.g.cursorhold_updatetime = 100
 
-vim.opt.completeopt         = { "menu", "menuone", "noselect" }
+vim.opt.completeopt         = { "fuzzy", "popup", "menuone", "noinsert" }
 
 
 -- lsp.logに記録するログレベルを設定
