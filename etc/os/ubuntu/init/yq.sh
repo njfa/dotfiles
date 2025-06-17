@@ -9,7 +9,28 @@ else
         mkdir -p $HOME/.yq/bin
     fi
 
-    wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O $HOME/.yq/bin/yq
+    # アーキテクチャに応じたバイナリを選択
+    # setup.shから環境変数が設定されている場合はそれを使用
+    if [ -n "$DOTFILES_ARCH_TYPE" ]; then
+        arch_suffix=$DOTFILES_ARCH_TYPE
+    else
+        # フォールバック: 直接アーキテクチャを検出
+        case $(uname -m) in
+            x86_64)
+                arch_suffix="amd64"
+                ;;
+            aarch64|arm64)
+                arch_suffix="arm64"
+                ;;
+            *)
+                echo "Unsupported architecture: $(uname -m)"
+                exit 1
+                ;;
+        esac
+    fi
+
+    echo "Downloading yq for architecture: $arch_suffix"
+    wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${arch_suffix} -O $HOME/.yq/bin/yq
     chmod +x $HOME/.yq/bin/yq
 
     sudo ln -sf ~/.yq/bin/yq /usr/local/bin/yq
