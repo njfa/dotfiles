@@ -189,7 +189,7 @@ deploy() {
         symlink_cmd "$DOTFILES_PATH/$f" "$HOME/$f"
     done
 
-    if [ ! -d "$DOTFILES_PATH/.config/nvim" ]; then
+    if [ -d "$DOTFILES_PATH/.config/nvim" -a ! -e "$HOME/.config/nvim" ]; then
         symlink_cmd $DOTFILES_PATH/.config/nvim $HOME/.config/nvim
     fi
 
