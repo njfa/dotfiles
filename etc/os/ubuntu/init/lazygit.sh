@@ -13,7 +13,22 @@ else
 fi
 
 if [ -n "$LAZYGIT_VERSION" -a "$LAZYGIT_VERSION" != "$LAZYGIT_INSTALLED_VERSION" ]; then
-    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    # CPUアーキテクチャを検出
+    arch=$(uname -m)
+    case "$arch" in
+        x86_64)
+            arch_suffix="linux_x86_64"
+            ;;
+        aarch64|arm64)
+            arch_suffix="linux_arm64"
+            ;;
+        *)
+            echo "Unsupported architecture: $arch"
+            exit 1
+            ;;
+    esac
+
+    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_${arch_suffix}.tar.gz"
     tar xf lazygit.tar.gz lazygit
     sudo install lazygit /usr/local/bin
     rm -rf lazygit lazygit.tar.gz
