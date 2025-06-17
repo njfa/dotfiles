@@ -8,6 +8,29 @@ DOTENV=$DOTFILES_PATH/.env
 
 export $(grep -v '^#' $DOTENV | xargs)
 
+# アーキテクチャ検出
+ARCH=$(uname -m)
+case $ARCH in
+    x86_64)
+        ARCH_TYPE="x64"
+        ARCH_DEB="amd64"
+        ;;
+    aarch64|arm64)
+        ARCH_TYPE="arm64"
+        ARCH_DEB="arm64"
+        ;;
+    armv7l|armhf)
+        ARCH_TYPE="arm"
+        ARCH_DEB="armhf"
+        ;;
+    *)
+        ARCH_TYPE="unknown"
+        ARCH_DEB="unknown"
+        ;;
+esac
+
+echo "Detected architecture: $ARCH_TYPE ($ARCH)"
+
 if [ -f /etc/os-release ]; then
     # freedesktop.org and systemd
     . /etc/os-release
@@ -57,6 +80,7 @@ $$$$$$$/   $$$$$$$/    $$$$/   $$$$$$/  $$$$$$$/
     printf "\033[37;1m
 OS: $OS
 Version: $VER
+Architecture: $ARCH_TYPE
 \033[m\n"
 }
 
@@ -69,15 +93,21 @@ item() {
 }
 
 printcmd() {
-    printf "  \033[34;1m%s\033[m\`%s\`\n" "Execute " "$*"
+    # スクリプト名のみを抽出
+    script_name=$(basename $1 .sh)
+    printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "$script_name"
 }
 
 success() {
-    printf "    \033[32;1m%s\033[m\`%s\` is success \n" "✓ " "$*"
+    # スクリプト名のみを抽出
+    script_name=$(basename $1 .sh)
+    printf "\033[32;1m[✓]\033[m %s completed successfully\n" "$script_name"
 }
 
 failure() {
-    printf "    \033[31;1m%s\033[m\`%s\` is failure \n" "✗ " "$*" 1>&2
+    # スクリプト名のみを抽出
+    script_name=$(basename $1 .sh)
+    printf "\033[31;1m[✗]\033[m %s failed\n" "$script_name" 1>&2
 }
 
 error() {
@@ -89,26 +119,58 @@ get_dotfiles() {
 }
 
 exec_cmd() {
-    printcmd $EXEC_CMD $EXEC_OPTS $1
+    printcmd $1
+
+    # スクリプトの出力を一時ファイルに保存
+    output_file=$(mktemp)
+    error_file=$(mktemp)
+
     (
-        export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs); $EXEC_CMD $EXEC_OPTS $1
-    ) || {
-        failure $EXEC_CMD $EXEC_OPTS $1
+        export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs)
+        # アーキテクチャ情報を環境変数として設定
+        export DOTFILES_ARCH=$ARCH
+        export DOTFILES_ARCH_TYPE=$ARCH_TYPE
+        export DOTFILES_ARCH_DEB=$ARCH_DEB
+        $EXEC_CMD $EXEC_OPTS $1 > "$output_file" 2> "$error_file"
+    )
+    result=$?
+
+    # 出力内容を整形して表示
+    if [ -s "$output_file" ]; then
+        while IFS= read -r line; do
+            printf "  \033[90m│\033[m %s\n" "$line"
+        done < "$output_file"
+    fi
+
+    # エラー出力がある場合は表示
+    if [ -s "$error_file" ]; then
+        while IFS= read -r line; do
+            printf "  \033[31m│\033[m %s\n" "$line" 1>&2
+        done < "$error_file"
+    fi
+
+    # 一時ファイルを削除
+    rm -f "$output_file" "$error_file"
+
+    if [ $result -eq 0 ]; then
+        success $1
+    else
+        failure $1
         sudo apt --fix-broken install -y
         exit 1
-    }
-    success $EXEC_CMD $EXEC_OPTS $1
+    fi
 }
 
 symlink_cmd() {
-    printcmd $SYMLINK_CMD $SYMLINK_OPTS $1 $2
+    # シンボリックリンク作成時は簡潔な表示
+    filename=$(basename $1)
+    printf "  \033[90m│\033[m Linking %s\n" "$filename"
     (
         export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs); $SYMLINK_CMD $SYMLINK_OPTS $1 $2 1>/dev/null
     ) || {
-        failure $SYMLINK_CMD $SYMLINK_OPTS $1 $2
+        printf "  \033[31m│\033[m Failed to link %s\n" "$filename" 1>&2
         exit 1
     }
-    success $SYMLINK_CMD $SYMLINK_OPTS $1 $2
 }
 
 sudo_symlink_cmd() {
@@ -132,9 +194,15 @@ install() {
     for script in $scripts; do
         TARGET_OS_VERSION="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}.sh"
         TARGET_OS="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}.sh"
+        TARGET_OS_ARCH="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}-${ARCH_TYPE}.sh"
+        TARGET_OS_VERSION_ARCH="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}-${ARCH_TYPE}.sh"
 
-        # バージョンが明示されたディレクトリのスクリプトを優先して適用する
-        if [ -f "$TARGET_OS_VERSION" ]; then
+        # アーキテクチャ固有のスクリプトを最優先、次にバージョン固有、最後に汎用スクリプト
+        if [ -f "$TARGET_OS_VERSION_ARCH" ]; then
+            exec_cmd $TARGET_OS_VERSION_ARCH
+        elif [ -f "$TARGET_OS_ARCH" ]; then
+            exec_cmd $TARGET_OS_ARCH
+        elif [ -f "$TARGET_OS_VERSION" ]; then
             exec_cmd $TARGET_OS_VERSION
         elif [ -f "$TARGET_OS" ]; then
             exec_cmd $TARGET_OS
@@ -143,13 +211,32 @@ install() {
 }
 
 initialize() {
-    header "Start initializing dotfiles ..."
+    header "🚀 Starting initialization process..."
+    printf "\033[90m────────────────────────────────────────\033[m\n"
+
+    # ARM64環境で特別な処理が必要な場合の準備
+    if [ "$ARCH_TYPE" = "arm64" ]; then
+        printf "\033[93m⚡ ARM64 architecture detected\033[m\n"
+        # ARM64用のパッケージソースを追加する等の処理
+        export ARCH_TYPE
+        export ARCH_DEB
+    fi
 
     # 必須の依存パッケージをインストール
+    printf "\n\033[36m📦 Installing dependencies...\033[m\n"
     install dependencies
 
     # 指定のパッケージをインストール
-    install ${@:1}
+    if [ $# -gt 0 ]; then
+        printf "\n\033[36m📦 Installing selected packages...\033[m\n"
+        install ${@:1}
+    else
+        printf "\n\033[36m📦 Installing all packages...\033[m\n"
+        install
+    fi
+
+    printf "\n\033[90m────────────────────────────────────────\033[m\n"
+    printf "\033[32m✨ Initialization completed!\033[m\n"
 }
 
 list() {
@@ -179,8 +266,10 @@ list() {
 }
 
 deploy() {
+    header "🔗 Starting dotfiles deployment..."
+    printf "\033[90m────────────────────────────────────────\033[m\n"
 
-    header "Start deploying dotfiles ..."
+    printf "\n\033[36m📁 Creating symbolic links...\033[m\n"
     for f in $(get_dotfiles)
     do
         if [ ! -d $(dirname "$HOME/$f") ]; then
@@ -190,29 +279,49 @@ deploy() {
     done
 
     if [ -d "$DOTFILES_PATH/.config/nvim" -a ! -e "$HOME/.config/nvim" ]; then
+        printf "\n\033[36m📝 Linking Neovim configuration...\033[m\n"
         symlink_cmd $DOTFILES_PATH/.config/nvim $HOME/.config/nvim
     fi
 
     if [ -d "$DOTFILES_PATH/.claude" ]; then
+        printf "\n\033[36m🤖 Copying Claude configuration...\033[m\n"
         if [ ! -d "$HOME/.claude" ]; then
             mkdir -p "$HOME/.claude"
         fi
         for f in $DOTFILES_PATH/.claude/*; do
             cp "$f" "$HOME/.claude/"
+            printf "  \033[90m│\033[m Copied $(basename $f)\n"
         done
     fi
 
+    # Claude Code設定ファイルの初期化
+    printf "\n\033[36m🤖 Initializing Claude Code configuration...\033[m\n"
+    if [ ! -f "$HOME/.claude.json" ]; then
+        printf "  \033[90m│\033[m Creating ~/.claude.json\n"
+        echo '{}' > "$HOME/.claude.json"
+        printf "  \033[90m│\033[m ~/.claude.json created\n"
+    else
+        printf "  \033[90m│\033[m ~/.claude.json already exists\n"
+    fi
+
     if [ -f "$DOTFILES_PATH/wsl.conf" ]; then
+        printf "\n\033[36m🐧 Configuring WSL...\033[m\n"
         if [ ! -z "$(command -v sudo)" ]; then
             sudo cp $DOTFILES_PATH/wsl.conf /etc/wsl.conf
+            printf "  \033[90m│\033[m WSL configuration updated\n"
         elif [ "$UID" -eq 0 ]; then
             cp $DOTFILES_PATH/wsl.conf /etc/wsl.conf
+            printf "  \033[90m│\033[m WSL configuration updated\n"
         fi
     fi
 
-    header "Update git config"
+    printf "\n\033[36m⚙️  Configuring Git...\033[m\n"
     git config --global core.editor "vim"
     git config --global core.autoCRLF false
+    printf "  \033[90m│\033[m Git configuration updated\n"
+
+    printf "\n\033[90m────────────────────────────────────────\033[m\n"
+    printf "\033[32m✨ Deployment completed!\033[m\n"
 }
 
 title
