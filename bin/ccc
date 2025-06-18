@@ -799,13 +799,28 @@ ccc_main() {
         log_info "AWS設定ディレクトリをマウント: $bedrock_config_file -> /home/node/.aws"
     fi
 
+    # 環境変数をcompose.ymlのenvironmentセクションに追加
+    if [ ${#env_vars[@]} -gt 0 ]; then
+        # 各環境変数をYAML形式で追加
+        for env_var in "${env_vars[@]}"; do
+            # KEY=VALUEの形式を分解
+            local key="${env_var%%=*}"
+            local value="${env_var#*=}"
+
+            # yqを使って環境変数を追加
+            if ! yq eval ".services.containered-claude.environment.$key = \"$value\"" -i "$temp_compose_file" 2>/dev/null; then
+                log_error "環境変数の追加に失敗しました: $key=$value"
+                rm -f "$temp_compose_file"
+                return 1
+            fi
+        done
+    fi
+
     # デバッグ用に一時ファイルの内容を表示（quiet=falseの場合）
     if [ "$quiet" = false ]; then
         echo "Modified compose file:"
         cat "$temp_compose_file"
     fi
-
-    # Bedrock引数の設定は削除（環境変数で制御するため）
 
     # MCPサービスの起動処理
     local mcp_containers=()
@@ -1019,11 +1034,11 @@ ccc_main() {
     fi
 
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
-    # 環境変数とコマンド引数の間に -- を追加
+    # 環境変数は既にcompose.ymlに追加済みなので、空文字列を渡す
     if [ ${#command_args[@]} -gt 0 ]; then
-        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "${env_vars[@]}" -- "${command_args[@]}"
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "" -- "${command_args[@]}"
     else
-        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "${env_vars[@]}"
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" ""
     fi
     local exit_code=$?
 
