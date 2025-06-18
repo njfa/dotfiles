@@ -651,15 +651,14 @@ ccc_main() {
 
 
     # 環境変数を準備
+    # env_vars: Dockerデーモンに渡す環境変数
     local env_vars=(
-    "CLAUDE_CREDENTIAL_PATH=$claude_credential_path"
-    "CLAUDE_CONFIG_PATH=$claude_config_path"
-)
+        "CLAUDE_CREDENTIAL_PATH=$claude_credential_path"
+        "CLAUDE_CONFIG_PATH=$claude_config_path"
+    )
 
-    # AWS設定パスが指定されている場合
-    if [ -n "$aws_config_path" ]; then
-        env_vars+=("AWS_CONFIG_PATH=$aws_config_path")
-    fi
+    # container_env_vars: コンテナ内で読み込む環境変数（compose.ymlのenvironmentに追加）
+    local container_env_vars=()
 
     # Bedrock使用時の環境変数設定
     # 優先順位: 環境変数 > AWS config/credential
@@ -667,37 +666,37 @@ ccc_main() {
     # AWS config/credentialファイルの内容より環境変数の値が使用される
     if [ "$use_bedrock" = true ]; then
         # CLAUDE_CODE_USE_BEDROCKを設定
-        env_vars+=("CLAUDE_CODE_USE_BEDROCK=1")
+        container_env_vars+=("CLAUDE_CODE_USE_BEDROCK=1")
 
         # プロファイルが指定されている場合
         if [ -n "$bedrock_profile" ]; then
-            env_vars+=("AWS_PROFILE=$bedrock_profile")
+            container_env_vars+=("AWS_PROFILE=$bedrock_profile")
         fi
 
         # リージョンが指定されている場合
         if [ -n "$bedrock_region" ]; then
-            env_vars+=("AWS_REGION=$bedrock_region")
+            container_env_vars+=("AWS_REGION=$bedrock_region")
         fi
 
         # CA証明書バンドルが指定されている場合
         if [ -n "$bedrock_ca_bundle" ]; then
-            env_vars+=("AWS_CA_BUNDLE=$bedrock_ca_bundle")
+            container_env_vars+=("AWS_CA_BUNDLE=$bedrock_ca_bundle")
         fi
 
         # プロンプトキャッシュ無効化フラグ
         if [ "$bedrock_disable_caching" = true ]; then
-            env_vars+=("DISABLE_PROMPT_CACHING=1")
+            container_env_vars+=("DISABLE_PROMPT_CACHING=1")
         fi
     fi
 
     # モデル指定がある場合
     if [ -n "$model" ]; then
-        env_vars+=("ANTHROPIC_MODEL=$model")
+        container_env_vars+=("ANTHROPIC_MODEL=$model")
     fi
 
     # 高速モデル指定がある場合
     if [ -n "$fast_model" ]; then
-        env_vars+=("ANTHROPIC_SMALL_FAST_MODEL=$fast_model")
+        container_env_vars+=("ANTHROPIC_SMALL_FAST_MODEL=$fast_model")
     fi
 
     # タイムゾーン情報を取得して設定
@@ -799,10 +798,10 @@ ccc_main() {
         log_info "AWS設定ディレクトリをマウント: $bedrock_config_file -> /home/node/.aws"
     fi
 
-    # 環境変数をcompose.ymlのenvironmentセクションに追加
-    if [ ${#env_vars[@]} -gt 0 ]; then
+    # コンテナ内環境変数をcompose.ymlのenvironmentセクションに追加
+    if [ ${#container_env_vars[@]} -gt 0 ]; then
         # 各環境変数をYAML形式で追加
-        for env_var in "${env_vars[@]}"; do
+        for env_var in "${container_env_vars[@]}"; do
             # KEY=VALUEの形式を分解
             local key="${env_var%%=*}"
             local value="${env_var#*=}"
@@ -1034,11 +1033,11 @@ ccc_main() {
     fi
 
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
-    # 環境変数は既にcompose.ymlに追加済みなので、空文字列を渡す
+    # 環境変数とコマンド引数の間に -- を追加
     if [ ${#command_args[@]} -gt 0 ]; then
-        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "" -- "${command_args[@]}"
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "${env_vars[@]}" -- "${command_args[@]}"
     else
-        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" ""
+        run_container "${source_paths[0]}" "$temp_compose_file" "$service" "$remove_orphans" "run" "false" "$show_info" "$show_separator" "$quiet" "$container_user" "$workdir" "" "$docker_log_level" "${env_vars[@]}"
     fi
     local exit_code=$?
 
