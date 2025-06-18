@@ -340,37 +340,6 @@ process_mcp_subcommand() {
     return 0
 }
 
-# Claudeイメージの更新確認関数
-check_claude_update() {
-    log_info "Claudeイメージの更新を確認中..."
-
-    # npmでインストールされたclaude-codeの最新バージョンを取得
-    local latest_version=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
-    if [ -z "$latest_version" ]; then
-        log_error "最新バージョンの取得に失敗しました"
-        return 1
-    fi
-
-    # コンテナ内のclaude-codeバージョンを取得
-    local container_version=""
-    container_version=$(docker run --rm my-claude-code:latest npm list -g @anthropic-ai/claude-code --json 2>/dev/null | jq -r '.dependencies."@anthropic-ai/claude-code".version' 2>/dev/null)
-
-    if [ -z "$container_version" ] || [ "$container_version" = "null" ]; then
-        log_warning "コンテナ内のバージョン情報を取得できませんでした"
-        echo -e "${UPDATE_COLOR}利用可能なアップデート:${NC} 不明 → $latest_version"
-        return 0
-    fi
-
-    # バージョン比較
-    if [ "$container_version" != "$latest_version" ]; then
-        echo -e "${UPDATE_COLOR}利用可能なアップデート:${NC} $container_version → $latest_version"
-        return 0
-    else
-        echo -e "${GREEN}Claudeは最新バージョンです:${NC} $container_version"
-        return 0
-    fi
-}
-
 # Claudeイメージの更新関数
 update_claude_image() {
     local use_cache="$1"
@@ -646,18 +615,6 @@ ccc_main() {
             log_success "設定ファイルを作成しました: $claude_config_path"
     fi
 
-    # 起動時に自動で更新確認（1日以上経過している場合）
-    local update_check_file="$HOME/.claude_update_check"
-    local last_check=0
-    local current_time=$(date +%s)
-    local one_day=$((24 * 60 * 60)) # 1日の秒数
-
-    # 最終確認日時を読み込む
-    if [ -f "$update_check_file" ]; then
-        last_check=$(cat "$update_check_file" 2>/dev/null)
-        # 数字でない場合はデフォルト値を使用
-        if ! [[ "$last_check" =~ ^[0-9]+$ ]]; then
-            last_check=0
     # Bedrock使用時のAWS設定ディレクトリの確認と設定
     if [ "$use_bedrock" = true ]; then
         # bedrock_config_fileが指定されていない場合はデフォルトを設定
@@ -1110,7 +1067,6 @@ ${BOLD}オプション:${NC}
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
     ${GREEN}--separator${NC}                 区切り線の表示を有効化する
-    ${GREEN}--check-update${NC}              Claudeイメージの更新を確認する
     ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する (デフォルトはキャッシュ無効)
     ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
                                              環境が1つのみ定義されている場合は自動的に選択される
