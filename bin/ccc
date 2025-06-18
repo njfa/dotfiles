@@ -186,6 +186,35 @@ print_logo() {
             auth_method="Default Credentials"
         fi
         echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Auth:${NC} $auth_method$(printf '%*s' $((frame_width - 14 - ${#auth_method})) '') ${FRAME_COLOR}│${NC}"
+
+        # AWSリージョンの表示
+        local region_text=""
+        if [ -n "$bedrock_region" ]; then
+            region_text="$bedrock_region"
+        else
+            # AWS設定ファイルまたは環境変数からリージョンを取得
+            local default_region=$(aws configure get region 2>/dev/null || echo "us-east-1")
+            region_text="$default_region (default)"
+        fi
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Region:${NC} $region_text$(printf '%*s' $((frame_width - 16 - ${#region_text})) '') ${FRAME_COLOR}│${NC}"
+
+        # Bedrockモデルの表示（設定されている場合）
+        if [ -n "$model" ]; then
+            echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Bedrock Model:${NC} $model$(printf '%*s' $((frame_width - 18 - ${#model})) '') ${FRAME_COLOR}│${NC}"
+        fi
+
+        # CA証明書バンドルの表示（設定されている場合）
+        if [ -n "$bedrock_ca_bundle" ]; then
+            local ca_bundle_basename=$(format_path "$bedrock_ca_bundle")
+            echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}CA Bundle:${NC} $ca_bundle_basename$(printf '%*s' $((frame_width - 14 - ${#ca_bundle_basename})) '') ${FRAME_COLOR}│${NC}"
+        fi
+
+        # プロンプトキャッシュの状態表示
+        local caching_status="Enabled"
+        if [ "$bedrock_disable_caching" = true ]; then
+            caching_status="Disabled"
+        fi
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Prompt Cache:${NC} $caching_status$(printf '%*s' $((frame_width - 17 - ${#caching_status})) '') ${FRAME_COLOR}│${NC}"
     fi
 
     # マウントパスの表示（存在する場合）
@@ -396,6 +425,7 @@ ccc_main() {
     local mcp_services=() # 起動するMCPサービスのリスト
     local stop_mcp_services=false # MCPサービス停止フラグ
     local container_user="" # コンテナ実行ユーザー
+    local -a persistent_env_vars=() # 永続的に設定する環境変数
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -536,6 +566,16 @@ ccc_main() {
                 quiet=false
                 shift
                 ;;
+            --set-env)
+                # KEY=VALUE形式で環境変数を永続的に設定
+                if [ $# -gt 1 ] && [[ "$2" == *"="* ]]; then
+                    persistent_env_vars+=("$2")
+                    shift 2
+                else
+                    log_error "--set-envにはKEY=VALUE形式の引数が必要です"
+                    return 1
+                fi
+                ;;
             -h | --help)
                 show_ccc_help
                 return 0
@@ -573,6 +613,35 @@ ccc_main() {
             update_claude_image
         fi
         return $?
+    fi
+
+    # 永続的な環境変数の設定が要求された場合
+    if [ ${#persistent_env_vars[@]} -gt 0 ]; then
+        log_info "compose.ymlに環境変数を永続的に設定しています..."
+
+        # compose.ymlの存在確認
+        if [ ! -f "$compose_path" ]; then
+            log_error "指定されたComposeファイル '$compose_path' が見つかりません。"
+            return 1
+        fi
+
+        # 各環境変数を追加
+        for env_var in "${persistent_env_vars[@]}"; do
+            # KEY=VALUEの形式を分解
+            local key="${env_var%%=*}"
+            local value="${env_var#*=}"
+
+            # yqを使って環境変数を追加または更新
+            if ! yq eval ".services.containered-claude.environment.$key = \"$value\"" -i "$compose_path" 2>/dev/null; then
+                log_error "環境変数の永続的な設定に失敗しました: $key=$value"
+                return 1
+            fi
+
+            log_success "環境変数を設定しました: $key=$value"
+        done
+
+        log_info "compose.ymlが更新されました。"
+        return 0
     fi
 
     # source_pathsが空の場合は現在のディレクトリを使用
@@ -1096,6 +1165,7 @@ ${BOLD}オプション:${NC}
     ${GREEN}--mcp SERVICE${NC}               起動するMCPサービスを指定 (複数指定可能)
     ${GREEN}--stop-mcp${NC}                  終了時にMCPサービスも停止する (デフォルトは停止しない)
     ${GREEN}--user USER${NC}                 コンテナ実行時のユーザーを指定 (例: 1000:1000, root)
+    ${GREEN}--set-env KEY=VALUE${NC}         compose.ymlに環境変数を永続的に設定 (複数指定可能)
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
