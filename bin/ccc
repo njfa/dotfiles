@@ -180,10 +180,8 @@ print_logo() {
 
         # AWS認証情報の確認
         local auth_method=""
-        if [ -n "$AWS_ACCESS_KEY_ID" ]; then
-            auth_method="Environment Variables"
-        elif [ -n "$AWS_PROFILE" ]; then
-            auth_method="Profile: $AWS_PROFILE"
+        if [ -n "$bedrock_profile" ]; then
+            auth_method="Profile: $bedrock_profile"
         else
             auth_method="Default Credentials"
         fi
@@ -418,8 +416,13 @@ ccc_main() {
     local use_cache=false # ビルド時のキャッシュ使用フラグ
     local use_bedrock=false # Bedrock使用フラグ
     local bedrock_region="" # Bedrockリージョン
+    local bedrock_profile="" # AWS プロファイル
+    local bedrock_config_file="" # AWS設定ファイルパス
+    local bedrock_ca_bundle="" # AWS CA証明書バンドルパス
+    local bedrock_disable_caching=false # プロンプトキャッシュ無効化フラグ
+    local model="" # Anthropicモデル
+    local fast_model="" # Anthropicの高速な小型モデル
     local docker_log_level="" # Dockerログレベル
-    local aws_config_path="" # AWS設定ディレクトリパス
     local mcp_subcommand_args=() # MCPサブコマンド用引数
     local mcp_services=() # 起動するMCPサービスのリスト
     local stop_mcp_services=false # MCPサービス停止フラグ
@@ -483,8 +486,32 @@ ccc_main() {
                 claude_config_path="$2"
                 shift 2
                 ;;
-            --aws-config-path)
-                aws_config_path="$2"
+            --bedrock-profile)
+                bedrock_profile="$2"
+                shift 2
+                ;;
+            --bedrock-region)
+                bedrock_region="$2"
+                shift 2
+                ;;
+            --bedrock-config-file)
+                bedrock_config_file="$2"
+                shift 2
+                ;;
+            --bedrock-ca-bundle)
+                bedrock_ca_bundle="$2"
+                shift 2
+                ;;
+            --bedrock-disable-caching)
+                bedrock_disable_caching=true
+                shift
+                ;;
+            --model)
+                model="$2"
+                shift 2
+                ;;
+            --fast-model)
+                fast_model="$2"
                 shift 2
                 ;;
             --workdir)
@@ -519,11 +546,6 @@ ccc_main() {
                 use_bedrock=true
                 # --bedrockオプションはccc専用でClaudeコマンドには渡さない
                 shift
-                ;;
-            --bedrock-region)
-                bedrock_region="$2"
-                # リージョンは環境変数AWS_REGIONとして設定される
-                shift 2
                 ;;
             --log-level)
                 docker_log_level="$2"
@@ -589,13 +611,39 @@ ccc_main() {
         source_paths=($(pwd))
     fi
 
-    # 認証情報ディレクトリと設定ファイルの存在確認
+    # 認証情報ディレクトリの存在確認と作成
     if [ ! -d "$claude_credential_path" ]; then
-        log_warning "認証情報ディレクトリ '$claude_credential_path' が見つからない。"
+        log_info "認証情報ディレクトリ '$claude_credential_path' が見つかりません。作成します。"
+        mkdir -p "$claude_credential_path" || {
+            log_error "認証情報ディレクトリの作成に失敗しました: $claude_credential_path"
+                    return 1
+                }
+            log_success "認証情報ディレクトリを作成しました: $claude_credential_path"
     fi
 
+    # 設定ファイルの存在確認と作成
     if [ ! -f "$claude_config_path" ]; then
-        log_warning "設定ファイル '$claude_config_path' が見つからない。"
+        log_info "設定ファイル '$claude_config_path' が見つかりません。作成します。"
+        echo -n "Claude設定ファイルの内容を入力してください (Enterで空のJSONを使用): "
+        read -r config_content < /dev/tty
+
+        # 入力がない場合は空のJSONオブジェクトを使用
+        if [ -z "$config_content" ]; then
+            config_content="{}"
+        fi
+
+        # JSONの妥当性を検証
+        if ! echo "$config_content" | jq . >/dev/null 2>&1; then
+            log_error "入力されたJSONが無効です。空のJSONオブジェクトを使用します。"
+            config_content="{}"
+        fi
+
+        # ファイルに書き込み
+        echo "$config_content" > "$claude_config_path" || {
+            log_error "設定ファイルの作成に失敗しました: $claude_config_path"
+                    return 1
+                }
+            log_success "設定ファイルを作成しました: $claude_config_path"
     fi
 
     # 起動時に自動で更新確認（1日以上経過している場合）
@@ -610,8 +658,40 @@ ccc_main() {
         # 数字でない場合はデフォルト値を使用
         if ! [[ "$last_check" =~ ^[0-9]+$ ]]; then
             last_check=0
+    # Bedrock使用時のAWS設定ディレクトリの確認と設定
+    if [ "$use_bedrock" = true ]; then
+        # bedrock_config_fileが指定されていない場合はデフォルトを設定
+        if [ -z "$bedrock_config_file" ]; then
+            bedrock_config_file="$HOME/.aws"
+        fi
+
+        # AWS設定ディレクトリが存在しない場合はaws configureを実行
+        if [ ! -d "$bedrock_config_file" ]; then
+            log_info "AWS設定ディレクトリ '$bedrock_config_file' が見つかりません。AWS設定を行います。"
+
+            # プロファイルオプションの設定
+            local aws_configure_cmd="aws configure"
+            if [ -n "$bedrock_profile" ]; then
+                aws_configure_cmd="aws configure --profile $bedrock_profile"
+                log_info "プロファイル '$bedrock_profile' で設定を行います。"
+            fi
+
+            # aws configureを実行
+            if ! $aws_configure_cmd; then
+                log_error "AWS設定に失敗しました。"
+                return 1
+            fi
+
+            # ディレクトリが作成されたことを確認
+            if [ ! -d "$bedrock_config_file" ]; then
+                log_error "AWS設定ディレクトリが作成されませんでした: $bedrock_config_file"
+                return 1
+            fi
+
+            log_success "AWS設定が完了しました。"
         fi
     fi
+
 
     # 環境変数を準備
     local env_vars=(
@@ -629,33 +709,38 @@ ccc_main() {
     # AWS SDKは環境変数を優先的に使用するため、環境変数が設定されている場合は
     # AWS config/credentialファイルの内容より環境変数の値が使用される
     if [ "$use_bedrock" = true ]; then
-        # AWS環境変数をコンテナに渡す
-        if [ -n "$AWS_ACCESS_KEY_ID" ]; then
-            env_vars+=("AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID")
-        fi
-        if [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
-            env_vars+=("AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY")
-        fi
-        if [ -n "$AWS_SESSION_TOKEN" ]; then
-            env_vars+=("AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN")
-        fi
-        if [ -n "$AWS_PROFILE" ]; then
-            env_vars+=("AWS_PROFILE=$AWS_PROFILE")
+        # CLAUDE_CODE_USE_BEDROCKを設定
+        env_vars+=("CLAUDE_CODE_USE_BEDROCK=1")
+
+        # プロファイルが指定されている場合
+        if [ -n "$bedrock_profile" ]; then
+            env_vars+=("AWS_PROFILE=$bedrock_profile")
         fi
 
-        # リージョンの設定（指定があればそれを使用、なければ環境変数から、さらになければデフォルト）
+        # リージョンが指定されている場合
         if [ -n "$bedrock_region" ]; then
             env_vars+=("AWS_REGION=$bedrock_region")
-        elif [ -n "$AWS_REGION" ]; then
-            env_vars+=("AWS_REGION=$AWS_REGION")
-        else
-            # デフォルトリージョンとしてus-east-1を設定
-            env_vars+=("AWS_REGION=us-east-1")
-            log_info "AWSリージョンが指定されていないため、デフォルトのus-east-1を使用します"
         fi
 
-        # Bedrockを使用するフラグをコンテナに伝える
-        env_vars+=("USE_BEDROCK=true")
+        # CA証明書バンドルが指定されている場合
+        if [ -n "$bedrock_ca_bundle" ]; then
+            env_vars+=("AWS_CA_BUNDLE=$bedrock_ca_bundle")
+        fi
+
+        # プロンプトキャッシュ無効化フラグ
+        if [ "$bedrock_disable_caching" = true ]; then
+            env_vars+=("DISABLE_PROMPT_CACHING=1")
+        fi
+    fi
+
+    # モデル指定がある場合
+    if [ -n "$model" ]; then
+        env_vars+=("ANTHROPIC_MODEL=$model")
+    fi
+
+    # 高速モデル指定がある場合
+    if [ -n "$fast_model" ]; then
+        env_vars+=("ANTHROPIC_SMALL_FAST_MODEL=$fast_model")
     fi
 
     # タイムゾーン情報を取得して設定
@@ -744,23 +829,17 @@ ccc_main() {
         fi
     fi
 
-    # AWS設定ディレクトリのマウント設定を追加
-    if [ -n "$aws_config_path" ]; then
-        # 指定されたパスの存在確認
-        if [ ! -d "$aws_config_path" ]; then
-            log_error "指定されたAWS設定ディレクトリが存在しません: $aws_config_path"
-            rm -f "$temp_compose_file"
-            return 1
-        fi
-
+    # Bedrock使用時のAWS設定ディレクトリのマウント設定
+    if [ "$use_bedrock" = true ]; then
+        # この時点でbedrock_config_fileは存在が保証されている（前の処理で確認・作成済み）
         # AWS設定ディレクトリをマウント
-        if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$aws_config_path\", \"target\": \"/home/node/.aws\"}]" -i "$temp_compose_file" 2>/dev/null; then
-            log_error "AWS設定ディレクトリのマウント設定の追加に失敗しました: $aws_config_path"
+        if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$bedrock_config_file\", \"target\": \"/home/node/.aws\"}]" -i "$temp_compose_file" 2>/dev/null; then
+            log_error "AWS設定ディレクトリのマウント設定の追加に失敗しました: $bedrock_config_file"
             rm -f "$temp_compose_file"
             return 1
         fi
 
-        log_info "AWS設定ディレクトリをマウント: $aws_config_path -> /home/node/.aws"
+        log_info "AWS設定ディレクトリをマウント: $bedrock_config_file -> /home/node/.aws"
     fi
 
     # デバッグ用に一時ファイルの内容を表示（quiet=falseの場合）
@@ -972,7 +1051,7 @@ ccc_main() {
         echo -ne "\r\033[K"
 
         # ロゴを表示
-        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$aws_config_path" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${source_paths[@]}"
+        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$bedrock_config_file" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${source_paths[@]}"
     fi
 
     if [ ${#mcp_subcommand_args[@]} -gt 0 ]; then
@@ -1027,7 +1106,6 @@ ${BOLD}オプション:${NC}
     ${GREEN}-r, --resume [sessionId]${NC}    特定のセッションを再開する (Claudeに直接渡される)
     ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
     ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
-    ${GREEN}--aws-config-path PATH${NC}      AWS設定ディレクトリのパスを指定 (Bedrock使用時に有効)
     ${GREEN}--no-rm-orphans${NC}             オーファンコンテナの削除を無効化する (デフォルトは削除する)
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
@@ -1037,7 +1115,13 @@ ${BOLD}オプション:${NC}
     ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
                                              環境が1つのみ定義されている場合は自動的に選択される
     ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
-    ${GREEN}--bedrock-region REGION${NC}     Bedrockのリージョンを指定 (デフォルト: AWS_REGIONまたはus-east-1)
+    ${GREEN}--bedrock-profile PROFILE${NC}   AWSプロファイルを指定
+    ${GREEN}--bedrock-region REGION${NC}     AWSリージョンを指定
+    ${GREEN}--bedrock-config-file PATH${NC}  AWS設定ディレクトリを指定 (デフォルト: ~/.aws)
+    ${GREEN}--bedrock-ca-bundle PATH${NC}    AWS CA証明書バンドルを指定
+    ${GREEN}--bedrock-disable-caching${NC}   プロンプトキャッシュを無効化
+    ${GREEN}--model MODEL${NC}               Anthropicモデルを指定
+    ${GREEN}--fast-model MODEL${NC}          Anthropicの高速な小型モデルを指定
     ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
     ${GREEN}--mcp SERVICE${NC}               起動するMCPサービスを指定 (複数指定可能)
     ${GREEN}--stop-mcp${NC}                  終了時にMCPサービスも停止する (デフォルトは停止しない)
