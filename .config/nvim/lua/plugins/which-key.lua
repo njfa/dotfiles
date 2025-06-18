@@ -90,7 +90,7 @@ return {
                                    source = "filesystem",     -- OPTIONAL, this is the default value
                                    position = "left",         -- OPTIONAL, this is the default value
                                    toggle = true,
-                                   dir = require('common').get_cwd(),
+                                   dir = vim.fn.fnamemodify(require('common').get_cwd(), ":p"),
                                    reveal = true, -- path to file or folder to reveal
                                    reveal_force_cwd = false,   -- change cwd without asking if needed
                                })
@@ -379,7 +379,7 @@ return {
                                    source = "filesystem",     -- OPTIONAL, this is the default value
                                    position = "float",         -- OPTIONAL, this is the default value
                                    toggle = true,
-                                   dir = require('common').get_cwd(),
+                                   dir = vim.fn.fnamemodify(require('common').get_cwd(), ":p"),
                                    reveal = true, -- path to file or folder to reveal
                                    reveal_force_cwd = false,   -- change cwd without asking if needed
                                })
