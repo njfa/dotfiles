@@ -38,8 +38,6 @@ else
     vim.notify("jdtls root dir is nil", vim.log.levels.INFO)
 end
 
-
-
 local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
 local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name
 
@@ -78,7 +76,6 @@ end
 
 local path_to_mason_packages = vim.fn.stdpath('data') .. "/mason/packages"
 
-local path_to_openjdk17 = vim.fn.glob(path_to_mason_packages .. "/openjdk-17/jdk-17.*/", true)
 local path_to_openjdk21 = vim.fn.glob(path_to_mason_packages .. "/openjdk-21/jdk-21.*/", true)
 local path_to_jdtls = path_to_mason_packages .. "/jdtls"
 local path_to_jdebug = path_to_mason_packages .. "/java-debug-adapter"
@@ -118,7 +115,7 @@ local on_attach = function(client, bufnr)
     -- jdtls_dap.setup_dap_main_class_configs()
     jdtls_setup.add_commands()
 
-    require('common').on_attach_lsp(client, bufnr, "nvim-jdtls")
+    require('common').on_attach_lsp(client, bufnr)
     local wk = require("which-key")
 
     wk.add({
@@ -145,8 +142,6 @@ local capabilities = {
         }
     }
 }
--- local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
--- local capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
 
 local config = {
     flags = {
@@ -173,6 +168,9 @@ config.cmd = {
     "-data", workspace_dir,
 }
 
+
+config.on_attach = on_attach
+
 config.settings = {
     java = {
         references = {
@@ -184,7 +182,6 @@ config.settings = {
         maven = {
             downloadSources = true,
         },
-        signatureHelp = { enabled = true },
         contentProvider = { preferred = "fernflower" },
         completion = {
             favoriteStaticMembers = {
@@ -228,18 +225,8 @@ config.settings = {
     }
 }
 
-config.on_attach = on_attach
-config.capabilities = capabilities
-config.on_init = function(client, _)
-    client.notify('workspace/didChangeConfiguration', { settings = config.settings })
-end
-
-local extendedClientCapabilities = require('jdtls').extendedClientCapabilities
-extendedClientCapabilities.resolveAdditionalTextEditsSupport = true
-
 config.init_options = {
     bundles = bundles,
-    extendedClientCapabilities = extendedClientCapabilities
 }
 config.root_dir = root_dir
 
