@@ -306,13 +306,13 @@ return {
                 pane_gap = 10,
                 preset = {
                     keys = {
-                        { icon = " ", key = "n", desc = "新しいファイル", action = ":ene | startinsert" },
+                        { icon = " ", key = "c", desc = "新しいファイル", action = ":ene | startinsert" },
                         { icon = " ", key = "f", desc = "ファイル検索", action = ":lua Snacks.dashboard.pick('files', {hidden=true, ignored=true})" },
                         { icon = " ", key = "g", desc = "Grep検索", action = ":lua Snacks.dashboard.pick('live_grep', {hidden=true, ignored=true})" },
-                        { icon = " ", key = "r", desc = "ファイル閲覧履歴", action = ":lua Snacks.dashboard.pick('oldfiles', {hidden=true, ignored=true})" },
+                        { icon = " ", key = "h", desc = "ファイル閲覧履歴", action = ":lua Snacks.dashboard.pick('oldfiles', {hidden=true, ignored=true})" },
                         { icon = " ", key = ".", desc = "設定ファイル", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config'), hidden=true, ignored=true})" },
                         { icon = " ", key = "s", desc = "セッションの再開", section = "session" },
-                        { icon = "󰒲 ", key = "L", desc = "Lazy", action = ":Lazy", enabled = package.loaded.lazy ~= nil },
+                        { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy", enabled = package.loaded.lazy ~= nil },
                         { icon = " ", key = "q", desc = "終了", action = ":qa" },
                     }
                 },
