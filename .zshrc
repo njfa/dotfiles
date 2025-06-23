@@ -260,13 +260,13 @@ add-zsh-hook precmd update_tmux
 
 zle -N fzf-z-search
 zle -N cw
-zle -N fbr
-zle -N fshow
+# zle -N fbr
+# zle -N fshow
 zle -N fssh
 bindkey '^f' fzf-z-search
 # bindkey '^g' cw
-bindkey '^b' fbr
-bindkey '^o' fshow
+# bindkey '^b' fbr
+# bindkey '^o' fshow
 bindkey '^x' fssh
 
 ### Added by Zinit's installer
