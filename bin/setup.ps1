@@ -2,6 +2,22 @@ Param([String]$mode)
 
 $MAJOR_VERSION = (Get-Host).Version.Major
 
+# アーキテクチャ検出
+$cpuInfo = Get-WmiObject Win32_Processor
+$cpuArch = $cpuInfo.Architecture
+# 0=x86, 5=ARM, 9=x64, 12=ARM64
+$is64Bit = [System.Environment]::Is64BitOperatingSystem
+
+switch ($cpuArch) {
+    0 { $ARCH_TYPE = "x86" }
+    5 { $ARCH_TYPE = "arm" }
+    9 { $ARCH_TYPE = "x64" }
+    12 { $ARCH_TYPE = "arm64" }
+    default { $ARCH_TYPE = "unknown" }
+}
+
+Write-Host "Detected architecture: $ARCH_TYPE"
+
 $DOTFILES = "$env:USERPROFILE\.dotfiles"
 $WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
 $WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\
@@ -220,7 +236,7 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     $UTILS = @(
         "aria2"
         "lessmsi"
-        # "vcredist2022"
+        "vcredist2022"
         "dark"
         "7zip"
         "python"
@@ -236,13 +252,13 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
         "fzf" # poshで利用する
         "PSFzf" # poshで利用する
         "posh-git" # poshで利用する
-        "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/oh-my-posh.json" # poshで使用する
         "bat" # poshで利用するツール
         "jq" # poshで利用するツール
         "delta" # poshで利用するツール
     )
 
     scoop install $DEPENDENCIES
+
     scoop bucket add versions
     scoop bucket add extras
     scoop bucket add java
@@ -250,21 +266,14 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     scoop install $UTILS
     scoop install $PACKAGES
 
+    winget install JanDeDobbeleer.OhMyPosh -s winget
+
     # python3
     $PIP3PACKAGES = @(
         "wheel"
         "pip"
-        "pynvim"
     )
     python -m pip install --upgrade $PIP3PACKAGES
-
-    # rust
-    # if (-Not (Get-Command lsd -errorAction SilentlyContinue)) {
-    #     cargo install lsd
-    # }
-    # if (-Not (Get-Command delta -errorAction SilentlyContinue)) {
-    #     cargo install git-delta
-    # }
 
     if (-Not (Test-Path ("$DOTFILES"))) {
         git config --global core.editor "vim"
@@ -312,7 +321,12 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
     if (-Not (Test-Path ("$env:USERPROFILE\bin\unitettc"))) {
         (New-Object System.Net.WebClient).DownloadFile("http://yozvox.web.fc2.com/unitettc.zip", ".\unitettc.zip")
         unzip unitettc.zip -d $env:USERPROFILE\bin
-        Move-Item $env:USERPROFILE\bin\unitettc\unitettc64.exe $env:USERPROFILE\bin
+
+        if ($ARCH_TYPE -eq "arm64" -and (Test-Path "$env:USERPROFILE\bin\unitettc\unitettcARM64.exe")) {
+            Move-Item $env:USERPROFILE\bin\unitettc\unitettcARM64.exe $env:USERPROFILE\bin
+        } else {
+            Move-Item $env:USERPROFILE\bin\unitettc\unitettc64.exe $env:USERPROFILE\bin
+        }
         Remove-Item unitettc.zip
     }
 
@@ -326,7 +340,9 @@ if (($mode -eq "i") -Or ($mode -eq "init")) {
 
     if (-Not (Test-Path ("$env:USERPROFILE\fonts\sarasa-gothic-ttf"))) {
         mkdir $env:USERPROFILE\fonts\sarasa-gothic-ttf
-        Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic\*.ttc | ForEach-Object { unitettc64.exe $_.FullName }
+
+        $unitettcExe = if ($ARCH_TYPE -eq "arm64" -and (Test-Path "$env:USERPROFILE\bin\unitettcARM64.exe")) { "unitettcARM64.exe" } else { "unitettc64.exe" }
+        Get-ChildItem $env:USERPROFILE\fonts\sarasa-gothic\*.ttc | ForEach-Object { & $unitettcExe $_.FullName }
         Move-Item $env:USERPROFILE\fonts\sarasa-gothic\*017.ttf $env:USERPROFILE\fonts\sarasa-gothic-ttf
         Remove-Item $env:USERPROFILE\fonts\sarasa-gothic\*.ttf
     }
