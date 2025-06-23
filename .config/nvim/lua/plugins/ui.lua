@@ -49,6 +49,17 @@ return {
             vim.cmd.highlight({ "SnacksBackdrop", "NONE" })
             vim.cmd.highlight({ "SnacksBackdrop_000000", "NONE" })
 
+            vim.cmd.highlight({ "SnacksNotifierInfo", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierWarn", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierDebug", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierError", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierTrace", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierBorderInfo", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierBorderWarn", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierBorderDebug", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierBorderError", "guibg=#141B2E" })
+            vim.cmd.highlight({ "SnacksNotifierBorderTrace", "guibg=#141B2E" })
+
             vim.cmd.highlight({ "TreesitterContext", "guibg=#202a42" })
 
             vim.cmd.highlight({ "my_markdown_h1", "guifg=#74c7ec, guibg=#2e3d51" })
@@ -404,6 +415,8 @@ return {
             scratch = { enabled = true },
             notifier = {
                 enabled = true,
+                top_down = false, -- place notifications from top to bottom
+                margin = { top = 0, right = 1, bottom = 2 },
                 -- アイコンの横幅を考慮し、スペースを追加
                 style = function(buf, notif, ctx)
                     local title = vim.trim(notif.icon .. " " .. (notif.title or "")) .. " "
