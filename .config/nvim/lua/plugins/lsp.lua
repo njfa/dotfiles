@@ -47,6 +47,12 @@ return {
         end
     },
 
+    {
+        "mfussenegger/nvim-jdtls",
+        ft = { "java" },
+        lazy = false,
+        priority = 999,
+    },
     -- LSPサーバー管理
     {
         "mason-org/mason-lspconfig.nvim",
@@ -67,7 +73,6 @@ return {
                     }
                 }
             },
-            "mfussenegger/nvim-jdtls",
             "neovim/nvim-lspconfig",
         },
         config = function()

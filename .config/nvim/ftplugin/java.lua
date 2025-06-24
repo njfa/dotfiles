@@ -16,10 +16,6 @@ local function get_config_dir()
     end
 end
 
-if require('common').is_floating_window() then
-    return false
-end
-
 local status_ok, jdtls = pcall(require, "jdtls")
 if not status_ok then
     vim.notify("jdtls is not available", vim.log.levels.WARN)
@@ -32,10 +28,8 @@ local home = os.getenv("HOME")
 
 local root_markers = { ".git" }
 local root_dir = jdtls_setup.find_root(root_markers)
-if root_dir then
+if not require('common').is_floating_window() and root_dir then
     vim.notify("jdtls root dir: " .. root_dir, vim.log.levels.INFO)
-else
-    vim.notify("jdtls root dir is nil", vim.log.levels.INFO)
 end
 
 local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
@@ -144,9 +138,8 @@ local capabilities = {
 }
 
 local config = {
-    flags = {
-        allow_incremental_sync = true,
-    }
+    capabilities = capabilities,
+    on_attach = not require('common').is_floating_window() and on_attach or nil
 }
 
 config.cmd = {
@@ -167,9 +160,6 @@ config.cmd = {
     "-configuration", path_to_config,
     "-data", workspace_dir,
 }
-
-
-config.on_attach = on_attach
 
 config.settings = {
     java = {
@@ -225,8 +215,12 @@ config.settings = {
     }
 }
 
+local extendedClientCapabilities = require('jdtls').extendedClientCapabilities
+extendedClientCapabilities.resolveAdditionalTextEditsSupport = true
+
 config.init_options = {
     bundles = bundles,
+    extendedClientCapabilities = extendedClientCapabilities,
 }
 config.root_dir = root_dir
 
