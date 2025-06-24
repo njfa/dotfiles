@@ -10,6 +10,75 @@ local function vscode_mapping(function_native, function_vscode)
     end
 end
 
+local PICKER_LAYOUT_WIDTH_THRESHOLD = 160
+
+local function get_picker_width()
+    return vim.o.columns <= PICKER_LAYOUT_WIDTH_THRESHOLD and vim.api.nvim_win_get_width(0) - 4 or
+        vim.api.nvim_win_get_width(0) * 0.5
+end
+
+local default_layout_le_threshold = {
+    reverse = true,
+    layout = {
+        box = "horizontal",
+        backdrop = false,
+        width = 0,
+        height = 0,
+        border = "none",
+        {
+            box = "vertical",
+            {
+                win = "preview",
+                title = "{preview:Preview}",
+                height = 15,
+                border = "rounded",
+                title_pos = "center",
+            },
+            { win = "list",  title = " Results ", title_pos = "center", border = "rounded" },
+            { win = "input", height = 1,          border = "rounded",   title = "{title} {live} {flags}", title_pos = "center" },
+        },
+    },
+}
+
+local default_layout_gt_threshold = {
+    reverse = true,
+    layout = {
+        box = "horizontal",
+        backdrop = false,
+        width = 0,
+        height = 0,
+        border = "none",
+        {
+            box = "vertical",
+            { win = "list",  title = " Results ", title_pos = "center", border = "rounded" },
+            { win = "input", height = 1,          border = "rounded",   title = "{title} {live} {flags}", title_pos = "center" },
+        },
+        {
+            win = "preview",
+            title = "{preview:Preview}",
+            width = 0.5,
+            border = "rounded",
+            title_pos = "center",
+        },
+    },
+}
+
+local search_layout = {
+    reverse = false,
+    layout = {
+        box = "horizontal",
+        backdrop = false,
+        width = 0,
+        height = 0,
+        border = "none",
+        {
+            box = "vertical",
+            { win = "list",  title = " Results ", title_pos = "center", border = "rounded" },
+            { win = "input", height = 1,          border = "rounded",   title = "{title} {live} {flags}", title_pos = "center" },
+        },
+    },
+}
+
 
 -- UI変更に関連する全般
 return {
@@ -138,7 +207,7 @@ return {
                 enable_git_status = true,
                 enable_diagnostics = true,
                 event_handlers = {
-                    { event = events.FILE_MOVED, handler = on_move },
+                    { event = events.FILE_MOVED,   handler = on_move },
                     { event = events.FILE_RENAMED, handler = on_move },
                 },
                 open_files_do_not_replace_types = { "terminal", "trouble", "qf", "sagafinder" }, -- when opening files, do not use windows containing these filetypes or buftypes
@@ -320,7 +389,7 @@ return {
         opts = {
             bigfile = {
                 enabled = true,
-                notify = true, -- show notification when big file detected
+                notify = true,            -- show notification when big file detected
                 size = 1.5 * 1024 * 1024, -- 1.5MB
             },
             dashboard = {
@@ -371,7 +440,7 @@ return {
             dim = {},
             indent = {
                 enabled = true,
-                animate = {enabled=false},
+                animate = { enabled = false },
                 scope = {
                     enabled = true,
                     underline = false
@@ -388,28 +457,16 @@ return {
             input = { enabled = true },
             picker = {
                 enabled = true,
-                layout = {
-                    reverse = true,
-                    layout = {
-                        box = "horizontal",
-                        backdrop = false,
-                        width = 0,
-                        height = 0,
-                        border = "none",
-                        {
-                            box = "vertical",
-                            {
-                                win = "preview",
-                                title = "{preview:Preview}",
-                                height = 15,
-                                border = "rounded",
-                                title_pos = "center",
-                            },
-                            { win = "list", title = " Results ", title_pos = "center", border = "rounded" },
-                            { win = "input", height = 1, border = "rounded", title = "{title} {live} {flags}", title_pos = "center" },
-                        },
-                    },
-                },
+                layout = function()
+                    if vim.o.columns <= PICKER_LAYOUT_WIDTH_THRESHOLD then
+                        return default_layout_le_threshold
+                    else
+                        return default_layout_gt_threshold
+                    end
+                end,
+                formatters = {
+                    file = { truncate = get_picker_width() }
+                }
             },
             profiler = { enabled = true },
             scratch = { enabled = true },
@@ -429,31 +486,132 @@ return {
             },
             toggle = {
                 wk_desc = {
-                    enabled = " ",
-                    disabled = " ",
+                    enabled = "  ",
+                    disabled = "  ",
                 },
             },
             words = { enabled = true },
             win = { enabled = true },
         },
         keys = {
-            { "<leader>.b",  function() Snacks.scratch() end, desc = "Toggle Scratch Buffer" },
+            { "<leader>.b", function() Snacks.scratch() end, desc = "Toggle Scratch Buffer" },
             { "<leader>.p", function() Snacks.profiler.scratch() end, desc = "Profiler Scratch Bufferを開く" },
-            { "<leader>.s",  function() Snacks.scratch.select() end, desc = "Scratch Bufferの選択" },
+            { "<leader>.s", function() Snacks.scratch.select() end, desc = "Scratch Bufferの選択" },
             { "<leader>.h", function() Snacks.picker.highlights() end, desc = "Highlight一覧" },
 
-            { "<leader>b", function() vscode_mapping(Snacks.picker.buffers(), "workbench.files.action.focusOpenEditorsView") end, desc = "バッファ一覧" },
-            { "<leader>f", function() vscode_mapping(Snacks.picker.files({hidden=true, ignored=true}), "workbench.action.quickOpen") end, desc = "ファイル検索" },
-            { "<leader>g", function() vscode_mapping(Snacks.picker.grep({hidden=true, ignored=true}), "workbench.view.search") end, desc = "Grep検索" },
-            { "<leader>h", function() vscode_mapping(Snacks.picker.recent({hidden=true, ignored=true}), "workbench.action.quickOpen") end, desc = "最近開いたファイル" },
+            {
+                "<leader>b",
+                function()
+                    vscode_mapping(Snacks.picker.buffers(),
+                        "workbench.files.action.focusOpenEditorsView")
+                end,
+                desc = "バッファ一覧"
+            },
+            {
+                "<leader>f",
+                function()
+                    vscode_mapping(
+                        Snacks.picker.files({
+                            hidden = true,
+                            ignored = true,
+                            formatters = {
+                                file = {
+                                    truncate = get_picker_width()
+                                },
+                            },
+                        }),
+                        "workbench.action.quickOpen")
+                end,
+                desc = "ファイル検索"
+            },
+            {
+                "<leader>g",
+                function()
+                    vscode_mapping(Snacks.picker.grep({
+                            hidden = true,
+                            ignored = true,
+                            formatters = {
+                                file = {
+                                    truncate = get_picker_width()
+                                },
+                            },
+                        }),
+                        "workbench.view.search")
+                end,
+                desc = "Grep検索"
+            },
+            {
+                "<leader>h",
+                function()
+                    vscode_mapping(
+                        Snacks.picker.recent({
+                            hidden = true,
+                            ignored = true,
+                            formatters = {
+                                file = {
+                                    truncate = get_picker_width()
+                                },
+                            },
+                        }),
+                        "workbench.action.quickOpen")
+                end,
+                desc = "最近開いたファイル"
+            },
             { "<leader>n", function() Snacks.picker.notifications() end, desc = "Notification履歴検索" },
-            { "<leader>/", function() vscode_mapping(Snacks.picker.lines(), "workbench.action.findInFiles") end, desc = "検索 (バッファ内)" },
-            { "<leader>..", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config"), hidden=true, ignored=true }) end, desc = "設定ファイル一覧" },
-            { "<leader>:", function() vscode_mapping(Snacks.picker.command_history({layout="vscode"}), "workbench.action.showCommands") end, desc = "コマンド履歴" },
+            {
+                "<leader>/",
+                function()
+                    vscode_mapping(Snacks.picker.lines({ layout = search_layout }), "workbench.action.findInFiles")
+                end,
+                desc = "検索 (バッファ内)"
+            },
+            { "<leader>..", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config"), hidden = true, ignored = true }) end, desc = "設定ファイル一覧" },
+            {
+                "<leader>:",
+                function()
+                    vscode_mapping(Snacks.picker.command_history({ layout = "vscode" }),
+                        "workbench.action.showCommands")
+                end,
+                desc = "コマンド履歴"
+            },
 
-            { "<leader><leader>f", function() Snacks.picker.git_files({hidden=true, ignored=true}) end, desc = "Gitファイル検索" },
-            { "<leader><leader>g", function() Snacks.picker.git_grep({hidden=true, ignored=true}) end, desc = "Grep検索" },
-            { "<leader><leader>/", function() Snacks.picker.grep_buffers() end, desc = "検索 (全バッファ内)" },
+            {
+                "<leader><leader>f",
+                function()
+                    Snacks.picker.git_files({
+                        hidden = true,
+                        ignored = true,
+                        formatters = {
+                            file = {
+                                truncate = get_picker_width()
+                            },
+                        },
+                    })
+                end,
+                desc = "Gitファイル検索"
+            },
+            {
+                "<leader><leader>g",
+                function()
+                    Snacks.picker.git_grep({
+                        hidden = true,
+                        ignored = true,
+                        formatters = {
+                            file = {
+                                truncate = get_picker_width()
+                            },
+                        },
+                    })
+                end,
+                desc = "Grep検索"
+            },
+            {
+                "<leader><leader>/",
+                function()
+                    Snacks.picker.grep_buffers({ layout = search_layout })
+                end,
+                desc = "検索 (全バッファ内)"
+            },
 
             { "<leader>s/", function() Snacks.picker.search_history() end, desc = "検索履歴" },
             { "<leader>sa", function() Snacks.picker.autocmds() end, desc = "Autocmd検索" },
@@ -502,10 +660,12 @@ return {
                     -- Create some toggle mappings
                     Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
                     Snacks.toggle.option("wrap", { name = "行折り返し" }):map("<leader>uw")
-                    Snacks.toggle.option("relativenumber", { off = false, on = true, name = "相対行番号表示" }):map("<leader>uL")
+                    Snacks.toggle.option("relativenumber", { off = false, on = true, name = "相対行番号表示" }):map(
+                        "<leader>uL")
                     Snacks.toggle.diagnostics():map("<leader>ud")
                     Snacks.toggle.option("number", { off = false, on = true, name = "行番号表示" }):map("<leader>ul")
-                    Snacks.toggle.option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 }):map("<leader>uc")
+                    Snacks.toggle.option("conceallevel",
+                        { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 }):map("<leader>uc")
                     Snacks.toggle.treesitter():map("<leader>uT")
                     Snacks.toggle.option("background", { off = "light", on = "dark", name = "ダークテーマ" }):map("<leader>ub")
                     Snacks.toggle.inlay_hints():map("<leader>uh")
