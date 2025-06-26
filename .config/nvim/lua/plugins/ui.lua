@@ -13,8 +13,8 @@ end
 local PICKER_LAYOUT_WIDTH_THRESHOLD = 160
 
 local function get_picker_width()
-    return vim.o.columns <= PICKER_LAYOUT_WIDTH_THRESHOLD and vim.api.nvim_win_get_width(0) - 4 or
-        vim.api.nvim_win_get_width(0) * 0.5
+    return vim.o.columns <= PICKER_LAYOUT_WIDTH_THRESHOLD and vim.api.nvim_win_get_width(0) - 5 or
+        vim.api.nvim_win_get_width(0) * 0.5 - 5
 end
 
 local default_layout_le_threshold = {
@@ -494,10 +494,9 @@ return {
             win = { enabled = true },
         },
         keys = {
-            { "<leader>.b", function() Snacks.scratch() end, desc = "Toggle Scratch Buffer" },
-            { "<leader>.p", function() Snacks.profiler.scratch() end, desc = "Profiler Scratch Bufferを開く" },
-            { "<leader>.s", function() Snacks.scratch.select() end, desc = "Scratch Bufferの選択" },
-            { "<leader>.h", function() Snacks.picker.highlights() end, desc = "Highlight一覧" },
+            { "<leader>sm", function() Snacks.scratch() end, desc = "Toggle Scratch Buffer" },
+            { "<leader>sP", function() Snacks.profiler.scratch() end, desc = "Profiler Scratch Bufferを開く" },
+            { "<leader>sM", function() Snacks.scratch.select() end, desc = "Scratch Bufferの選択" },
 
             {
                 "<leader>b",
