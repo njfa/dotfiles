@@ -224,7 +224,7 @@ return {
             },
             snippets = { preset = 'luasnip' },
             signature = {
-                enabled = true,
+                enabled = false,
                 trigger = {
                     show_on_insert = true,
                 },
