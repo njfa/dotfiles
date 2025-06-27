@@ -86,12 +86,12 @@ return {
                             "<leader><leader>e",
                             function()
                                 require('neo-tree.command').execute({
-                                    action = "focus",     -- OPTIONAL, this is the default value
+                                    action = "focus",      -- OPTIONAL, this is the default value
                                     source = "filesystem", -- OPTIONAL, this is the default value
-                                    position = "left",    -- OPTIONAL, this is the default value
+                                    position = "left",     -- OPTIONAL, this is the default value
                                     toggle = true,
                                     dir = vim.fn.fnamemodify(require('common').get_cwd(), ":p"),
-                                    reveal = true,           -- path to file or folder to reveal
+                                    reveal = true,            -- path to file or folder to reveal
                                     reveal_force_cwd = false, -- change cwd without asking if needed
                                 })
                             end,
@@ -387,12 +387,12 @@ return {
                         vscode_mapping(
                             function()
                                 require('neo-tree.command').execute({
-                                    action = "focus",     -- OPTIONAL, this is the default value
+                                    action = "focus",      -- OPTIONAL, this is the default value
                                     source = "filesystem", -- OPTIONAL, this is the default value
-                                    position = "float",   -- OPTIONAL, this is the default value
+                                    position = "float",    -- OPTIONAL, this is the default value
                                     toggle = true,
                                     dir = vim.fn.fnamemodify(require('common').get_cwd(), ":p"),
-                                    reveal = true,           -- path to file or folder to reveal
+                                    reveal = true,            -- path to file or folder to reveal
                                     reveal_force_cwd = false, -- change cwd without asking if needed
                                 })
                             end,
