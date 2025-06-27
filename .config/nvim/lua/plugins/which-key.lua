@@ -70,10 +70,12 @@ return {
 
                     {
                         { "<leader>x",  group = "Trouble" },
-                        { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>",                      desc = "Diagnostics (Trouble)" },
-                        { "<leader>xb", "<cmd>Trouble diagnostics filter.buf=0 toggle<cr>",         desc = "Buffer Diagnostics (Trouble)" },
-                        { "<leader>xs", "<cmd>Trouble symbols focus=false win.position=bottom<cr>", desc = "Symbols (Trouble)" },
-                        { "<leader>xl", "<cmd>Trouble lsp focus=false win.position=bottom<cr>",      desc = "LSP Definitions / references / ... (Trouble)" },
+                        { "<leader>xx", "<cmd>Trouble diagnostics toggle focus=true<cr>",                  desc = "Diagnostics (Trouble)" },
+                        { "<leader>xb", "<cmd>Trouble diagnostics toggle focus=true filter.buf=0<cr>",     desc = "Buffer Diagnostics (Trouble)" },
+                        { "<leader>xs", "<cmd>Trouble symbols toggle focus=false win.position=bottom<cr>", desc = "Symbols (Trouble)" },
+                        { "<leader>xl", "<cmd>Trouble lsp toggle focus=false<cr>",       desc = "LSP Definitions / references / ... (Trouble)" },
+                        { "<leader>xq", "<cmd>Trouble qflist toggle<cr>",                                  desc = "Quickfix List (Trouble)" },
+                        { "<leader>xL", "<cmd>Trouble loclist toggle<cr>",                                 desc = "Location List (Trouble)" },
                     },
 
                     {
