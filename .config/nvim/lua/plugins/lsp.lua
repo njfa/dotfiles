@@ -160,7 +160,52 @@ return {
     {
         "folke/trouble.nvim",
         cond = not vscode_enabled,
-        opts = {}, -- for default options, refer to the configuration section for custom setup.
+        opts = {
+            modes = {
+                lsp = {
+                    mode = "lsp",
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
+                lsp_references = {
+                    mode = "lsp_references",
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
+                lsp_incoming_calls = {
+                    mode = "lsp_incoming_calls",
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
+                lsp_outgoing_calls = {
+                    mode = "lsp_outgoing_calls",
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
+                lsp_definitions = {
+                    mode = "lsp_definitions",
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
+                lsp_type_definitions = {
+                    mode = "lsp_type_definitions",
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
+            },
+        }, -- for default options, refer to the configuration section for custom setup.
         cmd = "Trouble",
         keys = {},
     },
