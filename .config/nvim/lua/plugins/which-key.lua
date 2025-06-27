@@ -53,6 +53,10 @@ return {
                 },
                 {
                     mode = { "n" },
+                    { "K", function() vim.lsp.buf.hover({ anchor_bias = 'above' }) end, desc = "ドキュメントを表示する" },
+                    { "gd", "<cmd>Trouble lsp_definitions<cr>", desc = "定義の表示" },
+                    { "gi", "<cmd>Trouble lsp_implementations<cr>", desc = "実装箇所の検索" },
+                    { "gt", "<cmd>Trouble lsp_type_definitions<cr>", desc = "タイプ定義の表示" },
                     { "<leader>i", "<cmd>Neotree buffers float reveal<CR>", desc = "バッファ一覧を開く (floating window)" },
                     { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
                     --            { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
@@ -169,6 +173,7 @@ return {
 
                 {
                     mode = { "i", "s" },
+                    { "<C-s>", function() vim.lsp.buf.signature_help({ anchor_bias = 'above' }) end, desc = "ドキュメントを表示する" },
                     { "<C-j>", function() require('luasnip').jump(1) end, desc = "次の要素へ移動" },
                     { "<C-k>", function() require('luasnip').jump(-1) end, desc = "前の要素へ移動" },
                     {
