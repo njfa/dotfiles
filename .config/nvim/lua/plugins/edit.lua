@@ -147,7 +147,10 @@ return {
     {
         "iamcco/markdown-preview.nvim",
         ft = { "markdown", "plantuml" },
-        build = "cd app && npm install",
+        build = function(plugin)
+            vim.opt.rtp:append(plugin.dir)
+            vim.fn["mkdp#util#install"]()
+        end,
         cond = not vscode_enabled,
         init = function()
             vim.g.mkdp_filetypes = { "markdown", "plantuml" }
