@@ -807,22 +807,29 @@ ccc_main() {
 
     # ソースパスが指定されている場合、マウント設定を追加
     if [ "$source_path_specified" = true ]; then
-        # 各ソースパスの存在確認
+        # 各ソースパスの存在確認と正規化
+        local normalized_paths=()
         for src_path in "${source_paths[@]}"; do
-            if [ ! -d "$src_path" ]; then
+            # パスを絶対パスに正規化
+            local abs_path=$(realpath "$src_path" 2>/dev/null)
+            if [ -z "$abs_path" ] || [ ! -d "$abs_path" ]; then
                 log_error "指定されたソースパス '$src_path' が存在しないか、ディレクトリではありません。"
                 rm -f "$temp_compose_file"
                 return 1
             fi
+            normalized_paths+=("$abs_path")
         done
+        # 正規化されたパスを使用
+        source_paths=("${normalized_paths[@]}")
 
         # 既に使用されているマウント先ディレクトリ名を追跡
         declare -A target_dirs
 
         # ソースパスが1つの場合は直接 /workspace/ にマウント
         if [ ${#source_paths[@]} -eq 1 ]; then
-            if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"${source_paths[0]}\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file" 2>/dev/null; then
-                log_error "マウント設定の追加に失敗しました: ${source_paths[0]}"
+            local src_path="${source_paths[0]}"
+            if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                log_error "マウント設定の追加に失敗しました: $src_path"
                 rm -f "$temp_compose_file"
                 return 1
             fi
