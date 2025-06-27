@@ -634,11 +634,6 @@ return {
             { "<leader>D", function() vscode_mapping(Snacks.bufdelete.other(), "workbench.action.closeActiveEditor") end, desc = "他のバッファを全て閉じる" },
 
             -- LSP
-            { "gd", function() Snacks.picker.lsp_definitions() end, desc = "Goto Definition" },
-            { "gD", function() Snacks.picker.lsp_declarations() end, desc = "Goto Declaration" },
-            { "gr", function() Snacks.picker.lsp_references() end, nowait = true, desc = "References" },
-            { "gi", function() Snacks.picker.lsp_implementations() end, desc = "Goto Implementation" },
-            { "gy", function() Snacks.picker.lsp_type_definitions() end, desc = "Goto T[y]pe Definition" },
             { "<leader>ss", function() Snacks.picker.lsp_symbols() end, desc = "LSP Symbols" },
             { "<leader>sS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "LSP Workspace Symbols" },
         },
@@ -677,4 +672,18 @@ return {
             })
         end,
     },
+    {
+        'Bekaboo/dropbar.nvim',
+        -- optional, but required for fuzzy finder support
+        dependencies = {
+            'nvim-telescope/telescope-fzf-native.nvim',
+            build = 'make'
+        },
+        config = function()
+            local dropbar_api = require('dropbar.api')
+            vim.keymap.set('n', '<Leader>z', dropbar_api.pick, { desc = 'Pick symbols in winbar' })
+            vim.keymap.set('n', '[[', dropbar_api.goto_context_start, { desc = 'Go to start of current context' })
+            vim.keymap.set('n', ']]', dropbar_api.select_next_context, { desc = 'Select next context' })
+        end
+    }
 }

@@ -162,43 +162,31 @@ return {
         cond = not vscode_enabled,
         opts = {
             modes = {
+                lsp_references = {
+                    -- some modes are configurable, see the source code for more details
+                    params = {
+                        include_declaration = true,
+                    },
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
+                -- The LSP base mode for:
+                -- * lsp_definitions, lsp_references, lsp_implementations
+                -- * lsp_type_definitions, lsp_declarations, lsp_command
+                lsp_base = {
+                    params = {
+                        -- don't include the current location in the results
+                        include_current = false,
+                    },
+                    win = {
+                        position = "right",
+                        size = 0.3,
+                    }
+                },
                 lsp = {
                     mode = "lsp",
-                    win = {
-                        position = "right",
-                        size = 0.3,
-                    }
-                },
-                lsp_references = {
-                    mode = "lsp_references",
-                    win = {
-                        position = "right",
-                        size = 0.3,
-                    }
-                },
-                lsp_incoming_calls = {
-                    mode = "lsp_incoming_calls",
-                    win = {
-                        position = "right",
-                        size = 0.3,
-                    }
-                },
-                lsp_outgoing_calls = {
-                    mode = "lsp_outgoing_calls",
-                    win = {
-                        position = "right",
-                        size = 0.3,
-                    }
-                },
-                lsp_definitions = {
-                    mode = "lsp_definitions",
-                    win = {
-                        position = "right",
-                        size = 0.3,
-                    }
-                },
-                lsp_type_definitions = {
-                    mode = "lsp_type_definitions",
                     win = {
                         position = "right",
                         size = 0.3,
@@ -209,65 +197,65 @@ return {
         cmd = "Trouble",
         keys = {},
     },
-    {
-        "nvimdev/lspsaga.nvim",
-        dependencies = {
-            "neovim/nvim-lspconfig",
-        },
-        config = function()
-            require("lspsaga").setup({
-                code_action = {
-                    keys = {
-                        quit = { "<esc>", "q" },
-                    },
-                },
-                finder = {
-                    max_height = 0.6,
-                    keys = {
-                        edit = "o",
-                        vsplit = "e",
-                        toggle_or_open = "<cr>",
-                        shuttle = "<C-w>",
-                    },
-                    methods = {
-                        tyd = "textDocument/typeDefinition",
-                    },
-                    default = "def+ref+imp+tyd",
-                },
-                callhierarchy = {
-                    keys = {
-                        edit = "o",
-                        vsplit = "e",
-                        toggle_or_open = "<cr>",
-                        shuttle = "<C-w>",
-                    },
-                },
-                hover = {
-                    open_cmd = "!browser.sh",
-                },
-                lightbulb = {
-                    enable = true,
-                    sign = false,
-                    virtual_text = false,
-                    enable_in_insert = false,
-                },
-                outline = {
-                    auto_preview = false,
-                    auto_close = true,
-                    detail = true,
-                    -- layout = 'float',
-                    win_position = "right",
-                    win_width = 45,
-                    keys = {
-                        jump = "<cr>",
-                    },
-                },
-                rename = {
-                    keys = {
-                        quit = "<esc>",
-                    },
-                },
-            })
-        end,
-    },
+    -- {
+    --     "nvimdev/lspsaga.nvim",
+    --     dependencies = {
+    --         "neovim/nvim-lspconfig",
+    --     },
+    --     config = function()
+    --         require("lspsaga").setup({
+    --             code_action = {
+    --                 keys = {
+    --                     quit = { "<esc>", "q" },
+    --                 },
+    --             },
+    --             finder = {
+    --                 max_height = 0.6,
+    --                 keys = {
+    --                     edit = "o",
+    --                     vsplit = "e",
+    --                     toggle_or_open = "<cr>",
+    --                     shuttle = "<C-w>",
+    --                 },
+    --                 methods = {
+    --                     tyd = "textDocument/typeDefinition",
+    --                 },
+    --                 default = "def+ref+imp+tyd",
+    --             },
+    --             callhierarchy = {
+    --                 keys = {
+    --                     edit = "o",
+    --                     vsplit = "e",
+    --                     toggle_or_open = "<cr>",
+    --                     shuttle = "<C-w>",
+    --                 },
+    --             },
+    --             hover = {
+    --                 open_cmd = "!browser.sh",
+    --             },
+    --             lightbulb = {
+    --                 enable = true,
+    --                 sign = false,
+    --                 virtual_text = false,
+    --                 enable_in_insert = false,
+    --             },
+    --             outline = {
+    --                 auto_preview = false,
+    --                 auto_close = true,
+    --                 detail = true,
+    --                 -- layout = 'float',
+    --                 win_position = "right",
+    --                 win_width = 45,
+    --                 keys = {
+    --                     jump = "<cr>",
+    --                 },
+    --             },
+    --             rename = {
+    --                 keys = {
+    --                     quit = "<esc>",
+    --                 },
+    --             },
+    --         })
+    --     end,
+    -- },
 }

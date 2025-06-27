@@ -4,6 +4,8 @@ else
     vim.opt_local.expandtab = false
 end
 
+vim.g.java_ignore_markdown = 1
+
 local function get_config_dir()
     -- Unlike some other programming languages (e.g. JavaScript)
     -- lua considers 0 truthy!
