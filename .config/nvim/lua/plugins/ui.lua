@@ -566,7 +566,7 @@ return {
             },
             { "<leader>..", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config"), hidden = true, ignored = true }) end, desc = "設定ファイル一覧" },
             {
-                "<leader>:",
+                "<leader>a",
                 function()
                     vscode_mapping(Snacks.picker.command_history({ layout = "vscode" }),
                         "workbench.action.showCommands")
@@ -617,14 +617,13 @@ return {
             { "<leader>sc", function() Snacks.picker.commands() end, desc = "コマンド検索" },
             { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics検索" },
             { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Diagnostics検索 (バッファ内)" },
-            { "<leader>sh", function() Snacks.picker.help() end, desc = "ヘルプ検索" },
+            { "<leader>shh", function() Snacks.picker.help() end, desc = "ヘルプ検索" },
             { "<leader>sH", function() Snacks.picker.highlights() end, desc = "Highlight検索" },
             { "<leader>si", function() Snacks.picker.icons() end, desc = "アイコン検索" },
             { "<leader>sj", function() Snacks.picker.jumps() end, desc = "ジャンプ先検索" },
             { "<leader>sk", function() Snacks.picker.keymaps() end, desc = "キーマップ検索" },
             { "<leader>sl", function() Snacks.picker.loclist() end, desc = "Location List検索" },
-            { "<leader>sm", function() Snacks.picker.marks() end, desc = "Mark検索" },
-            { "<leader>sM", function() Snacks.picker.man() end, desc = "マニュアル検索" },
+            { "<leader>shm", function() Snacks.picker.man() end, desc = "マニュアル検索" },
             { "<leader>sp", function() Snacks.picker.lazy() end, desc = "プラグイン検索" },
             { "<leader>sq", function() Snacks.picker.qflist() end, desc = "Quickfix List検索" },
             { "<leader>sR", function() Snacks.picker.resume() end, desc = "最後に使用したPickerを呼び出し" },
