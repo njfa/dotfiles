@@ -416,6 +416,9 @@ return {
                         cmd = "echo",
                         height = 8,
                         padding = 0,
+                        enabled = function()
+                            return vim.o.columns >= 170
+                        end,
                     },
                     { icon = " ", title = "ショートカット", section = "keys", indent = 2, gap = 0, padding = 1 },
                     { icon = " ", title = "最近開いたファイル", section = "recent_files", indent = 2, padding = 1 },
