@@ -284,12 +284,18 @@ deploy() {
     fi
 
     if [ -d "$DOTFILES_PATH/.claude" ]; then
-        printf "\n\033[36m🤖 Copying Claude configuration...\033[m\n"
+        printf "\n\033[36m🤖 Setting up Claude configuration...\033[m\n"
         if [ ! -d "$HOME/.claude" ]; then
             mkdir -p "$HOME/.claude"
         fi
         for f in $DOTFILES_PATH/.claude/*; do
-            cp "$f" "$HOME/.claude/"
+            if [ -d "$f" ]; then
+                # ディレクトリの場合はコピーを作成
+                cp -rf "$f" "$HOME/.claude/$(basename $f)"
+            else
+                # ファイルの場合はコピー
+                cp "$f" "$HOME/.claude/"
+            fi
             printf "  \033[90m│\033[m Copied $(basename $f)\n"
         done
     fi
