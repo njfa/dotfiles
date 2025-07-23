@@ -5,8 +5,8 @@ EXEPATH=$(which.exe code.exe 2>/dev/null)
 
 # EXEPATHが見つからない場合のエラーハンドリング
 if [ -z "$EXEPATH" ]; then
-  echo "Error: code.exe not found in PATH" >&2
-  exit 1
+    echo "Error: code.exe not found in PATH" >&2
+    exit 1
 fi
 
 # VSCodeの実行パスを設定
