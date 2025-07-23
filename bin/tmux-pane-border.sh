@@ -12,22 +12,22 @@ git_info() {
     cd $1
     local current_path="$1"
     local git_info
-    local ref=`command git symbolic-ref --short HEAD 2>/dev/null`
+    local ref=$(command git symbolic-ref --short HEAD 2>/dev/null)
     if [ -z "$ref" ]; then
-        ref=`command git show-ref --head -s --abbrev 2>/dev/null | head -n1 2>/dev/null`
+        ref=$(command git show-ref --head -s --abbrev 2>/dev/null | head -n1 2>/dev/null)
     fi
 
     if [ ! -z "$ref" ]; then
-        local git_toplevel=`command git rev-parse --show-toplevel 2>/dev/null`
-        local git_status=`command git status --branch --porcelain 2>/dev/null`
+        local git_toplevel=$(command git rev-parse --show-toplevel 2>/dev/null)
+        local git_status=$(command git status --branch --porcelain 2>/dev/null)
         local git_info="#[bg=#363a43,fg=colour255] $ref"
-        local ref_list=`command git rev-list --left-right '@{upstream}...HEAD' 2>/dev/null`
-        local num_ahead=`echo -e "$ref_list" | grep "^>" | wc -l`
-        local num_behind=`echo -e "$ref_list" | grep "^<" | wc -l`
-        local is_modified=`echo -e "$git_status" | grep -E '^[ MARC]M'`
-        local is_staged=`echo -e "$git_status" | grep -E '^[MARC]'`
-        local is_untracked=`echo -e "$git_status" | grep -E '^\?'`
-        local git_relative_path=`realpath --relative-to="$git_toplevel" "$current_path"`
+        local ref_list=$(command git rev-list --left-right '@{upstream}...HEAD' 2>/dev/null)
+        local num_ahead=$(echo -e "$ref_list" | grep "^>" | wc -l)
+        local num_behind=$(echo -e "$ref_list" | grep "^<" | wc -l)
+        local is_modified=$(echo -e "$git_status" | grep -E '^[ MARC]M')
+        local is_staged=$(echo -e "$git_status" | grep -E '^[MARC]')
+        local is_untracked=$(echo -e "$git_status" | grep -E '^\?')
+        local git_relative_path=$(realpath --relative-to="$git_toplevel" "$current_path")
 
         local flags
         if [ ! -z "$is_modified" ]; then
@@ -66,8 +66,11 @@ git_info() {
 
 if [[ $2 = "ssh" ]]; then
     pane_pid=$3
-    info=$({ pgrep -flaP $pane_pid ; ps -o command -p $pane_pid; } | xargs -I{} echo {} | awk '/ssh/' | sed -E 's/^[0-9]*[[:blank:]]*ssh //')
-    port=$(echo $info | grep -Eo '\-p ([0-9]+)'|sed 's/-p //')
+    info=$({
+        pgrep -flaP $pane_pid
+        ps -o command -p $pane_pid
+    } | xargs -I{} echo {} | awk '/ssh/' | sed -E 's/^[0-9]*[[:blank:]]*ssh //')
+    port=$(echo $info | grep -Eo '\-p ([0-9]+)' | sed 's/-p //')
     if [ -z $port ]; then
         local port=22
     fi
@@ -77,7 +80,8 @@ if [[ $2 = "ssh" ]]; then
 
     if [ $user = $host ]; then
         user=$(whoami)
-        list=$(awk '
+        list=$(
+            awk '
         $1 == "Host" {
             gsub("\\\\.", "\\\\.", $2);
             gsub("\\\\*", ".*", $2);
@@ -91,11 +95,11 @@ if [[ $2 = "ssh" ]]; then
         }' ~/.ssh/config
         )
         echo $list | while read line; do
-        host_user=${line#*|}
-        if [[ "$host" =~ $line ]]; then
-            user=$host_user
-            break
-        fi
+            host_user=${line#*|}
+            if [[ "$host" =~ $line ]]; then
+                user=$host_user
+                break
+            fi
         done
     fi
     ssh_hostname=" ssh:$user@$host "

@@ -15,7 +15,7 @@ INPUT=$(cat)
 TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path')
 if [ -f "$TRANSCRIPT_PATH" ]; then
     # 最後のアシスタントメッセージを一時変数に格納
-    LAST_MESSAGES=$(tail -n 100 "$TRANSCRIPT_PATH" | \
+    LAST_MESSAGES=$(tail -n 100 "$TRANSCRIPT_PATH" |
         jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "text") | .text' 2>/dev/null | tail -n 1)
     # メッセージが存在し、かつPRINCIPLES_DISPLAYEDが含まれているかチェック
     if [ -n "$LAST_MESSAGES" ] && echo "$LAST_MESSAGES" | grep -q "PRINCIPLES_DISPLAYED"; then
@@ -24,7 +24,8 @@ if [ -f "$TRANSCRIPT_PATH" ]; then
 fi
 
 # 5原則を表示
-PRINCIPLES=$(cat << 'EOF'
+PRINCIPLES=$(
+    cat <<'EOF'
 ## AI運用5原則
 第1原則： AIはファイル生成・更新・プログラム実行前に必ず自身の作業計画を報告し、y/nでユーザー確認を取り、yが返るまで一切の実行を停止する。
 第2原則： AIは迂回や別アプローチを勝手に行わず、最初の計画が失敗したら次の計画の確認を取る。
@@ -37,7 +38,7 @@ EOF
 )
 
 ESCAPED_PRINCIPLES=$(echo "$PRINCIPLES" | jq -Rs .)
-cat << EOF
+cat <<EOF
 {
   "decision": "block",
   "reason": $ESCAPED_PRINCIPLES

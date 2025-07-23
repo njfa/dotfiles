@@ -58,14 +58,14 @@ run_container() {
     local compose_path="$2"
     local service="$3"
     local remove_orphans="$4"
-    local cmd_mode="$5"  # "run" または "up"
-    local detached="$6"  # up実行時: trueなら-d付き、falseなら-dなし
-    local show_info="$7" # 設定情報表示: trueなら表示、falseなら非表示
-    local show_separator="$8" # セパレータ表示: trueなら表示、falseなら非表示
-    local quiet="$9"     # 静かモード: trueなら出力を最小限に
-    local user="${10}"   # ユーザー指定 (-u/--user)
-    local workdir="${11}" # 作業ディレクトリ (--workdir)
-    local entrypoint="${12}" # エントリーポイント (--entrypoint)
+    local cmd_mode="$5"            # "run" または "up"
+    local detached="$6"            # up実行時: trueなら-d付き、falseなら-dなし
+    local show_info="$7"           # 設定情報表示: trueなら表示、falseなら非表示
+    local show_separator="$8"      # セパレータ表示: trueなら表示、falseなら非表示
+    local quiet="$9"               # 静かモード: trueなら出力を最小限に
+    local user="${10}"             # ユーザー指定 (-u/--user)
+    local workdir="${11}"          # 作業ディレクトリ (--workdir)
+    local entrypoint="${12}"       # エントリーポイント (--entrypoint)
     local docker_log_level="${13}" # Dockerログレベル
 
     # 環境変数と最後のコマンド引数を分離して処理
@@ -76,7 +76,7 @@ run_container() {
 
     # 14番目以降の引数を処理
     if [ ${#@} -ge 14 ]; then
-        shift 13  # 最初の13の引数をスキップ
+        shift 13 # 最初の13の引数をスキップ
 
         # -- が見つかるまで環境変数として処理し、-- 以降はコマンド引数として処理
         while [[ $# -gt 0 ]]; do
@@ -242,13 +242,13 @@ run_container() {
         # runモードでの実行
         if [ ${#command_args[@]} -gt 0 ]; then
             if [ "$quiet" = true ]; then
-                $docker_cmd compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}" 2>"$temp_error_file"
             else
                 $docker_cmd compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service" "${command_args[@]}"
             fi
         else
             if [ "$quiet" = true ]; then
-                $docker_cmd compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" run --rm $quiet_option $orphan_option $user_option $workdir_option $entrypoint_option "$service" 2>"$temp_error_file"
             else
                 $docker_cmd compose -f "$compose_path" run --rm $orphan_option $user_option $workdir_option $entrypoint_option "$service"
             fi
@@ -257,13 +257,13 @@ run_container() {
         # upモードでの実行
         if [ "$detached" = true ]; then
             if [ "$quiet" = true ]; then
-                $docker_cmd compose -f "$compose_path" up -d $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" up -d $quiet_option $orphan_option "$service" 2>"$temp_error_file"
             else
                 $docker_cmd compose -f "$compose_path" up -d $orphan_option "$service"
             fi
         else
             if [ "$quiet" = true ]; then
-                $docker_cmd compose -f "$compose_path" up $quiet_option $orphan_option "$service" 2> "$temp_error_file"
+                $docker_cmd compose -f "$compose_path" up $quiet_option $orphan_option "$service" 2>"$temp_error_file"
             else
                 $docker_cmd compose -f "$compose_path" up $orphan_option "$service"
             fi
@@ -324,78 +324,78 @@ cr_main() {
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -s | --source-path)
-                source_path="$2"
-                shift 2
-                ;;
-            -c | --compose-path)
-                compose_path="$2"
-                shift 2
-                ;;
-            -S | --service)
-                service="$2"
-                shift 2
-                ;;
-            -e | --env)
-                env_vars+=("$2")
-                shift 2
-                ;;
-            -u | --user)
-                user="$2"
-                shift 2
-                ;;
-            --workdir)
-                workdir="$2"
-                shift 2
-                ;;
-            --entrypoint)
-                entrypoint="$2"
-                shift 2
-                ;;
-            --keep-orphans)
-                remove_orphans=false
-                shift
-                ;;
-            --up)
-                cmd_mode="up"
-                shift
-                ;;
-            --no-detach)
-                detached=false
-                shift
-                ;;
-            --no-info)
-                show_info=false
-                shift
-                ;;
-            --no-separator)
-                show_separator=false
-                shift
-                ;;
-            --log-level)
-                docker_log_level="$2"
-                shift 2
-                ;;
-            -v | --verbose)
-                quiet=false
-                shift
-                ;;
-            -h | --help)
-                show_cr_help
-                return 0
-                ;;
-            --)
-                has_double_dash=true
-                shift
-                # 残りの全ての引数をコマンド引数として扱う
-                command_args=("$@")
-                break
-                ;;
-            *)
-                log_error "不明なオプション: $1"
-                show_cr_help
-                return 1
-                ;;
+        -s | --source-path)
+            source_path="$2"
+            shift 2
+            ;;
+        -c | --compose-path)
+            compose_path="$2"
+            shift 2
+            ;;
+        -S | --service)
+            service="$2"
+            shift 2
+            ;;
+        -e | --env)
+            env_vars+=("$2")
+            shift 2
+            ;;
+        -u | --user)
+            user="$2"
+            shift 2
+            ;;
+        --workdir)
+            workdir="$2"
+            shift 2
+            ;;
+        --entrypoint)
+            entrypoint="$2"
+            shift 2
+            ;;
+        --keep-orphans)
+            remove_orphans=false
+            shift
+            ;;
+        --up)
+            cmd_mode="up"
+            shift
+            ;;
+        --no-detach)
+            detached=false
+            shift
+            ;;
+        --no-info)
+            show_info=false
+            shift
+            ;;
+        --no-separator)
+            show_separator=false
+            shift
+            ;;
+        --log-level)
+            docker_log_level="$2"
+            shift 2
+            ;;
+        -v | --verbose)
+            quiet=false
+            shift
+            ;;
+        -h | --help)
+            show_cr_help
+            return 0
+            ;;
+        --)
+            has_double_dash=true
+            shift
+            # 残りの全ての引数をコマンド引数として扱う
+            command_args=("$@")
+            break
+            ;;
+        *)
+            log_error "不明なオプション: $1"
+            show_cr_help
+            return 1
+            ;;
         esac
     done
 

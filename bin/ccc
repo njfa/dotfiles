@@ -105,7 +105,7 @@ print_logo() {
     create_horizontal_line() {
         local char="$1"
         local line=""
-        for ((i=0; i<frame_width; i++)); do
+        for ((i = 0; i < frame_width; i++)); do
             line="${line}${char}"
         done
         echo "$line"
@@ -138,9 +138,9 @@ print_logo() {
     local version_display_length
     if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
         if [ "$claude_version" = "$latest_version" ]; then
-            version_display_length=$((${#claude_version} + 2))  # スペース + ✓
+            version_display_length=$((${#claude_version} + 2)) # スペース + ✓
         else
-            version_display_length=$((${#claude_version} + 11 + ${#latest_version}))  # " (latest: " + latest_version + ")"
+            version_display_length=$((${#claude_version} + 11 + ${#latest_version})) # " (latest: " + latest_version + ")"
         fi
     else
         version_display_length=${#claude_version}
@@ -333,7 +333,7 @@ process_mcp_subcommand() {
                                 # 環境変数が未設定の場合、入力を求める
                                 if [ -z "$env_value" ]; then
                                     echo -n "${env_name}を入力してください: "
-                                    read -r env_value < /dev/tty
+                                    read -r env_value </dev/tty
                                     if [ -z "$env_value" ]; then
                                         log_error "${env_name}は必須です"
                                         return 1
@@ -341,10 +341,10 @@ process_mcp_subcommand() {
                                     # JSONコンテンツに環境変数を追加
                                     json_content=$(echo "$json_content" | jq --arg key "$env_name" --arg val "$env_value" '.env[$key] = $val')
                                 fi
-                            done <<< "$required_envs"
+                            done <<<"$required_envs"
                             break # 最初にマッチしたMCPの設定のみを処理
                         fi
-                    done <<< "$args_array"
+                    done <<<"$args_array"
                 fi
             fi
 
@@ -403,205 +403,205 @@ ccc_main() {
     local remove_orphans=true # デフォルトでオーファンコンテナを削除する
     local claude_credential_path="$HOME/.claude"
     local claude_config_path="$HOME/.claude.json"
-    local command_args=("claude") # デフォルトのコマンド
-    local show_logo=true # デフォルトでロゴを表示
-    local show_info=false # デフォルトで設定情報を表示
-    local show_separator=false # デフォルトでセパレータを表示
-    local quiet=true # デフォルトは静かモード
-    local workdir=""          # 作業ディレクトリ (--workdir)
-    local source_path_specified=false # ソースパスが指定されたかどうかのフラグ
-    local do_update=false # 更新実行フラグ
-    local use_cache=false # ビルド時のキャッシュ使用フラグ
-    local use_bedrock=false # Bedrock使用フラグ
-    local bedrock_region="" # Bedrockリージョン
-    local bedrock_profile="" # AWS プロファイル
-    local bedrock_config_file="" # AWS設定ファイルパス
-    local bedrock_ca_bundle="" # AWS CA証明書バンドルパス
+    local command_args=("claude")       # デフォルトのコマンド
+    local show_logo=true                # デフォルトでロゴを表示
+    local show_info=false               # デフォルトで設定情報を表示
+    local show_separator=false          # デフォルトでセパレータを表示
+    local quiet=true                    # デフォルトは静かモード
+    local workdir=""                    # 作業ディレクトリ (--workdir)
+    local source_path_specified=false   # ソースパスが指定されたかどうかのフラグ
+    local do_update=false               # 更新実行フラグ
+    local use_cache=false               # ビルド時のキャッシュ使用フラグ
+    local use_bedrock=false             # Bedrock使用フラグ
+    local bedrock_region=""             # Bedrockリージョン
+    local bedrock_profile=""            # AWS プロファイル
+    local bedrock_config_file=""        # AWS設定ファイルパス
+    local bedrock_ca_bundle=""          # AWS CA証明書バンドルパス
     local bedrock_disable_caching=false # プロンプトキャッシュ無効化フラグ
-    local model="" # Anthropicモデル
-    local fast_model="" # Anthropicの高速な小型モデル
-    local docker_log_level="" # Dockerログレベル
-    local mcp_subcommand_args=() # MCPサブコマンド用引数
-    local mcp_services=() # 起動するMCPサービスのリスト
-    local stop_mcp_services=false # MCPサービス停止フラグ
-    local container_user="" # コンテナ実行ユーザー
-    local -a persistent_env_vars=() # 永続的に設定する環境変数
+    local model=""                      # Anthropicモデル
+    local fast_model=""                 # Anthropicの高速な小型モデル
+    local docker_log_level=""           # Dockerログレベル
+    local mcp_subcommand_args=()        # MCPサブコマンド用引数
+    local mcp_services=()               # 起動するMCPサービスのリスト
+    local stop_mcp_services=false       # MCPサービス停止フラグ
+    local container_user=""             # コンテナ実行ユーザー
+    local -a persistent_env_vars=()     # 永続的に設定する環境変数
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -s | --source-path)
-                source_paths+=("$2")
-                source_path_specified=true
+        -s | --source-path)
+            source_paths+=("$2")
+            source_path_specified=true
+            shift 2
+            ;;
+        -c)
+            # Claudeの--continueオプションとして扱う
+            command_args+=("--continue")
+            shift
+            ;;
+        --continue)
+            # Claudeの--continueオプション
+            command_args+=("--continue")
+            shift
+            ;;
+        --compose-path)
+            compose_path="$2"
+            shift 2
+            ;;
+        -S | --service)
+            service="$2"
+            shift 2
+            ;;
+        -r)
+            # Claudeの--resumeオプションとして扱う
+            if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
+                # セッションIDが指定されている場合
+                command_args+=("--resume" "$2")
                 shift 2
-                ;;
-            -c)
-                # Claudeの--continueオプションとして扱う
-                command_args+=("--continue")
+            else
+                # セッションIDが省略されている場合
+                command_args+=("--resume")
                 shift
-                ;;
-            --continue)
-                # Claudeの--continueオプション
-                command_args+=("--continue")
+            fi
+            ;;
+        --resume)
+            # Claudeの--resumeオプション
+            if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
+                # セッションIDが指定されている場合
+                command_args+=("--resume" "$2")
+                shift 2
+            else
+                # セッションIDが省略されている場合
+                command_args+=("--resume")
                 shift
-                ;;
-            --compose-path)
-                compose_path="$2"
+            fi
+            ;;
+        --credential-path)
+            claude_credential_path="$2"
+            shift 2
+            ;;
+        --config-path)
+            claude_config_path="$2"
+            shift 2
+            ;;
+        --bedrock-profile)
+            bedrock_profile="$2"
+            shift 2
+            ;;
+        --bedrock-region)
+            bedrock_region="$2"
+            shift 2
+            ;;
+        --bedrock-config-file)
+            bedrock_config_file="$2"
+            shift 2
+            ;;
+        --bedrock-ca-bundle)
+            bedrock_ca_bundle="$2"
+            shift 2
+            ;;
+        --bedrock-disable-caching)
+            bedrock_disable_caching=true
+            shift
+            ;;
+        --model)
+            model="$2"
+            shift 2
+            ;;
+        --fast-model)
+            fast_model="$2"
+            shift 2
+            ;;
+        --workdir)
+            workdir="$2"
+            shift 2
+            ;;
+        --no-rm-orphans)
+            remove_orphans=false
+            shift
+            ;;
+        --no-logo)
+            show_logo=false
+            shift
+            ;;
+        --info)
+            show_info=true
+            shift
+            ;;
+        --separator)
+            show_separator=true
+            shift
+            ;;
+        --update)
+            do_update=true
+            shift
+            ;;
+        --use-cache)
+            use_cache=true
+            shift
+            ;;
+        --bedrock)
+            use_bedrock=true
+            # --bedrockオプションはccc専用でClaudeコマンドには渡さない
+            shift
+            ;;
+        --log-level)
+            docker_log_level="$2"
+            shift 2
+            ;;
+        --mcp)
+            mcp_services+=("$2")
+            shift 2
+            ;;
+        --stop-mcp)
+            stop_mcp_services=true
+            shift
+            ;;
+        --user)
+            container_user="$2"
+            shift 2
+            ;;
+        -v | --verbose)
+            quiet=false
+            shift
+            ;;
+        --set-env)
+            # KEY=VALUE形式で環境変数を永続的に設定
+            if [ $# -gt 1 ] && [[ "$2" == *"="* ]]; then
+                persistent_env_vars+=("$2")
                 shift 2
-                ;;
-            -S | --service)
-                service="$2"
-                shift 2
-                ;;
-            -r)
-                # Claudeの--resumeオプションとして扱う
-                if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
-                    # セッションIDが指定されている場合
-                    command_args+=("--resume" "$2")
-                    shift 2
-                else
-                    # セッションIDが省略されている場合
-                    command_args+=("--resume")
-                    shift
-                fi
-                ;;
-            --resume)
-                # Claudeの--resumeオプション
-                if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
-                    # セッションIDが指定されている場合
-                    command_args+=("--resume" "$2")
-                    shift 2
-                else
-                    # セッションIDが省略されている場合
-                    command_args+=("--resume")
-                    shift
-                fi
-                ;;
-            --credential-path)
-                claude_credential_path="$2"
-                shift 2
-                ;;
-            --config-path)
-                claude_config_path="$2"
-                shift 2
-                ;;
-            --bedrock-profile)
-                bedrock_profile="$2"
-                shift 2
-                ;;
-            --bedrock-region)
-                bedrock_region="$2"
-                shift 2
-                ;;
-            --bedrock-config-file)
-                bedrock_config_file="$2"
-                shift 2
-                ;;
-            --bedrock-ca-bundle)
-                bedrock_ca_bundle="$2"
-                shift 2
-                ;;
-            --bedrock-disable-caching)
-                bedrock_disable_caching=true
-                shift
-                ;;
-            --model)
-                model="$2"
-                shift 2
-                ;;
-            --fast-model)
-                fast_model="$2"
-                shift 2
-                ;;
-            --workdir)
-                workdir="$2"
-                shift 2
-                ;;
-            --no-rm-orphans)
-                remove_orphans=false
-                shift
-                ;;
-            --no-logo)
-                show_logo=false
-                shift
-                ;;
-            --info)
-                show_info=true
-                shift
-                ;;
-            --separator)
-                show_separator=true
-                shift
-                ;;
-            --update)
-                do_update=true
-                shift
-                ;;
-            --use-cache)
-                use_cache=true
-                shift
-                ;;
-            --bedrock)
-                use_bedrock=true
-                # --bedrockオプションはccc専用でClaudeコマンドには渡さない
-                shift
-                ;;
-            --log-level)
-                docker_log_level="$2"
-                shift 2
-                ;;
-            --mcp)
-                mcp_services+=("$2")
-                shift 2
-                ;;
-            --stop-mcp)
-                stop_mcp_services=true
-                shift
-                ;;
-            --user)
-                container_user="$2"
-                shift 2
-                ;;
-            -v | --verbose)
-                quiet=false
-                shift
-                ;;
-            --set-env)
-                # KEY=VALUE形式で環境変数を永続的に設定
-                if [ $# -gt 1 ] && [[ "$2" == *"="* ]]; then
-                    persistent_env_vars+=("$2")
-                    shift 2
-                else
-                    log_error "--set-envにはKEY=VALUE形式の引数が必要です"
-                    return 1
-                fi
-                ;;
-            -h | --help)
-                show_ccc_help
-                return 0
-                ;;
-            mcp)
-                # mcpサブコマンドが指定された場合
-                shift
-                # 残りの引数を関数に渡して処理を任せる
-                if [ $# -gt 0 ]; then
-                    mcp_subcommand_args=("$@")
-                fi
-                break
-                ;;
-            --)
-                shift
-                # "--" 以降の引数があればそれをコマンドとして使用
-                if [ $# -gt 0 ]; then
-                    command_args=("$@")
-                fi
-                break
-                ;;
-            *)
-                log_error "不明なオプション: $1"
-                show_ccc_help
+            else
+                log_error "--set-envにはKEY=VALUE形式の引数が必要です"
                 return 1
-                ;;
+            fi
+            ;;
+        -h | --help)
+            show_ccc_help
+            return 0
+            ;;
+        mcp)
+            # mcpサブコマンドが指定された場合
+            shift
+            # 残りの引数を関数に渡して処理を任せる
+            if [ $# -gt 0 ]; then
+                mcp_subcommand_args=("$@")
+            fi
+            break
+            ;;
+        --)
+            shift
+            # "--" 以降の引数があればそれをコマンドとして使用
+            if [ $# -gt 0 ]; then
+                command_args=("$@")
+            fi
+            break
+            ;;
+        *)
+            log_error "不明なオプション: $1"
+            show_ccc_help
+            return 1
+            ;;
         esac
     done
 
@@ -654,16 +654,16 @@ ccc_main() {
         log_info "認証情報ディレクトリ '$claude_credential_path' が見つかりません。作成します。"
         mkdir -p "$claude_credential_path" || {
             log_error "認証情報ディレクトリの作成に失敗しました: $claude_credential_path"
-                    return 1
-                }
-            log_success "認証情報ディレクトリを作成しました: $claude_credential_path"
+            return 1
+        }
+        log_success "認証情報ディレクトリを作成しました: $claude_credential_path"
     fi
 
     # 設定ファイルの存在確認と作成
     if [ ! -f "$claude_config_path" ]; then
         log_info "設定ファイル '$claude_config_path' が見つかりません。作成します。"
         echo -n "Claude設定ファイルの内容を入力してください (Enterで空のJSONを使用): "
-        read -r config_content < /dev/tty
+        read -r config_content </dev/tty
 
         # 入力がない場合は空のJSONオブジェクトを使用
         if [ -z "$config_content" ]; then
@@ -677,11 +677,11 @@ ccc_main() {
         fi
 
         # ファイルに書き込み
-        echo "$config_content" > "$claude_config_path" || {
+        echo "$config_content" >"$claude_config_path" || {
             log_error "設定ファイルの作成に失敗しました: $claude_config_path"
-                    return 1
-                }
-            log_success "設定ファイルを作成しました: $claude_config_path"
+            return 1
+        }
+        log_success "設定ファイルを作成しました: $claude_config_path"
     fi
 
     # Bedrock使用時のAWS設定ディレクトリの確認と設定
@@ -717,7 +717,6 @@ ccc_main() {
             log_success "AWS設定が完了しました。"
         fi
     fi
-
 
     # 環境変数を準備
     # env_vars: Dockerデーモンに渡す環境変数
@@ -793,8 +792,8 @@ ccc_main() {
 
     cp "$compose_path" "$temp_compose_file" || {
         log_error "Composeファイルのコピーに失敗しました: $compose_path"
-            return 1
-        }
+        return 1
+    }
 
     # ユーザーが-s/--source-pathを指定した場合、デフォルトのマウント設定を削除
     if [ "$source_path_specified" = true ]; then
@@ -835,7 +834,7 @@ ccc_main() {
             fi
         else
             # ソースパスが複数の場合は、すべてbasename形式でマウント
-            for ((i=0; i<${#source_paths[@]}; i++)); do
+            for ((i = 0; i < ${#source_paths[@]}; i++)); do
                 local src_path="${source_paths[$i]}"
                 local dir_name=$(basename "$src_path")
                 local target_name="$dir_name"
@@ -899,7 +898,7 @@ ccc_main() {
 
     # MCPサービスの起動処理
     local mcp_containers=()
-    local container_prerequisites=()  # コンテナ内で実行する前提条件を保存
+    local container_prerequisites=() # コンテナ内で実行する前提条件を保存
 
     if [ ${#mcp_services[@]} -gt 0 ]; then
         log_info "MCPサービスを起動中..."
@@ -935,7 +934,7 @@ ccc_main() {
 
                     # 各前提条件を処理
                     local prereq_count=$(echo "$prerequisites" | yq eval '. | length' -)
-                    for ((i=0; i<$prereq_count; i++)); do
+                    for ((i = 0; i < $prereq_count; i++)); do
                         local command=$(echo "$prerequisites" | yq eval ".[$i].command" -)
                         local description=$(echo "$prerequisites" | yq eval ".[$i].description // \"\"" -)
                         local check=$(echo "$prerequisites" | yq eval ".[$i].check // \"\"" -)
@@ -1066,9 +1065,9 @@ ccc_main() {
         local spinner_count=${#spinners[@]}
 
         # バックグラウンドで現在のバージョンと最新バージョンを取得
-        get_claude_version "$docker_image" > /tmp/claude_version_$$ &
+        get_claude_version "$docker_image" >/tmp/claude_version_$$ &
         local version_pid=$!
-        get_latest_claude_version > /tmp/claude_latest_version_$$ &
+        get_latest_claude_version >/tmp/claude_latest_version_$$ &
         local latest_pid=$!
 
         # スピナーを表示しながら待機
@@ -1225,8 +1224,8 @@ ${BOLD}MCPサービスの使用例:${NC}
 
     ${DIMMED}# 終了時にMCPサービスを停止${NC}
     $(basename "$0") --mcp playwright --stop-mcp"
-        return 0
-    }
+    return 0
+}
 
 # スクリプトが直接実行された場合のみメイン処理を実行
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
