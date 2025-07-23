@@ -1,36 +1,3 @@
-# ========================================
-# ビルドステージ: Python環境の構築
-# ========================================
-FROM node:20 AS python-builder
-
-ARG PYTHON_VERSION
-ENV PYTHON_VERSION="${PYTHON_VERSION:-3.10}"
-ENV PYENV_ROOT=/usr/local/share/pyenv
-
-# Pythonビルドに必要な依存関係のみインストール
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    ca-certificates \
-    libssl-dev libbz2-dev libreadline-dev libsqlite3-dev \
-    libncursesw5-dev llvm libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
-    tk-dev \
-    xz-utils \
-    zlib1g-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# pyenvをインストールしてPythonをビルド
-RUN curl -fsSL https://pyenv.run | bash && \
-    export PATH="$PYENV_ROOT/bin:$PATH" && \
-    eval "$(pyenv init -)" && \
-    pyenv install ${PYTHON_VERSION} && \
-    pyenv global ${PYTHON_VERSION} && \
-    # Python実行環境のみを残す
-    find $PYENV_ROOT -type f -name "*.pyc" -delete && \
-    find $PYENV_ROOT -type d -name "__pycache__" -delete && \
-    rm -rf $PYENV_ROOT/sources
 
 # ========================================
 # ビルドステージ: git-delta、neovim、google-java-formatのダウンロード
@@ -80,13 +47,15 @@ FROM node:20-slim
 
 ARG TZ
 ARG UV_VERSION
+ARG PYTHON_VERSION
 ARG USERNAME=node
 
 ENV TZ="$TZ"
 ENV DEVCONTAINER=true
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
-ENV PYENV_ROOT=/usr/local/share/pyenv
-ENV PATH=$PYENV_ROOT/bin:$PATH:/usr/local/share/npm-global/bin
+ENV PYTHON_VERSION="${PYTHON_VERSION:-3.10}"
+ENV UV_CACHE_DIR=/usr/local/share/uv-cache
+ENV PATH=/usr/local/share/npm-global/bin:/root/.local/bin:$PATH
 ENV SHELL="/bin/zsh"
 ENV EDITOR="nvim"
 
@@ -110,9 +79,6 @@ RUN apt-get update && \
     unzip \
     wget \
     zsh \
-    # Python実行に必要な最小限のライブラリ
-    libssl3 libsqlite3-0 libbz2-1.0 libreadline8 libncursesw6 \
-    libffi8 liblzma5 tk \
     # sh用のフォーマッター
     shfmt \
     # google-java-format用にJavaランタイムを追加
@@ -120,7 +86,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # ディレクトリの作成と権限設定
-    mkdir -p /usr/local/share/npm-global /workspace /home/node/.claude /commandhistory && \
+    mkdir -p /usr/local/share/npm-global /workspace /home/node/.claude /commandhistory /usr/local/share/uv-cache /usr/local/share/python-env && \
     touch /commandhistory/.bash_history && \
     chown -R node:node /usr/local/share /workspace /home/node/.claude /commandhistory && \
     # firewall設定
@@ -145,14 +111,15 @@ RUN echo '#!/bin/bash' > /usr/local/bin/google-java-format && \
     echo 'java -jar /usr/local/bin/google-java-format.jar "$@"' >> /usr/local/bin/google-java-format && \
     chmod +x /usr/local/bin/google-java-format
 
-# ビルド済みのPython環境をコピー
-COPY --from=python-builder --chown=node:node $PYENV_ROOT $PYENV_ROOT
+# uvをインストール
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/uv && \
+    uv python install ${PYTHON_VERSION}
 
 # entrypointスクリプトの作成
 RUN echo '#!/bin/bash' > /usr/local/bin/entrypoint.sh && \
-    echo 'export PYENV_ROOT="/usr/local/share/pyenv"' >> /usr/local/bin/entrypoint.sh && \
-    echo 'export PATH="$PYENV_ROOT/bin:/usr/local/share/npm-global/bin:$PATH"' >> /usr/local/bin/entrypoint.sh && \
-    echo 'eval "$(pyenv init -)"' >> /usr/local/bin/entrypoint.sh && \
+    echo 'export UV_CACHE_DIR="/usr/local/share/uv-cache"' >> /usr/local/bin/entrypoint.sh && \
+    echo 'export PATH="/usr/local/share/npm-global/bin:/usr/local/share/python-env/bin:/root/.local/bin:$PATH"' >> /usr/local/bin/entrypoint.sh && \
     echo 'exec "$@"' >> /usr/local/bin/entrypoint.sh && \
     chmod +x /usr/local/bin/entrypoint.sh
 
@@ -170,12 +137,10 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 
 # npmパッケージとPythonパッケージのインストール
 RUN npm config set prefix /usr/local/share/npm-global && \
-    npm install -g @anthropic-ai/claude-code prettier && \
+    npm install -g @anthropic-ai/claude-code prettier markdownlint-cli && \
     npm cache clean --force && \
-    export PATH="$PYENV_ROOT/bin:$PATH" && \
-    eval "$(pyenv init -)" && \
-    pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir uv yq black
+    uv venv --system-site-packages /usr/local/share/python-env && \
+    uv pip install --python /usr/local/share/python-env yq black
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["claude"]
