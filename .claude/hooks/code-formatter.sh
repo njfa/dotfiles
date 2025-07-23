@@ -55,6 +55,13 @@ echo "$file_paths" | while IFS= read -r file_path; do
             google-java-format --replace "$file_path" 2>/dev/null || true
         fi
     fi
+
+    # Format Markdown files with markdownlint
+    if echo "$file_path" | grep -qE '\.(md|markdown)$'; then
+        if command -v markdownlint >/dev/null 2>&1; then
+            markdownlint --fix "$file_path" 2>/dev/null || true
+        fi
+    fi
 done
 
 # Exit successfully
