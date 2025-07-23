@@ -1,19 +1,45 @@
 {
-    "permissions": {
-        "allow": [
-            "mcp__playwright"
-        ],
-        "deny": [
-            "Bash(curl:*)",
-            "Bash(wget:*)",
-            "Read(**/.env)",
-            "mcp__playwright__browser_install"
+  "env": {
+    "DISABLE_AUTOUPDATER": "1",
+    "DISABLE_TELEMETRY": "1",
+    "MCP_TIMEOUT": "5000"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "mcp__playwright"
+    ],
+    "deny": [
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Read(**/.env)",
+      "mcp__playwright__browser_install"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] $USER: $(jq -r '.tool_input.command')\" >> ~/.claude/command_history.log"
+          },
+          {
+            "type": "command",
+            "command": "jq -r 'if .tool_input.command | test(\"rm -rf|dd if=|:(){ :|:& };:\") then {\"decision\": \"block\", \"reason\": \"危険なコマンドは実行できません。別の方法を検討してください。\"} else empty end'"
+          }
         ]
-    },
-    "env": {
-        "DISABLE_AUTOUPDATER": "1",
-        "DISABLE_TELEMETRY": "1",
-        "MCP_TIMEOUT": 5000
-    },
-    "includeCoAuthoredBy": false
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/code-formatter.sh"
+          }
+        ]
+      }
+    ]
+  }
 }
