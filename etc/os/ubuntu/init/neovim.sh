@@ -1,32 +1,51 @@
 #!/bin/bash
 
-PYENV_ROOT="$HOME/.pyenv"
-PATH="$PYENV_ROOT/bin:$PATH"
+# uvとPython環境のセットアップ
+export UV_CACHE_DIR="$HOME/.cache/uv"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Pythonの警告を抑制
 export PYTHONWARNINGS="ignore::BrokenPipeError"
 
-if command -v pip >/dev/null 2>&1; then
-    echo "pip is installed."
+if command -v uv >/dev/null 2>&1 && uv pip list --system >/dev/null 2>&1; then
+    echo "uv pip is available."
 else
-    echo "pip is not installed."
-    PWD=$(cd $(dirname $0); pwd)
+    echo "uv pip is not available. Setting up Python environment..."
+    PWD=$(
+        cd $(dirname $0)
+        pwd
+    )
     sh $PWD/python.sh
-    eval "$(pyenv init -)"
 fi
 
-if pip list 2>/dev/null | grep -q "pynvim" 2>/dev/null; then
+if uv pip list --system 2>/dev/null | grep -q "pynvim" 2>/dev/null; then
     echo "pynvim is installed."
 else
     echo "pynvim is not installed."
-    pip install pynvim
+    uv pip install --system --break-system-packages pynvim
 fi
 
-if pip list 2>/dev/null | grep -q "neovim-remote" 2>/dev/null; then
+if uv pip list --system 2>/dev/null | grep -q "neovim-remote" 2>/dev/null; then
     echo "neovim-remote is installed."
 else
     echo "neovim-remote is not installed."
-    pip install neovim-remote
+    uv pip install --system --break-system-packages neovim-remote
+fi
+
+# nvrコマンドへのシンボリックリンクを作成
+mkdir -p "$HOME/.local/bin"
+PYTHON_SCRIPTS_DIR=$(python -c "import sysconfig; print(sysconfig.get_path('scripts'))" 2>/dev/null)
+if [ -n "$PYTHON_SCRIPTS_DIR" ] && [ -f "$PYTHON_SCRIPTS_DIR/nvr" ]; then
+    ln -sf "$PYTHON_SCRIPTS_DIR/nvr" "$HOME/.local/bin/nvr"
+    echo "nvr command linked to ~/.local/bin/nvr"
+elif python -m nvr --version >/dev/null 2>&1; then
+    # nvr が python -m nvr として実行可能な場合、ラッパースクリプトを作成
+    cat >"$HOME/.local/bin/nvr" <<'EOF'
+#!/bin/bash
+exec python -m nvr "$@"
+EOF
+    chmod +x "$HOME/.local/bin/nvr"
+    echo "nvr wrapper script created at ~/.local/bin/nvr"
 fi
 
 if command -v rg >/dev/null 2>&1; then
@@ -64,16 +83,16 @@ if ! $is_installed; then
         # CPUアーキテクチャを検出
         arch=$(uname -m)
         case "$arch" in
-            x86_64)
-                arch_suffix="linux-x86_64"
-                ;;
-            aarch64|arm64)
-                arch_suffix="linux-arm64"
-                ;;
-            *)
-                echo "Unsupported architecture: $arch"
-                exit 1
-                ;;
+        x86_64)
+            arch_suffix="linux-x86_64"
+            ;;
+        aarch64 | arm64)
+            arch_suffix="linux-arm64"
+            ;;
+        *)
+            echo "Unsupported architecture: $arch"
+            exit 1
+            ;;
         esac
 
         # バージョンによってファイル名を決定

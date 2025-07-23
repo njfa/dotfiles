@@ -2,25 +2,30 @@
 
 eval "PYTHON_VERSION=$PYTHON_VERSION"
 
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
+export UV_CACHE_DIR="$HOME/.cache/uv"
+export PATH="$HOME/.local/bin:$PATH"
 
-# pyenvのインストール
-pyenv --version && eval "$(pyenv init -)" || if [ -z "$(command -v pyenv)" ]; then
-    git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT
-
-    eval "$(pyenv init -)"
+# uvのインストール
+if [ -z "$(command -v uv)" ]; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
 fi
 
-pyenv versions | grep $PYTHON_VERSION || if [ -n "$(command -v pyenv)" ]; then
-    # dependencies
-    sudo apt update -y
-    sudo apt install -y --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
-
-    pyenv install $PYTHON_VERSION
-    pyenv global $PYTHON_VERSION
+# 指定されたPythonバージョンをインストール
+if ! uv python list | grep -q "$PYTHON_VERSION"; then
+    uv python install "$PYTHON_VERSION"
 fi
 
+# PythonバージョンをPINして使用可能にする
+uv python pin "$PYTHON_VERSION"
+
+# pythonコマンドのシンボリックリンクを作成
+PYTHON_PATH=$(uv python find "$PYTHON_VERSION")
+if [ -n "$PYTHON_PATH" ] && [ ! -L "$HOME/.local/bin/python" ]; then
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$PYTHON_PATH" "$HOME/.local/bin/python"
+fi
+
+# Python環境の確認
 python --version || exit 1
-pip --version || exit 1
-pip install --upgrade pip
+uv pip --version || exit 1
