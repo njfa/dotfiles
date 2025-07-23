@@ -2,7 +2,10 @@
 
 set -eu
 
-PWD=$(cd $(dirname $0); pwd)
+PWD=$(
+    cd $(dirname $0)
+    pwd
+)
 DOTFILES_PATH=$(dirname $PWD)
 DOTENV=$DOTFILES_PATH/.env
 
@@ -11,22 +14,22 @@ export $(grep -v '^#' $DOTENV | xargs)
 # アーキテクチャ検出
 ARCH=$(uname -m)
 case $ARCH in
-    x86_64)
-        ARCH_TYPE="x64"
-        ARCH_DEB="amd64"
-        ;;
-    aarch64|arm64)
-        ARCH_TYPE="arm64"
-        ARCH_DEB="arm64"
-        ;;
-    armv7l|armhf)
-        ARCH_TYPE="arm"
-        ARCH_DEB="armhf"
-        ;;
-    *)
-        ARCH_TYPE="unknown"
-        ARCH_DEB="unknown"
-        ;;
+x86_64)
+    ARCH_TYPE="x64"
+    ARCH_DEB="amd64"
+    ;;
+aarch64 | arm64)
+    ARCH_TYPE="arm64"
+    ARCH_DEB="arm64"
+    ;;
+armv7l | armhf)
+    ARCH_TYPE="arm"
+    ARCH_DEB="armhf"
+    ;;
+*)
+    ARCH_TYPE="unknown"
+    ARCH_DEB="unknown"
+    ;;
 esac
 
 echo "Detected architecture: $ARCH_TYPE ($ARCH)"
@@ -131,7 +134,7 @@ exec_cmd() {
         export DOTFILES_ARCH=$ARCH
         export DOTFILES_ARCH_TYPE=$ARCH_TYPE
         export DOTFILES_ARCH_DEB=$ARCH_DEB
-        $EXEC_CMD $EXEC_OPTS $1 > "$output_file" 2> "$error_file"
+        $EXEC_CMD $EXEC_OPTS $1 >"$output_file" 2>"$error_file"
     )
     result=$?
 
@@ -139,14 +142,14 @@ exec_cmd() {
     if [ -s "$output_file" ]; then
         while IFS= read -r line; do
             printf "  \033[90m│\033[m %s\n" "$line"
-        done < "$output_file"
+        done <"$output_file"
     fi
 
     # エラー出力がある場合は表示
     if [ -s "$error_file" ]; then
         while IFS= read -r line; do
             printf "  \033[31m│\033[m %s\n" "$line" 1>&2
-        done < "$error_file"
+        done <"$error_file"
     fi
 
     # 一時ファイルを削除
@@ -166,7 +169,8 @@ symlink_cmd() {
     filename=$(basename $1)
     printf "  \033[90m│\033[m Linking %s\n" "$filename"
     (
-        export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs); $SYMLINK_CMD $SYMLINK_OPTS $1 $2 1>/dev/null
+        export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs)
+        $SYMLINK_CMD $SYMLINK_OPTS $1 $2 1>/dev/null
     ) || {
         printf "  \033[31m│\033[m Failed to link %s\n" "$filename" 1>&2
         exit 1
@@ -176,7 +180,8 @@ symlink_cmd() {
 sudo_symlink_cmd() {
     printcmd sudo $SYMLINK_CMD $SYMLINK_OPTS $1 $2
     (
-        export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs); sudo $SYMLINK_CMD $SYMLINK_OPTS $1 $2 1>/dev/null
+        export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs)
+        sudo $SYMLINK_CMD $SYMLINK_OPTS $1 $2 1>/dev/null
     ) || {
         failure $SYMLINK_CMD $SYMLINK_OPTS $1 $2
         exit 1
@@ -244,23 +249,20 @@ list() {
 
     header "  init scripts (${OS,,}):"
     if [ -d "$DOTFILES_PATH/etc/os/${OS,,}/init" ]; then
-        for f in `find $DOTFILES_PATH/etc/os/${OS,,}/init -type f -name "*.sh"`
-        do
+        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}/init -type f -name "*.sh"); do
             item $(basename --suffix=.sh $f)
         done
     fi
 
     header "  init scripts (${OS,,}-${VER}):"
     if [ -d "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init" ]; then
-        for f in `find $DOTFILES_PATH/etc/os/${OS,,}-${VER}/init -type f -name "*.sh"`
-        do
+        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}-${VER}/init -type f -name "*.sh"); do
             item $(basename --suffix=.sh $f)
         done
     fi
 
     header "  dotfiles:"
-    for f in $(get_dotfiles)
-    do
+    for f in $(get_dotfiles); do
         item "$f"
     done
 }
@@ -270,8 +272,7 @@ deploy() {
     printf "\033[90m────────────────────────────────────────\033[m\n"
 
     printf "\n\033[36m📁 Creating symbolic links...\033[m\n"
-    for f in $(get_dotfiles)
-    do
+    for f in $(get_dotfiles); do
         if [ ! -d $(dirname "$HOME/$f") ]; then
             mkdir -p $(dirname "$HOME/$f")
         fi
@@ -285,18 +286,35 @@ deploy() {
 
     if [ -d "$DOTFILES_PATH/.claude" ]; then
         printf "\n\033[36m🤖 Setting up Claude configuration...\033[m\n"
+
+        # まずディレクトリ構造を作成
         if [ ! -d "$HOME/.claude" ]; then
             mkdir -p "$HOME/.claude"
+            printf "  \033[90m│\033[m Created ~/.claude directory\n"
         fi
+
+        # サブディレクトリを先に作成
+        for f in $DOTFILES_PATH/.claude/*/; do
+            if [ -d "$f" ]; then
+                subdir_name=$(basename "$f")
+                if [ ! -d "$HOME/.claude/$subdir_name" ]; then
+                    mkdir -p "$HOME/.claude/$subdir_name"
+                    printf "  \033[90m│\033[m Created ~/.claude/$subdir_name directory\n"
+                fi
+            fi
+        done
+
+        # その後ファイルとディレクトリの内容を配置
         for f in $DOTFILES_PATH/.claude/*; do
             if [ -d "$f" ]; then
-                # ディレクトリの場合はコピーを作成
-                cp -rf "$f" "$HOME/.claude/$(basename $f)"
+                # ディレクトリの場合は内容をコピー
+                cp -rf "$f" "$HOME/.claude/"
+                printf "  \033[90m│\033[m Copied $(basename $f) directory contents\n"
             else
                 # ファイルの場合はコピー
                 cp "$f" "$HOME/.claude/"
+                printf "  \033[90m│\033[m Copied $(basename $f) file\n"
             fi
-            printf "  \033[90m│\033[m Copied $(basename $f)\n"
         done
     fi
 
@@ -304,7 +322,7 @@ deploy() {
     printf "\n\033[36m🤖 Initializing Claude Code configuration...\033[m\n"
     if [ ! -f "$HOME/.claude.json" ]; then
         printf "  \033[90m│\033[m Creating ~/.claude.json\n"
-        echo '{}' > "$HOME/.claude.json"
+        echo '{}' >"$HOME/.claude.json"
         printf "  \033[90m│\033[m ~/.claude.json created\n"
     else
         printf "  \033[90m│\033[m ~/.claude.json already exists\n"
