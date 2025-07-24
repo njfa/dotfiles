@@ -23,46 +23,64 @@ if [ -z "$file_paths" ]; then
     exit 0
 fi
 
+# Track if any formatter failed
+has_error=0
+
+# Output a blank line at the start of stderr
+echo >&2
+
 # Process each file path
-echo "$file_paths" | while IFS= read -r file_path; do
+# Using here-string to avoid subshell issues
+while IFS= read -r file_path; do
     # Skip empty lines
     [ -z "$file_path" ] && continue
 
     # Format JavaScript/TypeScript files with prettier
     if echo "$file_path" | grep -qE '\.(js|ts|jsx|tsx)$'; then
         if command -v prettier >/dev/null 2>&1; then
-            prettier --write "$file_path" 2>/dev/null || true
+            if ! prettier --write "$file_path"; then
+                has_error=1
+            fi
         fi
     fi
 
     # Format Python files with black
     if echo "$file_path" | grep -qE '\.py$'; then
         if command -v black >/dev/null 2>&1; then
-            black "$file_path" 2>/dev/null || true
+            if ! black "$file_path"; then
+                has_error=1
+            fi
         fi
     fi
 
     # Format Bash/Shell files with shfmt
     if echo "$file_path" | grep -qE '\.(sh|bash)$'; then
         if command -v shfmt >/dev/null 2>&1; then
-            shfmt -i 4 -w "$file_path" 2>/dev/null || true
+            if ! shfmt -i 4 -w "$file_path"; then
+                has_error=1
+            fi
         fi
     fi
 
     # Format Java files with google-java-format
     if echo "$file_path" | grep -qE '\.java$'; then
         if command -v google-java-format >/dev/null 2>&1; then
-            google-java-format --replace "$file_path" 2>/dev/null || true
+            if ! google-java-format --replace "$file_path"; then
+                has_error=1
+            fi
         fi
     fi
 
     # Format Markdown files with markdownlint
     if echo "$file_path" | grep -qE '\.(md|markdown)$'; then
         if command -v markdownlint >/dev/null 2>&1; then
-            markdownlint --fix "$file_path" 2>/dev/null || true
+            if ! markdownlint --fix "$file_path"; then
+                has_error=1
+            fi
         fi
     fi
-done
+done <<<"$file_paths"
 
-# Exit successfully
-exit 0
+# Exit with error code if any formatter failed
+echo "DEBUG: Exiting with code $has_error" >&2
+exit $has_error
