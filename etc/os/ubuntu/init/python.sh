@@ -12,7 +12,7 @@ if [ -z "$(command -v uv)" ]; then
 fi
 
 # 指定されたPythonバージョンをインストール
-if ! uv python list | grep -q "$PYTHON_VERSION"; then
+if ! uv python list --only-installed | grep -q "$PYTHON_VERSION"; then
     uv python install "$PYTHON_VERSION"
 fi
 
@@ -21,11 +21,11 @@ uv python pin "$PYTHON_VERSION"
 
 # pythonコマンドのシンボリックリンクを作成
 PYTHON_PATH=$(uv python find "$PYTHON_VERSION")
-if [ -n "$PYTHON_PATH" ] && [ ! -L "$HOME/.local/bin/python" ]; then
+if [ -n "$PYTHON_PATH" ]; then
     mkdir -p "$HOME/.local/bin"
     ln -sf "$PYTHON_PATH" "$HOME/.local/bin/python"
 fi
 
 # Python環境の確認
 python --version || exit 1
-uv pip --version || exit 1
+uv pip list || exit 1
