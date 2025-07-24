@@ -124,36 +124,21 @@ get_dotfiles() {
 exec_cmd() {
     printcmd $1
 
-    # スクリプトの出力を一時ファイルに保存
-    output_file=$(mktemp)
-    error_file=$(mktemp)
-
     (
         export $(grep -v '\(^#\|CMD\)' $DOTENV | xargs)
         # アーキテクチャ情報を環境変数として設定
         export DOTFILES_ARCH=$ARCH
         export DOTFILES_ARCH_TYPE=$ARCH_TYPE
         export DOTFILES_ARCH_DEB=$ARCH_DEB
-        $EXEC_CMD $EXEC_OPTS $1 >"$output_file" 2>"$error_file"
-    )
-    result=$?
 
-    # 出力内容を整形して表示
-    if [ -s "$output_file" ]; then
-        while IFS= read -r line; do
-            printf "  \033[90m│\033[m %s\n" "$line"
-        done <"$output_file"
-    fi
-
-    # エラー出力がある場合は表示
-    if [ -s "$error_file" ]; then
-        while IFS= read -r line; do
+        # 標準出力と標準エラーをリアルタイムで整形表示
+        $EXEC_CMD $EXEC_OPTS $1 2> >(while IFS= read -r line; do
             printf "  \033[31m│\033[m %s\n" "$line" 1>&2
-        done <"$error_file"
-    fi
-
-    # 一時ファイルを削除
-    rm -f "$output_file" "$error_file"
+        done) | while IFS= read -r line; do
+            printf "  \033[90m│\033[m %s\n" "$line"
+        done
+    )
+    result=${PIPESTATUS[0]}
 
     if [ $result -eq 0 ]; then
         success $1
