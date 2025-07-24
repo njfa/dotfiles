@@ -19,13 +19,6 @@ fi
 # PythonバージョンをPINして使用可能にする
 uv python pin "$PYTHON_VERSION"
 
-# pythonコマンドのシンボリックリンクを作成
-PYTHON_PATH=$(uv python find "$PYTHON_VERSION")
-if [ -n "$PYTHON_PATH" ]; then
-    mkdir -p "$HOME/.local/bin"
-    ln -sf "$PYTHON_PATH" "$HOME/.local/bin/python"
-fi
-
 # Python環境の確認
 python --version || exit 1
 uv pip list || exit 1
