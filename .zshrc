@@ -386,6 +386,13 @@ if [ ! -z "$(command -v docker)" ]; then
     alias rmp='docker rm $(docker ps -a -q)'
 fi
 
+alias python="uv run python"
+alias python3="uv run python"
+alias pip="uv pip"
+alias pip3="uv pip"
+alias python-venv="uv run python -m venv"
+alias python3-venv="uv run python -m venv"
+
 # rust製ツールを入れている場合はコマンドを置き換える
 if [ ! -z "$(command -v lsd)" ]; then
     alias tree='lsd --tree'
