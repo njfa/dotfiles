@@ -3,14 +3,17 @@
 PYENV_ROOT="$HOME/.pyenv"
 PATH="$PYENV_ROOT/bin:$PATH"
 
-# Pythonの警告を抑制
-export PYTHONWARNINGS="ignore::BrokenPipeError"
+# Pythonの警告を抑制（BrokenPipeErrorは例外なので、一般的な警告のみ抑制）
+export PYTHONWARNINGS="ignore"
 
 if command -v pip >/dev/null 2>&1; then
     echo "pip is installed."
 else
     echo "pip is not installed."
-    PWD=$(cd $(dirname $0); pwd)
+    PWD=$(
+        cd $(dirname $0)
+        pwd
+    )
     sh $PWD/python.sh
     eval "$(pyenv init -)"
 fi
@@ -64,16 +67,16 @@ if ! $is_installed; then
         # CPUアーキテクチャを検出
         arch=$(uname -m)
         case "$arch" in
-            x86_64)
-                arch_suffix="linux-x86_64"
-                ;;
-            aarch64|arm64)
-                arch_suffix="linux-arm64"
-                ;;
-            *)
-                echo "Unsupported architecture: $arch"
-                exit 1
-                ;;
+        x86_64)
+            arch_suffix="linux-x86_64"
+            ;;
+        aarch64 | arm64)
+            arch_suffix="linux-arm64"
+            ;;
+        *)
+            echo "Unsupported architecture: $arch"
+            exit 1
+            ;;
         esac
 
         # バージョンによってファイル名を決定
