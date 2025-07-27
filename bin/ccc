@@ -426,6 +426,7 @@ ccc_main() {
     local stop_mcp_services=false       # MCPサービス停止フラグ
     local container_user=""             # コンテナ実行ユーザー
     local -a persistent_env_vars=()     # 永続的に設定する環境変数
+    local block_outbound=false          # アウトバウンド通信ブロックフラグ
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -435,16 +436,6 @@ ccc_main() {
             source_path_specified=true
             shift 2
             ;;
-        -c)
-            # Claudeの--continueオプションとして扱う
-            command_args+=("--continue")
-            shift
-            ;;
-        --continue)
-            # Claudeの--continueオプション
-            command_args+=("--continue")
-            shift
-            ;;
         --compose-path)
             compose_path="$2"
             shift 2
@@ -452,30 +443,6 @@ ccc_main() {
         -S | --service)
             service="$2"
             shift 2
-            ;;
-        -r)
-            # Claudeの--resumeオプションとして扱う
-            if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
-                # セッションIDが指定されている場合
-                command_args+=("--resume" "$2")
-                shift 2
-            else
-                # セッションIDが省略されている場合
-                command_args+=("--resume")
-                shift
-            fi
-            ;;
-        --resume)
-            # Claudeの--resumeオプション
-            if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
-                # セッションIDが指定されている場合
-                command_args+=("--resume" "$2")
-                shift 2
-            else
-                # セッションIDが省略されている場合
-                command_args+=("--resume")
-                shift
-            fi
             ;;
         --credential-path)
             claude_credential_path="$2"
@@ -577,8 +544,26 @@ ccc_main() {
             fi
             ;;
         -h | --help)
-            show_ccc_help
-            return 0
+            # Claudeのヘルプを表示するか、cccのヘルプを表示するか判断
+            if [ ${#command_args[@]} -eq 1 ]; then
+                # 他にClaudeオプションがない場合はcccのヘルプを表示
+                show_ccc_help
+                return 0
+            else
+                # 他にClaudeオプションがある場合はClaudeに渡す
+                command_args+=("$1")
+                shift
+            fi
+            ;;
+        --claude-help)
+            # Claudeのヘルプを表示
+            command_args=("claude" "--help")
+            shift
+            ;;
+        --block-outbound)
+            # アウトバウンド通信をブロック
+            block_outbound=true
+            shift
             ;;
         mcp)
             # mcpサブコマンドが指定された場合
@@ -597,10 +582,22 @@ ccc_main() {
             fi
             break
             ;;
+        -*)
+            # その他のオプションはClaudeに渡す
+            if [ $# -gt 1 ] && [[ "$2" != -* ]]; then
+                # 値を持つオプションの場合
+                command_args+=("$1" "$2")
+                shift 2
+            else
+                # フラグオプションの場合
+                command_args+=("$1")
+                shift
+            fi
+            ;;
         *)
-            log_error "不明なオプション: $1"
-            show_ccc_help
-            return 1
+            # オプション以外の引数もClaudeに渡す
+            command_args+=("$1")
+            shift
             ;;
         esac
     done
@@ -873,6 +870,30 @@ ccc_main() {
         log_info "AWS設定ディレクトリをマウント: $bedrock_config_file -> /home/node/.aws"
     fi
 
+    # --dangerously-skip-permissionsが指定されていて--block-outboundが指定されていない場合に警告
+    if [ "$has_skip_permissions" = true ] && [ "$block_outbound" = false ]; then
+        log_warning "--dangerously-skip-permissionsが指定されています。"
+        log_warning "セキュリティのため、--block-outboundオプションの使用を推奨します。"
+        echo
+    fi
+
+    # --block-outboundが指定されている場合（--dangerously-skip-permissionsの有無に関わらず）
+    if [ "$block_outbound" = true ]; then
+        log_info "プロキシ経由でアウトバウンド通信を制限します..."
+        
+        # コンテナにプロキシ設定を追加（大文字・小文字両方）
+        container_env_vars+=("HTTP_PROXY=http://squid-proxy:3128")
+        container_env_vars+=("HTTPS_PROXY=http://squid-proxy:3128")
+        container_env_vars+=("http_proxy=http://squid-proxy:3128")
+        container_env_vars+=("https_proxy=http://squid-proxy:3128")
+        container_env_vars+=("NO_PROXY=localhost,127.0.0.1,squid-proxy")
+        container_env_vars+=("no_proxy=localhost,127.0.0.1,squid-proxy")
+        
+        # squid-proxyへの依存関係を追加
+        # 注：これは後続の処理で適用される
+        log_info "Squidプロキシが起動され、許可されたドメインへのアクセスのみが可能になります。"
+    fi
+
     # コンテナ内環境変数をcompose.ymlのenvironmentセクションに追加
     if [ ${#container_env_vars[@]} -gt 0 ]; then
         # 各環境変数をYAML形式で追加
@@ -888,6 +909,16 @@ ccc_main() {
                 return 1
             fi
         done
+    fi
+
+    # --block-outboundが指定されている場合、squid-proxyへの依存関係を追加
+    if [ "$block_outbound" = true ]; then
+        # depends_onを追加（既存のdepends_onがある場合は追加、ない場合は新規作成）
+        if ! yq eval '.services.containered-claude.depends_on += ["squid-proxy"]' -i "$temp_compose_file" 2>/dev/null; then
+            log_error "squid-proxyへの依存関係の追加に失敗しました"
+            rm -f "$temp_compose_file"
+            return 1
+        fi
     fi
 
     # デバッグ用に一時ファイルの内容を表示（quiet=falseの場合）
@@ -1107,6 +1138,15 @@ ccc_main() {
         fi
     fi
 
+    # --dangerously-skip-permissionsが使用されているかチェック
+    local has_skip_permissions=false
+    for arg in "${command_args[@]}"; do
+        if [ "$arg" = "--dangerously-skip-permissions" ]; then
+            has_skip_permissions=true
+            break
+        fi
+    done
+
     # 統合されたコンテナランナー関数を利用（一時ファイルを指定）
     # 環境変数とコマンド引数の間に -- を追加
     if [ ${#command_args[@]} -gt 0 ]; then
@@ -1139,17 +1179,15 @@ show_ccc_help() {
     # ヘルプ用の簡易ロゴ表示（バージョンは省略）
     print_logo "$HOME/.claude" "$HOME/.claude.json" "false" "" "" "" "N/A" "N/A"
     echo -e "\
-${BOLD}使用法:${NC} $(basename "$0") [オプション] [-- コマンド引数...]
+${BOLD}使用法:${NC} $(basename "$0") [cccオプション] [Claudeオプション] [-- コマンド引数...]
     $(basename "$0") mcp <MCPサブコマンド> [引数...]
 
-${BOLD}オプション:${NC}
+${BOLD}ccc固有オプション:${NC}
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
                                              1つだけの場合は /workspace/ に直接マウント
                                              2つ以上の場合はすべて /workspace/<basename> 形式でマウント
     ${GREEN}--compose-path PATH${NC}         Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
-    ${GREEN}-c, --continue${NC}              前のセッションの続きから開始する (Claudeに直接渡される)
-    ${GREEN}-r, --resume [sessionId]${NC}    特定のセッションを再開する (Claudeに直接渡される)
     ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
     ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
     ${GREEN}--no-rm-orphans${NC}             オーファンコンテナの削除を無効化する (デフォルトは削除する)
@@ -1158,15 +1196,12 @@ ${BOLD}オプション:${NC}
     ${GREEN}--separator${NC}                 区切り線の表示を有効化する
     ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する (デフォルトはキャッシュ無効)
     ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
-                                             環境が1つのみ定義されている場合は自動的に選択される
     ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
     ${GREEN}--bedrock-profile PROFILE${NC}   AWSプロファイルを指定
     ${GREEN}--bedrock-region REGION${NC}     AWSリージョンを指定
     ${GREEN}--bedrock-config-file PATH${NC}  AWS設定ディレクトリを指定 (デフォルト: ~/.aws)
     ${GREEN}--bedrock-ca-bundle PATH${NC}    AWS CA証明書バンドルを指定
     ${GREEN}--bedrock-disable-caching${NC}   プロンプトキャッシュを無効化
-    ${GREEN}--model MODEL${NC}               Anthropicモデルを指定
-    ${GREEN}--fast-model MODEL${NC}          Anthropicの高速な小型モデルを指定
     ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
     ${GREEN}--mcp SERVICE${NC}               起動するMCPサービスを指定 (複数指定可能)
     ${GREEN}--stop-mcp${NC}                  終了時にMCPサービスも停止する (デフォルトは停止しない)
@@ -1174,7 +1209,21 @@ ${BOLD}オプション:${NC}
     ${GREEN}--set-env KEY=VALUE${NC}         compose.ymlに環境変数を永続的に設定 (複数指定可能)
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
+    ${GREEN}--claude-help${NC}               Claudeコマンドのヘルプを表示
+    ${GREEN}--block-outbound${NC}            コンテナのアウトバウンド通信をブロック（セキュリティ強化）
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
+
+${BOLD}Claudeオプション:${NC}
+    cccに定義されていないオプションはすべてClaudeコマンドに直接渡されます。
+    
+    ${DIMMED}例:${NC}
+    ${GREEN}-c, --continue${NC}              前のセッションの続きから開始する
+    ${GREEN}-r, --resume [sessionId]${NC}    特定のセッションを再開する
+    ${GREEN}--model MODEL${NC}               使用するAnthropicモデルを指定
+    ${GREEN}--profile PROFILE${NC}           プロファイルを指定
+    ${GREEN}--no-interactive${NC}            非対話モードで実行
+    
+    その他のClaudeオプションについては、コンテナ内で 'claude --help' を実行してください。
 
 ${BOLD}MCPサブコマンド:${NC}
     ${GREEN}mcp list${NC}                    利用可能なMCPサーバーの一覧を表示
