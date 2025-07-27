@@ -1206,6 +1206,7 @@ ${BOLD}ccc固有オプション:${NC}
     ${GREEN}--mcp SERVICE${NC}               起動するMCPサービスを指定 (複数指定可能)
     ${GREEN}--stop-mcp${NC}                  終了時にMCPサービスも停止する (デフォルトは停止しない)
     ${GREEN}--user USER${NC}                 コンテナ実行時のユーザーを指定 (例: 1000:1000, root)
+    ${GREEN}--workdir PATH${NC}              コンテナ内の作業ディレクトリを指定 (デフォルト: /workspace)
     ${GREEN}--set-env KEY=VALUE${NC}         compose.ymlに環境変数を永続的に設定 (複数指定可能)
     ${GREEN}-v, --verbose${NC}               Docker Composeの詳細な出力を表示する (デフォルトは最小限の出力)
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
