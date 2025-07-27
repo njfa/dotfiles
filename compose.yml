@@ -1,9 +1,24 @@
 name: tools
 
 services:
+  squid-proxy:
+    container_name: squid-proxy
+    image: my-squid-proxy:latest
+    pull_policy: never
+    build:
+      context: ./etc/dockerfiles/squid-proxy/
+    networks:
+      - claude-net
+    volumes:
+      - type: bind
+        source: ${SQUID_LOG_PATH:-./logs/squid}
+        target: /var/log/squid
+    restart: unless-stopped
+
   containered-claude:
     container_name: containered-claude
     image: my-claude-code:latest
+    pull_policy: never
     build:
       context: ./etc/dockerfiles/claude-code/
       args:
@@ -11,7 +26,8 @@ services:
         GROUPID: ${GROUPID:-1000}
         TZ: ${TZ:-Asia/Tokyo}
         ADDITIONAL_CA_CERT_PATH: ${ADDITIONAL_CA_CERT_PATH:-}
-    network_mode: "host"
+    networks:
+      - claude-net
     develop:
       watch:
         - action: rebuild
@@ -54,3 +70,6 @@ services:
       # ["node", "cli.js", "--headless", "--browser", "chrome", "--no-sandbox"]
       # ["node", "cli.js", "--headless", "--browser", "msedge", "--no-sandbox"]
       # ["node", "cli.js", "--headless", "--browser", "webkit", "--no-sandbox"]
+
+networks:
+  claude-net:

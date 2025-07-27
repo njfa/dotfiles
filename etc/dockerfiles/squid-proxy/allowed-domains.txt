@@ -1,0 +1,9 @@
+# 許可するドメインリスト
+# ピリオドで始まるドメインはサブドメインも含む
+.github.com
+.githubusercontent.com
+.npmjs.org
+.npmjs.com
+.anthropic.com
+.sentry.io
+.statsig.com

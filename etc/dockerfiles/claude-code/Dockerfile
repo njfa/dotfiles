@@ -43,7 +43,7 @@ RUN arch=$(uname -m) && \
 # ========================================
 # 最終ステージ: 実行環境
 # ========================================
-FROM node:20-slim
+FROM node:20
 
 ARG TZ
 ARG UV_VERSION
@@ -59,9 +59,6 @@ ENV PATH=/usr/local/share/npm-global/bin:/root/.local/bin:$PATH
 ENV SHELL="/bin/zsh"
 ENV EDITOR="nvim"
 
-# Copy and set up firewall script
-COPY init-firewall.sh /usr/local/bin/
-
 WORKDIR /workspace
 
 # 実行時に必要な最小限のパッケージのみインストール
@@ -71,7 +68,6 @@ RUN apt-get update && \
     dnsutils \
     fzf \
     gh git gnupg2 \
-    iptables ipset iproute2 \
     jq \
     less \
     procps \
@@ -88,11 +84,7 @@ RUN apt-get update && \
     # ディレクトリの作成と権限設定
     mkdir -p /usr/local/share/npm-global /workspace /home/node/.claude /commandhistory /usr/local/share/uv-cache /usr/local/share/python-env && \
     touch /commandhistory/.bash_history && \
-    chown -R node:node /usr/local/share /workspace /home/node/.claude /commandhistory && \
-    # firewall設定
-    chmod +x /usr/local/bin/init-firewall.sh && \
-    echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
-    chmod 0440 /etc/sudoers.d/node-firewall
+    chown -R node:node /usr/local/share /workspace /home/node/.claude /commandhistory
 
 # git-deltaをインストール
 COPY --from=downloader /tmp/git-delta.deb /tmp/
@@ -120,6 +112,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
 RUN echo '#!/bin/bash' > /usr/local/bin/entrypoint.sh && \
     echo 'export UV_CACHE_DIR="/usr/local/share/uv-cache"' >> /usr/local/bin/entrypoint.sh && \
     echo 'export PATH="/usr/local/share/npm-global/bin:/usr/local/share/python-env/bin:/root/.local/bin:$PATH"' >> /usr/local/bin/entrypoint.sh && \
+    echo '' >> /usr/local/bin/entrypoint.sh && \
     echo 'exec "$@"' >> /usr/local/bin/entrypoint.sh && \
     chmod +x /usr/local/bin/entrypoint.sh
 
