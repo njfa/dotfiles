@@ -1,8 +1,11 @@
 {
   "env": {
-    "DISABLE_AUTOUPDATER": "1",
-    "DISABLE_TELEMETRY": "1",
-    "MCP_TIMEOUT": "5000"
+      "MCP_TIMEOUT": "20000",
+      "MCP_TOOL_TIMEOUT": "20000",
+      "DISABLE_TELEMETRY": "1",
+      "DISABLE_BUG_COMMAND": "1",
+      "DISABLE_AUTOUPDATER": "1",
+      "DISABLE_ERROR_REPORTING": "1"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
