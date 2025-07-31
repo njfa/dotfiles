@@ -1,0 +1,14 @@
+{
+    "awslabs.aws-diagram-mcp-server": {
+        "command": "uv",
+        "args": [
+            "tool",
+            "run",
+            "awslabs.aws-diagram-mcp-server"
+        ],
+        "env": {
+            "FASTMCP_LOG_LEVEL": "ERROR",
+            "FASTMCP_LOG_FILE": "./aws-diagram-mcp-server.log"
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "awslabs.terraform-mcp-server": {
+        "command": "uv",
+        "args": [
+            "tool",
+            "run",
+            "awslabs.terraform-mcp-server@latest"
+        ],
+        "env": {
+            "FASTMCP_LOG_LEVEL": "ERROR",
+            "FASTMCP_LOG_FILE": "./terraform-mcp-server.log"
+        },
+        "disabled": false,
+        "autoApprove": []
+    }
+}

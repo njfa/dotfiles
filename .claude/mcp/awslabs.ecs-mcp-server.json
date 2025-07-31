@@ -1,0 +1,18 @@
+{
+    "awslabs.ecs-mcp-server": {
+        "command": "uv",
+        "args": [
+            "tool",
+            "run",
+            "--from",
+            "awslabs-ecs-mcp-server",
+            "ecs-mcp-server"
+        ],
+        "env": {
+            "FASTMCP_LOG_LEVEL": "ERROR",
+            "FASTMCP_LOG_FILE": "./ecs-mcp-server.log",
+            "ALLOW_WRITE": "false",
+            "ALLOW_SENSITIVE_DATA": "false"
+        }
+    }
+}

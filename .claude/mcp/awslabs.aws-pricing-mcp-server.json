@@ -1,0 +1,14 @@
+{
+    "awslabs.aws-pricing-mcp-server": {
+        "command": "uv",
+        "args": [
+            "tool",
+            "run",
+            "awslabs.aws-pricing-mcp-server@latest"
+        ],
+        "env": {
+            "FASTMCP_LOG_LEVEL": "ERROR",
+            "FASTMCP_LOG_FILE": "./aws-pricing-mcp-server.log"
+        }
+    }
+}
