@@ -23,17 +23,21 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/check-command.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/git-check.sh"
           }
         ]
       },
       {
-          "matcher": "Read|Edit|MultiEdit|Write|Glob|Grep|Bash",
-          "hooks": [
-              {
-                  "type": "command",
-                  "command": "~/.claude/hooks/file-protection.sh"
-              }
-          ]
+        "matcher": "Read|Edit|MultiEdit|Write|Glob|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/file-protection.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
