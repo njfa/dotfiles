@@ -1,35 +1,37 @@
 #!/bin/bash
 
-PYENV_ROOT="$HOME/.pyenv"
-PATH="$PYENV_ROOT/bin:$PATH"
+# 仮想環境のパス設定
+VENV_GLOBAL="$HOME/.local/python-env/global"
 
 # Pythonの警告を抑制（BrokenPipeErrorは例外なので、一般的な警告のみ抑制）
 export PYTHONWARNINGS="ignore"
 
-if command -v pip >/dev/null 2>&1; then
-    echo "pip is installed."
-else
-    echo "pip is not installed."
+# uvとPython環境のセットアップ
+if ! command -v uv >/dev/null 2>&1 || [ ! -d "$VENV_GLOBAL" ]; then
+    echo "Setting up Python environment..."
     PWD=$(
         cd $(dirname $0)
         pwd
     )
     sh $PWD/python.sh
-    eval "$(pyenv init -)"
 fi
 
-if pip list 2>/dev/null | grep -q "pynvim" 2>/dev/null; then
+# 仮想環境のパスを設定（python.shで作成された環境を使用）
+export PATH="$VENV_GLOBAL/bin:$PATH"
+export VIRTUAL_ENV="$VENV_GLOBAL"
+
+if uv pip list --python "$VENV_GLOBAL" 2>/dev/null | grep -q "pynvim" 2>/dev/null; then
     echo "pynvim is installed."
 else
     echo "pynvim is not installed."
-    pip install pynvim
+    uv pip install --python "$VENV_GLOBAL" pynvim
 fi
 
-if pip list 2>/dev/null | grep -q "neovim-remote" 2>/dev/null; then
+if uv pip list --python "$VENV_GLOBAL" 2>/dev/null | grep -q "neovim-remote" 2>/dev/null; then
     echo "neovim-remote is installed."
 else
     echo "neovim-remote is not installed."
-    pip install neovim-remote
+    uv pip install --python "$VENV_GLOBAL" neovim-remote
 fi
 
 if command -v rg >/dev/null 2>&1; then
