@@ -7,3 +7,25 @@
 .anthropic.com
 .sentry.io
 .statsig.com
+
+# AWS Core Authentication Services
+iam.amazonaws.com
+sts.amazonaws.com
+
+# AWS Bedrock Services (All Regions)
+# Control Plane APIs
+.bedrock.amazonaws.com
+.bedrock-fips.amazonaws.com
+
+# Runtime APIs (Model Inference)
+.bedrock-runtime.amazonaws.com
+.bedrock-runtime-fips.amazonaws.com
+
+# Agent APIs
+.bedrock-agent.amazonaws.com
+.bedrock-agent-fips.amazonaws.com
+.bedrock-agent-runtime.amazonaws.com
+.bedrock-agent-runtime-fips.amazonaws.com
+
+# KMS for server-side encryption (optional)
+.kms.amazonaws.com
