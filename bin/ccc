@@ -214,7 +214,7 @@ print_logo() {
         if [ "$bedrock_disable_caching" = true ]; then
             caching_status="Disabled"
         fi
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Prompt Cache:${NC} $caching_status$(printf '%*s' $((frame_width - 17 - ${#caching_status})) '') ${FRAME_COLOR}│${NC}"
+        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Prompt Cache:${NC} $caching_status$(printf '%*s' $((frame_width - 18 - ${#caching_status})) '') ${FRAME_COLOR}│${NC}"
     fi
 
     # マウントパスの表示（存在する場合）
@@ -751,6 +751,11 @@ ccc_main() {
         # プロンプトキャッシュ無効化フラグ
         if [ "$bedrock_disable_caching" = true ]; then
             container_env_vars+=("DISABLE_PROMPT_CACHING=1")
+        fi
+
+        # AWS_BEARER_TOKEN_BEDROCK環境変数が設定されている場合はコンテナに渡す
+        if [ -n "$AWS_BEARER_TOKEN_BEDROCK" ]; then
+            container_env_vars+=("AWS_BEARER_TOKEN_BEDROCK=$AWS_BEARER_TOKEN_BEDROCK")
         fi
     fi
 
