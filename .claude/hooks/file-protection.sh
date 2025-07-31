@@ -182,12 +182,7 @@ while IFS= read -r file_path; do
     # 完全保護対象のチェック（すべての操作を禁止）
     if is_fully_protected "$file_path"; then
         # エラーメッセージをJSON形式で出力
-        cat >&2 <<EOF
-{
-  "decision": "block",
-  "reason": "セキュリティポリシーにより、このファイルへのあらゆるアクセスが制限されています: $file_path"
-}
-EOF
+        echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"セキュリティポリシーにより、このファイルへのあらゆるアクセスが制限されています: $file_path\"}}" | jq -rc
         exit_status=2
         break
     fi
@@ -195,12 +190,7 @@ EOF
     # 書き込み保護対象のチェック（読み込みのみ許可）
     if is_write_protected "$file_path" && is_write_tool "$tool_name"; then
         # エラーメッセージをJSON形式で出力
-        cat >&2 <<EOF
-{
-  "decision": "block",
-  "reason": "このファイルは読み込み専用です。更新や削除は許可されていません: $file_path"
-}
-EOF
+        echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"このファイルは読み込み専用です。更新や削除は許可されていません: $file_path\"}}" | jq -rc
         exit_status=2
         break
     fi
