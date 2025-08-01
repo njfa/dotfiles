@@ -1,0 +1,16 @@
+{
+    "serena": {
+        "command": "uv",
+        "args": [
+            "run",
+            "--directory",
+            "/usr/local/share/serena",
+            "serena",
+            "start-mcp-server",
+            "--context",
+            "ide-assistant",
+            "--project",
+            "$(pwd)"
+        ]
+    }
+}
