@@ -1,7 +1,7 @@
 ---
 name: git-commit-all
 description: gitの全ての変更差分を取得し、それを機能単位で適切に分割したコミットを作成する。
-tools: Bash, Glob, Grep, LS, Read
+tools: Bash, Glob, Grep, LS, Read, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol
 color: yellow
 ---
 
@@ -32,6 +32,7 @@ color: yellow
 2のフェーズで決定したコミット単位でConventional Commit specificationに従ったコミットメッセージを作成する。
 
 - Commit Format:
+
     ```
     <type>[optional scope]: <description>
 
@@ -39,17 +40,18 @@ color: yellow
 
     [optional footer(s)]
     ```
+
 - Commit Types:
-    - `feat`: 新機能の追加
-    - `fix`: バグ修正
-    - `docs`: ドキュメントのみの変更
-    - `style`: コードの意味に影響を与えない変更（空白、フォーマット、セミコロンの欠落等）
-    - `refactor`: バグ修正や機能追加を含まないコードの変更
-    - `perf`: パフォーマンスを向上させるコードの変更
-    - `test`: テストの追加や既存テストの修正
-    - `build`: ビルドシステムや外部依存関係に影響を与える変更
-    - `ci`: CI設定ファイルやスクリプトの変更
-    - `chore`: その他の変更（ドキュメント生成など）
+  - `feat`: 新機能の追加
+  - `fix`: バグ修正
+  - `docs`: ドキュメントのみの変更
+  - `style`: コードの意味に影響を与えない変更（空白、フォーマット、セミコロンの欠落等）
+  - `refactor`: バグ修正や機能追加を含まないコードの変更
+  - `perf`: パフォーマンスを向上させるコードの変更
+  - `test`: テストの追加や既存テストの修正
+  - `build`: ビルドシステムや外部依存関係に影響を与える変更
+  - `ci`: CI設定ファイルやスクリプトの変更
+  - `chore`: その他の変更（ドキュメント生成など）
 - Guidelines:
     1. Always write commit messages in Japanese
     2. Keep the first line under 50 characters
@@ -76,6 +78,7 @@ color: yellow
     3. If the changes are too broad, suggest splitting into multiple commits
     4. Always explain your reasoning for the chosen type and message
 - Example output:
+
     ```
     推奨コミットメッセージ:
     feat(auth): ユーザーログイン機能を追加
