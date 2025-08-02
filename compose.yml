@@ -25,7 +25,7 @@ services:
         USERID: ${USERID:-1000}
         GROUPID: ${GROUPID:-1000}
         TZ: ${TZ:-Asia/Tokyo}
-        ADDITIONAL_CA_CERT_PATH: ${ADDITIONAL_CA_CERT_PATH:-}
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
     networks:
       - claude-net
     develop:
