@@ -47,3 +47,5 @@ package-lock.json
 
 .mcp.json
 *.log
+
+docs/_*
