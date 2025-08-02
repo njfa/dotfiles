@@ -387,8 +387,6 @@ ccc_main() {
     local quiet=true                    # デフォルトは静かモード
     local workdir=""                    # 作業ディレクトリ (--workdir)
     local source_path_specified=false   # ソースパスが指定されたかどうかのフラグ
-    local do_update=false               # 更新実行フラグ
-    local use_cache=false               # ビルド時のキャッシュ使用フラグ
     local use_bedrock=false             # Bedrock使用フラグ
     local bedrock_region=""             # Bedrockリージョン
     local bedrock_profile=""            # AWS プロファイル
@@ -476,14 +474,6 @@ ccc_main() {
             show_separator=true
             shift
             ;;
-        --update)
-            do_update=true
-            shift
-            ;;
-        --use-cache)
-            use_cache=true
-            shift
-            ;;
         --bedrock)
             use_bedrock=true
             # --bedrockオプションはccc専用でClaudeコマンドには渡さない
@@ -541,19 +531,58 @@ ccc_main() {
             block_outbound=true
             shift
             ;;
-        mcp)
-            # mcpサブコマンドが指定された場合、すべてClaude Codeに委譲
+        build)
+            # buildサブコマンドが指定された場合
             shift
-            # 残りの引数をすべてClaude Codeのmcpサブコマンドに渡す
-            command_args=("claude" "mcp" "$@")
-            break
-            ;;
-        mcp-build)
-            # mcp-buildサブコマンドが指定された場合
-            shift
-            # MCP設定ビルド処理を実行して終了
-            process_mcp_build "$@"
+            local build_use_cache=false
+            
+            # buildサブコマンドの引数を解析
+            while [[ $# -gt 0 ]]; do
+                case $1 in
+                --use-cache)
+                    build_use_cache=true
+                    shift
+                    ;;
+                -h|--help)
+                    echo "使用法: $(basename "$0") build [オプション]"
+                    echo ""
+                    echo "Claudeコンテナイメージをビルドします。"
+                    echo ""
+                    echo "オプション:"
+                    echo "  --use-cache    ビルド時にキャッシュを使用する（デフォルト：キャッシュ無効）"
+                    echo "  -h, --help     このヘルプメッセージを表示"
+                    return 0
+                    ;;
+                *)
+                    log_error "不明なオプション: $1"
+                    echo "使用法: $(basename "$0") build [--use-cache]"
+                    return 1
+                    ;;
+                esac
+            done
+            
+            # ビルド処理を実行して終了
+            if [ "$build_use_cache" = true ]; then
+                update_claude_image "use_cache"
+            else
+                update_claude_image
+            fi
             return $?
+            ;;
+        mcp)
+            # mcpサブコマンドが指定された場合
+            shift
+            # 最初の引数がbuildかチェック
+            if [ $# -gt 0 ] && [ "$1" = "build" ]; then
+                # mcp buildの場合は従来のmcp-build処理を実行
+                shift
+                process_mcp_build "$@"
+                return $?
+            else
+                # それ以外はすべてClaude Codeに委譲
+                command_args=("claude" "mcp" "$@")
+                break
+            fi
             ;;
         --)
             shift
@@ -582,16 +611,6 @@ ccc_main() {
             ;;
         esac
     done
-
-    # 更新が要求された場合
-    if [ "$do_update" = true ]; then
-        if [ "$use_cache" = true ]; then
-            update_claude_image "use_cache"
-        else
-            update_claude_image
-        fi
-        return $?
-    fi
 
     # 永続的な環境変数の設定が要求された場合
     if [ ${#persistent_env_vars[@]} -gt 0 ]; then
@@ -1160,8 +1179,9 @@ show_ccc_help() {
     print_logo "$HOME/.claude" "$HOME/.claude.json" "false" "" "" "" "N/A" "N/A"
     echo -e "\
 ${BOLD}使用法:${NC} $(basename "$0") [cccオプション] [Claudeオプション] [-- コマンド引数...]
+    $(basename "$0") build [--use-cache]
     $(basename "$0") mcp <MCPサブコマンド> [引数...]
-    $(basename "$0") mcp-build <MCPサーバー名>...
+    $(basename "$0") mcp build <MCPサーバー名>...
 
 ${BOLD}ccc固有オプション:${NC}
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
@@ -1175,8 +1195,6 @@ ${BOLD}ccc固有オプション:${NC}
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
     ${GREEN}--separator${NC}                 区切り線の表示を有効化する
-    ${GREEN}--update${NC}                    利用可能な場合、Claudeイメージを更新する (デフォルトはキャッシュ無効)
-    ${GREEN}--use-cache${NC}                 --updateと組み合わせて使用し、ビルド時にキャッシュを有効化する
     ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
     ${GREEN}--bedrock-profile PROFILE${NC}   AWSプロファイルを指定
     ${GREEN}--bedrock-region REGION${NC}     AWSリージョンを指定
@@ -1207,6 +1225,15 @@ ${BOLD}Claudeオプション:${NC}
     
     その他のClaudeオプションについては、コンテナ内で 'claude --help' を実行してください。
 
+${BOLD}buildサブコマンド:${NC}
+    Claudeコンテナイメージをビルドします。
+    
+    ${DIMMED}使用法:${NC}
+    ${GREEN}$(basename "$0") build [オプション]${NC}
+    
+    ${DIMMED}オプション:${NC}
+    ${GREEN}--use-cache${NC}    ビルド時にキャッシュを使用する（デフォルト：キャッシュ無効）
+
 ${BOLD}MCPサブコマンド:${NC}
     MCPサブコマンドはすべてClaude Code本体の機能を利用します。
     利用可能なコマンドについては 'claude mcp --help' を参照してください。
@@ -1218,12 +1245,13 @@ ${BOLD}MCPサブコマンド:${NC}
     ${GREEN}$(basename "$0") mcp remove <name>${NC}           MCPサーバーを削除
     ${GREEN}$(basename "$0") mcp enable <name>${NC}           MCPサーバーを有効化
     ${GREEN}$(basename "$0") mcp disable <name>${NC}          MCPサーバーを無効化
+    ${GREEN}$(basename "$0") mcp build <MCPサーバー名>...${NC} MCPサーバー設定を統合して.mcp.jsonを生成
 
-${BOLD}mcp-buildサブコマンド:${NC}
+${BOLD}mcp buildサブコマンド:${NC}
     MCPサーバー設定ファイルを統合して.mcp.jsonを生成します。
     
     ${DIMMED}使用法:${NC}
-    ${GREEN}$(basename "$0") mcp-build <MCPサーバー名>...${NC}
+    ${GREEN}$(basename "$0") mcp build <MCPサーバー名>...${NC}
     
     ${DIMMED}動作:${NC}
     1. 指定されたMCPサーバー名に対して、[サーバー名].jsonファイルを検索
