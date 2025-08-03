@@ -12,13 +12,11 @@ Initialize a new specification based on the provided project description:
 ## Steering Context Validation
 
 ### Check Steering Documents
-
 - Structure context: @.kiro/steering/structure.md
 - Technical constraints: @.kiro/steering/tech.md  
 - Product context: @.kiro/steering/product.md
 
 ### Verify Steering Exists
-
 - Steering files: !`[ -d .kiro/steering ] && ls -la .kiro/steering/ || echo "Steering directory not found - proceeding without steering context"`
 
 **FLEXIBILITY**: For new features or empty projects, steering documents are recommended but not required. If steering documents are missing or empty, you may proceed directly to spec generation phase.
@@ -28,9 +26,7 @@ Initialize a new specification based on the provided project description:
 **SCOPE**: This command initializes the directory structure and metadata based on the detailed project description provided.
 
 ### 1. Analyze Project Description
-
 From the provided description ($ARGUMENTS), extract:
-
 - Project purpose and goals
 - Key features and functionality
 - Target users or use cases
@@ -38,22 +34,17 @@ From the provided description ($ARGUMENTS), extract:
 - Any specific implementation details mentioned
 
 ### 2. Generate Feature Name
-
 Based on the analysis, create a concise, descriptive feature name that captures the essence of the project.
 
 ### 3. Create Spec Directory
-
 Create `.kiro/specs/{generated-feature-name}/` directory with template files:
-
 - `requirements.md` - Empty template for user stories
 - `design.md` - Empty template for technical design  
 - `tasks.md` - Empty template for implementation tasks
 - `spec.json` - Metadata and approval tracking
 
 ### 4. Initialize spec.json Metadata
-
 Create initial metadata with approval tracking and project description:
-
 ```json
 {
   "feature_name": "{generated-feature-name}",
@@ -83,7 +74,6 @@ Create initial metadata with approval tracking and project description:
 ### 5. Create Template Files with Project Context
 
 #### requirements.md (Template with Context)
-
 ```markdown
 # Requirements Document
 
@@ -102,7 +92,6 @@ $ARGUMENTS
 ```
 
 #### design.md (Empty Template)
-
 ```markdown
 # Design Document
 
@@ -115,7 +104,6 @@ $ARGUMENTS
 ```
 
 #### tasks.md (Empty Template)
-
 ```markdown
 # Implementation Plan
 
@@ -127,7 +115,6 @@ $ARGUMENTS
 ```
 
 ### 6. Update CLAUDE.md Reference
-
 Add the new spec to the active specifications list with the generated feature name and a brief description.
 
 ## Next Steps After Initialization
@@ -135,7 +122,6 @@ Add the new spec to the active specifications list with the generated feature na
 Follow the proper spec-driven development workflow with **interactive approval**:
 
 **Streamlined workflow with interactive approval:**
-
 1. **Generate requirements**: `/spec-requirements {feature-name}`
 2. **Generate design with interactive approval**: `/spec-design {feature-name}`
    - Will prompt: "requirements.mdをレビューしましたか？ [y/N]"
@@ -147,7 +133,6 @@ Follow the proper spec-driven development workflow with **interactive approval**
 4. **Start implementation**: After all phases are complete
 
 **Benefits of interactive approval:**
-
 - ✅ **No manual spec.json editing** required
 - ✅ **Review enforcement** maintained through confirmation prompts
 - ✅ **Streamlined workflow** with immediate progression
@@ -169,11 +154,9 @@ If you prefer manual control, you can still edit spec.json directly between phas
 ## Output Format
 
 After initialization, provide:
-
 1. Generated feature name and rationale
 2. Brief project summary
 3. Created file paths
 4. Clear next steps with the exact command to run
 
 This ensures the proper spec-driven development workflow with mandatory review phases between each step.
-

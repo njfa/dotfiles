@@ -10,13 +10,11 @@ Generate comprehensive requirements for feature: **$ARGUMENTS**
 ## Context Validation
 
 ### Steering Context
-
 - Architecture context: @.kiro/steering/structure.md
 - Technical constraints: @.kiro/steering/tech.md
 - Product context: @.kiro/steering/product.md
 
 ### Existing Spec Context
-
 - Current spec directory: !`ls -la .kiro/specs/$ARGUMENTS/`
 - Current requirements: @.kiro/specs/$ARGUMENTS/requirements.md
 - Spec metadata: @.kiro/specs/$ARGUMENTS/spec.json
@@ -28,7 +26,6 @@ Generate an initial set of requirements in EARS format based on the feature idea
 Don't focus on code exploration in this phase. Instead, just focus on writing requirements which will later be turned into a design.
 
 ### Requirements Generation Guidelines
-
 1. **Focus on Core Functionality**: Start with the essential features from the user's idea
 2. **Use EARS Format**: All acceptance criteria must use proper EARS syntax
 3. **No Sequential Questions**: Generate initial version first, then iterate based on user feedback
@@ -39,14 +36,12 @@ Don't focus on code exploration in this phase. Instead, just focus on writing re
 **EARS (Easy Approach to Requirements Syntax)** is the mandatory format for acceptance criteria:
 
 **Primary EARS Patterns:**
-
 - **WHEN** [event/condition] **THEN** [system] **SHALL** [response]
 - **IF** [precondition/state] **THEN** [system] **SHALL** [response]
 - **WHILE** [ongoing condition] **THE SYSTEM SHALL** [continuous behavior]
 - **WHERE** [location/context] **THE SYSTEM SHALL** [contextual behavior]
 
 **Combined Patterns:**
-
 - **WHEN** [event] **AND** [additional condition] **THEN** [system] **SHALL** [response]
 - **IF** [condition] **AND** [additional condition] **THEN** [system] **SHALL** [response]
 
@@ -70,13 +65,11 @@ Don't focus on code exploration in this phase. Instead, just focus on writing re
 ```
 
 **Granularity Guidelines:**
-
 - **High-level Requirements**: Major functional areas from the feature idea
 - **User Stories**: Specific user needs within each requirement area  
 - **Acceptance Criteria**: Testable conditions using EARS format
 
 ### 3. Requirements Document Structure
-
 Generate requirements.md in the language specified in spec.json (check `@.kiro/specs/$ARGUMENTS/spec.json` for "language" field):
 
 ```markdown
@@ -109,9 +102,7 @@ This section should have EARS requirements
 ```
 
 ### 4. Update Metadata
-
 Update spec.json with:
-
 ```json
 {
   "phase": "requirements-generated",
@@ -126,7 +117,6 @@ Update spec.json with:
 ```
 
 ### 5. Document Generation Only
-
 Generate the requirements document content ONLY. Do not include any review or approval instructions in the actual document file.
 
 ---
@@ -136,11 +126,9 @@ Generate the requirements document content ONLY. Do not include any review or ap
 The following is for Claude Code conversation only - NOT for the generated document:
 
 ### Next Phase Uses Interactive Approval
-
 After generating requirements.md, the next phase (`/spec-design $ARGUMENTS`) will use interactive approval:
 
 **Next interaction will be**:
-
 ```
 /spec-design feature-name
 # → "requirements.mdをレビューしましたか？ [y/N]"
@@ -149,23 +137,19 @@ After generating requirements.md, the next phase (`/spec-design $ARGUMENTS`) wil
 ```
 
 ### Benefits of Interactive Approval
-
 1. **Streamlined workflow**: No manual spec.json editing required
 2. **Review enforcement**: Still requires human confirmation of review
 3. **Immediate progression**: Approved phases proceed automatically
 4. **Safety maintained**: 'N' response stops execution for proper review
 
-### Review Checklist (for user reference)
-
+### Review Checklist (for user reference):
 - [ ] Requirements are clear and complete
 - [ ] User stories cover all necessary functionality
 - [ ] Acceptance criteria are testable
 - [ ] Requirements align with project goals
 
 ### Traditional Manual Approval Still Available
-
 If needed, you can still manually approve by updating `.kiro/specs/$ARGUMENTS/spec.json`:
-
 ```json
 {
   "approvals": {
@@ -191,4 +175,4 @@ If needed, you can still manually approve by updating `.kiro/specs/$ARGUMENTS/sp
 7. **Update tracking metadata** upon completion
 
 Generate requirements that provide a solid foundation for the design phase, focusing on the core functionality from the feature idea.
-
+think
