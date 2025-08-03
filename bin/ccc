@@ -584,6 +584,105 @@ ccc_main() {
                 break
             fi
             ;;
+        deploy-claude-md)
+            # deploy-claude-mdサブコマンドが指定された場合
+            shift
+            local source_dir="$HOME/.claude"
+            local target_file="CLAUDE.md"
+            
+            # ソースディレクトリの存在確認
+            if [ ! -d "$source_dir" ]; then
+                log_error "ディレクトリが存在しません: $source_dir"
+                return 1
+            fi
+            
+            # CLAUDE_*.md形式のファイルを検索
+            local claude_files=()
+            while IFS= read -r -d '' file; do
+                claude_files+=("$file")
+            done < <(find "$source_dir" -maxdepth 1 -name "CLAUDE_*.md" -type f -print0 | sort -z)
+            
+            if [ ${#claude_files[@]} -eq 0 ]; then
+                log_error "$source_dir にCLAUDE_*.md形式のファイルが見つかりません"
+                return 1
+            fi
+            
+            local selected_file=""
+            
+            # fzfが利用可能か確認
+            if command -v fzf >/dev/null 2>&1; then
+                # fzfを使用してファイルを選択
+                selected_file=$(printf '%s\n' "${claude_files[@]}" | fzf --prompt="配置するCLAUDE.mdファイルを選択: " --height=40% --reverse)
+                
+                # fzfでキャンセルされた場合
+                if [ -z "$selected_file" ]; then
+                    log_info "選択がキャンセルされました"
+                    return 0
+                fi
+            else
+                # fzfが利用できない場合は番号選択
+                log_info "利用可能なCLAUDE_*.mdファイル:"
+                echo
+                for i in "${!claude_files[@]}"; do
+                    local filename=$(basename "${claude_files[$i]}")
+                    # CLAUDE_プレフィックスと.md拡張子を除去して表示
+                    local display_name="${filename#CLAUDE_}"
+                    display_name="${display_name%.md}"
+                    printf "  %2d) %s\n" $((i + 1)) "$display_name"
+                done
+                echo
+                
+                # 選択を促す
+                local selection
+                while true; do
+                    read -p "配置するファイルの番号を入力してください (1-${#claude_files[@]}, 0でキャンセル): " selection
+                    
+                    # 入力が数字かチェック
+                    if [[ ! "$selection" =~ ^[0-9]+$ ]]; then
+                        log_error "数字を入力してください"
+                        continue
+                    fi
+                    
+                    # キャンセル
+                    if [ "$selection" -eq 0 ]; then
+                        log_info "選択がキャンセルされました"
+                        return 0
+                    fi
+                    
+                    # 範囲チェック
+                    if [ "$selection" -ge 1 ] && [ "$selection" -le ${#claude_files[@]} ]; then
+                        selected_file="${claude_files[$((selection - 1))]}"
+                        break
+                    else
+                        log_error "1から${#claude_files[@]}の範囲で入力してください"
+                    fi
+                done
+            fi
+            
+            # 既存のCLAUDE.mdが存在する場合は退避
+            if [ -f "$target_file" ]; then
+                local backup_file="CLAUDE.$(date +%Y%m%d_%H%M%S).md"
+                log_info "既存のCLAUDE.mdを退避しています: $backup_file"
+                if ! mv "$target_file" "$backup_file"; then
+                    log_error "CLAUDE.mdの退避に失敗しました"
+                    return 1
+                fi
+                log_success "CLAUDE.mdを退避しました: $backup_file"
+            fi
+            
+            # ファイルをコピー
+            local selected_basename=$(basename "$selected_file")
+            log_info "$selected_basename をCLAUDE.mdとして配置しています..."
+            if ! cp "$selected_file" "$target_file"; then
+                log_error "ファイルのコピーに失敗しました"
+                return 1
+            fi
+            
+            log_success "CLAUDE.mdを配置しました"
+            log_info "配置元: $selected_file"
+            log_info "配置先: $(pwd)/$target_file"
+            return 0
+            ;;
         --)
             shift
             # "--" 以降の引数があればそれをコマンドとして使用
@@ -1182,6 +1281,7 @@ ${BOLD}使用法:${NC} $(basename "$0") [cccオプション] [Claudeオプショ
     $(basename "$0") build [--use-cache]
     $(basename "$0") mcp <MCPサブコマンド> [引数...]
     $(basename "$0") mcp build <MCPサーバー名>...
+    $(basename "$0") deploy-claude-md
 
 ${BOLD}ccc固有オプション:${NC}
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
@@ -1233,6 +1333,23 @@ ${BOLD}buildサブコマンド:${NC}
     
     ${DIMMED}オプション:${NC}
     ${GREEN}--use-cache${NC}    ビルド時にキャッシュを使用する（デフォルト：キャッシュ無効）
+
+${BOLD}deploy-claude-mdサブコマンド:${NC}
+    ~/.claude/CLAUDE_*.md形式のファイルからプロジェクトのCLAUDE.mdを配置します。
+    
+    ${DIMMED}使用法:${NC}
+    ${GREEN}$(basename "$0") deploy-claude-md${NC}
+    
+    ${DIMMED}動作:${NC}
+    1. ~/.claude/ ディレクトリのCLAUDE_*.md形式のファイルを検索
+    2. fzfが利用可能な場合は対話的選択、不可能な場合は番号選択
+    3. 既存のCLAUDE.mdがある場合は日時付きでバックアップ（CLAUDE.YYYYMMDD_HHMMSS.md）
+    4. 選択したファイルをプロジェクトルートにCLAUDE.mdとしてコピー
+    
+    ${DIMMED}ファイル例:${NC}
+    - CLAUDE_spec_driven.md → 仕様駆動開発用設定
+    - CLAUDE_code_review.md → コードレビュー用設定
+    - CLAUDE_testing.md → テスト用設定
 
 ${BOLD}MCPサブコマンド:${NC}
     MCPサブコマンドはすべてClaude Code本体の機能を利用します。
