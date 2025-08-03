@@ -49,3 +49,5 @@ package-lock.json
 *.log
 
 docs/_*
+
+.serena
