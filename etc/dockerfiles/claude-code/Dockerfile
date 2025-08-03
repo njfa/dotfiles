@@ -133,7 +133,7 @@ RUN npm config set prefix /usr/local/share/npm-global && \
     npm install -g @anthropic-ai/claude-code prettier markdownlint-cli && \
     npm cache clean --force && \
     uv venv --system-site-packages /usr/local/share/python-env && \
-    uv pip install --python /usr/local/share/python-env pip yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog
+    uv pip install --python /usr/local/share/python-env pip yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog psutil
 
 RUN git clone https://github.com/oraios/serena /usr/local/share/serena
 
