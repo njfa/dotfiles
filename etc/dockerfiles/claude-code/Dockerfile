@@ -55,7 +55,7 @@ ENV DEVCONTAINER=true
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
 ENV PYTHON_VERSION="${PYTHON_VERSION:-3.13}"
 ENV UV_CACHE_DIR=/usr/local/share/uv-cache
-ENV PATH=/usr/local/share/npm-global/bin:/root/.local/bin:$PATH
+ENV PATH=/usr/local/share/npm-global/bin:/usr/local/share/python-env/bin:/root/.local/bin:$PATH
 ENV SHELL="/bin/zsh"
 ENV EDITOR="nvim"
 
@@ -105,16 +105,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/google-java-format && \
 
 # uvをインストール
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/uv && \
-    uv python install ${PYTHON_VERSION}
-
-# entrypointスクリプトの作成
-RUN echo '#!/bin/bash' > /usr/local/bin/entrypoint.sh && \
-    echo 'export UV_CACHE_DIR="/usr/local/share/uv-cache"' >> /usr/local/bin/entrypoint.sh && \
-    echo 'export PATH="/usr/local/share/npm-global/bin:/usr/local/share/python-env/bin:/root/.local/bin:$PATH"' >> /usr/local/bin/entrypoint.sh && \
-    echo '' >> /usr/local/bin/entrypoint.sh && \
-    echo 'exec "$@"' >> /usr/local/bin/entrypoint.sh && \
-    chmod +x /usr/local/bin/entrypoint.sh
+    mv /root/.local/bin/uv /usr/local/bin/uv
 
 # Set up non-root user
 USER node
@@ -132,10 +123,10 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 RUN npm config set prefix /usr/local/share/npm-global && \
     npm install -g @anthropic-ai/claude-code prettier markdownlint-cli && \
     npm cache clean --force && \
+    uv python install ${PYTHON_VERSION} && \
     uv venv --system-site-packages /usr/local/share/python-env && \
     uv pip install --python /usr/local/share/python-env pip yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog psutil
 
 RUN git clone https://github.com/oraios/serena /usr/local/share/serena
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["claude"]
