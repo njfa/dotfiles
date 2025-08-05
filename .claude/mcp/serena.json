@@ -10,7 +10,7 @@
             "--context",
             "ide-assistant",
             "--project",
-            "$(pwd)"
+            "${WORKING_DIR}"
         ]
     }
 }
