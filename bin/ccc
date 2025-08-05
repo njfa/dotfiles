@@ -59,6 +59,25 @@ format_path() {
     fi
 }
 
+# AWS CLIを使用してリージョンを取得する関数
+get_aws_region_from_profile() {
+    local profile="$1"
+
+    # プロファイルが指定されている場合は--profileオプションを使用
+    local aws_cmd="aws configure get region"
+    if [ -n "$profile" ] && [ "$profile" != "default" ]; then
+        aws_cmd="aws configure get region --profile $profile"
+    fi
+
+    # AWS CLIを使用してリージョンを取得
+    local region=""
+    if command -v aws >/dev/null 2>&1; then
+        region=$($aws_cmd 2>/dev/null | tr -d '\n\r')
+    fi
+
+    echo "$region"
+}
+
 # Claude Codeのバージョンを取得する関数
 get_claude_version() {
     local docker_image="$1"
@@ -98,8 +117,194 @@ print_logo() {
     shift 8
     local mount_paths=("$@")
 
-    # 固定幅の枠を作成
-    local frame_width=50
+    # 各行の内容を配列に格納（動的な枠幅を計算するため）
+    local lines=()
+    local max_length=0
+
+    # タイトル行
+    local title_line="✻ Containered Claude Code (ccc)"
+    lines+=("$title_line")
+    if [ ${#title_line} -gt $max_length ]; then
+        max_length=${#title_line}
+    fi
+
+    # 空行（計算不要）
+    lines+=("")
+
+    # バージョン行の内容を構築
+    local version_line="Claude Code Version: $claude_version"
+    if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
+        if [ "$claude_version" = "$latest_version" ]; then
+            version_line="${version_line} ✓"
+        else
+            version_line="${version_line} (latest: $latest_version)"
+        fi
+    fi
+    lines+=("$version_line")
+    # バージョン行の実際の長さを計算（エスケープシーケンスを除く）
+    local version_display_length
+    if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
+        if [ "$claude_version" = "$latest_version" ]; then
+            version_display_length=$((${#claude_version} + 23)) # "Claude Code Version: " + version + " ✓"
+        else
+            version_display_length=$((${#claude_version} + ${#latest_version} + 32)) # 全体の長さ
+        fi
+    else
+        version_display_length=$((${#claude_version} + 21)) # "Claude Code Version: " + version
+    fi
+    if [ $version_display_length -gt $max_length ]; then
+        max_length=$version_display_length
+    fi
+
+    # プロバイダー行
+    local provider_line
+    if [ "$use_bedrock" = true ]; then
+        provider_line="Provider: AWS Bedrock"
+    else
+        provider_line="Provider: Anthropic"
+    fi
+    lines+=("$provider_line")
+    if [ ${#provider_line} -gt $max_length ]; then
+        max_length=${#provider_line}
+    fi
+
+    # 区切り線（特殊処理）
+    lines+=("---separator---")
+
+    # Anthropicの場合の認証情報
+    if [ "$use_bedrock" != true ]; then
+        local cred_basename=$(format_path "$credential_path")
+        local conf_basename=$(format_path "$config_path")
+        
+        local cred_line="Credential: $cred_basename"
+        lines+=("$cred_line")
+        if [ ${#cred_line} -gt $max_length ]; then
+            max_length=${#cred_line}
+        fi
+
+        local conf_line="Config: $conf_basename"
+        lines+=("$conf_line")
+        if [ ${#conf_line} -gt $max_length ]; then
+            max_length=${#conf_line}
+        fi
+    else
+        # Bedrockの場合のAWS設定情報
+        # AWS環境変数が設定されている場合はそれを表示
+        local aws_config_info=""
+        if [ -n "$AWS_CONFIG_FILE" ]; then
+            aws_config_info=$(format_path "$AWS_CONFIG_FILE")
+        elif [ -n "$AWS_SHARED_CREDENTIALS_FILE" ]; then
+            aws_config_info=$(format_path "$(dirname "$AWS_SHARED_CREDENTIALS_FILE")")
+        else
+            aws_config_info="~/.aws"
+        fi
+        
+        local aws_conf_line="AWS Config: $aws_config_info"
+        lines+=("$aws_conf_line")
+        if [ ${#aws_conf_line} -gt $max_length ]; then
+            max_length=${#aws_conf_line}
+        fi
+
+        # AWS認証情報
+        local auth_method=""
+        if [ -n "$bedrock_profile" ]; then
+            auth_method="Profile: $bedrock_profile"
+        else
+            auth_method="Default Credentials"
+        fi
+        local auth_line="AWS Auth: $auth_method"
+        lines+=("$auth_line")
+        if [ ${#auth_line} -gt $max_length ]; then
+            max_length=${#auth_line}
+        fi
+
+        # AWSリージョン（優先順位に従って決定）
+        local region_text=""
+        local region_source=""
+
+        if [ -n "$bedrock_region" ]; then
+            # 1. --bedrock-regionで指定された値
+            region_text="$bedrock_region"
+            region_source=" (specified)"
+        else
+            # 2. AWS CLIから読み込む
+            local config_region=$(get_aws_region_from_profile "$bedrock_profile")
+            if [ -n "$config_region" ]; then
+                region_text="$config_region"
+                if [ -n "$bedrock_profile" ] && [ "$bedrock_profile" != "default" ]; then
+                    region_source=" (profile: $bedrock_profile)"
+                else
+                    region_source=" (config)"
+                fi
+            fi
+        fi
+        
+        # リージョンが未設定の場合
+        if [ -z "$region_text" ]; then
+            region_text="not set"
+            region_source=""
+        fi
+        
+        region_text="${region_text}${region_source}"
+        local region_line="AWS Region: $region_text"
+        lines+=("$region_line")
+        if [ ${#region_line} -gt $max_length ]; then
+            max_length=${#region_line}
+        fi
+
+        # Bedrockモデル
+        if [ -n "$model" ]; then
+            local model_line="Bedrock Model: $model"
+            lines+=("$model_line")
+            if [ ${#model_line} -gt $max_length ]; then
+                max_length=${#model_line}
+            fi
+        fi
+
+        # CA証明書バンドル
+        if [ -n "$bedrock_ca_bundle" ]; then
+            local ca_bundle_basename=$(format_path "$bedrock_ca_bundle")
+            local ca_line="CA Bundle: $ca_bundle_basename"
+            lines+=("$ca_line")
+            if [ ${#ca_line} -gt $max_length ]; then
+                max_length=${#ca_line}
+            fi
+        fi
+
+        # プロンプトキャッシュ
+        local caching_status="Enabled"
+        if [ "$bedrock_disable_caching" = true ]; then
+            caching_status="Disabled"
+        fi
+        local cache_line="Prompt Cache: $caching_status"
+        lines+=("$cache_line")
+        if [ ${#cache_line} -gt $max_length ]; then
+            max_length=${#cache_line}
+        fi
+    fi
+
+    # マウントパスの処理
+    if [ ${#mount_paths[@]} -gt 0 ]; then
+        lines+=("---separator---")
+        local mount_header="Mount Paths:"
+        lines+=("$mount_header")
+        if [ ${#mount_header} -gt $max_length ]; then
+            max_length=${#mount_header}
+        fi
+
+        for src_path in "${mount_paths[@]}"; do
+            local formatted_path=$(format_path "$src_path")
+            local mount_line="  $formatted_path"
+            lines+=("$mount_line")
+            if [ ${#mount_line} -gt $max_length ]; then
+                max_length=${#mount_line}
+            fi
+        done
+    fi
+
+    # 動的な枠幅を計算（左右のパディングとインデント分を追加）
+    # インデント（3スペース）+ 内容 + 余裕（3スペース）
+    local frame_width=$((max_length + 6))
 
     # 横線を作成する関数
     create_horizontal_line() {
@@ -114,139 +319,72 @@ print_logo() {
     # 上部の枠線
     echo -e "${FRAME_COLOR}╭$(create_horizontal_line "─")╮${NC}"
 
-    # タイトル行
-    echo -e "${FRAME_COLOR}│ ✻ ${NC}Containered Claude Code (ccc)$(printf '%*s' $((frame_width - 33)) '') ${FRAME_COLOR}│${NC}"
-
-    # 空行
-    echo -e "${FRAME_COLOR}│$(printf '%*s' $((frame_width)) '')│${NC}"
-
-    # バージョン行
-    local version_display=""
-
-    # バージョン比較と表示テキストの設定
-    if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
-        if [ "$claude_version" = "$latest_version" ]; then
-            version_display="$claude_version ${GREEN}✓${NC}"
+    # 配列から各行を表示
+    local line_index=0
+    for line_content in "${lines[@]}"; do
+        if [ "$line_content" = "" ]; then
+            # 空行
+            echo -e "${FRAME_COLOR}│$(printf '%*s' $((frame_width)) '')│${NC}"
+        elif [ "$line_content" = "---separator---" ]; then
+            # 区切り線
+            echo -e "${FRAME_COLOR}│${DIMMED}$(create_horizontal_line "─")${NC}${FRAME_COLOR}│${NC}"
         else
-            version_display="$claude_version ${UPDATE_COLOR}(latest: $latest_version)${NC}"
-        fi
-    else
-        version_display="$claude_version"
-    fi
-
-    # バージョン表示部分の実際の長さを計算（エスケープシーケンスを除く）
-    local version_display_length
-    if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
-        if [ "$claude_version" = "$latest_version" ]; then
-            version_display_length=$((${#claude_version} + 2)) # スペース + ✓
-        else
-            version_display_length=$((${#claude_version} + 11 + ${#latest_version})) # " (latest: " + latest_version + ")"
-        fi
-    else
-        version_display_length=${#claude_version}
-    fi
-
-    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} ${version_display}$(printf '%*s' $((frame_width - 25 - version_display_length)) '') ${FRAME_COLOR}│${NC}"
-
-    # プロバイダー行
-    if [ "$use_bedrock" = true ]; then
-        local provider_text="AWS Bedrock"
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Provider:${NC} ${UPDATE_COLOR}$provider_text${NC}$(printf '%*s' $((frame_width - 14 - ${#provider_text})) '') ${FRAME_COLOR}│${NC}"
-    else
-        local provider_text="Anthropic"
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Provider:${NC} $provider_text$(printf '%*s' $((frame_width - 14 - ${#provider_text})) '') ${FRAME_COLOR}│${NC}"
-    fi
-
-    # 区切り線
-    echo -e "${FRAME_COLOR}│${DIMMED}$(create_horizontal_line "─")${NC}${FRAME_COLOR}│${NC}"
-
-    # Anthropicの場合の認証情報
-    if [ "$use_bedrock" != true ]; then
-        # ファイル名のみを取得
-        local cred_basename=$(format_path "$credential_path")
-        local conf_basename=$(format_path "$config_path")
-
-        # 認証情報行
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Credential:${NC} $cred_basename$(printf '%*s' $((frame_width - 16 - ${#cred_basename})) '') ${FRAME_COLOR}│${NC}"
-
-        # 設定ファイル行
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Config:${NC} $conf_basename$(printf '%*s' $((frame_width - 12 - ${#conf_basename})) '') ${FRAME_COLOR}│${NC}"
-    else
-        # Bedrockの場合のAWS設定情報
-        if [ -n "$aws_config_path" ]; then
-            local aws_conf_basename=$(format_path "$aws_config_path")
-            echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Config:${NC} $aws_conf_basename$(printf '%*s' $((frame_width - 16 - ${#aws_conf_basename})) '') ${FRAME_COLOR}│${NC}"
-        fi
-
-        # AWS認証情報の確認
-        local auth_method=""
-        if [ -n "$bedrock_profile" ]; then
-            auth_method="Profile: $bedrock_profile"
-        else
-            auth_method="Default Credentials"
-        fi
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Auth:${NC} $auth_method$(printf '%*s' $((frame_width - 14 - ${#auth_method})) '') ${FRAME_COLOR}│${NC}"
-
-        # AWSリージョンの表示
-        local region_text=""
-        if [ -n "$bedrock_region" ]; then
-            region_text="$bedrock_region"
-        else
-            # AWS設定ファイルまたは環境変数からリージョンを取得
-            local default_region=$(aws configure get region 2>/dev/null || echo "us-east-1")
-            region_text="$default_region (default)"
-        fi
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}AWS Region:${NC} $region_text$(printf '%*s' $((frame_width - 16 - ${#region_text})) '') ${FRAME_COLOR}│${NC}"
-
-        # Bedrockモデルの表示（設定されている場合）
-        if [ -n "$model" ]; then
-            echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Bedrock Model:${NC} $model$(printf '%*s' $((frame_width - 18 - ${#model})) '') ${FRAME_COLOR}│${NC}"
-        fi
-
-        # CA証明書バンドルの表示（設定されている場合）
-        if [ -n "$bedrock_ca_bundle" ]; then
-            local ca_bundle_basename=$(format_path "$bedrock_ca_bundle")
-            echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}CA Bundle:${NC} $ca_bundle_basename$(printf '%*s' $((frame_width - 14 - ${#ca_bundle_basename})) '') ${FRAME_COLOR}│${NC}"
-        fi
-
-        # プロンプトキャッシュの状態表示
-        local caching_status="Enabled"
-        if [ "$bedrock_disable_caching" = true ]; then
-            caching_status="Disabled"
-        fi
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Prompt Cache:${NC} $caching_status$(printf '%*s' $((frame_width - 18 - ${#caching_status})) '') ${FRAME_COLOR}│${NC}"
-    fi
-
-    # マウントパスの表示（存在する場合）
-    if [ ${#mount_paths[@]} -gt 0 ]; then
-        # 区切り線
-        echo -e "${FRAME_COLOR}│${DIMMED}$(create_horizontal_line "─")${NC}${FRAME_COLOR}│${NC}"
-
-        # マウントパスのヘッダー
-        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Mount Paths:${NC}$(printf '%*s' $((frame_width - 16)) '') ${FRAME_COLOR}│${NC}"
-
-        # 各マウントパスを表示
-        for i in "${!mount_paths[@]}"; do
-            local src_path="${mount_paths[$i]}"
-            local formatted_path=$(format_path "$src_path")
-
-            # マウント先のパスを決定
-            if [ ${#mount_paths[@]} -eq 1 ]; then
-                local target_path="/workspace/"
+            # 通常の行
+            # タイトル行の特別処理
+            if [ $line_index -eq 0 ]; then
+                echo -e "${FRAME_COLOR}│ ${NC}${line_content}$(printf '%*s' $((frame_width - ${#line_content} - 2)) '') ${FRAME_COLOR}│${NC}"
+            # バージョン行の特別処理（色付き）
+            elif [[ "$line_content" =~ ^"Claude Code Version:" ]]; then
+                local version_base="Claude Code Version: $claude_version"
+                local padding_needed=$((frame_width - ${#version_base} - 4))
+                
+                if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
+                    if [ "$claude_version" = "$latest_version" ]; then
+                        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} $claude_version ${GREEN}✓${NC}$(printf '%*s' $((padding_needed - 2)) '') ${FRAME_COLOR}│${NC}"
+                    else
+                        local latest_part=" (latest: $latest_version)"
+                        padding_needed=$((frame_width - ${#version_base} - ${#latest_part} - 4))
+                        echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} $claude_version ${UPDATE_COLOR}(latest: $latest_version)${NC}$(printf '%*s' $padding_needed '') ${FRAME_COLOR}│${NC}"
+                    fi
+                else
+                    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} $claude_version$(printf '%*s' $padding_needed '') ${FRAME_COLOR}│${NC}"
+                fi
+            # プロバイダー行の特別処理（Bedrock時は色付き）
+            elif [[ "$line_content" =~ ^"Provider:" ]]; then
+                if [ "$use_bedrock" = true ]; then
+                    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Provider:${NC} ${UPDATE_COLOR}AWS Bedrock${NC}$(printf '%*s' $((frame_width - 25)) '') ${FRAME_COLOR}│${NC}"
+                else
+                    echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Provider:${NC} Anthropic$(printf '%*s' $((frame_width - 23)) '') ${FRAME_COLOR}│${NC}"
+                fi
+            # Mount Pathsヘッダーの特別処理
+            elif [[ "$line_content" = "Mount Paths:" ]]; then
+                echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}${line_content}${NC}$(printf '%*s' $((frame_width - ${#line_content} - 4)) '') ${FRAME_COLOR}│${NC}"
+            # その他の情報行（色付きラベル）
+            elif [[ "$line_content" =~ ^"Credential:" ]] || [[ "$line_content" =~ ^"Config:" ]] || 
+                 [[ "$line_content" =~ ^"AWS Config:" ]] || [[ "$line_content" =~ ^"AWS Auth:" ]] || 
+                 [[ "$line_content" =~ ^"AWS Region:" ]] || [[ "$line_content" =~ ^"Bedrock Model:" ]] || 
+                 [[ "$line_content" =~ ^"CA Bundle:" ]] || [[ "$line_content" =~ ^"Prompt Cache:" ]]; then
+                # ラベルと値を分離
+                local label="${line_content%%:*}:"
+                local value="${line_content#*: }"
+                echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}${label}${NC} ${value}$(printf '%*s' $((frame_width - ${#line_content} - 4)) '') ${FRAME_COLOR}│${NC}"
+            # マウントパスのインデント行
+            elif [[ "$line_content" =~ ^"  " ]]; then
+                # パスが長すぎる場合は省略
+                local formatted_line="$line_content"
+                local max_path_length=$((frame_width - 7))
+                if [ ${#formatted_line} -gt ${max_path_length} ]; then
+                    # 先頭の空白を保持しながら省略
+                    formatted_line="     ...${line_content: -$((max_path_length - 8))}"
+                fi
+                echo -e "${FRAME_COLOR}│${NC}   ${formatted_line}$(printf '%*s' $((frame_width - ${#formatted_line} - 4)) '') ${FRAME_COLOR}│${NC}"
             else
-                local target_path="/workspace/$(basename "$src_path")"
+                # その他の通常行
+                echo -e "${FRAME_COLOR}│${NC}   ${line_content}$(printf '%*s' $((frame_width - ${#line_content} - 4)) '') ${FRAME_COLOR}│${NC}"
             fi
-
-            # パスが長すぎる場合は省略
-            local max_path_length=$((frame_width - 7))
-            if [ ${#formatted_path} -gt ${max_path_length} ]; then
-                # 省略するために`: -`とする必要があるため、空白は削除しないこと
-                formatted_path="...${formatted_path: -$((max_path_length - 3))}"
-            fi
-
-            echo -e "${FRAME_COLOR}│${NC}     $formatted_path$(printf '%*s' $((frame_width - 6 - ${#formatted_path})) '') ${FRAME_COLOR}│${NC}"
-        done
-    fi
+        fi
+        ((line_index++))
+    done
 
     # 下部の枠線
     echo -e "${FRAME_COLOR}╰$(create_horizontal_line "─")╯${NC}"
@@ -385,12 +523,11 @@ ccc_main() {
     local show_info=false               # デフォルトで設定情報を表示
     local show_separator=false          # デフォルトでセパレータを表示
     local quiet=true                    # デフォルトは静かモード
-    local workdir=""                    # 作業ディレクトリ (--workdir)
+    local workdir="/workspace"                    # 作業ディレクトリ (--workdir)
     local source_path_specified=false   # ソースパスが指定されたかどうかのフラグ
     local use_bedrock=false             # Bedrock使用フラグ
     local bedrock_region=""             # Bedrockリージョン
     local bedrock_profile=""            # AWS プロファイル
-    local bedrock_config_file=""        # AWS設定ファイルパス
     local bedrock_ca_bundle=""          # AWS CA証明書バンドルパス
     local bedrock_disable_caching=false # プロンプトキャッシュ無効化フラグ
     local model=""                      # Anthropicモデル
@@ -433,10 +570,6 @@ ccc_main() {
             ;;
         --bedrock-region)
             bedrock_region="$2"
-            shift 2
-            ;;
-        --bedrock-config-file)
-            bedrock_config_file="$2"
             shift 2
             ;;
         --bedrock-ca-bundle)
@@ -762,6 +895,28 @@ ccc_main() {
         log_success "認証情報ディレクトリを作成しました: $claude_credential_path"
     fi
 
+    # uvキャッシュディレクトリの存在確認と作成
+    local uv_cache_dir="/tmp/uv-cache"
+    if [ ! -d "$uv_cache_dir" ]; then
+        log_info "uvキャッシュディレクトリ '$uv_cache_dir' が見つかりません。作成します。"
+        mkdir -p "$uv_cache_dir" || {
+            log_error "uvキャッシュディレクトリの作成に失敗しました: $uv_cache_dir"
+            return 1
+        }
+        log_success "uvキャッシュディレクトリを作成しました: $uv_cache_dir"
+    fi
+
+    # .serenaディレクトリの存在確認と作成
+    local serena_dir="./.serena"
+    if [ ! -d "$serena_dir" ]; then
+        log_info "Serenaディレクトリ '$serena_dir' が見つかりません。作成します。"
+        mkdir -p "$serena_dir" || {
+            log_error "Serenaディレクトリの作成に失敗しました: $serena_dir"
+            return 1
+        }
+        log_success "Serenaディレクトリを作成しました: $serena_dir"
+    fi
+
     # 設定ファイルの存在確認と作成
     if [ ! -f "$claude_config_path" ]; then
         log_info "設定ファイル '$claude_config_path' が見つかりません。作成します。"
@@ -787,37 +942,35 @@ ccc_main() {
         log_success "設定ファイルを作成しました: $claude_config_path"
     fi
 
-    # Bedrock使用時のAWS設定ディレクトリの確認と設定
+    # Bedrock使用時の初期チェック
     if [ "$use_bedrock" = true ]; then
-        # bedrock_config_fileが指定されていない場合はデフォルトを設定
-        if [ -z "$bedrock_config_file" ]; then
-            bedrock_config_file="$HOME/.aws"
+        # AWS CLIが利用可能かチェック
+        if ! command -v aws >/dev/null 2>&1; then
+            log_error "AWS CLIが見つかりません。AWS CLIをインストールしてください。"
+            return 1
         fi
 
-        # AWS設定ディレクトリが存在しない場合はaws configureを実行
-        if [ ! -d "$bedrock_config_file" ]; then
-            log_info "AWS設定ディレクトリ '$bedrock_config_file' が見つかりません。AWS設定を行います。"
+        # AWS設定ファイルの確認（AWS環境変数が設定されていない場合のみ）
+        if [ -z "$AWS_CONFIG_FILE" ] && [ -z "$AWS_SHARED_CREDENTIALS_FILE" ]; then
+            local default_aws_dir="$HOME/.aws"
+            if [ ! -d "$default_aws_dir" ] || [ ! -f "$default_aws_dir/config" ]; then
+                log_info "AWS設定ファイルが見つかりません。AWS設定を行います。"
 
-            # プロファイルオプションの設定
-            local aws_configure_cmd="aws configure"
-            if [ -n "$bedrock_profile" ]; then
-                aws_configure_cmd="aws configure --profile $bedrock_profile"
-                log_info "プロファイル '$bedrock_profile' で設定を行います。"
+                # プロファイルオプションの設定
+                local aws_configure_cmd="aws configure"
+                if [ -n "$bedrock_profile" ]; then
+                    aws_configure_cmd="aws configure --profile $bedrock_profile"
+                    log_info "プロファイル '$bedrock_profile' で設定を行います。"
+                fi
+
+                # aws configureを実行
+                if ! $aws_configure_cmd; then
+                    log_error "AWS設定に失敗しました。"
+                    return 1
+                fi
+
+                log_success "AWS設定が完了しました。"
             fi
-
-            # aws configureを実行
-            if ! $aws_configure_cmd; then
-                log_error "AWS設定に失敗しました。"
-                return 1
-            fi
-
-            # ディレクトリが作成されたことを確認
-            if [ ! -d "$bedrock_config_file" ]; then
-                log_error "AWS設定ディレクトリが作成されませんでした: $bedrock_config_file"
-                return 1
-            fi
-
-            log_success "AWS設定が完了しました。"
         fi
     fi
 
@@ -829,7 +982,9 @@ ccc_main() {
     )
 
     # container_env_vars: コンテナ内で読み込む環境変数（compose.ymlのenvironmentに追加）
-    local container_env_vars=()
+    local container_env_vars=(
+        "WORKING_DIR=$workdir"
+    )
 
     # Bedrock使用時の環境変数設定
     # 優先順位: 環境変数 > AWS config/credential
@@ -844,9 +999,20 @@ ccc_main() {
             container_env_vars+=("AWS_PROFILE=$bedrock_profile")
         fi
 
-        # リージョンが指定されている場合
+        # リージョンの設定（優先順位に従って）
+        local resolved_region=""
+        
+        # 1. --bedrock-regionで指定された値が最優先
         if [ -n "$bedrock_region" ]; then
-            container_env_vars+=("AWS_REGION=$bedrock_region")
+            resolved_region="$bedrock_region"
+        else
+            # 2. AWS CLIからリージョンを読み込む
+            resolved_region=$(get_aws_region_from_profile "$bedrock_profile")
+        fi
+        
+        # リージョンが決定された場合は環境変数に設定
+        if [ -n "$resolved_region" ]; then
+            container_env_vars+=("AWS_REGION=$resolved_region")
         fi
 
         # CA証明書バンドルが指定されている場合
@@ -973,17 +1139,57 @@ ccc_main() {
         fi
     fi
 
-    # Bedrock使用時のAWS設定ディレクトリのマウント設定
+    # Bedrock使用時のAWS設定ファイルのマウント設定
     if [ "$use_bedrock" = true ]; then
-        # この時点でbedrock_config_fileは存在が保証されている（前の処理で確認・作成済み）
-        # AWS設定ディレクトリをマウント
-        if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$bedrock_config_file\", \"target\": \"/home/node/.aws\"}]" -i "$temp_compose_file" 2>/dev/null; then
-            log_error "AWS設定ディレクトリのマウント設定の追加に失敗しました: $bedrock_config_file"
+        # AWS環境変数が設定されている場合は個別にマウント
+        if [ -n "$AWS_CONFIG_FILE" ] || [ -n "$AWS_SHARED_CREDENTIALS_FILE" ]; then
+            # AWS_CONFIG_FILEが設定されている場合
+            if [ -n "$AWS_CONFIG_FILE" ] && [ -f "$AWS_CONFIG_FILE" ]; then
+                local config_source=$(realpath "$AWS_CONFIG_FILE")
+                local config_target="/home/node/.aws/config"
+                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$config_source\", \"target\": \"$config_target\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                    log_error "AWS設定ファイルのマウント設定の追加に失敗しました: $config_source"
+                    rm -f "$temp_compose_file"
+                    return 1
+                fi
+                log_info "AWS設定ファイルをマウント: $config_source -> $config_target"
+            fi
+            
+            # AWS_SHARED_CREDENTIALS_FILEが設定されている場合
+            if [ -n "$AWS_SHARED_CREDENTIALS_FILE" ] && [ -f "$AWS_SHARED_CREDENTIALS_FILE" ]; then
+                local credentials_source=$(realpath "$AWS_SHARED_CREDENTIALS_FILE")
+                local credentials_target="/home/node/.aws/credentials"
+                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$credentials_source\", \"target\": \"$credentials_target\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                    log_error "AWS認証情報ファイルのマウント設定の追加に失敗しました: $credentials_source"
+                    rm -f "$temp_compose_file"
+                    return 1
+                fi
+                log_info "AWS認証情報ファイルをマウント: $credentials_source -> $credentials_target"
+            fi
+        else
+            # デフォルトの ~/.aws ディレクトリをマウント
+            local default_aws_dir="$HOME/.aws"
+            if [ -d "$default_aws_dir" ]; then
+                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$default_aws_dir\", \"target\": \"/home/node/.aws\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                    log_error "AWS設定ディレクトリのマウント設定の追加に失敗しました: $default_aws_dir"
+                    rm -f "$temp_compose_file"
+                    return 1
+                fi
+                log_info "AWS設定ディレクトリをマウント: $default_aws_dir -> /home/node/.aws"
+            fi
+        fi
+    fi
+
+    # .serenaディレクトリのマウント設定
+    local serena_source_dir="$(pwd)/.serena"
+    if [ -d "$serena_source_dir" ]; then
+        local serena_abs_path=$(realpath "$serena_source_dir")
+        if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$serena_abs_path\", \"target\": \"/home/node/.serena\"}]" -i "$temp_compose_file" 2>/dev/null; then
+            log_error "Serenaディレクトリのマウント設定の追加に失敗しました: $serena_abs_path"
             rm -f "$temp_compose_file"
             return 1
         fi
-
-        log_info "AWS設定ディレクトリをマウント: $bedrock_config_file -> /home/node/.aws"
+        log_info "Serenaディレクトリをマウント: $serena_abs_path -> /home/node/.serena"
     fi
 
     # --dangerously-skip-permissionsが指定されていて--block-outboundが指定されていない場合に警告
@@ -1244,7 +1450,7 @@ ccc_main() {
         echo -ne "\r\033[K"
 
         # ロゴを表示
-        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "$bedrock_config_file" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${source_paths[@]}"
+        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${source_paths[@]}"
     fi
 
 
@@ -1310,7 +1516,6 @@ ${BOLD}ccc固有オプション:${NC}
     ${GREEN}--bedrock${NC}                   AWS BedrockのClaude APIを使用する
     ${GREEN}--bedrock-profile PROFILE${NC}   AWSプロファイルを指定
     ${GREEN}--bedrock-region REGION${NC}     AWSリージョンを指定
-    ${GREEN}--bedrock-config-file PATH${NC}  AWS設定ディレクトリを指定 (デフォルト: ~/.aws)
     ${GREEN}--bedrock-ca-bundle PATH${NC}    AWS CA証明書バンドルを指定
     ${GREEN}--bedrock-disable-caching${NC}   プロンプトキャッシュを無効化
     ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
