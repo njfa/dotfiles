@@ -401,6 +401,7 @@ ccc_main() {
     local container_user=""             # コンテナ実行ユーザー
     local -a persistent_env_vars=()     # 永続的に設定する環境変数
     local block_outbound=false          # アウトバウンド通信ブロックフラグ
+    local exclusive_edit_mode=false     # 排他的編集モードフラグ
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -529,6 +530,12 @@ ccc_main() {
         --block-outbound)
             # アウトバウンド通信をブロック
             block_outbound=true
+            shift
+            ;;
+        --exclusive-edit-mode)
+            # 最初に編集したコードの種類（プロダクトコードまたはテストコード）に応じて、
+            # 後続の編集を同じ種類のコードのみに制限する
+            exclusive_edit_mode=true
             shift
             ;;
         build)
@@ -866,6 +873,11 @@ ccc_main() {
     # 高速モデル指定がある場合
     if [ -n "$fast_model" ]; then
         container_env_vars+=("ANTHROPIC_SMALL_FAST_MODEL=$fast_model")
+    fi
+
+    # 排他的編集モードが有効な場合
+    if [ "$exclusive_edit_mode" = true ]; then
+        container_env_vars+=("CLAUDE_OPERATION_TYPE_VALIDATION=true")
     fi
 
     # タイムゾーン情報を取得して設定
@@ -1311,6 +1323,9 @@ ${BOLD}ccc固有オプション:${NC}
     ${GREEN}-h, --help${NC}                  このヘルプメッセージを表示
     ${GREEN}--claude-help${NC}               Claudeコマンドのヘルプを表示
     ${GREEN}--block-outbound${NC}            コンテナのアウトバウンド通信をブロック（セキュリティ強化）
+    ${GREEN}--exclusive-edit-mode${NC}       最初に編集したコードの種類に応じて後続の編集を制限
+                                       （プロダクトコードを編集後はテストコードの編集を禁止、
+                                        テストコードを編集後はプロダクトコードの編集を禁止）
     ${GREEN}--${NC}                          オプション解析の終了を示す。以降の引数はコマンドとして扱われる
 
 ${BOLD}Claudeオプション:${NC}
