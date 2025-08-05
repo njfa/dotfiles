@@ -82,9 +82,21 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # ディレクトリの作成と権限設定
-    mkdir -p /usr/local/share/npm-global /workspace /home/node/.claude /commandhistory /usr/local/share/uv-cache /usr/local/share/python-env && \
+    mkdir -p /usr/local/share/npm-global /workspace /home/node/.claude /home/node/.aws /home/node/.serena /commandhistory /usr/local/share/uv-cache /usr/local/share/python-env && \
     touch /commandhistory/.bash_history && \
-    chown -R node:node /usr/local/share /workspace /home/node/.claude /commandhistory
+    chown -R node:node /usr/local/share /workspace /home/node/.claude /home/node/.aws /home/node/.serena /commandhistory
+
+# AWS CLI v2をインストール
+RUN ARCH=$(dpkg --print-architecture) && \
+    case "$ARCH" in \
+        amd64) AWS_CLI_ARCH="x86_64" ;; \
+        arm64) AWS_CLI_ARCH="aarch64" ;; \
+        *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
+    esac && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-${AWS_CLI_ARCH}.zip" -o "/tmp/awscliv2.zip" && \
+    unzip -q /tmp/awscliv2.zip -d /tmp && \
+    /tmp/aws/install && \
+    rm -rf /tmp/awscliv2.zip /tmp/aws
 
 # git-deltaをインストール
 COPY --from=downloader /tmp/git-delta.deb /tmp/
@@ -103,11 +115,15 @@ RUN echo '#!/bin/bash' > /usr/local/bin/google-java-format && \
     echo 'java -jar /usr/local/bin/google-java-format.jar "$@"' >> /usr/local/bin/google-java-format && \
     chmod +x /usr/local/bin/google-java-format
 
+# serenaコマンドのラッパースクリプトを作成
+RUN echo '#!/bin/bash' > /usr/local/bin/serena && \
+    echo 'uv run --directory /usr/local/share/serena serena "$@"' >> /usr/local/bin/serena && \
+    chmod +x /usr/local/bin/serena
+
 # uvをインストール
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/uv
+    mv /root/.local/bin/uv* /usr/local/bin/
 
-# Set up non-root user
 USER node
 
 # zshとヒストリー設定
@@ -125,7 +141,7 @@ RUN npm config set prefix /usr/local/share/npm-global && \
     npm cache clean --force && \
     uv python install ${PYTHON_VERSION} && \
     uv venv --system-site-packages /usr/local/share/python-env && \
-    uv pip install --python /usr/local/share/python-env pip yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog psutil pytest-benchmark
+    uv pip install --python /usr/local/share/python-env pip yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog psutil pytest-benchmark awslabs.ecs-mcp-server
 
 RUN git clone https://github.com/oraios/serena /usr/local/share/serena
 
