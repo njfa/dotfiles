@@ -1,9 +1,7 @@
 {
     "awslabs.aws-pricing-mcp-server": {
-        "command": "uv",
+        "command": "uvx",
         "args": [
-            "tool",
-            "run",
             "awslabs.aws-pricing-mcp-server@latest"
         ],
         "env": {

@@ -1,9 +1,7 @@
 {
     "awslabs.aws-diagram-mcp-server": {
-        "command": "uv",
+        "command": "uvx",
         "args": [
-            "tool",
-            "run",
             "awslabs.aws-diagram-mcp-server"
         ],
         "env": {
