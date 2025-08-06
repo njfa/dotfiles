@@ -32,5 +32,7 @@ sts.amazonaws.com
 # KMS for server-side encryption (optional)
 .kms.amazonaws.com
 
+.bedrock.us-east-1.amazonaws.com
 .bedrock-runtime.us-east-1.amazonaws.com
+.bedrock.ap-northeast-1.amazonaws.com
 .bedrock-runtime.ap-northeast-1.amazonaws.com
