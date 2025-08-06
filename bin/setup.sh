@@ -118,7 +118,7 @@ error() {
 }
 
 get_dotfiles() {
-    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig|.claude)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -v ".config/nvim"
+    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig|.claude|.serena)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -v ".config/nvim"
 }
 
 exec_cmd() {
