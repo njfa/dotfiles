@@ -67,7 +67,8 @@ RUN apt-get update && \
     curl \
     dnsutils \
     fzf \
-    gh git gnupg2 \
+    gh git gnupg gnupg2 \
+    software-properties-common \
     jq \
     less \
     procps \
@@ -123,6 +124,13 @@ RUN echo '#!/bin/bash' > /usr/local/bin/serena && \
 # uvをインストール
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv* /usr/local/bin/
+
+# terraformをインストール
+RUN wget -O - https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list && \
+    # Terraformをインストール\
+    apt update && \
+    apt install -y --no-install-recommends terraform
 
 USER node
 
