@@ -1,10 +1,9 @@
 {
     "serena": {
-        "command": "uv",
+        "command": "uvx",
         "args": [
-            "run",
-            "--directory",
-            "/usr/local/share/serena",
+            "--from",
+            "git+https://github.com/oraios/serena",
             "serena",
             "start-mcp-server",
             "--context",
