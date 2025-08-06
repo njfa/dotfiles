@@ -115,7 +115,7 @@ print_logo() {
     local claude_version="$7"
     local latest_version="$8"
     shift 8
-    local mount_paths=("$@")
+    local mount_info=("$@")
 
     # 各行の内容を配列に格納（動的な枠幅を計算するため）
     local lines=()
@@ -171,8 +171,9 @@ print_logo() {
     # 区切り線（特殊処理）
     lines+=("---separator---")
 
-    # Anthropicの場合の認証情報
+    # Anthropicの場合
     if [ "$use_bedrock" != true ]; then
+        # Anthropicの場合の認証情報
         local cred_basename=$(format_path "$credential_path")
         local conf_basename=$(format_path "$config_path")
         
@@ -252,15 +253,6 @@ print_logo() {
             max_length=${#region_line}
         fi
 
-        # Bedrockモデル
-        if [ -n "$model" ]; then
-            local model_line="Bedrock Model: $model"
-            lines+=("$model_line")
-            if [ ${#model_line} -gt $max_length ]; then
-                max_length=${#model_line}
-            fi
-        fi
-
         # CA証明書バンドル
         if [ -n "$bedrock_ca_bundle" ]; then
             local ca_bundle_basename=$(format_path "$bedrock_ca_bundle")
@@ -270,21 +262,69 @@ print_logo() {
                 max_length=${#ca_line}
             fi
         fi
+    fi
 
-        # プロンプトキャッシュ
-        local caching_status="Enabled"
-        if [ "$bedrock_disable_caching" = true ]; then
-            caching_status="Disabled"
+    # モデル表示（Bedrock/Anthropic共通）
+    local model_display=""
+    local model_label="Model"
+    
+    # コマンドライン引数から取得したモデル
+    if [ -n "$model" ]; then
+        model_display="$model"
+    # compose.ymlのenvironmentセクションから取得
+    elif [ -f "$compose_path" ]; then
+        local compose_model=$(yq eval '.services.containered-claude.environment.ANTHROPIC_MODEL // ""' "$compose_path" 2>/dev/null)
+        if [ -n "$compose_model" ] && [ "$compose_model" != "null" ]; then
+            model_display="$compose_model (compose.yml)"
         fi
-        local cache_line="Prompt Cache: $caching_status"
-        lines+=("$cache_line")
-        if [ ${#cache_line} -gt $max_length ]; then
-            max_length=${#cache_line}
+    fi
+    
+    # 高速モデル表示（Bedrock/Anthropic共通）
+    local fast_model_display=""
+    local fast_model_label="Fast Model"
+    
+    # コマンドライン引数から取得した高速モデル
+    if [ -n "$fast_model" ]; then
+        fast_model_display="$fast_model"
+    # compose.ymlのenvironmentセクションから取得
+    elif [ -f "$compose_path" ]; then
+        local compose_fast_model=$(yq eval '.services.containered-claude.environment.ANTHROPIC_SMALL_FAST_MODEL // ""' "$compose_path" 2>/dev/null)
+        if [ -n "$compose_fast_model" ] && [ "$compose_fast_model" != "null" ]; then
+            fast_model_display="$compose_fast_model (compose.yml)"
+        fi
+    fi
+    
+    # モデルが設定されている場合は表示
+    if [ -n "$model_display" ]; then
+        local model_line="$model_label: $model_display"
+        lines+=("$model_line")
+        if [ ${#model_line} -gt $max_length ]; then
+            max_length=${#model_line}
+        fi
+    fi
+    
+    # 高速モデルが設定されている場合は表示
+    if [ -n "$fast_model_display" ]; then
+        local fast_model_line="$fast_model_label: $fast_model_display"
+        lines+=("$fast_model_line")
+        if [ ${#fast_model_line} -gt $max_length ]; then
+            max_length=${#fast_model_line}
         fi
     fi
 
-    # マウントパスの処理
-    if [ ${#mount_paths[@]} -gt 0 ]; then
+    # プロンプトキャッシュ
+    local caching_status="Enabled"
+    if [ "$disable_caching" = true ]; then
+        caching_status="Disabled"
+    fi
+    local cache_line="Prompt Cache: $caching_status"
+    lines+=("$cache_line")
+    if [ ${#cache_line} -gt $max_length ]; then
+        max_length=${#cache_line}
+    fi
+
+    # マウント情報の処理
+    if [ ${#mount_info[@]} -gt 0 ]; then
         lines+=("---separator---")
         local mount_header="Mount Paths:"
         lines+=("$mount_header")
@@ -292,9 +332,8 @@ print_logo() {
             max_length=${#mount_header}
         fi
 
-        for src_path in "${mount_paths[@]}"; do
-            local formatted_path=$(format_path "$src_path")
-            local mount_line="  $formatted_path"
+        for mount_item in "${mount_info[@]}"; do
+            local mount_line="  $mount_item"
             lines+=("$mount_line")
             if [ ${#mount_line} -gt $max_length ]; then
                 max_length=${#mount_line}
@@ -332,9 +371,9 @@ print_logo() {
             # 通常の行
             # タイトル行の特別処理
             if [ $line_index -eq 0 ]; then
-                echo -e "${FRAME_COLOR}│ ${NC}${line_content}$(printf '%*s' $((frame_width - ${#line_content} - 2)) '') ${FRAME_COLOR}│${NC}"
+                echo -e "${FRAME_COLOR}│ ${NC}${GREEN}✻${NC} ${line_content:2}$(printf '%*s' $((frame_width - ${#line_content} - 2)) '') ${FRAME_COLOR}│${NC}"
             # バージョン行の特別処理（色付き）
-            elif [[ "$line_content" =~ ^"Claude Code Version:" ]]; then
+            elif [[ "$line_content" == "Claude Code Version:"* ]]; then
                 local version_base="Claude Code Version: $claude_version"
                 local padding_needed=$((frame_width - ${#version_base} - 4))
                 
@@ -350,7 +389,7 @@ print_logo() {
                     echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} $claude_version$(printf '%*s' $padding_needed '') ${FRAME_COLOR}│${NC}"
                 fi
             # プロバイダー行の特別処理（Bedrock時は色付き）
-            elif [[ "$line_content" =~ ^"Provider:" ]]; then
+            elif [[ "$line_content" == "Provider:"* ]]; then
                 if [ "$use_bedrock" = true ]; then
                     echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Provider:${NC} ${UPDATE_COLOR}AWS Bedrock${NC}$(printf '%*s' $((frame_width - 25)) '') ${FRAME_COLOR}│${NC}"
                 else
@@ -360,23 +399,23 @@ print_logo() {
             elif [[ "$line_content" = "Mount Paths:" ]]; then
                 echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}${line_content}${NC}$(printf '%*s' $((frame_width - ${#line_content} - 4)) '') ${FRAME_COLOR}│${NC}"
             # その他の情報行（色付きラベル）
-            elif [[ "$line_content" =~ ^"Credential:" ]] || [[ "$line_content" =~ ^"Config:" ]] || 
-                 [[ "$line_content" =~ ^"AWS Config:" ]] || [[ "$line_content" =~ ^"AWS Auth:" ]] || 
-                 [[ "$line_content" =~ ^"AWS Region:" ]] || [[ "$line_content" =~ ^"Bedrock Model:" ]] || 
-                 [[ "$line_content" =~ ^"CA Bundle:" ]] || [[ "$line_content" =~ ^"Prompt Cache:" ]]; then
+            elif [[ "$line_content" == "Credential:"* ]] || [[ "$line_content" == "Config:"* ]] || 
+                 [[ "$line_content" == "AWS Config:"* ]] || [[ "$line_content" == "AWS Auth:"* ]] || 
+                 [[ "$line_content" == "AWS Region:"* ]] || [[ "$line_content" == "Model:"* ]] || 
+                 [[ "$line_content" == "Fast Model:"* ]] || [[ "$line_content" == "CA Bundle:"* ]] || [[ "$line_content" == "Prompt Cache:"* ]]; then
                 # ラベルと値を分離
                 local label="${line_content%%:*}:"
                 local value="${line_content#*: }"
                 echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}${label}${NC} ${value}$(printf '%*s' $((frame_width - ${#line_content} - 4)) '') ${FRAME_COLOR}│${NC}"
             # マウントパスのインデント行
-            elif [[ "$line_content" =~ ^"  " ]]; then
+            elif [[ "$line_content" == "  "* ]]; then
                 # パスが長すぎる場合は省略
                 local formatted_line="$line_content"
-                local max_path_length=$((frame_width - 7))
-                if [ ${#formatted_line} -gt ${max_path_length} ]; then
-                    # 先頭の空白を保持しながら省略
-                    formatted_line="     ...${line_content: -$((max_path_length - 8))}"
-                fi
+                # local max_path_length=$((frame_width - 7))
+                # if [ ${#formatted_line} -gt ${max_path_length} ]; then
+                #     # 先頭の空白を保持しながら省略
+                #     formatted_line="     ...${line_content: -$((max_path_length - 8))}"
+                # fi
                 echo -e "${FRAME_COLOR}│${NC}   ${formatted_line}$(printf '%*s' $((frame_width - ${#formatted_line} - 4)) '') ${FRAME_COLOR}│${NC}"
             else
                 # その他の通常行
@@ -529,12 +568,10 @@ ccc_main() {
     local bedrock_region=""             # Bedrockリージョン
     local bedrock_profile=""            # AWS プロファイル
     local bedrock_ca_bundle=""          # AWS CA証明書バンドルパス
-    local bedrock_disable_caching=false # プロンプトキャッシュ無効化フラグ
+    local disable_caching=false # プロンプトキャッシュ無効化フラグ
     local model=""                      # Anthropicモデル
     local fast_model=""                 # Anthropicの高速な小型モデル
     local docker_log_level=""           # Dockerログレベル
-    local mcp_services=()               # 起動するMCPサービスのリスト
-    local stop_mcp_services=false       # MCPサービス停止フラグ
     local container_user=""             # コンテナ実行ユーザー
     local -a persistent_env_vars=()     # 永続的に設定する環境変数
     local block_outbound=false          # アウトバウンド通信ブロックフラグ
@@ -576,8 +613,8 @@ ccc_main() {
             bedrock_ca_bundle="$2"
             shift 2
             ;;
-        --bedrock-disable-caching)
-            bedrock_disable_caching=true
+        --disable-caching)
+            disable_caching=true
             shift
             ;;
         --model)
@@ -616,14 +653,6 @@ ccc_main() {
         --log-level)
             docker_log_level="$2"
             shift 2
-            ;;
-        --mcp)
-            mcp_services+=("$2")
-            shift 2
-            ;;
-        --stop-mcp)
-            stop_mcp_services=true
-            shift
             ;;
         --user)
             container_user="$2"
@@ -885,6 +914,9 @@ ccc_main() {
         source_paths=($(pwd))
     fi
 
+    # マウント情報を保存する配列（表示用）
+    local mount_info_display=()
+
     # 認証情報ディレクトリの存在確認と作成
     if [ ! -d "$claude_credential_path" ]; then
         log_info "認証情報ディレクトリ '$claude_credential_path' が見つかりません。作成します。"
@@ -1020,15 +1052,15 @@ ccc_main() {
             container_env_vars+=("AWS_CA_BUNDLE=$bedrock_ca_bundle")
         fi
 
-        # プロンプトキャッシュ無効化フラグ
-        if [ "$bedrock_disable_caching" = true ]; then
-            container_env_vars+=("DISABLE_PROMPT_CACHING=1")
-        fi
-
         # AWS_BEARER_TOKEN_BEDROCK環境変数が設定されている場合はコンテナに渡す
         if [ -n "$AWS_BEARER_TOKEN_BEDROCK" ]; then
             container_env_vars+=("AWS_BEARER_TOKEN_BEDROCK=$AWS_BEARER_TOKEN_BEDROCK")
         fi
+    fi
+
+    # プロンプトキャッシュ無効化フラグ（Anthropic APIでも使用可能）
+    if [ "$disable_caching" = true ]; then
+        container_env_vars+=("DISABLE_PROMPT_CACHING=1")
     fi
 
     # モデル指定がある場合
@@ -1111,6 +1143,8 @@ ccc_main() {
                 rm -f "$temp_compose_file"
                 return 1
             fi
+            # 表示用情報を記録
+            mount_info_display+=("$(format_path "$src_path") → /workspace/")
         else
             # ソースパスが複数の場合は、すべてbasename形式でマウント
             for ((i = 0; i < ${#source_paths[@]}; i++)); do
@@ -1135,8 +1169,13 @@ ccc_main() {
                     rm -f "$temp_compose_file"
                     return 1
                 fi
+                # 表示用情報を記録
+                mount_info_display+=("$(format_path "$src_path") → $target_path")
             done
         fi
+    else
+        # source_pathが指定されていない場合のデフォルトマウント情報
+        mount_info_display+=("$(format_path "${source_paths[0]}") → /workspace/")
     fi
 
     # Bedrock使用時のAWS設定ファイルのマウント設定
@@ -1153,6 +1192,8 @@ ccc_main() {
                     return 1
                 fi
                 log_info "AWS設定ファイルをマウント: $config_source -> $config_target"
+                # 表示用情報を記録
+                mount_info_display+=("$(format_path "$config_source") → $config_target")
             fi
             
             # AWS_SHARED_CREDENTIALS_FILEが設定されている場合
@@ -1165,6 +1206,8 @@ ccc_main() {
                     return 1
                 fi
                 log_info "AWS認証情報ファイルをマウント: $credentials_source -> $credentials_target"
+                # 表示用情報を記録
+                mount_info_display+=("$(format_path "$credentials_source") → $credentials_target")
             fi
         else
             # デフォルトの ~/.aws ディレクトリをマウント
@@ -1175,22 +1218,16 @@ ccc_main() {
                     rm -f "$temp_compose_file"
                     return 1
                 fi
-                log_info "AWS設定ディレクトリをマウント: $default_aws_dir -> /home/node/.aws"
+                # 表示用情報を記録
+                mount_info_display+=("$(format_path "$default_aws_dir") → /home/node/.aws")
             fi
         fi
     fi
 
-    # .serenaディレクトリのマウント設定
-    local serena_source_dir="$(pwd)/.serena"
-    if [ -d "$serena_source_dir" ]; then
-        local serena_abs_path=$(realpath "$serena_source_dir")
-        if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$serena_abs_path\", \"target\": \"/home/node/.serena\"}]" -i "$temp_compose_file" 2>/dev/null; then
-            log_error "Serenaディレクトリのマウント設定の追加に失敗しました: $serena_abs_path"
-            rm -f "$temp_compose_file"
-            return 1
-        fi
-        log_info "Serenaディレクトリをマウント: $serena_abs_path -> /home/node/.serena"
-    fi
+    # 常にマウントされる固定パスを追加
+    mount_info_display+=("$(format_path "$claude_credential_path") → /home/node/.claude")
+    mount_info_display+=("$(format_path "$claude_config_path") → /home/node/.claude.json")
+    mount_info_display+=("$(format_path "/tmp/uv-cache") → /usr/local/share/uv-cache")
 
     # --dangerously-skip-permissionsが指定されていて--block-outboundが指定されていない場合に警告
     if [ "$has_skip_permissions" = true ] && [ "$block_outbound" = false ]; then
@@ -1249,153 +1286,6 @@ ccc_main() {
         cat "$temp_compose_file"
     fi
 
-    # MCPサービスの起動処理
-    local mcp_containers=()
-    local container_prerequisites=() # コンテナ内で実行する前提条件を保存
-
-    if [ ${#mcp_services[@]} -gt 0 ]; then
-        log_info "MCPサービスを起動中..."
-
-        # MCP設定ファイルのパス（プロジェクトルートのmcp-config.ymlを優先）
-        local mcp_env_req_file=""
-        if [ -f "./mcp-config.yml" ]; then
-            mcp_env_req_file="./mcp-config.yml"
-        elif [ -f "$HOME/.dotfiles/mcp-config.yml" ]; then
-            mcp_env_req_file="$HOME/.dotfiles/mcp-config.yml"
-        elif [ -f "$HOME/.dotfiles/etc/mcp-env-requirements.yml" ]; then
-            # 後方互換性のため古いパスもチェック
-            mcp_env_req_file="$HOME/.dotfiles/etc/mcp-env-requirements.yml"
-        fi
-
-        # 各MCPサービスの処理
-        for mcp_service in "${mcp_services[@]}"; do
-            local service_in_compose=false
-            local service_started=false
-
-            # 1. compose.ymlにサービスが定義されているか確認
-            if yq -e ".services.\"$mcp_service\"" "$temp_compose_file" >/dev/null 2>&1; then
-                service_in_compose=true
-            fi
-
-            # 2. mcp-env-requirements.ymlの前提条件をチェックして実行（compose.ymlの定義有無に関係なく）
-            if [ -f "$mcp_env_req_file" ]; then
-                # 前提条件が定義されているか確認
-                local prerequisites=$(yq eval ".\"$mcp_service\".prerequisites // []" "$mcp_env_req_file" 2>/dev/null)
-
-                if [ -n "$prerequisites" ] && [ "$prerequisites" != "[]" ]; then
-                    log_info "MCPサービス '$mcp_service' の前提条件を確認中..."
-
-                    # 各前提条件を処理
-                    local prereq_count=$(echo "$prerequisites" | yq eval '. | length' -)
-                    for ((i = 0; i < $prereq_count; i++)); do
-                        local command=$(echo "$prerequisites" | yq eval ".[$i].command" -)
-                        local description=$(echo "$prerequisites" | yq eval ".[$i].description // \"\"" -)
-                        local check=$(echo "$prerequisites" | yq eval ".[$i].check // \"\"" -)
-                        local is_host=$(echo "$prerequisites" | yq eval ".[$i].host // false" -)
-
-                        # チェックコマンドが定義されている場合、まず確認
-                        local need_execute=true
-                        if [ -n "$check" ] && [ "$check" != "null" ]; then
-                            if eval "$check" >/dev/null 2>&1; then
-                                need_execute=false
-                                log_info "✓ $description (既に設定済み)"
-                            fi
-                        fi
-
-                        # 前提条件を実行
-                        if [ "$need_execute" = true ]; then
-                            if [ -n "$description" ] && [ "$description" != "null" ]; then
-                                log_info "実行: $description"
-                            fi
-
-                            if [ "$is_host" = "true" ]; then
-                                # ホスト側で実行（バックグラウンド実行を考慮）
-                                local background=$(echo "$prerequisites" | yq eval ".[$i].background // false" -)
-
-                                if [ "$background" = "true" ]; then
-                                    # バックグラウンドで実行
-                                    log_info "バックグラウンドで実行: $command"
-                                    if eval "$command &"; then
-                                        log_success "前提条件をバックグラウンドで実行しました: $command"
-                                    else
-                                        log_warning "前提条件のバックグラウンド実行に失敗しました: $command"
-                                    fi
-                                else
-                                    # フォアグラウンドで実行
-                                    if eval "$command"; then
-                                        log_success "前提条件を実行しました: $command"
-                                    else
-                                        log_warning "前提条件の実行に失敗しました: $command"
-                                    fi
-                                fi
-                            else
-                                # コンテナ内で実行するために保存（バックグラウンドフラグも含める）
-                                local background=$(echo "$prerequisites" | yq eval ".[$i].background // false" -)
-                                container_prerequisites+=("{\"service\":\"$mcp_service\",\"command\":\"$command\",\"description\":\"$description\",\"background\":$background}")
-                                log_info "コンテナ起動後に実行予定: $command"
-                            fi
-                        fi
-                    done
-                fi
-            fi
-
-            # 3. compose.ymlに定義がある場合はMCPサービスを起動
-            if [ "$service_in_compose" = true ]; then
-                log_info "MCPサービス '$mcp_service' を起動しています..."
-                if docker compose -f "$temp_compose_file" up -d "$mcp_service" >/dev/null 2>&1; then
-                    mcp_containers+=("$mcp_service")
-                    service_started=true
-                    log_success "MCPサービス '$mcp_service' が起動しました"
-
-                    # コンテナ内で実行する前提条件があれば実行
-                    for prereq_json in "${container_prerequisites[@]}"; do
-                        local prereq_service=$(echo "$prereq_json" | jq -r '.service')
-                        if [ "$prereq_service" = "$mcp_service" ]; then
-                            local prereq_command=$(echo "$prereq_json" | jq -r '.command')
-                            local prereq_description=$(echo "$prereq_json" | jq -r '.description')
-
-                            local prereq_background=$(echo "$prereq_json" | jq -r '.background')
-
-                            log_info "コンテナ内で前提条件を実行: $prereq_description"
-
-                            if [ "$prereq_background" = "true" ]; then
-                                # バックグラウンドで実行
-                                if docker exec -d "$mcp_service" sh -c "$prereq_command"; then
-                                    log_success "コンテナ内で前提条件をバックグラウンドで実行しました: $prereq_command"
-                                else
-                                    log_warning "コンテナ内での前提条件のバックグラウンド実行に失敗しました: $prereq_command"
-                                fi
-                            else
-                                # フォアグラウンドで実行
-                                if docker exec "$mcp_service" sh -c "$prereq_command"; then
-                                    log_success "コンテナ内で前提条件を実行しました: $prereq_command"
-                                else
-                                    log_warning "コンテナ内での前提条件の実行に失敗しました: $prereq_command"
-                                fi
-                            fi
-                        fi
-                    done
-                else
-                    log_error "MCPサービス '$mcp_service' の起動に失敗しました"
-                fi
-            fi
-
-            # 4. compose.ymlに定義がなく、mcp-env-requirements.ymlにも定義がない場合は警告
-            if [ "$service_in_compose" = false ] && [ "$service_started" = false ]; then
-                # mcp-env-requirements.ymlに何らかの定義があるかチェック
-                local has_mcp_definition=false
-                if [ -f "$mcp_env_req_file" ]; then
-                    if yq -e ".\"$mcp_service\"" "$mcp_env_req_file" >/dev/null 2>&1; then
-                        has_mcp_definition=true
-                    fi
-                fi
-
-                if [ "$has_mcp_definition" = false ]; then
-                    log_warning "MCPサービス '$mcp_service' はcompose.ymlおよびmcp-env-requirements.ymlに定義されていません"
-                fi
-            fi
-        done
-    fi
 
     # バージョン取得とロゴの表示（--no-logoが指定されていなければ）
     if [ "$show_logo" = true ]; then
@@ -1450,7 +1340,7 @@ ccc_main() {
         echo -ne "\r\033[K"
 
         # ロゴを表示
-        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${source_paths[@]}"
+        print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${mount_info_display[@]}"
     fi
 
 
@@ -1475,17 +1365,6 @@ ccc_main() {
     # 一時ファイルの削除
     rm -f "$temp_compose_file"
 
-    # MCPサービスの停止処理（--stop-mcpが指定された場合のみ）
-    if [ "$stop_mcp_services" = true ] && [ ${#mcp_containers[@]} -gt 0 ]; then
-        log_info "MCPサービスを停止中..."
-        for mcp_service in "${mcp_containers[@]}"; do
-            if docker compose -f "$compose_path" stop "$mcp_service" >/dev/null 2>&1; then
-                log_success "MCPサービス '$mcp_service' を停止しました"
-            else
-                log_warning "MCPサービス '$mcp_service' の停止に失敗しました"
-            fi
-        done
-    fi
 
     return $exit_code
 }
@@ -1517,10 +1396,8 @@ ${BOLD}ccc固有オプション:${NC}
     ${GREEN}--bedrock-profile PROFILE${NC}   AWSプロファイルを指定
     ${GREEN}--bedrock-region REGION${NC}     AWSリージョンを指定
     ${GREEN}--bedrock-ca-bundle PATH${NC}    AWS CA証明書バンドルを指定
-    ${GREEN}--bedrock-disable-caching${NC}   プロンプトキャッシュを無効化
+    ${GREEN}--disable-caching${NC}           プロンプトキャッシュを無効化（Anthropic/Bedrock共通）
     ${GREEN}--log-level LEVEL${NC}           Dockerのログレベルを指定 (debug, info, warn, error, fatal)
-    ${GREEN}--mcp SERVICE${NC}               起動するMCPサービスを指定 (複数指定可能)
-    ${GREEN}--stop-mcp${NC}                  終了時にMCPサービスも停止する (デフォルトは停止しない)
     ${GREEN}--user USER${NC}                 コンテナ実行時のユーザーを指定 (例: 1000:1000, root)
     ${GREEN}--workdir PATH${NC}              コンテナ内の作業ディレクトリを指定 (デフォルト: /workspace)
     ${GREEN}--set-env KEY=VALUE${NC}         compose.ymlに環境変数を永続的に設定 (複数指定可能)
@@ -1571,18 +1448,9 @@ ${BOLD}deploy-claude-mdサブコマンド:${NC}
     - CLAUDE_code_review.md → コードレビュー用設定
     - CLAUDE_testing.md → テスト用設定
 
-${BOLD}MCPサブコマンド:${NC}
-    MCPサブコマンドはすべてClaude Code本体の機能を利用します。
-    利用可能なコマンドについては 'claude mcp --help' を参照してください。
-    
-    ${DIMMED}例:${NC}
-    ${GREEN}$(basename "$0") mcp list${NC}                    利用可能なMCPサーバーの一覧を表示
-    ${GREEN}$(basename "$0") mcp add <name>${NC}              MCPサーバーを追加
-    ${GREEN}$(basename "$0") mcp add-json <name> <json>${NC}  JSON形式でMCPサーバーを追加
-    ${GREEN}$(basename "$0") mcp remove <name>${NC}           MCPサーバーを削除
-    ${GREEN}$(basename "$0") mcp enable <name>${NC}           MCPサーバーを有効化
-    ${GREEN}$(basename "$0") mcp disable <name>${NC}          MCPサーバーを無効化
-    ${GREEN}$(basename "$0") mcp build <MCPサーバー名>...${NC} MCPサーバー設定を統合して.mcp.jsonを生成
+${BOLD}mcpサブコマンド:${NC}
+    mcpサブコマンドはbuildを除き、すべてClaude Code本体の機能を利用します。
+    利用可能なコマンドについては '$(basename "$0") mcp --help' を参照してください。
 
 ${BOLD}mcp buildサブコマンド:${NC}
     MCPサーバー設定ファイルを統合して.mcp.jsonを生成します。
@@ -1615,15 +1483,7 @@ ${BOLD}mcp buildサブコマンド:${NC}
         }
     }
 
-${BOLD}MCPサービスの使用例:${NC}
-    ${DIMMED}# playwrightサービスを起動してClaudeを実行${NC}
-    $(basename "$0") --mcp playwright
-
-    ${DIMMED}# 複数のMCPサービスを起動${NC}
-    $(basename "$0") --mcp memory --mcp playwright
-
-    ${DIMMED}# 終了時にMCPサービスを停止${NC}
-    $(basename "$0") --mcp playwright --stop-mcp"
+"
     return 0
 }
 
