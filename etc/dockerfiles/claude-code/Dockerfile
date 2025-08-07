@@ -78,6 +78,8 @@ RUN apt-get update && \
     zsh \
     # sh用のフォーマッター
     shfmt \
+    # aws-diagram-mcp-server用のパッケージ
+    graphviz xdg-utils \
     # google-java-format用にJavaランタイムを追加
     openjdk-17-jre-headless && \
     apt-get clean && \
