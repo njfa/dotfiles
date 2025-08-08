@@ -142,10 +142,11 @@ return {
                             extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051", "MD038" },
                         }))
                     end,
-                    -- shfmt = function(source_name, methods)
-                    --     -- custom logic
-                    --     require('mason-null-ls').default_setup(source_name, methods) -- to maintain default behavior
-                    -- end,
+                    shfmt = function(source_name, methods)
+                        null_ls.register(null_ls.builtins.formatting.shfmt.with({
+                            extra_args = { "-i", "4" }, -- インデントをスペース4つに設定
+                        }))
+                    end,
                 },
             })
 
