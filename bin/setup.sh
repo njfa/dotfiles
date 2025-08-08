@@ -177,25 +177,41 @@ sudo_symlink_cmd() {
 install() {
     scripts=${@:1}
     if [ $# -eq 0 ]; then
-        # 全スクリプトの一覧を作成する
-        scripts=$(find "$DOTFILES_PATH/etc/os/" -type f -name "*.sh" -not -name "dependencies.sh" -path "$DOTFILES_PATH/etc/os/${OS,,}/*" -o -path "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/*" | xargs basename -s .sh | sort | uniq)
+        # 引数なしの場合はinit/ディレクトリのスクリプトのみを対象とする
+        scripts=$(find "$DOTFILES_PATH/etc/os/" -type f -name "*.sh" -not -name "dependencies.sh" \( -path "$DOTFILES_PATH/etc/os/${OS,,}/init/*" -o -path "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/*" \) 2>/dev/null | xargs -r basename -s .sh | sort | uniq)
     fi
 
     for script in $scripts; do
-        TARGET_OS_VERSION="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}.sh"
-        TARGET_OS="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}.sh"
-        TARGET_OS_ARCH="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}-${ARCH_TYPE}.sh"
-        TARGET_OS_VERSION_ARCH="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}-${ARCH_TYPE}.sh"
+        # init/ディレクトリのスクリプトを確認
+        TARGET_OS_VERSION_INIT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}.sh"
+        TARGET_OS_INIT="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}.sh"
+        TARGET_OS_ARCH_INIT="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}-${ARCH_TYPE}.sh"
+        TARGET_OS_VERSION_ARCH_INIT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}-${ARCH_TYPE}.sh"
+
+        # opt/ディレクトリのスクリプトを確認
+        TARGET_OS_VERSION_OPT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt/${script}.sh"
+        TARGET_OS_OPT="$DOTFILES_PATH/etc/os/${OS,,}/opt/${script}.sh"
+        TARGET_OS_ARCH_OPT="$DOTFILES_PATH/etc/os/${OS,,}/opt/${script}-${ARCH_TYPE}.sh"
+        TARGET_OS_VERSION_ARCH_OPT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt/${script}-${ARCH_TYPE}.sh"
 
         # アーキテクチャ固有のスクリプトを最優先、次にバージョン固有、最後に汎用スクリプト
-        if [ -f "$TARGET_OS_VERSION_ARCH" ]; then
-            exec_cmd $TARGET_OS_VERSION_ARCH
-        elif [ -f "$TARGET_OS_ARCH" ]; then
-            exec_cmd $TARGET_OS_ARCH
-        elif [ -f "$TARGET_OS_VERSION" ]; then
-            exec_cmd $TARGET_OS_VERSION
-        elif [ -f "$TARGET_OS" ]; then
-            exec_cmd $TARGET_OS
+        # init/を優先、次にopt/
+        if [ -f "$TARGET_OS_VERSION_ARCH_INIT" ]; then
+            exec_cmd $TARGET_OS_VERSION_ARCH_INIT
+        elif [ -f "$TARGET_OS_ARCH_INIT" ]; then
+            exec_cmd $TARGET_OS_ARCH_INIT
+        elif [ -f "$TARGET_OS_VERSION_INIT" ]; then
+            exec_cmd $TARGET_OS_VERSION_INIT
+        elif [ -f "$TARGET_OS_INIT" ]; then
+            exec_cmd $TARGET_OS_INIT
+        elif [ -f "$TARGET_OS_VERSION_ARCH_OPT" ]; then
+            exec_cmd $TARGET_OS_VERSION_ARCH_OPT
+        elif [ -f "$TARGET_OS_ARCH_OPT" ]; then
+            exec_cmd $TARGET_OS_ARCH_OPT
+        elif [ -f "$TARGET_OS_VERSION_OPT" ]; then
+            exec_cmd $TARGET_OS_VERSION_OPT
+        elif [ -f "$TARGET_OS_OPT" ]; then
+            exec_cmd $TARGET_OS_OPT
         fi
     done
 }
@@ -230,26 +246,201 @@ initialize() {
 }
 
 list() {
-    header "list:"
+    printf "\033[36m\n╔═════════════════════════════════════════════════════════════════╗\033[m\n"
+    printf "\033[36m║                      📋 Available Scripts                       ║\033[m\n"
+    printf "\033[36m╚═════════════════════════════════════════════════════════════════╝\033[m\n"
 
-    header "  init scripts (${OS,,}):"
+    # 必須パッケージ (init scripts)
+    printf "\n\033[33m┌─ Required Packages (init) ──────────────────────────────────────┐\033[m\n"
+
+    # OS固有のinitスクリプト
     if [ -d "$DOTFILES_PATH/etc/os/${OS,,}/init" ]; then
-        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}/init -type f -name "*.sh"); do
-            item $(basename --suffix=.sh $f)
+        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}/init -type f -name "*.sh" | sort); do
+            script_name=$(basename --suffix=.sh $f)
+            # インストール状態をチェック
+            check_installed_status "$script_name" "\033[33m"
         done
     fi
 
-    header "  init scripts (${OS,,}-${VER}):"
+    # バージョン固有のinitスクリプト
     if [ -d "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init" ]; then
-        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}-${VER}/init -type f -name "*.sh"); do
-            item $(basename --suffix=.sh $f)
+        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}-${VER}/init -type f -name "*.sh" | sort); do
+            script_name=$(basename --suffix=.sh $f)
+            # 重複を避けるためにOS固有で既に表示されていないかチェック
+            if [ ! -f "$DOTFILES_PATH/etc/os/${OS,,}/init/${script_name}.sh" ]; then
+                check_installed_status "$script_name" "\033[33m"
+            fi
+        done
+    fi
+    printf "\033[33m└─────────────────────────────────────────────────────────────────┘\033[m\n"
+
+    # オプショナルパッケージ (opt scripts)
+    printf "\n\033[35m┌─ Optional Packages (opt) ───────────────────────────────────────┐\033[m\n"
+    printf "\033[35m│\033[m\033[90m These require explicit installation: setup.sh init <name>       \033[35m│\033[m\n"
+    printf "\033[35m├─────────────────────────────────────────────────────────────────┤\033[m\n"
+
+    # OS固有のoptスクリプト
+    if [ -d "$DOTFILES_PATH/etc/os/${OS,,}/opt" ]; then
+        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}/opt -type f -name "*.sh" | sort); do
+            script_name=$(basename --suffix=.sh $f)
+            check_installed_status "$script_name" "\033[35m"
         done
     fi
 
-    header "  dotfiles:"
-    for f in $(get_dotfiles); do
-        item "$f"
+    # バージョン固有のoptスクリプト
+    if [ -d "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt" ]; then
+        for f in $(find $DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt -type f -name "*.sh" | sort); do
+            script_name=$(basename --suffix=.sh $f)
+            # 重複を避けるためにOS固有で既に表示されていないかチェック
+            if [ ! -f "$DOTFILES_PATH/etc/os/${OS,,}/opt/${script_name}.sh" ]; then
+                check_installed_status "$script_name" "\033[35m"
+            fi
+        done
+    fi
+    printf "\033[35m└─────────────────────────────────────────────────────────────────┘\033[m\n"
+
+    # Dotfiles
+    printf "\n\033[32m┌─ Dotfiles ──────────────────────────────────────────────────────┐\033[m\n"
+
+    # get_dotfiles()を一度だけ呼び出して結果を保存
+    dotfiles_list=$(get_dotfiles)
+    total_dotfiles=$(echo "$dotfiles_list" | wc -l)
+
+    # 最初の5個を表示
+    echo "$dotfiles_list" | head -5 | while IFS= read -r f; do
+        if [ -L "$HOME/$f" ]; then
+            printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" "$f"
+        else
+            printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" "$f"
+        fi
     done
+
+    # dotfilesが5個以上ある場合
+    if [ $total_dotfiles -gt 5 ]; then
+        printf "\033[32m│\033[m \033[90m  ... and $((total_dotfiles - 5)) more files\033[m%37s    \033[32m│\033[m\n" ""
+    fi
+    printf "\033[32m└─────────────────────────────────────────────────────────────────┘\033[m\n"
+
+    printf "\n\033[90mLegend: \033[32m✓\033[90m Installed  \033[90m○\033[90m Not installed\033[m\n"
+}
+
+# インストール状態をチェックして表示する関数
+check_installed_status() {
+    local script_name=$1
+    local frame_color=${2:-"\033[90m"} # デフォルトは灰色
+    local installed=false
+    local status_icon="\033[90m○\033[m"
+
+    # 例外的なケースのみ個別に定義
+    case $script_name in
+    golang)
+        [ -n "$(command -v go)" ] && installed=true
+        ;;
+    rust)
+        [ -n "$(command -v cargo)" ] && installed=true
+        ;;
+    neovim)
+        [ -n "$(command -v nvim)" ] && installed=true
+        ;;
+    graphviz)
+        [ -n "$(command -v dot)" ] && installed=true
+        ;;
+    typescript)
+        [ -n "$(command -v tsc)" ] && installed=true
+        ;;
+    python)
+        [ -n "$(command -v python3)" ] && installed=true
+        ;;
+    postgresql)
+        [ -n "$(command -v psql)" ] && installed=true
+        ;;
+    sdkman)
+        [ -d "$HOME/.sdkman" ] && installed=true
+        ;;
+    font)
+        # fonts-noto-cjk と fonts-noto-cjk-extra がインストールされているかチェック
+        if dpkg -l | grep -q "fonts-noto-cjk " && dpkg -l | grep -q "fonts-noto-cjk-extra "; then
+            installed=true
+        fi
+        ;;
+    dependencies)
+        # dependenciesは常に表示しない
+        return
+        ;;
+    *)
+        # デフォルト: スクリプト名と同じコマンドをチェック
+        [ -n "$(command -v $script_name)" ] && installed=true
+        ;;
+    esac
+
+    if [ "$installed" = true ]; then
+        status_icon="\033[32m✓\033[m"
+    fi
+
+    printf "%b│%b %b %-61s %b│%b
+" "$frame_color" "\033[m" "$status_icon" "$script_name" "$frame_color" "\033[m"
+}
+
+sync() {
+    header "🔄 Starting WSL to Windows sync..."
+    printf "[90m────────────────────────────────────────[m
+"
+
+    # Windows側のホームディレクトリを特定
+    WINDOWS_HOME="/mnt/c/Users/$USER"
+    if [ ! -d "$WINDOWS_HOME" ]; then
+        # USERPROFILE環境変数から取得を試行
+        if [ -n "$USERPROFILE" ]; then
+            WINDOWS_HOME=$(echo "$USERPROFILE" | sed 's|\|/|g' | sed 's|^C:|/mnt/c|')
+        else
+            error "Windows home directory not found. Please ensure you are running in WSL."
+            exit 1
+        fi
+    fi
+
+    printf "
+[36m📁 Syncing .dotfiles directory to Windows ($WINDOWS_HOME)...[m
+"
+
+    # .dotfilesディレクトリの名前を取得
+    DOTFILES_DIR_NAME=$(basename "$DOTFILES_PATH")
+    TARGET_DIR="$WINDOWS_HOME/$DOTFILES_DIR_NAME"
+
+    # 既存の.dotfilesディレクトリがある場合は削除
+    if [ -d "$TARGET_DIR" ]; then
+        printf "  [90m│[m Removing existing $DOTFILES_DIR_NAME directory...
+"
+        rm -rf "$TARGET_DIR"
+    fi
+
+    # .dotfilesディレクトリを丸ごとコピー（.gitディレクトリを除外）
+    printf "  [90m│[m Copying $DOTFILES_DIR_NAME directory...
+"
+    if rsync -av --exclude='.git' "$DOTFILES_PATH/" "$TARGET_DIR/" 2>/dev/null; then
+        printf "  [90m│[m [32m✓[m Successfully synced $DOTFILES_DIR_NAME directory
+"
+
+        # コピーされたファイル数を表示
+        file_count=$(find "$TARGET_DIR" -type f | wc -l)
+        printf "  [90m│[m [90m  → $file_count files copied[m
+"
+    else
+        printf "  [90m│[m [31m✗[m Failed to sync $DOTFILES_DIR_NAME directory
+"
+        exit 1
+    fi
+
+    printf "
+[90m────────────────────────────────────────[m
+"
+    printf "[32m✨ Sync completed![m
+"
+    printf "[90mNote: $DOTFILES_DIR_NAME directory is now an independent copy at:[m
+"
+    printf "[90m      $TARGET_DIR[m
+"
+    printf "[90mRe-run 'sync' after making changes to WSL files.[m
+"
 }
 
 deploy() {
@@ -341,10 +532,13 @@ if [ $# -eq 0 ]; then
 Commands:
     init        Initialize commands.
     deploy      Deploy dotfiles.
+    sync        Sync WSL dotfiles to Windows (hard copy).
     list        List information about dotfiles.
 """
 elif [ "$1" = "deploy" -o "$1" = "d" ]; then
     deploy
+elif [ "$1" = "sync" -o "$1" = "s" ]; then
+    sync
 elif [ "$1" = "init" -o "$1" = "i" ]; then
     TARGET="${@:2}"
     initialize $TARGET
