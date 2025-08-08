@@ -176,7 +176,7 @@ print_logo() {
         # Anthropicの場合の認証情報
         local cred_basename=$(format_path "$credential_path")
         local conf_basename=$(format_path "$config_path")
-        
+
         local cred_line="Credential: $cred_basename"
         lines+=("$cred_line")
         if [ ${#cred_line} -gt $max_length ]; then
@@ -199,7 +199,7 @@ print_logo() {
         else
             aws_config_info="~/.aws"
         fi
-        
+
         local aws_conf_line="AWS Config: $aws_config_info"
         lines+=("$aws_conf_line")
         if [ ${#aws_conf_line} -gt $max_length ]; then
@@ -239,13 +239,13 @@ print_logo() {
                 fi
             fi
         fi
-        
+
         # リージョンが未設定の場合
         if [ -z "$region_text" ]; then
             region_text="not set"
             region_source=""
         fi
-        
+
         region_text="${region_text}${region_source}"
         local region_line="AWS Region: $region_text"
         lines+=("$region_line")
@@ -267,7 +267,7 @@ print_logo() {
     # モデル表示（Bedrock/Anthropic共通）
     local model_display=""
     local model_label="Model"
-    
+
     # コマンドライン引数から取得したモデル
     if [ -n "$model" ]; then
         model_display="$model"
@@ -278,11 +278,11 @@ print_logo() {
             model_display="$compose_model (compose.yml)"
         fi
     fi
-    
+
     # 高速モデル表示（Bedrock/Anthropic共通）
     local fast_model_display=""
     local fast_model_label="Fast Model"
-    
+
     # コマンドライン引数から取得した高速モデル
     if [ -n "$fast_model" ]; then
         fast_model_display="$fast_model"
@@ -293,7 +293,7 @@ print_logo() {
             fast_model_display="$compose_fast_model (compose.yml)"
         fi
     fi
-    
+
     # モデルが設定されている場合は表示
     if [ -n "$model_display" ]; then
         local model_line="$model_label: $model_display"
@@ -302,7 +302,7 @@ print_logo() {
             max_length=${#model_line}
         fi
     fi
-    
+
     # 高速モデルが設定されている場合は表示
     if [ -n "$fast_model_display" ]; then
         local fast_model_line="$fast_model_label: $fast_model_display"
@@ -376,7 +376,7 @@ print_logo() {
             elif [[ "$line_content" == "Claude Code Version:"* ]]; then
                 local version_base="Claude Code Version: $claude_version"
                 local padding_needed=$((frame_width - ${#version_base} - 4))
-                
+
                 if [ "$claude_version" != "unknown" ] && [ "$latest_version" != "unknown" ]; then
                     if [ "$claude_version" = "$latest_version" ]; then
                         echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}Claude Code Version:${NC} $claude_version ${GREEN}✓${NC}$(printf '%*s' $((padding_needed - 2)) '') ${FRAME_COLOR}│${NC}"
@@ -399,10 +399,10 @@ print_logo() {
             elif [[ "$line_content" = "Mount Paths:" ]]; then
                 echo -e "${FRAME_COLOR}│${NC}   ${INFO_COLOR}${line_content}${NC}$(printf '%*s' $((frame_width - ${#line_content} - 4)) '') ${FRAME_COLOR}│${NC}"
             # その他の情報行（色付きラベル）
-            elif [[ "$line_content" == "Credential:"* ]] || [[ "$line_content" == "Config:"* ]] || 
-                 [[ "$line_content" == "AWS Config:"* ]] || [[ "$line_content" == "AWS Auth:"* ]] || 
-                 [[ "$line_content" == "AWS Region:"* ]] || [[ "$line_content" == "Model:"* ]] || 
-                 [[ "$line_content" == "Fast Model:"* ]] || [[ "$line_content" == "CA Bundle:"* ]] || [[ "$line_content" == "Prompt Cache:"* ]]; then
+            elif [[ "$line_content" == "Credential:"* ]] || [[ "$line_content" == "Config:"* ]] ||
+                [[ "$line_content" == "AWS Config:"* ]] || [[ "$line_content" == "AWS Auth:"* ]] ||
+                [[ "$line_content" == "AWS Region:"* ]] || [[ "$line_content" == "Model:"* ]] ||
+                [[ "$line_content" == "Fast Model:"* ]] || [[ "$line_content" == "CA Bundle:"* ]] || [[ "$line_content" == "Prompt Cache:"* ]]; then
                 # ラベルと値を分離
                 local label="${line_content%%:*}:"
                 local value="${line_content#*: }"
@@ -433,81 +433,81 @@ print_logo() {
 # MCP設定ビルド関数
 process_mcp_build() {
     local mcp_servers=("$@")
-    
+
     if [ ${#mcp_servers[@]} -eq 0 ]; then
         log_error "MCPサーバー名を指定してください"
         log_info "使用法: $(basename "$0") mcp-build <MCPサーバー名>..."
         return 1
     fi
-    
+
     # 検索ディレクトリの設定（優先順位順）
     local search_dirs=(
-        "./.claude/mcp"           # プロジェクトディレクトリ
-        "$HOME/.claude/mcp"       # ユーザーディレクトリ
+        "./.claude/mcp"     # プロジェクトディレクトリ
+        "$HOME/.claude/mcp" # ユーザーディレクトリ
     )
-    
+
     # 統合用のJSONオブジェクト
     local merged_json="{\"mcpServers\":{}}"
     local found_servers=()
-    
+
     log_info "MCPサーバー設定をビルド中..."
-    
+
     # 各MCPサーバーを処理
     for server_name in "${mcp_servers[@]}"; do
         local server_found=false
         local json_file="${server_name}.json"
-        
+
         # 優先順位順でJSONファイルを検索
         for search_dir in "${search_dirs[@]}"; do
             local file_path="${search_dir}/${json_file}"
-            
+
             if [ -f "$file_path" ]; then
                 log_info "見つかりました: $file_path"
-                
+
                 # JSONファイルの妥当性をチェック
                 if ! jq empty "$file_path" >/dev/null 2>&1; then
                     log_error "無効なJSONファイル: $file_path"
                     return 1
                 fi
-                
+
                 # JSONファイルの内容を読み込み
                 local server_config=$(cat "$file_path")
-                
+
                 # mcpServersオブジェクトにマージ
                 merged_json=$(echo "$merged_json" | jq --argjson config "$server_config" '.mcpServers += $config')
                 if [ $? -ne 0 ]; then
                     log_error "JSON設定のマージに失敗しました: $file_path"
                     return 1
                 fi
-                
+
                 found_servers+=("$server_name")
                 server_found=true
                 break # 最初に見つかったファイルを使用
             fi
         done
-        
+
         # サーバーが見つからない場合は警告
         if [ "$server_found" = false ]; then
             log_warning "MCPサーバー設定が見つかりません: ${json_file}"
             log_info "検索パス: ${search_dirs[*]}"
         fi
     done
-    
+
     # 見つかったサーバーがない場合はエラー
     if [ ${#found_servers[@]} -eq 0 ]; then
         log_error "指定されたMCPサーバー設定が見つかりませんでした"
         return 1
     fi
-    
+
     # プロジェクトルートの.mcp.jsonに出力
     local output_file="./.mcp.json"
-    echo "$merged_json" | jq . > "$output_file"
-    
+    echo "$merged_json" | jq . >"$output_file"
+
     if [ $? -eq 0 ]; then
         log_success ".mcp.jsonを作成しました"
         log_info "統合されたMCPサーバー: ${found_servers[*]}"
         log_info "出力先: $output_file"
-        
+
         # 作成されたファイルの内容を表示（オプション）
         if [ "$quiet" = false ]; then
             echo
@@ -519,7 +519,7 @@ process_mcp_build() {
         log_error ".mcp.jsonの作成に失敗しました"
         return 1
     fi
-    
+
     return 0
 }
 
@@ -557,25 +557,25 @@ ccc_main() {
     local remove_orphans=true # デフォルトでオーファンコンテナを削除する
     local claude_credential_path="$HOME/.claude"
     local claude_config_path="$HOME/.claude.json"
-    local command_args=("claude")       # デフォルトのコマンド
-    local show_logo=true                # デフォルトでロゴを表示
-    local show_info=false               # デフォルトで設定情報を表示
-    local show_separator=false          # デフォルトでセパレータを表示
-    local quiet=true                    # デフォルトは静かモード
-    local workdir="/workspace"                    # 作業ディレクトリ (--workdir)
-    local source_path_specified=false   # ソースパスが指定されたかどうかのフラグ
-    local use_bedrock=false             # Bedrock使用フラグ
-    local bedrock_region=""             # Bedrockリージョン
-    local bedrock_profile=""            # AWS プロファイル
-    local bedrock_ca_bundle=""          # AWS CA証明書バンドルパス
-    local disable_caching=false # プロンプトキャッシュ無効化フラグ
-    local model=""                      # Anthropicモデル
-    local fast_model=""                 # Anthropicの高速な小型モデル
-    local docker_log_level=""           # Dockerログレベル
-    local container_user=""             # コンテナ実行ユーザー
-    local -a persistent_env_vars=()     # 永続的に設定する環境変数
-    local block_outbound=false          # アウトバウンド通信ブロックフラグ
-    local exclusive_edit_mode=false     # 排他的編集モードフラグ
+    local command_args=("claude")     # デフォルトのコマンド
+    local show_logo=true              # デフォルトでロゴを表示
+    local show_info=false             # デフォルトで設定情報を表示
+    local show_separator=false        # デフォルトでセパレータを表示
+    local quiet=true                  # デフォルトは静かモード
+    local workdir="/workspace"        # 作業ディレクトリ (--workdir)
+    local source_path_specified=false # ソースパスが指定されたかどうかのフラグ
+    local use_bedrock=false           # Bedrock使用フラグ
+    local bedrock_region=""           # Bedrockリージョン
+    local bedrock_profile=""          # AWS プロファイル
+    local bedrock_ca_bundle=""        # AWS CA証明書バンドルパス
+    local disable_caching=false       # プロンプトキャッシュ無効化フラグ
+    local model=""                    # Anthropicモデル
+    local fast_model=""               # Anthropicの高速な小型モデル
+    local docker_log_level=""         # Dockerログレベル
+    local container_user=""           # コンテナ実行ユーザー
+    local -a persistent_env_vars=()   # 永続的に設定する環境変数
+    local block_outbound=false        # アウトバウンド通信ブロックフラグ
+    local exclusive_edit_mode=false   # 排他的編集モードフラグ
 
     # オプションと引数の解析
     while [[ $# -gt 0 ]]; do
@@ -704,7 +704,7 @@ ccc_main() {
             # buildサブコマンドが指定された場合
             shift
             local build_use_cache=false
-            
+
             # buildサブコマンドの引数を解析
             while [[ $# -gt 0 ]]; do
                 case $1 in
@@ -712,7 +712,7 @@ ccc_main() {
                     build_use_cache=true
                     shift
                     ;;
-                -h|--help)
+                -h | --help)
                     echo "使用法: $(basename "$0") build [オプション]"
                     echo ""
                     echo "Claudeコンテナイメージをビルドします。"
@@ -729,7 +729,7 @@ ccc_main() {
                     ;;
                 esac
             done
-            
+
             # ビルド処理を実行して終了
             if [ "$build_use_cache" = true ]; then
                 update_claude_image "use_cache"
@@ -758,31 +758,31 @@ ccc_main() {
             shift
             local source_dir="$HOME/.claude"
             local target_file="CLAUDE.md"
-            
+
             # ソースディレクトリの存在確認
             if [ ! -d "$source_dir" ]; then
                 log_error "ディレクトリが存在しません: $source_dir"
                 return 1
             fi
-            
+
             # CLAUDE_*.md形式のファイルを検索
             local claude_files=()
             while IFS= read -r -d '' file; do
                 claude_files+=("$file")
             done < <(find "$source_dir" -maxdepth 1 -name "CLAUDE_*.md" -type f -print0 | sort -z)
-            
+
             if [ ${#claude_files[@]} -eq 0 ]; then
                 log_error "$source_dir にCLAUDE_*.md形式のファイルが見つかりません"
                 return 1
             fi
-            
+
             local selected_file=""
-            
+
             # fzfが利用可能か確認
             if command -v fzf >/dev/null 2>&1; then
                 # fzfを使用してファイルを選択
                 selected_file=$(printf '%s\n' "${claude_files[@]}" | fzf --prompt="配置するCLAUDE.mdファイルを選択: " --height=40% --reverse)
-                
+
                 # fzfでキャンセルされた場合
                 if [ -z "$selected_file" ]; then
                     log_info "選択がキャンセルされました"
@@ -800,24 +800,24 @@ ccc_main() {
                     printf "  %2d) %s\n" $((i + 1)) "$display_name"
                 done
                 echo
-                
+
                 # 選択を促す
                 local selection
                 while true; do
                     read -p "配置するファイルの番号を入力してください (1-${#claude_files[@]}, 0でキャンセル): " selection
-                    
+
                     # 入力が数字かチェック
                     if [[ ! "$selection" =~ ^[0-9]+$ ]]; then
                         log_error "数字を入力してください"
                         continue
                     fi
-                    
+
                     # キャンセル
                     if [ "$selection" -eq 0 ]; then
                         log_info "選択がキャンセルされました"
                         return 0
                     fi
-                    
+
                     # 範囲チェック
                     if [ "$selection" -ge 1 ] && [ "$selection" -le ${#claude_files[@]} ]; then
                         selected_file="${claude_files[$((selection - 1))]}"
@@ -827,7 +827,7 @@ ccc_main() {
                     fi
                 done
             fi
-            
+
             # 既存のCLAUDE.mdが存在する場合は退避
             if [ -f "$target_file" ]; then
                 local backup_file="CLAUDE.$(date +%Y%m%d_%H%M%S).md"
@@ -838,7 +838,7 @@ ccc_main() {
                 fi
                 log_success "CLAUDE.mdを退避しました: $backup_file"
             fi
-            
+
             # ファイルをコピー
             local selected_basename=$(basename "$selected_file")
             log_info "$selected_basename をCLAUDE.mdとして配置しています..."
@@ -846,7 +846,7 @@ ccc_main() {
                 log_error "ファイルのコピーに失敗しました"
                 return 1
             fi
-            
+
             log_success "CLAUDE.mdを配置しました"
             log_info "配置元: $selected_file"
             log_info "配置先: $(pwd)/$target_file"
@@ -1033,7 +1033,7 @@ ccc_main() {
 
         # リージョンの設定（優先順位に従って）
         local resolved_region=""
-        
+
         # 1. --bedrock-regionで指定された値が最優先
         if [ -n "$bedrock_region" ]; then
             resolved_region="$bedrock_region"
@@ -1041,7 +1041,7 @@ ccc_main() {
             # 2. AWS CLIからリージョンを読み込む
             resolved_region=$(get_aws_region_from_profile "$bedrock_profile")
         fi
-        
+
         # リージョンが決定された場合は環境変数に設定
         if [ -n "$resolved_region" ]; then
             container_env_vars+=("AWS_REGION=$resolved_region")
@@ -1195,7 +1195,7 @@ ccc_main() {
                 # 表示用情報を記録
                 mount_info_display+=("$(format_path "$config_source") → $config_target")
             fi
-            
+
             # AWS_SHARED_CREDENTIALS_FILEが設定されている場合
             if [ -n "$AWS_SHARED_CREDENTIALS_FILE" ] && [ -f "$AWS_SHARED_CREDENTIALS_FILE" ]; then
                 local credentials_source=$(realpath "$AWS_SHARED_CREDENTIALS_FILE")
@@ -1239,7 +1239,7 @@ ccc_main() {
     # --block-outboundが指定されている場合（--dangerously-skip-permissionsの有無に関わらず）
     if [ "$block_outbound" = true ]; then
         log_info "プロキシ経由でアウトバウンド通信を制限します..."
-        
+
         # コンテナにプロキシ設定を追加（大文字・小文字両方）
         container_env_vars+=("HTTP_PROXY=http://squid-proxy:3128")
         container_env_vars+=("HTTPS_PROXY=http://squid-proxy:3128")
@@ -1247,7 +1247,7 @@ ccc_main() {
         container_env_vars+=("https_proxy=http://squid-proxy:3128")
         container_env_vars+=("NO_PROXY=localhost,127.0.0.1,squid-proxy")
         container_env_vars+=("no_proxy=localhost,127.0.0.1,squid-proxy")
-        
+
         # squid-proxyへの依存関係を追加
         # 注：これは後続の処理で適用される
         log_info "Squidプロキシが起動され、許可されたドメインへのアクセスのみが可能になります。"
@@ -1285,7 +1285,6 @@ ccc_main() {
         echo "Modified compose file:"
         cat "$temp_compose_file"
     fi
-
 
     # バージョン取得とロゴの表示（--no-logoが指定されていなければ）
     if [ "$show_logo" = true ]; then
@@ -1343,7 +1342,6 @@ ccc_main() {
         print_logo "$claude_credential_path" "$claude_config_path" "$use_bedrock" "" "$temp_compose_file" "$service" "$claude_version" "$latest_version" "${mount_info_display[@]}"
     fi
 
-
     # --dangerously-skip-permissionsが使用されているかチェック
     local has_skip_permissions=false
     for arg in "${command_args[@]}"; do
@@ -1364,7 +1362,6 @@ ccc_main() {
 
     # 一時ファイルの削除
     rm -f "$temp_compose_file"
-
 
     return $exit_code
 }
