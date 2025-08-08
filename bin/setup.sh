@@ -302,26 +302,105 @@ list() {
     # Dotfiles
     printf "\n\033[32m┌─ Dotfiles ──────────────────────────────────────────────────────┐\033[m\n"
 
-    # get_dotfiles()を一度だけ呼び出して結果を保存
-    dotfiles_list=$(get_dotfiles)
-    total_dotfiles=$(echo "$dotfiles_list" | wc -l)
+    # 通常のdotfilesを取得（.claudeと.config/nvimは除外したまま）
+    all_dotfiles=$(get_dotfiles)
 
-    # 最初の5個を表示
-    echo "$dotfiles_list" | head -5 | while IFS= read -r f; do
-        if [ -L "$HOME/$f" ]; then
-            printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" "$f"
-        else
-            printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" "$f"
+    # 通常のdotfilesを表示（差分チェック付き）
+    echo "$all_dotfiles" | while IFS= read -r f; do
+        if [ -n "$f" ]; then
+            if [ -L "$HOME/$f" ]; then
+                # シンボリックリンクの場合、リンク先が正しいかチェック
+                if [ "$(readlink "$HOME/$f")" = "$DOTFILES_PATH/$f" ]; then
+                    printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" "$f (symlink)"
+                else
+                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" "$f (wrong symlink)"
+                fi
+            elif [ -f "$HOME/$f" ]; then
+                # 通常ファイルの場合、内容を比較
+                if diff -q "$DOTFILES_PATH/$f" "$HOME/$f" >/dev/null 2>&1; then
+                    printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" "$f (file synced)"
+                else
+                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" "$f (file outdated)"
+                fi
+            else
+                printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" "$f"
+            fi
         fi
     done
 
-    # dotfilesが5個以上ある場合
-    if [ $total_dotfiles -gt 5 ]; then
-        printf "\033[32m│\033[m \033[90m  ... and $((total_dotfiles - 5)) more files\033[m%37s    \033[32m│\033[m\n" ""
+    # .config/nvimディレクトリの特別処理
+    if [ -d "$DOTFILES_PATH/.config/nvim" ]; then
+        if [ -L "$HOME/.config/nvim" ]; then
+            printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".config/nvim (symlink)"
+        else
+            printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".config/nvim (symlink)"
+        fi
+    fi
+
+    # .claudeディレクトリの特別処理（サブディレクトリ単位で表示）
+    if [ -d "$DOTFILES_PATH/.claude" ]; then
+        # .claudeディレクトリ直下のファイル
+        direct_files=$(find "$DOTFILES_PATH/.claude" -maxdepth 1 -type f | wc -l)
+        if [ "$direct_files" -gt 0 ]; then
+            if [ -d "$HOME/.claude" ]; then
+                # 直下のファイルをチェック
+                diff_count=0
+                for source_file in $(find "$DOTFILES_PATH/.claude" -maxdepth 1 -type f); do
+                    target_file="$HOME/.claude/$(basename "$source_file")"
+                    if [ ! -f "$target_file" ] || ! diff -q "$source_file" "$target_file" >/dev/null 2>&1; then
+                        diff_count=$((diff_count + 1))
+                        break
+                    fi
+                done
+
+                if [ "$diff_count" -eq 0 ]; then
+                    printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".claude/* (files synced)"
+                else
+                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" ".claude/* (files outdated)"
+                fi
+            else
+                printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".claude/* (files)"
+            fi
+        fi
+
+        # 各サブディレクトリをチェック
+        for subdir in $(find "$DOTFILES_PATH/.claude" -maxdepth 1 -type d ! -path "$DOTFILES_PATH/.claude" | sort); do
+            subdir_name=$(basename "$subdir")
+
+            if [ -d "$HOME/.claude/$subdir_name" ]; then
+                # サブディレクトリのファイル数をチェック
+                source_files=$(find "$subdir" -type f | wc -l)
+                target_files=$(find "$HOME/.claude/$subdir_name" -type f 2>/dev/null | wc -l)
+
+                if [ "$source_files" -eq "$target_files" ]; then
+                    # 内容の同一性をチェック
+                    diff_count=0
+                    for source_file in $(find "$subdir" -type f); do
+                        relative_path=${source_file#$subdir/}
+                        target_file="$HOME/.claude/$subdir_name/$relative_path"
+
+                        if [ ! -f "$target_file" ] || ! diff -q "$source_file" "$target_file" >/dev/null 2>&1; then
+                            diff_count=$((diff_count + 1))
+                            break
+                        fi
+                    done
+
+                    if [ "$diff_count" -eq 0 ]; then
+                        printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/ (synced)"
+                    else
+                        printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/ (outdated)"
+                    fi
+                else
+                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/ (partial)"
+                fi
+            else
+                printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/"
+            fi
+        done
     fi
     printf "\033[32m└─────────────────────────────────────────────────────────────────┘\033[m\n"
 
-    printf "\n\033[90mLegend: \033[32m✓\033[90m Installed  \033[90m○\033[90m Not installed\033[m\n"
+    printf "\n\033[90mLegend: \033[32m✓\033[90m Installed  \033[33m~\033[90m Outdated/Partial  \033[90m○\033[90m Not installed\033[m\n"
 }
 
 # インストール状態をチェックして表示する関数
