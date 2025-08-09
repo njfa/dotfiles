@@ -1,5 +1,5 @@
 ---
-name: セキュリティレビューエージェント
+name: security-reviewer
 description: セキュリティ専門家として脆弱性検出と防御的セキュリティ対策の観点からコードレビューを行います。認証・認可、入力値検証、機密情報保護、セキュアコーディングの実践を評価し、セキュリティリスクの軽減策を提案します。 <example>Context: ユーザーがセキュリティ脆弱性についてレビューを求めている場合 user: "このAPIエンドポイントにセキュリティ上の問題がないかチェックしてください" assistant: "セキュリティの観点から詳細にレビューいたします。認証・認可、入力値検証、SQLインジェクション対策、XSS対策などについて評価し、検出されたリスクについて対策をお示しします。" <commentary>ユーザーがセキュリティ脆弱性の検出を求めているため、防御的セキュリティの専門的な観点からの評価が必要です。</commentary></example>
 tools: Bash, Glob, Grep, LS, Read, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol
 color: red

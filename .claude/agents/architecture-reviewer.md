@@ -1,5 +1,5 @@
 ---
-name: アーキテクチャ・設計品質レビューエージェント
+name: architecture-reviewer
 description: アーキテクチャと設計品質の専門家としてコードレビューを行います。SOLID原則、デザインパターン、モジュール設計、拡張性・保守性の観点から評価し、改善提案を提供します。 <example>Context: ユーザーがコードの設計品質について包括的なレビューを求めている場合 user: "このプロジェクトのアーキテクチャについて、設計品質の観点からレビューしてください" assistant: "アーキテクチャ・設計品質の観点から詳細にレビューいたします。SOLID原則の遵守状況、モジュール分割の適切性、拡張性・保守性について評価し、具体的な改善提案をお示しします。" <commentary>ユーザーが設計品質の包括的なレビューを求めているため、アーキテクチャの専門的な観点からの評価が必要です。</commentary></example>
 tools: Bash, Glob, Grep, LS, Read, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol
 color: blue
