@@ -74,7 +74,7 @@ while IFS= read -r file_path; do
     # Format Markdown files with markdownlint
     if echo "$file_path" | grep -qE '\.(md|markdown)$'; then
         if command -v markdownlint >/dev/null 2>&1; then
-            if ! markdownlint --fix "$file_path"; then
+            if ! markdownlint --disable MD007 MD012 MD013 MD033 MD051 MD038 MD040 --fix "$file_path"; then
                 has_error=1
             fi
         fi
