@@ -151,5 +151,5 @@ RUN npm config set prefix /usr/local/share/npm-global && \
     npm cache clean --force && \
     uv python install ${PYTHON_VERSION} && \
     uv venv --system-site-packages /usr/local/share/python-env && \
-    uv pip install --python /usr/local/share/python-env pip yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog psutil pytest-benchmark awslabs.ecs-mcp-server
+    uv pip install --python /usr/local/share/python-env pip yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog psutil pytest-benchmark awslabs.ecs-mcp-server pytest_mock
 CMD ["claude"]
