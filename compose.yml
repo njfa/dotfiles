@@ -43,7 +43,7 @@ services:
         source: ${CLAUDE_CONFIG_PATH:-~/.claude.json}
         target: /home/node/.claude.json
       - type: bind
-        source: /tmp/uv-cache
+        source: ~/.cache/uv
         target: /usr/local/share/uv-cache
 
   plantuml:
