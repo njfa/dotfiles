@@ -928,7 +928,7 @@ ccc_main() {
     fi
 
     # uvキャッシュディレクトリの存在確認と作成
-    local uv_cache_dir="/tmp/uv-cache"
+    local uv_cache_dir="~/.cache/uv"
     if [ ! -d "$uv_cache_dir" ]; then
         log_info "uvキャッシュディレクトリ '$uv_cache_dir' が見つかりません。作成します。"
         mkdir -p "$uv_cache_dir" || {
@@ -1227,7 +1227,7 @@ ccc_main() {
     # 常にマウントされる固定パスを追加
     mount_info_display+=("$(format_path "$claude_credential_path") → /home/node/.claude")
     mount_info_display+=("$(format_path "$claude_config_path") → /home/node/.claude.json")
-    mount_info_display+=("$(format_path "/tmp/uv-cache") → /usr/local/share/uv-cache")
+    mount_info_display+=("$(format_path "$uv_cache_dir") → /usr/local/share/uv-cache")
 
     # --dangerously-skip-permissionsが指定されていて--block-outboundが指定されていない場合に警告
     if [ "$has_skip_permissions" = true ] && [ "$block_outbound" = false ]; then
