@@ -38,6 +38,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "echo \"[$(date)] $USER: $(jq -r '.')\" >> ~/.claude/input_history.log"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Edit|MultiEdit|Write|Glob|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "~/.claude/hooks/file-protection.sh"
           }
         ]

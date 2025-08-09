@@ -236,10 +236,13 @@ if [ "$(echo "$CLAUDE_OPERATION_TYPE_VALIDATION" | tr '[:upper:]' '[:lower:]')" 
     # transcript_pathから同一sessionIdのfile_pathを含む要素を時系列順で抽出
     transcript_file_paths=$(jq -r --arg session_id "$session_id" '
         select(.sessionId == $session_id and .message.content?) |
-        .message.content[] |
+        .message.content[]? |
         select(.type == "tool_use" and (.name == "Write" or .name == "Edit" or .name == "MultiEdit") and .input.file_path?) |
         .input.file_path
     ' "$transcript_path" 2>/dev/null)
+
+    transcript_file_include_production_code=false
+    transcript_file_include_test_code=false
 
     if [ -n "$transcript_file_paths" ]; then
         # プロダクションコードかテストコードかを判定
@@ -248,26 +251,14 @@ if [ "$(echo "$CLAUDE_OPERATION_TYPE_VALIDATION" | tr '[:upper:]' '[:lower:]')" 
             [ -z "$transcript_file" ] && continue
 
             if is_product_code "$transcript_file"; then
-                if [ "$transcript_file_type" = "test" ]; then
-                    # 混在している場合はエラー
-                    echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"テストコードの操作後、プロダクションコードを操作することは禁止しています\"}}" | jq -rc
-                    echo "テストコードの操作後、プロダクションコードを操作することは禁止しています" >&2
-                    exit 2
-                fi
-                transcript_file_type="product"
+                transcript_file_include_production_code=true
             elif is_test_code "$transcript_file"; then
-                if [ "$transcript_file_type" = "product" ]; then
-                    # 混在している場合はエラー
-                    echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"プロダクションコードの操作後、テストコードを操作することは禁止しています\"}}" | jq -rc
-                    echo "プロダクションコードの操作後、テストコードを操作することは禁止しています" >&2
-                    exit 2
-                fi
-                transcript_file_type="test"
+                transcript_file_include_test_code=true
             fi
         done <<<"$transcript_file_paths"
 
         # 現在のfile_pathsとtranscript_file_typeの組み合わせをチェック
-        if [ -n "$transcript_file_type" ]; then
+        if $transcript_file_include_production_code || $transcript_file_include_test_code; then
             # ツール名を取得
             tool_name=$(echo "$json_input" | jq -r '.tool_name // ""')
 
@@ -275,7 +266,7 @@ if [ "$(echo "$CLAUDE_OPERATION_TYPE_VALIDATION" | tr '[:upper:]' '[:lower:]')" 
             current_file_paths=""
 
             case "$tool_name" in
-            "Read" | "Edit" | "Write" | "NotebookRead" | "NotebookEdit")
+            "Edit" | "Write" | "NotebookEdit")
                 # 単一ファイルパス
                 current_file_paths=$(echo "$json_input" | jq -r '.tool_input.file_path // empty')
                 ;;
@@ -283,36 +274,28 @@ if [ "$(echo "$CLAUDE_OPERATION_TYPE_VALIDATION" | tr '[:upper:]' '[:lower:]')" 
                 # MultiEditの場合は単一ファイルパス
                 current_file_paths=$(echo "$json_input" | jq -r '.tool_input.file_path // empty')
                 ;;
-            "LS" | "Glob" | "Grep")
-                # パスパラメータ
-                current_file_paths=$(echo "$json_input" | jq -r '.tool_input.path // empty')
-                ;;
             esac
 
-            current_file_type=""
+            error_type=""
             while IFS= read -r current_file; do
                 [ -z "$current_file" ] && continue
 
-                if is_product_code "$current_file"; then
-                    current_file_type="product"
+                if $transcript_file_include_test_code && is_product_code "$current_file"; then
+                    error_type="product"
                     break
-                elif is_test_code "$current_file"; then
-                    current_file_type="test"
+                elif $transcript_file_include_production_code && is_test_code "$current_file"; then
+                    error_type="test"
                     break
                 fi
             done <<<"$current_file_paths"
 
             # セッションタイプと現在の操作タイプの整合性チェック
-            if [ -n "$current_file_type" ] && [ "$transcript_file_type" != "$current_file_type" ]; then
-                if [ "$transcript_file_type" = "product" ] && [ "$current_file_type" = "test" ]; then
-                    echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"プロダクションコードを扱うセッションでテストコードの操作は禁止されています\"}}" | jq -rc
-                    echo "プロダクションコードを扱うセッションでテストコードの操作は禁止されています" >&2
-                    exit 2
-                elif [ "$transcript_file_type" = "test" ] && [ "$current_file_type" = "product" ]; then
-                    echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"テストコードを扱うセッションでプロダクションコードの操作は禁止されています\"}}" | jq -rc
-                    echo "テストコードを扱うセッションでプロダクションコードの操作は禁止されています" >&2
-                    exit 2
-                fi
+            if [ "$error_type" = "test" ]; then
+                echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"プロダクションコードの編集後、テストコードを編集することは禁止しています。編集したい場合は新しいセッションを開始してください。\"}}" | jq -rc
+                exit 1
+            elif [ "$error_type" = "product" ]; then
+                echo "{\"hookSpecificOutput\": { \"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"テストコードの編集後、プロダクションコードを編集することは禁止しています。編集したい場合は新しいセッションを開始してください。\"}}" | jq -rc
+                exit 1
             fi
         fi
     fi

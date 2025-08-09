@@ -39,7 +39,7 @@ while IFS= read -r file_path; do
     if echo "$file_path" | grep -qE '\.(js|ts|jsx|tsx)$'; then
         if command -v prettier >/dev/null 2>&1; then
             if ! prettier --write "$file_path"; then
-                has_error=1
+                has_error=2
             fi
         fi
     fi
@@ -48,7 +48,7 @@ while IFS= read -r file_path; do
     if echo "$file_path" | grep -qE '\.py$'; then
         if command -v black >/dev/null 2>&1; then
             if ! black "$file_path"; then
-                has_error=1
+                has_error=2
             fi
         fi
     fi
@@ -57,7 +57,7 @@ while IFS= read -r file_path; do
     if echo "$file_path" | grep -qE '\.(sh|bash)$'; then
         if command -v shfmt >/dev/null 2>&1; then
             if ! shfmt -i 4 -w "$file_path"; then
-                has_error=1
+                has_error=2
             fi
         fi
     fi
@@ -66,7 +66,7 @@ while IFS= read -r file_path; do
     if echo "$file_path" | grep -qE '\.java$'; then
         if command -v google-java-format >/dev/null 2>&1; then
             if ! google-java-format --replace "$file_path"; then
-                has_error=1
+                has_error=2
             fi
         fi
     fi
@@ -81,6 +81,7 @@ while IFS= read -r file_path; do
     fi
 done <<<"$file_paths"
 
-# Exit with error code if any formatter failed
-echo "DEBUG: Exiting with code $has_error" >&2
-exit $has_error
+if [ $has_error -gt 0 ]; then
+    # Exit with error code if any formatter failed
+    exit $has_error
+fi

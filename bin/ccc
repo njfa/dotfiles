@@ -928,7 +928,7 @@ ccc_main() {
     fi
 
     # uvキャッシュディレクトリの存在確認と作成
-    local uv_cache_dir="~/.cache/uv"
+    local uv_cache_dir="$HOME/.cache/uv"
     if [ ! -d "$uv_cache_dir" ]; then
         log_info "uvキャッシュディレクトリ '$uv_cache_dir' が見つかりません。作成します。"
         mkdir -p "$uv_cache_dir" || {
