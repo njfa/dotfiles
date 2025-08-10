@@ -313,7 +313,8 @@ function Set-EnvironmentVariables {
         [System.Environment]::SetEnvironmentVariable("GOPATH", $env:USERPROFILE, "User")
         [System.Environment]::SetEnvironmentVariable("PYTHONUSERBASE", $env:USERPROFILE, "User")
         [System.Environment]::SetEnvironmentVariable("PYTHONUTF8", "1", "User")
-        [System.Environment]::SetEnvironmentVariable("WSLENV", "USERPROFILE:USERNAME", "User")
+        [System.Environment]::SetEnvironmentVariable("USERPROFILE", "$env:USERPROFILE", "User")
+        [System.Environment]::SetEnvironmentVariable("WSLENV", "USERPROFILE/p:USERNAME", "User")
         
         Write-Success "Environment variables set"
         return $true
