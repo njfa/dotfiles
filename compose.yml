@@ -52,6 +52,19 @@ services:
     ports:
       - 18123:8080
 
+  sqlite:
+    container_name: sqlite
+    image: alpine/sqlite:latest
+    networks:
+      - claude-net
+    volumes:
+      - type: bind
+        source: ./data/sqlite
+        target: /db
+    tty: true
+    command:
+      ["test.db"]
+
   # playwright:
   #   container_name: playwright
   #   image: my-playwright-mcp:latest
