@@ -409,37 +409,83 @@ check_installed_status() {
     local frame_color=${2:-"\033[90m"} # デフォルトは灰色
     local installed=false
     local status_icon="\033[90m○\033[m"
+    local version_info=""
 
     # 例外的なケースのみ個別に定義
     case $script_name in
     golang)
-        [ -n "$(command -v go)" ] && installed=true
+        if [ -n "$(command -v go)" ]; then
+            installed=true
+            version_info="$(go version 2>/dev/null | awk '{print $3}' | sed 's/go//')"
+        fi
         ;;
     rust)
-        [ -n "$(command -v cargo)" ] && installed=true
+        if [ -n "$(command -v cargo)" ]; then
+            installed=true
+            version_info="$(cargo --version 2>/dev/null | awk '{print $2}')"
+        fi
         ;;
     neovim)
-        [ -n "$(command -v nvim)" ] && installed=true
+        if [ -n "$(command -v nvim)" ]; then
+            installed=true
+            version_info="$(nvim --version 2>/dev/null | head -n1 | awk '{print $2}')"
+        fi
         ;;
     graphviz)
-        [ -n "$(command -v dot)" ] && installed=true
+        if [ -n "$(command -v dot)" ]; then
+            installed=true
+            version_info="$(dot -V 2>&1 | head -n1 | awk '{print $5}')"
+        fi
         ;;
     typescript)
-        [ -n "$(command -v tsc)" ] && installed=true
+        if [ -n "$(command -v tsc)" ]; then
+            installed=true
+            version_info="$(tsc --version 2>/dev/null | awk '{print $2}')"
+        fi
         ;;
     python)
-        [ -n "$(command -v python3)" ] && installed=true
+        if [ -n "$(command -v python3)" ]; then
+            installed=true
+            version_info="$(python3 --version 2>/dev/null | awk '{print $2}')"
+        fi
         ;;
     postgresql)
-        [ -n "$(command -v psql)" ] && installed=true
+        if [ -n "$(command -v psql)" ]; then
+            installed=true
+            version_info="$(psql --version 2>/dev/null | awk '{print $3}')"
+        fi
         ;;
     sdkman)
-        [ -d "$HOME/.sdkman" ] && installed=true
+        if [ -d "$HOME/.sdkman" ]; then
+            installed=true
+            if [ -f "$HOME/.sdkman/var/version" ]; then
+                version_info="$(cat "$HOME/.sdkman/var/version" 2>/dev/null)"
+            fi
+        fi
         ;;
     font)
         # fonts-noto-cjk と fonts-noto-cjk-extra がインストールされているかチェック
         if dpkg -l | grep -q "fonts-noto-cjk " && dpkg -l | grep -q "fonts-noto-cjk-extra "; then
             installed=true
+            version_info="$(dpkg -l | grep 'fonts-noto-cjk ' | awk '{print $3}' | head -n1)"
+        fi
+        ;;
+    node)
+        if [ -n "$(command -v node)" ]; then
+            installed=true
+            version_info="$(node --version 2>/dev/null)"
+        fi
+        ;;
+    docker)
+        if [ -n "$(command -v docker)" ]; then
+            installed=true
+            version_info="$(docker --version 2>/dev/null | awk '{print $3}' | sed 's/,//')"
+        fi
+        ;;
+    git)
+        if [ -n "$(command -v git)" ]; then
+            installed=true
+            version_info="$(git --version 2>/dev/null | awk '{print $3}')"
         fi
         ;;
     dependencies)
@@ -448,7 +494,17 @@ check_installed_status() {
         ;;
     *)
         # デフォルト: スクリプト名と同じコマンドをチェック
-        [ -n "$(command -v $script_name)" ] && installed=true
+        if [ -n "$(command -v $script_name)" ]; then
+            installed=true
+            # 汎用的なバージョンチェック
+            if $script_name --version >/dev/null 2>&1; then
+                version_info="$($script_name --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1)"
+            elif $script_name -v >/dev/null 2>&1; then
+                version_info="$($script_name -v 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1)"
+            elif $script_name version >/dev/null 2>&1; then
+                version_info="$($script_name version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1)"
+            fi
+        fi
         ;;
     esac
 
@@ -456,8 +512,19 @@ check_installed_status() {
         status_icon="\033[32m✓\033[m"
     fi
 
+    # バージョン情報がある場合は表示名に追加
+    display_name="$script_name"
+    if [ -n "$version_info" ]; then
+        # バージョン番号が既に'v'で始まっている場合は追加しない
+        if [[ "$version_info" =~ ^v ]]; then
+            display_name="$script_name ($version_info)"
+        else
+            display_name="$script_name (v$version_info)"
+        fi
+    fi
+
     printf "%b│%b %b %-61s %b│%b
-" "$frame_color" "\033[m" "$status_icon" "$script_name" "$frame_color" "\033[m"
+" "$frame_color" "\033[m" "$status_icon" "$display_name" "$frame_color" "\033[m"
 }
 
 sync() {
