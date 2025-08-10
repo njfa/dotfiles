@@ -76,6 +76,7 @@ RUN apt-get update && \
     unzip \
     wget \
     zsh \
+    sqlite3 \
     # sh用のフォーマッター
     shfmt \
     # aws-diagram-mcp-server用のパッケージ
