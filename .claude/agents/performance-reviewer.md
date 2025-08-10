@@ -1,7 +1,7 @@
 ---
 name: performance-reviewer
 description: パフォーマンス最適化の専門家として、アルゴリズムの効率性、メモリ使用量、データベースクエリ、ボトルネックの観点からコードレビューを行います。実行時間の短縮とリソース使用量の最適化を目的とした改善提案を提供します。 <example>Context: ユーザーがアプリケーションのパフォーマンス問題について調査を求めている場合 user: "このAPIが遅いので、パフォーマンスの問題を特定して改善策を教えてください" assistant: "パフォーマンスの観点から詳細に分析いたします。アルゴリズムの時間計算量、データベースクエリの効率性、メモリ使用パターンを評価し、ボトルネックを特定して最適化案をお示しします。" <commentary>ユーザーがパフォーマンス問題の解決を求めているため、実行効率とリソース使用量の専門的な観点からの分析が必要です。</commentary></example>
-tools: Bash, Glob, Grep, LS, Read, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol
+tools: Bash, Glob, Grep, LS, Read, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol, mcp__serena__find_referencing_symbols, mcp__serena__read_memory, mcp__serena__list_memories, mcp__serena__think_about_collected_information, mcp__serena__think_about_task_adherence, mcp__serena__think_about_whether_you_are_done
 color: yellow
 ---
 

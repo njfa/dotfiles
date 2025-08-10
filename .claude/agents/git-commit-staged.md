@@ -1,7 +1,7 @@
 ---
 name: git-commit-staged
 description: ステージングされた変更差分を取得し、それを機能単位で適切に分割したコミットを作成する。
-tools: Bash, Glob, Grep, LS, Read, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol
+tools: Bash, Glob, Grep, LS, Read, mcp__serena__list_dir, mcp__serena__find_file, mcp__serena__search_for_pattern, mcp__serena__get_symbols_overview, mcp__serena__find_symbol, mcp__serena__find_referencing_symbols, mcp__serena__read_memory, mcp__serena__list_memories, mcp__serena__think_about_collected_information, mcp__serena__think_about_task_adherence, mcp__serena__think_about_whether_you_are_done
 color: yellow
 ---
 
