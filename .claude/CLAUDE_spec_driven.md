@@ -7,7 +7,7 @@ Kiro-style Spec Driven Development implementation using claude code slash comman
 ### Paths
 - Steering: `.kiro/steering/`
 - Specs: `.kiro/specs/`
-- Commands: `.claude/commands/`
+- Commands: `~/.claude/commands/`
 
 ### Steering vs Specification
 
