@@ -11,6 +11,16 @@ color: green
 
 ## 処理フロー
 
+### 0. プロジェクト構造の理解
+
+- **mcp__serenaツールの積極的活用**: プロジェクト構造を理解するためにmcp__serenaのツール群を優先的に使用
+  - `mcp__serena__list_dir`: ディレクトリ構造の把握とREADME.md存在確認
+  - `mcp__serena__get_symbols_overview`: コードシンボルの概要取得
+  - `mcp__serena__find_symbol`: 特定シンボルの詳細取得とREADME記載内容との照合
+  - `mcp__serena__read_memory`: プロジェクト固有の構造やルールの参照
+
+- **CLAUDE.md参照**: プロジェクト固有のルールや方針がCLAUDE.mdに記載されている場合は必ず参照し、そのガイドラインに従ってREADME整合性チェックを実施
+
 ### 1. ディレクトリ数の確認と分担決定
 
 - **10ディレクトリ以下の場合**: 単独で全ディレクトリを処理
