@@ -209,10 +209,10 @@ is_write_protected() {
 # 書き込み系ツールかチェック
 is_write_tool() {
     case "$1" in
-    "Edit" | "MultiEdit" | "Write" | "NotebookEdit")
+    Edit | MultiEdit | Write | NotebookEdit | mcp__serena__replace* | mcp__serena__insert*)
         return 0
         ;;
-    "Bash")
+    Bash)
         # Bashコマンドの場合、書き込み系コマンドかチェック
         local cmd=$(echo "$json_input" | jq -r '.tool_input.command // ""')
         if echo "$cmd" | grep -qE '(^|[;&|]).*[[:space:]]*(rm|mv|cp|chmod|chown|>|>>)[[:space:]]+'; then
@@ -237,7 +237,7 @@ if [ "$(echo "$CLAUDE_OPERATION_TYPE_VALIDATION" | tr '[:upper:]' '[:lower:]')" 
     transcript_file_paths=$(jq -r --arg session_id "$session_id" '
         select(.sessionId == $session_id and .message.content?) |
         .message.content[]? |
-        select(.type == "tool_use" and (.name == "Write" or .name == "Edit" or .name == "MultiEdit") and .input.file_path?) |
+        select(.type == "tool_use" and (.name == "Write" or .name == "Edit" or .name == "MultiEdit" or .name == "NotebookEdit"  or .name == "mcp__serena__replace_regex"  or .name == "mcp__serena__replace_symbol_body"  or .name == "mcp__serena__insert_after_symbol"  or .name == "mcp__serena__insert_before_symbol") and .input.file_path?) |
         .input.file_path
     ' "$transcript_path" 2>/dev/null)
 
@@ -263,18 +263,7 @@ if [ "$(echo "$CLAUDE_OPERATION_TYPE_VALIDATION" | tr '[:upper:]' '[:lower:]')" 
             tool_name=$(echo "$json_input" | jq -r '.tool_name // ""')
 
             # ファイルパスを取得（ツールによって異なる場所にある）
-            current_file_paths=""
-
-            case "$tool_name" in
-            "Edit" | "Write" | "NotebookEdit")
-                # 単一ファイルパス
-                current_file_paths=$(echo "$json_input" | jq -r '.tool_input.file_path // empty')
-                ;;
-            "MultiEdit")
-                # MultiEditの場合は単一ファイルパス
-                current_file_paths=$(echo "$json_input" | jq -r '.tool_input.file_path // empty')
-                ;;
-            esac
+            current_file_paths=$(echo "$json_input" | jq -r '.tool_input.file_path // empty')
 
             error_type=""
             while IFS= read -r current_file; do
@@ -308,19 +297,19 @@ tool_name=$(echo "$json_input" | jq -r '.tool_name // ""')
 file_paths=""
 
 case "$tool_name" in
-"Read" | "Edit" | "Write" | "NotebookRead" | "NotebookEdit")
+Read | Edit | MultiEdit | Write | NotebookEdit)
     # 単一ファイルパス
     file_paths=$(echo "$json_input" | jq -r '.tool_input.file_path // empty')
     ;;
-"MultiEdit")
-    # MultiEditの場合は単一ファイルパス
-    file_paths=$(echo "$json_input" | jq -r '.tool_input.file_path // empty')
+mcp__serena*)
+    # 単一ファイルパス
+    file_paths=$(echo "$json_input" | jq -r '.tool_input.relative_path // empty')
     ;;
-"LS" | "Glob" | "Grep")
+LS | Glob | Grep)
     # パスパラメータ
     file_paths=$(echo "$json_input" | jq -r '.tool_input.path // empty')
     ;;
-"Bash")
+Bash)
     # Bashコマンドの場合、危険なコマンドをチェック
     command=$(echo "$json_input" | jq -r '.tool_input.command // ""')
 

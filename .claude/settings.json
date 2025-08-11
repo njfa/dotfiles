@@ -34,7 +34,7 @@
         ]
       },
       {
-        "matcher": "Read|Edit|MultiEdit|Write|Glob|Grep|Bash",
+        "matcher": "Read|Edit|MultiEdit|Write|Glob|Grep|Bash|mcp__serena__*",
         "hooks": [
           {
             "type": "command",
@@ -43,7 +43,7 @@
         ]
       },
       {
-        "matcher": "Read|Edit|MultiEdit|Write|Glob|Grep|Bash",
+        "matcher": "Read|Edit|MultiEdit|Write|Glob|Grep|Bash|mcp__serena__*",
         "hooks": [
           {
             "type": "command",
@@ -63,11 +63,20 @@
         ]
       },
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit|mcp__serena__replace*|mcp__serena__insert*",
         "hooks": [
           {
             "type": "command",
             "command": "~/.claude/hooks/code-formatter.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|mcp__serena__replace*|mcp__serena__insert*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/test-runner.sh"
           }
         ]
       }
