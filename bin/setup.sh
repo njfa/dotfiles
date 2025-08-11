@@ -455,6 +455,12 @@ check_installed_status() {
             version_info="$(psql --version 2>/dev/null | awk '{print $3}')"
         fi
         ;;
+    tmux)
+        if [ -n "$(command -v tmux)" ]; then
+            installed=true
+            version_info="$(tmux -V 2>/dev/null | awk '{print $2}')"
+        fi
+        ;;
     sdkman)
         if [ -d "$HOME/.sdkman" ]; then
             installed=true
@@ -468,24 +474,6 @@ check_installed_status() {
         if dpkg -l | grep -q "fonts-noto-cjk " && dpkg -l | grep -q "fonts-noto-cjk-extra "; then
             installed=true
             version_info="$(dpkg -l | grep 'fonts-noto-cjk ' | awk '{print $3}' | head -n1)"
-        fi
-        ;;
-    node)
-        if [ -n "$(command -v node)" ]; then
-            installed=true
-            version_info="$(node --version 2>/dev/null)"
-        fi
-        ;;
-    docker)
-        if [ -n "$(command -v docker)" ]; then
-            installed=true
-            version_info="$(docker --version 2>/dev/null | awk '{print $3}' | sed 's/,//')"
-        fi
-        ;;
-    git)
-        if [ -n "$(command -v git)" ]; then
-            installed=true
-            version_info="$(git --version 2>/dev/null | awk '{print $3}')"
         fi
         ;;
     dependencies)
