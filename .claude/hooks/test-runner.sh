@@ -32,16 +32,6 @@ is_test_code() {
         return 0
     fi
 
-    # _test.py (Python)
-    if echo "$file_path" | grep -qE '_test\.py$'; then
-        return 0
-    fi
-
-    # test_*.py (Python)
-    if echo "$file_path" | grep -qE 'test_.*\.py$'; then
-        return 0
-    fi
-
     # *Test.java (Java)
     if echo "$file_path" | grep -qE '.*Test\.java$'; then
         return 0
