@@ -45,6 +45,12 @@ is_test_code() {
     return 1
 }
 
+# Pythonテストファイルかチェックする関数
+is_python_test() {
+    local file_path="$1"
+    echo "$file_path" | grep -qE '\.py$'
+}
+
 # Pythonテストコマンドを検出する関数（特定のファイルのみ実行）
 get_python_test_command() {
     local project_root="$1"
@@ -116,14 +122,17 @@ Edit | MultiEdit | Write | NotebookEdit | mcp__serena*)
     if is_test_code "$file_path"; then
         # プロジェクトルートを検出
         project_root=$(find_project_root)
+        test_command=""
+        # タイムアウト設定（デフォルト30秒）
+        TIMEOUT=${TEST_TIMEOUT:-30}
 
-        # Pythonテストコマンドを取得（編集されたファイルのみ）
-        test_command=$(get_python_test_command "$project_root" "$file_path")
+        # Pythonテストファイルかチェック
+        if is_python_test "$file_path"; then
+            # Pythonテストコマンドを取得（編集されたファイルのみ）
+            test_command=$(get_python_test_command "$project_root" "$file_path")
+        fi
 
-        if [ $? -eq 0 ]; then
-            # タイムアウト設定（デフォルト30秒）
-            TIMEOUT=${TEST_TIMEOUT:-30}
-
+        if [ -n "$test_command" ]; then
             # テストを実行（タイムアウト付き、failed/errorのみ表示）
             cd "$project_root"
             test_output=$(timeout "$TIMEOUT" bash -c "$test_command" 2>&1)
@@ -134,17 +143,16 @@ Edit | MultiEdit | Write | NotebookEdit | mcp__serena*)
             echo "$filtered_output" >&2
 
             if [ $test_exit_code -eq 124 ]; then
-                echo "テスト ($test_command) がタイムアウトしました（${TIMEOUT}秒）。テストコードに問題がないか見直してほしい。" >&2
+                echo "テスト ($test_command) がタイムアウトしました（${TIMEOUT}秒）。テストコードに問題がないか見直してください。" >&2
             elif [ $test_exit_code -eq 0 ]; then
-                echo "テスト ($test_command) が成功しました" >&2
+                echo "テスト ($test_command) が成功しました。" >&2
             else
-                echo "テスト ($test_command) の実行結果に問題があった。実行結果は下記の通り。テストコードに問題がないか見直してほしい。" >&2
+                echo "テスト ($test_command) が異常終了しました。テストコードに問題がないか見直してください。問題ないと判断した場合、起きている事象と問題ないと考える理由をユーザーに伝え、どうすべきか指示を求めてください。" >&2
             fi
+            exit_status=2
         else
             echo "テストコマンドが取得できませんでした" >&2
         fi
-
-        exit_status=2
     fi
     ;;
 esac
