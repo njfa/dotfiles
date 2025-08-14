@@ -1,4 +1,5 @@
-# 許可するドメインリスト
+# CONNECTメソッドのみ許可するドメイン（HTTPS接続のみ、ポート443/8080）
+# 例：WebSocketやストリーミングサービスなど
 # ピリオドで始まるドメインはサブドメインも含む
 .github.com
 .githubusercontent.com

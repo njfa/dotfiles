@@ -1,0 +1,122 @@
+# Squid設定ファイル（テンプレート）
+
+# PIDファイルの場所を指定
+pid_filename /var/run/squid/squid.pid
+
+# 基本的なポート設定
+http_port 3128
+
+# アクセスログの設定（ホストにマウントされたディレクトリに出力）
+logformat localtime %{%Y-%m-%d %H:%M:%S}tl.%03tu %6tr %>a %Ss/%03>Hs %<st %rm %ru %[un %Sh/%<a %mt
+access_log /var/log/squid/access.log localtime
+cache_log /var/log/squid/cache.log
+cache_store_log /var/log/squid/store.log
+
+# ログローテーション設定
+logfile_rotate 10
+
+# キャッシュ設定（今回はプロキシ機能のみ使用）
+cache_dir ufs /var/spool/squid 100 16 256
+cache_mem 256 MB
+
+# 許可するHTTPメソッドを定義
+acl SAFE_METHODS method GET HEAD OPTIONS CONNECT
+acl UNSAFE_METHODS method POST PUT DELETE PATCH
+
+# HTTPメソッドの定義
+acl GET_METHOD method GET
+acl HEAD_METHOD method HEAD
+acl OPTIONS_METHOD method OPTIONS
+acl CONNECT_METHOD method CONNECT
+acl POST_METHOD method POST
+acl PUT_METHOD method PUT
+acl DELETE_METHOD method DELETE
+acl PATCH_METHOD method PATCH
+
+# ドメインリストを複数の制限レベルで定義
+# GETのみ許可するドメイン（読み取り専用）
+acl domains_get_only dstdomain "/etc/squid/domains-get-only.txt"
+
+# CONNECTのみ許可するドメイン（HTTPS接続のみ）
+acl domains_connect_only dstdomain "/etc/squid/domains-connect-only.txt"
+
+# 更新系メソッド以外を許可するドメイン（GET/HEAD/OPTIONS/CONNECT）
+acl domains_no_unsafe dstdomain "/etc/squid/domains-no-unsafe.txt"
+
+# 全メソッド許可するドメイン
+acl domains_all_methods dstdomain "/etc/squid/domains-all-methods.txt"
+
+# # ローカルネットワークの定義
+# acl localnet src 172.16.0.0/12  # Dockerのデフォルトネットワーク範囲
+# ローカルネットワークの定義
+acl localnet src 10.0.0.0/8      # RFC1918 possible internal network
+acl localnet src 172.16.0.0/12   # RFC1918 possible internal network (Dockerデフォルト含む)
+acl localnet src 192.168.0.0/16  # RFC1918 possible internal network
+acl localnet src fc00::/7        # RFC 4193 unique local addresses
+acl localnet src fe80::/10       # RFC 4291 link-local addresses
+
+# ローカルネットワーク宛の通信を定義
+acl to_localnet dst 10.0.0.0/8
+acl to_localnet dst 172.16.0.0/12
+acl to_localnet dst 192.168.0.0/16
+acl to_localnet dst fc00::/7
+acl to_localnet dst fe80::/10
+acl to_localnet dst ::1
+acl to_localnet dst 127.0.0.0/8
+
+# SSL/TLS接続用のポート
+acl SSL_ports port 443
+acl SSL_ports port 8080  # HTTPS on alternate port
+acl Safe_ports port 80   # http
+acl Safe_ports port 443  # https
+acl Safe_ports port 8080 # http/https alternate
+
+# アクセス制御ルール
+# 危険なポートへの接続を拒否
+http_access deny !Safe_ports
+
+# CONNECTメソッドはSSL_portsのみ許可（443と8080）
+http_access deny CONNECT_METHOD !SSL_ports
+
+# ドメインごとのメソッド制限を適用（ローカルネットワークからのみ）
+# 1. 全メソッド許可ドメイン
+http_access allow localnet domains_all_methods
+
+# 2. GETのみ許可ドメイン
+http_access allow localnet domains_get_only GET_METHOD
+# http_access deny domains_get_only
+
+# 3. CONNECTのみ許可ドメイン（HTTPS通信のみ、443と8080ポート）
+http_access allow localnet domains_connect_only CONNECT_METHOD
+# http_access deny domains_connect_only
+
+# 4. 更新系メソッド以外許可ドメイン
+http_access allow localnet domains_no_unsafe !UNSAFE_METHODS
+# http_access deny domains_no_unsafe
+
+# それ以外は全て拒否
+http_access deny all
+
+# エラーページの言語設定
+error_directory /usr/share/squid/errors/Japanese
+
+# DNSサーバーの設定（Dockerのデフォルト）
+dns_nameservers 8.8.8.8 8.8.4.4
+
+# プロキシヘッダーの設定
+forwarded_for on
+via on
+
+# キャッシュしない設定（プロキシのみ使用）
+cache deny all
+
+# レスポンスヘッダーにプロキシ情報を含めない
+reply_header_access X-Cache deny all
+reply_header_access X-Cache-Lookup deny all
+
+# コアダンプの設定
+coredump_dir /var/spool/squid
+
+# 上位プロキシ設定（環境変数により動的に設定）
+# UPSTREAM_PROXY環境変数が設定されている場合に有効化
+__UPSTREAM_PROXY_CONFIG__
