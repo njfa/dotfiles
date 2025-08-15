@@ -45,6 +45,8 @@ services:
       - type: bind
         source: ~/.cache/uv
         target: /usr/local/share/uv-cache
+    environment:
+      UV_NATIVE_TLS: true
 
   plantuml:
     container_name: plantuml
