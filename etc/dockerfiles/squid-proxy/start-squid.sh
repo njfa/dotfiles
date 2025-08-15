@@ -17,11 +17,22 @@ cp /etc/squid/squid.conf.template /etc/squid/squid.conf
 if [ -n "$UPSTREAM_PROXY" ]; then
     echo "上位プロキシを設定中: $UPSTREAM_PROXY"
 
-    # 上位プロキシの設定を生成
-    UPSTREAM_CONFIG="# 上位プロキシ設定
-cache_peer ${UPSTREAM_PROXY%:*} parent ${UPSTREAM_PROXY#*:} 0 no-query default
-never_direct allow all
-always_direct allow to_localnet"
+    # 上位プロキシの設定を生成（1行形式で改行文字を使用）
+    UPSTREAM_CONFIG="# 上位プロキシ設定\\
+cache_peer ${UPSTREAM_PROXY%:*} parent ${UPSTREAM_PROXY#*:} 0 no-query default\\
+\\
+# ローカルネットワーク宛は直接接続\\
+acl localhost_dst dst 127.0.0.1 ::1\\
+always_direct allow to_localnet\\
+always_direct allow localhost_dst\\
+\\
+# それ以外は上位プロキシ経由\\
+never_direct deny to_localnet\\
+never_direct deny localhost_dst\\
+never_direct allow all\\
+\\
+# 上位プロキシを優先的に使用\\
+prefer_direct off"
 
     # テンプレートのプレースホルダーを上位プロキシ設定に置換
     sed -i "s|__UPSTREAM_PROXY_CONFIG__|${UPSTREAM_CONFIG}|" /etc/squid/squid.conf
