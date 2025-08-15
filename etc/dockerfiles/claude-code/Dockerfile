@@ -35,8 +35,9 @@ RUN arch=$(uname -m) && \
     if ! wget "https://github.com/neovim/neovim/releases/latest/download/nvim-${arch_suffix}.appimage" -O /tmp/nvim.appimage; then \
         echo "Failed to download nvim-${arch_suffix}.appimage, trying legacy filename..." && \
         wget "https://github.com/neovim/neovim/releases/latest/download/nvim.appimage" -O /tmp/nvim.appimage; \
-    fi && \
-    chmod u+x /tmp/nvim.appimage && \
+    fi
+
+RUN chmod u+x /tmp/nvim.appimage && \
     /tmp/nvim.appimage --appimage-extract && \
     mv squashfs-root /tmp/squashfs-root
 
