@@ -71,6 +71,10 @@ acl Safe_ports port 80   # http
 acl Safe_ports port 443  # https
 acl Safe_ports port 8080 # http/https alternate
 
+# 上位プロキシ設定（環境変数により動的に設定）
+# UPSTREAM_PROXY環境変数が設定されている場合に有効化
+__UPSTREAM_PROXY_CONFIG__
+
 # アクセス制御ルール
 # 危険なポートへの接続を拒否
 http_access deny !Safe_ports
@@ -100,9 +104,6 @@ http_access deny all
 # エラーページの言語設定
 error_directory /usr/share/squid/errors/Japanese
 
-# DNSサーバーの設定（Dockerのデフォルト）
-dns_nameservers 8.8.8.8 8.8.4.4
-
 # プロキシヘッダーの設定
 forwarded_for on
 via on
@@ -116,7 +117,3 @@ reply_header_access X-Cache-Lookup deny all
 
 # コアダンプの設定
 coredump_dir /var/spool/squid
-
-# 上位プロキシ設定（環境変数により動的に設定）
-# UPSTREAM_PROXY環境変数が設定されている場合に有効化
-__UPSTREAM_PROXY_CONFIG__
