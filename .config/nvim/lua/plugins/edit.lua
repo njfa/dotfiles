@@ -160,7 +160,7 @@ return {
                     imageFormat = "svg"
                 },
                 disable_sync_scroll = 1,
-                content_editable = true,
+                content_editable = false,
             }
             vim.g.mkdp_markdown_css = vim.fn.expand('~/.config/markdown-preview/style.css')
             vim.g.mkdp_page_title = '${name}'
