@@ -18,6 +18,10 @@
       "mcp__playwright__browser_install"
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline/context_info.js"
+  },
   "hooks": {
     "PreToolUse": [
       {
