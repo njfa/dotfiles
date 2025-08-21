@@ -6,7 +6,7 @@ services:
     image: my-squid-proxy:latest
     pull_policy: never
     build:
-      context: ./etc/dockerfiles/squid-proxy/
+      context: ${PROJECT_ROOT:-.}/etc/dockerfiles/squid-proxy/
     networks:
       - claude-net
     volumes:
@@ -15,12 +15,12 @@ services:
         target: /var/log/squid
     restart: unless-stopped
 
-  containered-claude:
-    container_name: containered-claude
+  claude-code:
+    container_name: claude-code
     image: my-claude-code:latest
     pull_policy: never
     build:
-      context: ./etc/dockerfiles/claude-code/
+      context: ${PROJECT_ROOT:-.}/etc/dockerfiles/claude-code/
       args:
         USERID: ${USERID:-1000}
         GROUPID: ${GROUPID:-1000}
@@ -28,10 +28,6 @@ services:
         PYTHON_VERSION: ${PYTHON_VERSION:-3.13}
     networks:
       - claude-net
-    develop:
-      watch:
-        - action: rebuild
-          path: ./etc/dockerfiles/claude-code/Dockerfile
     volumes:
       - type: bind
         source: ${SOURCE_PATH:-.}
@@ -61,7 +57,7 @@ services:
       - claude-net
     volumes:
       - type: bind
-        source: ./data/sqlite
+        source: ${PROJECT_ROOT:-.}/data/sqlite
         target: /db
     tty: true
     command:
@@ -76,7 +72,7 @@ services:
   #   volumes:
   #     - /tmp/.X11-unix:/tmp/.X11-unix
   #   build:
-  #     context: ./etc/dockerfiles/playwright-mcp/
+  #     context: ${PROJECT_ROOT:-/workspace}/etc/dockerfiles/playwright-mcp/
   #   ports:
   #     - 8931:8931
   #   entrypoint:

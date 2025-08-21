@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# スクリプトのディレクトリから PROJECT_ROOT を決定
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # コンテナランナースクリプトのパスを設定
 CR_SCRIPT="${CR_SCRIPT:-$HOME/.dotfiles/bin/container-runner}"
 
@@ -122,7 +126,7 @@ print_logo() {
     local max_length=0
 
     # タイトル行
-    local title_line="✻ Containered Claude Code (ccc)"
+    local title_line="✻ Claude Code Container (ccc)"
     lines+=("$title_line")
     if [ ${#title_line} -gt $max_length ]; then
         max_length=${#title_line}
@@ -273,7 +277,7 @@ print_logo() {
         model_display="$model"
     # compose.ymlのenvironmentセクションから取得
     elif [ -f "$compose_path" ]; then
-        local compose_model=$(yq eval '.services.containered-claude.environment.ANTHROPIC_MODEL // ""' "$compose_path" 2>/dev/null)
+        local compose_model=$(yq eval '.services.claude-code.environment.ANTHROPIC_MODEL // ""' "$compose_path" 2>/dev/null)
         if [ -n "$compose_model" ] && [ "$compose_model" != "null" ]; then
             model_display="$compose_model (compose.yml)"
         fi
@@ -288,7 +292,7 @@ print_logo() {
         fast_model_display="$fast_model"
     # compose.ymlのenvironmentセクションから取得
     elif [ -f "$compose_path" ]; then
-        local compose_fast_model=$(yq eval '.services.containered-claude.environment.ANTHROPIC_SMALL_FAST_MODEL // ""' "$compose_path" 2>/dev/null)
+        local compose_fast_model=$(yq eval '.services.claude-code.environment.ANTHROPIC_SMALL_FAST_MODEL // ""' "$compose_path" 2>/dev/null)
         if [ -n "$compose_fast_model" ] && [ "$compose_fast_model" != "null" ]; then
             fast_model_display="$compose_fast_model (compose.yml)"
         fi
@@ -539,7 +543,7 @@ update_claude_image() {
     fi
 
     # イメージの再ビルド
-    if ! docker compose -f "$HOME/.dotfiles/compose.yml" build "${build_args[@]}" containered-claude; then
+    if ! docker compose -f "$PROJECT_ROOT/compose.yml" build "${build_args[@]}" claude-code; then
         log_error "イメージの更新に失敗しました"
         return 1
     fi
@@ -552,8 +556,8 @@ update_claude_image() {
 ccc_main() {
     # デフォルト値の設定
     local source_paths=()
-    local compose_path="$HOME/.dotfiles/compose.yml"
-    local service="containered-claude"
+    local compose_path="$PROJECT_ROOT/compose.yml"
+    local service="claude-code"
     local remove_orphans=true # デフォルトでオーファンコンテナを削除する
     local claude_credential_path="$HOME/.claude"
     local claude_config_path="$HOME/.claude.json"
@@ -593,11 +597,11 @@ ccc_main() {
             service="$2"
             shift 2
             ;;
-        --credential-path)
+        --config-dir-path)
             claude_credential_path="$2"
             shift 2
             ;;
-        --config-path)
+        --config-file-path)
             claude_config_path="$2"
             shift 2
             ;;
@@ -897,7 +901,7 @@ ccc_main() {
             local value="${env_var#*=}"
 
             # yqを使って環境変数を追加または更新
-            if ! yq eval ".services.containered-claude.environment.$key = \"$value\"" -i "$compose_path" 2>/dev/null; then
+            if ! yq eval ".services.claude-code.environment.$key = \"$value\"" -i "$compose_path" 2>/dev/null; then
                 log_error "環境変数の永続的な設定に失敗しました: $key=$value"
                 return 1
             fi
@@ -952,7 +956,7 @@ ccc_main() {
     # 設定ファイルの存在確認と作成
     if [ ! -f "$claude_config_path" ]; then
         log_info "設定ファイル '$claude_config_path' が見つかりません。作成します。"
-        echo -n "Claude設定ファイルの内容を入力してください (Enterで空のJSONを使用): "
+        echo -n "Claude Code設定ファイルの内容を入力してください (Enterで空のJSONを使用): "
         read -r config_content </dev/tty
 
         # 入力がない場合は空のJSONオブジェクトを使用
@@ -1009,6 +1013,7 @@ ccc_main() {
     # 環境変数を準備
     # env_vars: Dockerデーモンに渡す環境変数
     local env_vars=(
+        "PROJECT_ROOT=$PROJECT_ROOT"
         "CLAUDE_CREDENTIAL_PATH=$claude_credential_path"
         "CLAUDE_CONFIG_PATH=$claude_config_path"
     )
@@ -1108,7 +1113,7 @@ ccc_main() {
 
     # ユーザーが-s/--source-pathを指定した場合、デフォルトのマウント設定を削除
     if [ "$source_path_specified" = true ]; then
-        if ! yq eval 'del(.services.containered-claude.volumes[] | select(.target == "/workspace/"))' -i "$temp_compose_file" 2>/dev/null; then
+        if ! yq eval 'del(.services.claude-code.volumes[] | select(.target == "/workspace/"))' -i "$temp_compose_file" 2>/dev/null; then
             log_error "yqコマンドの実行に失敗しました。yqが正しくインストールされているか確認してください。"
             rm -f "$temp_compose_file"
             return 1
@@ -1138,7 +1143,7 @@ ccc_main() {
         # ソースパスが1つの場合は直接 /workspace/ にマウント
         if [ ${#source_paths[@]} -eq 1 ]; then
             local src_path="${source_paths[0]}"
-            if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file" 2>/dev/null; then
+            if ! yq eval ".services.claude-code.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"/workspace/\"}]" -i "$temp_compose_file" 2>/dev/null; then
                 log_error "マウント設定の追加に失敗しました: $src_path"
                 rm -f "$temp_compose_file"
                 return 1
@@ -1164,7 +1169,7 @@ ccc_main() {
                 local target_path="/workspace/$target_name"
 
                 # yqを使って新しいマウントポイントを追加
-                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"$target_path\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                if ! yq eval ".services.claude-code.volumes += [{\"type\": \"bind\", \"source\": \"$src_path\", \"target\": \"$target_path\"}]" -i "$temp_compose_file" 2>/dev/null; then
                     log_error "マウント設定の追加に失敗しました: $src_path -> $target_path"
                     rm -f "$temp_compose_file"
                     return 1
@@ -1186,7 +1191,7 @@ ccc_main() {
             if [ -n "$AWS_CONFIG_FILE" ] && [ -f "$AWS_CONFIG_FILE" ]; then
                 local config_source=$(realpath "$AWS_CONFIG_FILE")
                 local config_target="/home/node/.aws/config"
-                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$config_source\", \"target\": \"$config_target\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                if ! yq eval ".services.claude-code.volumes += [{\"type\": \"bind\", \"source\": \"$config_source\", \"target\": \"$config_target\"}]" -i "$temp_compose_file" 2>/dev/null; then
                     log_error "AWS設定ファイルのマウント設定の追加に失敗しました: $config_source"
                     rm -f "$temp_compose_file"
                     return 1
@@ -1200,7 +1205,7 @@ ccc_main() {
             if [ -n "$AWS_SHARED_CREDENTIALS_FILE" ] && [ -f "$AWS_SHARED_CREDENTIALS_FILE" ]; then
                 local credentials_source=$(realpath "$AWS_SHARED_CREDENTIALS_FILE")
                 local credentials_target="/home/node/.aws/credentials"
-                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$credentials_source\", \"target\": \"$credentials_target\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                if ! yq eval ".services.claude-code.volumes += [{\"type\": \"bind\", \"source\": \"$credentials_source\", \"target\": \"$credentials_target\"}]" -i "$temp_compose_file" 2>/dev/null; then
                     log_error "AWS認証情報ファイルのマウント設定の追加に失敗しました: $credentials_source"
                     rm -f "$temp_compose_file"
                     return 1
@@ -1213,7 +1218,7 @@ ccc_main() {
             # デフォルトの ~/.aws ディレクトリをマウント
             local default_aws_dir="$HOME/.aws"
             if [ -d "$default_aws_dir" ]; then
-                if ! yq eval ".services.containered-claude.volumes += [{\"type\": \"bind\", \"source\": \"$default_aws_dir\", \"target\": \"/home/node/.aws\"}]" -i "$temp_compose_file" 2>/dev/null; then
+                if ! yq eval ".services.claude-code.volumes += [{\"type\": \"bind\", \"source\": \"$default_aws_dir\", \"target\": \"/home/node/.aws\"}]" -i "$temp_compose_file" 2>/dev/null; then
                     log_error "AWS設定ディレクトリのマウント設定の追加に失敗しました: $default_aws_dir"
                     rm -f "$temp_compose_file"
                     return 1
@@ -1262,7 +1267,7 @@ ccc_main() {
             local value="${env_var#*=}"
 
             # yqを使って環境変数を追加
-            if ! yq eval ".services.containered-claude.environment.$key = \"$value\"" -i "$temp_compose_file" 2>/dev/null; then
+            if ! yq eval ".services.claude-code.environment.$key = \"$value\"" -i "$temp_compose_file" 2>/dev/null; then
                 log_error "環境変数の追加に失敗しました: $key=$value"
                 rm -f "$temp_compose_file"
                 return 1
@@ -1273,7 +1278,7 @@ ccc_main() {
     # --block-outboundが指定されている場合、squid-proxyへの依存関係を追加
     if [ "$block_outbound" = true ]; then
         # depends_onを追加（既存のdepends_onがある場合は追加、ない場合は新規作成）
-        if ! yq eval '.services.containered-claude.depends_on += ["squid-proxy"]' -i "$temp_compose_file" 2>/dev/null; then
+        if ! yq eval '.services.claude-code.depends_on += ["squid-proxy"]' -i "$temp_compose_file" 2>/dev/null; then
             log_error "squid-proxyへの依存関係の追加に失敗しました"
             rm -f "$temp_compose_file"
             return 1
@@ -1381,10 +1386,10 @@ ${BOLD}ccc固有オプション:${NC}
     ${GREEN}-s, --source-path PATH${NC}      ソースコードのパスを指定 (複数指定可能、デフォルト: 現在のディレクトリ)
                                              1つだけの場合は /workspace/ に直接マウント
                                              2つ以上の場合はすべて /workspace/<basename> 形式でマウント
-    ${GREEN}--compose-path PATH${NC}         Docker Composeファイルのパスを指定 (デフォルト: ~/.dotfiles/compose.yml)
-    ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: containered-claude)
-    ${GREEN}--credential-path PATH${NC}      Claude認証情報ディレクトリのパスを指定 (デフォルト: ~/.claude)
-    ${GREEN}--config-path PATH${NC}          Claude設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
+    ${GREEN}--compose-path PATH${NC}         Docker Composeファイルのパスを指定 (デフォルト: $PROJECT_ROOT/compose.yml)
+    ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: claude-code)
+    ${GREEN}--config-dir-path PATH${NC}      Claude Code設定ディレクトリのパスを指定 (デフォルト: $PROJECT_ROOT/.claude)
+    ${GREEN}--config-file-path PATH${NC}     Claude Code設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
     ${GREEN}--no-rm-orphans${NC}             オーファンコンテナの削除を無効化する (デフォルトは削除する)
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
@@ -1458,8 +1463,8 @@ ${BOLD}mcp buildサブコマンド:${NC}
     ${DIMMED}動作:${NC}
     1. 指定されたMCPサーバー名に対して、[サーバー名].jsonファイルを検索
     2. 検索パス（優先順位順）:
-       - ./.claude/mcp/[サーバー名].json    (プロジェクトディレクトリ)
-       - ~/.claude/mcp/[サーバー名].json    (ユーザーディレクトリ)
+       - $PROJECT_ROOT/.claude/mcp/[サーバー名].json    (プロジェクトディレクトリ)
+       - ~/.claude/mcp/[サーバー名].json                 (ユーザーディレクトリ)
     3. 見つかった設定ファイルをすべて統合し、プロジェクトルートに.mcp.jsonを生成
     
     ${DIMMED}設定ファイル形式:${NC}
