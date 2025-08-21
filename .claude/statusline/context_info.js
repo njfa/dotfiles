@@ -16,7 +16,10 @@ process.stdin.on("end", async () => {
     const data = JSON.parse(input);
 
     // Extract values
-    const model = data.model?.display_name || "Unknown";
+    const model = data.model?.id || data.model?.display_name || "Unknown";
+    const version = data.version || "Unknown";
+    const total_duration = data.cost?.total_duration_ms || 0;
+    const total_cost_usd = data.cost?.total_cost_usd || 0;
     const currentDir = path.basename(
       data.workspace?.current_dir || data.cwd || ".",
     );
@@ -83,7 +86,7 @@ process.stdin.on("end", async () => {
         fileInfo.push(`\x1b[91m?${untrackedFiles}\x1b[97m`);
 
       const fileInfoStr = fileInfo.length > 0 ? ` [${fileInfo.join(" ")}]` : "";
-      gitInfo = `\n\x1b[96mGit info: ${statusColor}${branch}\x1b[97m${aheadBehind}${fileInfoStr}`;
+      gitInfo = `\x1b[96mGit info: ${statusColor}${branch}\x1b[97m${aheadBehind}${fileInfoStr}`;
     } catch (e) {
       // Not a git repo or can't read git info
     }
@@ -111,13 +114,13 @@ process.stdin.on("end", async () => {
     if (percentage >= 90) percentageColor = "\x1b[91m"; // Bright red
 
     // Build status line with bright colors
-    const statusLine = `\x1b[96mModel: \x1b[97m${model}\n\x1b[96mCurrent dir: \x1b[97m📁 ${currentDir}${gitInfo}\n\x1b[96mTotal token: \x1b[97m🪙 ${tokenDisplay} (${percentageColor}${percentage}%\x1b[97m)`;
+    const statusLine = `\x1b[96mModel: \x1b[97m${model} | \x1b[96mVersion: \x1b[97m${version}\n\x1b[96mCurrent dir: \x1b[97m📁 ${currentDir} | ${gitInfo}\n\x1b[96mTotal token: \x1b[97m🪙 ${tokenDisplay} (${percentageColor}${percentage}%\x1b[97m) | \x1b[96mTotal duration: \x1b[97m${total_duration} ms\n\x1b[96mCost: \x1b[97m$${total_cost_usd}`;
 
     console.log(statusLine);
   } catch (error) {
     // Fallback status line on error
     console.log(
-      "\x1b[91m[Error]\x1b[97m\n\x1b[96mCurrent dir: \x1b[97m📁 .\n\x1b[96mTotal token: \x1b[97m🪙 0 (0%)",
+      "\x1b[91m[Error]\x1b[97m\nversion: ${version}\n\x1b[96mCurrent dir: \x1b[97m📁 .\n\x1b[96mTotal token: \x1b[97m🪙 0 (0%)",
     );
   }
 });
