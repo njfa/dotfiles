@@ -446,8 +446,9 @@ process_mcp_build() {
 
     # 検索ディレクトリの設定（優先順位順）
     local search_dirs=(
-        "./.claude/mcp"     # プロジェクトディレクトリ
-        "$HOME/.claude/mcp" # ユーザーディレクトリ
+        "./.claude/mcp"             # プロジェクトディレクトリ
+        "$PROJECT_ROOT/.claude/mcp" # 本リポジトリ
+        "$HOME/.claude/mcp"         # ユーザーディレクトリ
     )
 
     # 統合用のJSONオブジェクト
@@ -559,7 +560,7 @@ ccc_main() {
     local compose_path="$PROJECT_ROOT/compose.yml"
     local service="claude-code"
     local remove_orphans=true # デフォルトでオーファンコンテナを削除する
-    local claude_credential_path="$HOME/.claude"
+    local claude_credential_path="$PROJECT_ROOT/.claude"
     local claude_config_path="$HOME/.claude.json"
     local command_args=("claude")     # デフォルトのコマンド
     local show_logo=true              # デフォルトでロゴを表示
@@ -760,7 +761,7 @@ ccc_main() {
         deploy-claude-md)
             # deploy-claude-mdサブコマンドが指定された場合
             shift
-            local source_dir="$HOME/.claude"
+            local source_dir="$PROJECT_ROOT/.claude"
             local target_file="CLAUDE.md"
 
             # ソースディレクトリの存在確認
@@ -1374,7 +1375,7 @@ ccc_main() {
 # ヘルプメッセージも更新
 show_ccc_help() {
     # ヘルプ用の簡易ロゴ表示（バージョンは省略）
-    print_logo "$HOME/.claude" "$HOME/.claude.json" "false" "" "" "" "N/A" "N/A"
+    print_logo "$PROJECT_ROOT/.claude" "$HOME/.claude.json" "false" "" "" "" "N/A" "N/A"
     echo -e "\
 ${BOLD}使用法:${NC} $(basename "$0") [cccオプション] [Claudeオプション] [-- コマンド引数...]
     $(basename "$0") build [--use-cache]
@@ -1389,7 +1390,7 @@ ${BOLD}ccc固有オプション:${NC}
     ${GREEN}--compose-path PATH${NC}         Docker Composeファイルのパスを指定 (デフォルト: $PROJECT_ROOT/compose.yml)
     ${GREEN}-S, --service NAME${NC}          実行するサービス名 (デフォルト: claude-code)
     ${GREEN}--config-dir-path PATH${NC}      Claude Code設定ディレクトリのパスを指定 (デフォルト: $PROJECT_ROOT/.claude)
-    ${GREEN}--config-file-path PATH${NC}     Claude Code設定ファイルのパスを指定 (デフォルト: ~/.claude.json)
+    ${GREEN}--config-file-path PATH${NC}     Claude Code設定ファイルのパスを指定 (デフォルト: $HOME/.claude.json)
     ${GREEN}--no-rm-orphans${NC}             オーファンコンテナの削除を無効化する (デフォルトは削除する)
     ${GREEN}--no-logo${NC}                   起動時のロゴ表示を無効化する
     ${GREEN}--info${NC}                      設定情報の表示を有効化する
@@ -1434,13 +1435,13 @@ ${BOLD}buildサブコマンド:${NC}
     ${GREEN}--use-cache${NC}    ビルド時にキャッシュを使用する（デフォルト：キャッシュ無効）
 
 ${BOLD}deploy-claude-mdサブコマンド:${NC}
-    ~/.claude/CLAUDE_*.md形式のファイルからプロジェクトのCLAUDE.mdを配置します。
+    $HOME/.claude/CLAUDE_*.md形式のファイルからプロジェクトのCLAUDE.mdを配置します。
     
     ${DIMMED}使用法:${NC}
     ${GREEN}$(basename "$0") deploy-claude-md${NC}
     
     ${DIMMED}動作:${NC}
-    1. ~/.claude/ ディレクトリのCLAUDE_*.md形式のファイルを検索
+    1. $HOME/.claude/ ディレクトリのCLAUDE_*.md形式のファイルを検索
     2. fzfが利用可能な場合は対話的選択、不可能な場合は番号選択
     3. 既存のCLAUDE.mdがある場合は日時付きでバックアップ（CLAUDE.YYYYMMDD_HHMMSS.md）
     4. 選択したファイルをプロジェクトルートにCLAUDE.mdとしてコピー
@@ -1464,7 +1465,7 @@ ${BOLD}mcp buildサブコマンド:${NC}
     1. 指定されたMCPサーバー名に対して、[サーバー名].jsonファイルを検索
     2. 検索パス（優先順位順）:
        - $PROJECT_ROOT/.claude/mcp/[サーバー名].json    (プロジェクトディレクトリ)
-       - ~/.claude/mcp/[サーバー名].json                 (ユーザーディレクトリ)
+       - $HOME/.claude/mcp/[サーバー名].json                 (ユーザーディレクトリ)
     3. 見つかった設定ファイルをすべて統合し、プロジェクトルートに.mcp.jsonを生成
     
     ${DIMMED}設定ファイル形式:${NC}
