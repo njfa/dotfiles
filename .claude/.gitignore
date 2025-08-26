@@ -1,0 +1,8 @@
+plugins
+projects
+todos
+shell-snapshots
+statsig
+.credentials.json
+*.log
+*.db
