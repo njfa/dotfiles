@@ -16,7 +16,7 @@ process.stdin.on("end", async () => {
     const data = JSON.parse(input);
 
     // Extract values
-    const model = data.model?.id || data.model?.display_name || "Unknown";
+    const model = data.model?.display_name || data.model?.id || "Unknown";
     const version = data.version || "Unknown";
     const total_duration = data.cost?.total_duration_ms || 0;
     const total_cost_usd = data.cost?.total_cost_usd || 0;
