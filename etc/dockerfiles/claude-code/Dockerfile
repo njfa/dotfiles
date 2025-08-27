@@ -149,10 +149,16 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 
 # npmパッケージとPythonパッケージのインストール
 RUN npm config set prefix /usr/local/share/npm-global && \
-    npm install -g @anthropic-ai/claude-code prettier markdownlint-cli && \
+    npm install -g prettier markdownlint-cli && \
     npm cache clean --force && \
     uv python install ${PYTHON_VERSION} && \
     uv venv --system-site-packages /usr/local/share/python-env && \
     uv pip install --python /usr/local/share/python-env pip && \
     pip install yq black numpy pandas aiohttp aiosqlite cryptography pytest pytest-asyncio pytest-cov structlog psutil pytest-benchmark awslabs.ecs-mcp-server pytest_mock freezegun web3 scikit-learn matplotlib tqdm textual
+
+ARG CLAUDE_CODE_REFRESH=0
+RUN echo "$CLAUDE_CODE_REFRESH" >/dev/null && \
+    npm install -g @anthropic-ai/claude-code && \
+    npm cache clean --force
+
 CMD ["claude"]

@@ -538,13 +538,14 @@ update_claude_image() {
     # use_cacheフラグをチェック
     if [ "$use_cache" = "use_cache" ]; then
         log_info "キャッシュを使用してビルドします"
+        build_args+=("--build-arg CLAUDE_CODE_REFRESH='$(date +%s)'")
     else
         log_info "キャッシュを無効化してビルドします"
         build_args+=("--no-cache")
     fi
 
     # イメージの再ビルド
-    if ! docker compose -f "$PROJECT_ROOT/compose.yml" build "${build_args[@]}" claude-code; then
+    if ! docker compose -f "$PROJECT_ROOT/compose.yml" build ${build_args[@]} claude-code; then
         log_error "イメージの更新に失敗しました"
         return 1
     fi
