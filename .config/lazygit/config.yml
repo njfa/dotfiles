@@ -3,6 +3,6 @@ gui:
   showIcons: true
 
 os:
-  edit: "nvr -c \"set bufhidden=delete\" --remote-tab-wait \"{{filename}}\""
+  edit: "nvim \"{{filename}}\""
   copyToClipboardCmd: 'echo {{text}} | win32yank.exe -i --crlf'
 
