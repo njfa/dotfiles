@@ -32,23 +32,26 @@ vim.opt.inccommand          = "nosplit"
 -- 保存していないバッファがあっても新しいバッファを作れるようにする
 vim.opt.hidden              = true
 
--- マウスの設定
 vim.opt.mouse               = "a"
 
 -- クリップボードの設定
-vim.opt.clipboard           = "unnamedplus"
-vim.g.clipboard             = {
-    name = "win32yank-wsl",
-    copy = {
-        ["+"] = "win32yank.exe -i --crlf",
-        ["*"] = "win32yank.exe -i --crlf"
-    },
-    paste = {
-        ["+"] = "win32yank.exe -o --lf",
-        ["*"] = "win32yank.exe -o --lf"
-    },
-    cache_enable = 0,
-}
+if vim.fn.executable('win32yank.exe') == 1 then
+    vim.opt.clipboard       = "unnamedplus"
+    vim.g.clipboard         = {
+        name = "win32yank-wsl",
+        copy = {
+            ["+"] = "win32yank.exe -i --crlf",
+            ["*"] = "win32yank.exe -i --crlf"
+        },
+        paste = {
+            ["+"] = "win32yank.exe -o --lf",
+            ["*"] = "win32yank.exe -o --lf"
+        },
+        cache_enable = 0,
+    }
+else
+    vim.opt.clipboard       = "unnamedplus"
+end
 
 -- netrwを無効化
 vim.g.loaded_netrw          = 1
