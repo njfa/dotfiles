@@ -70,10 +70,10 @@ if ! $is_installed; then
         arch=$(uname -m)
         case "$arch" in
         x86_64)
-            arch_suffix="linux-x86_64"
+            archive_filename="nvim-linux-x86_64.tar.gz"
             ;;
         aarch64 | arm64)
-            arch_suffix="linux-arm64"
+            archive_filename="nvim-linux-arm64.tar.gz"
             ;;
         *)
             echo "Unsupported architecture: $arch"
@@ -81,34 +81,28 @@ if ! $is_installed; then
             ;;
         esac
 
-        # バージョンによってファイル名を決定
-        # 新しいバージョンでは nvim-{arch}.appimage、古いバージョンでは nvim.appimage
-        appimage_filename="nvim-${arch_suffix}.appimage"
-        download_url="https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/${appimage_filename}"
-
-        # 新しいファイル名でダウンロードを試みる
+        download_url="https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/${archive_filename}"
         echo "Detected architecture: $arch"
         echo "Trying to download: ${download_url}"
-        if ! curl -fLo nvim.appimage "$download_url"; then
-            echo "Failed to download ${appimage_filename}, trying legacy filename..."
-            # 古いファイル名で再試行（アーキテクチャ非依存）
-            appimage_filename="nvim.appimage"
-            download_url="https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/${appimage_filename}"
-            echo "Trying to download: ${download_url}"
-            if ! curl -fLo nvim.appimage "$download_url"; then
-                echo "Error: Failed to download Neovim AppImage from both URLs"
-                echo "Please check if version ${NEOVIM_VERSION} exists and supports your architecture"
-                exit 1
-            fi
+        if ! curl -fLo "$archive_filename" "$download_url"; then
+            echo "Error: Failed to download ${archive_filename}"
+            echo "Please check if version ${NEOVIM_VERSION} exists and supports your architecture"
+            exit 1
         fi
 
-        chmod u+x nvim.appimage && ./nvim.appimage --appimage-extract
-        mv squashfs-root ~/.nvim/$NEOVIM_VERSION
-        rm nvim.appimage
+        tar -xf "$archive_filename"
+        extracted_dir="${archive_filename%.tar.gz}"
+        if [ ! -d "$extracted_dir" ]; then
+            echo "Error: Expected directory ${extracted_dir} not found after extraction"
+            exit 1
+        fi
+
+        mv "$extracted_dir" ~/.nvim/$NEOVIM_VERSION
+        rm -f "$archive_filename"
     else
         echo "neovim is already downloaded."
     fi
 
-    sudo ln -sf ~/.nvim/$NEOVIM_VERSION/usr/bin/nvim /usr/local/bin/nvim
+    sudo ln -sf ~/.nvim/$NEOVIM_VERSION/bin/nvim /usr/local/bin/nvim
     rm -rf ~/.config/nvim/plugin/packer_compiled.lua ~/.local/share/nvim
 fi
