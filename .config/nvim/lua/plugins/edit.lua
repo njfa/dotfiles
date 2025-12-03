@@ -252,7 +252,7 @@ return {
         config = function()
             require("treesj").setup({
                 use_default_keymaps = false,
-                max_join_length = 1000,
+                max_join_length = 50000,
             })
         end,
     },
