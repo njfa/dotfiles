@@ -364,7 +364,6 @@ fi
 
 alias vimdiff='nvim -d'
 alias view='nvim -R'
-alias code='code.sh'
 alias fd='fdfind'
 
 # lsに色を付ける
