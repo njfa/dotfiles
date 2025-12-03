@@ -3,7 +3,7 @@
 # Goのインストール
 if [ -z "$(command -v go)" ]; then
     # 公式から最新安定版のバージョンを取得
-    LATEST_VERSION=$(curl -s https://go.dev/dl/?mode=json | grep -o '"version":"go[0-9.]*"' | head -1 | cut -d'"' -f4 | sed 's/go//')
+    LATEST_VERSION=$(curl -s "https://go.dev/dl/?mode=json" | jq -r '.[].version' | grep -o 'go[0-9.]*' | head -1 | cut -d'"' -f4 | sed 's/go//')
 
     # アーキテクチャを判定
     ARCH=$(uname -m)
