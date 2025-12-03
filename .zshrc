@@ -30,6 +30,9 @@ setopt hist_ignore_space
 # 履歴をプロセス間で共有
 setopt share_history
 
+# EOF送信でシェルを終了しない
+setopt ignore_eof
+
 zstyle ':completion:*:default' menu select=1
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
