@@ -2,6 +2,10 @@ gui:
   language: 'ja'
   showIcons: true
 
+git:
+  pagers:
+    - pager: delta --dark --paging=never --no-gitconfig --true-color=auto --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
+
 os:
   edit: "nvim \"{{filename}}\""
   copyToClipboardCmd: 'echo {{text}} | win32yank.exe -i --crlf'
