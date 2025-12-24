@@ -365,6 +365,7 @@ fi
 alias vimdiff='nvim -d'
 alias view='nvim -R'
 alias fd='fdfind'
+alias lg='lazygit'
 
 # lsに色を付ける
 alias ls='ls --color=auto'
