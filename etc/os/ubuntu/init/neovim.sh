@@ -20,19 +20,14 @@ fi
 export PATH="$VENV_GLOBAL/bin:$PATH"
 export VIRTUAL_ENV="$VENV_GLOBAL"
 
-if uv pip list --python "$VENV_GLOBAL" 2>/dev/null | grep -q "pynvim" 2>/dev/null; then
-    echo "pynvim is installed."
-else
-    echo "pynvim is not installed."
-    uv pip install --python "$VENV_GLOBAL" pynvim
-fi
-
-if uv pip list --python "$VENV_GLOBAL" 2>/dev/null | grep -q "neovim-remote" 2>/dev/null; then
-    echo "neovim-remote is installed."
-else
-    echo "neovim-remote is not installed."
-    uv pip install --python "$VENV_GLOBAL" neovim-remote
-fi
+for p in "pynvim" "neovim-remote" "isort"; do
+    if uv pip list --python "$VENV_GLOBAL" 2>/dev/null | grep -q "$p" 2>/dev/null; then
+        echo "$p is installed."
+    else
+        echo "$p is not installed."
+        uv pip install --python "$VENV_GLOBAL" $p
+    fi
+done
 
 if command -v rg >/dev/null 2>&1; then
     echo "ripgrep is installed."
