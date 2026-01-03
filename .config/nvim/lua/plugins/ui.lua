@@ -569,7 +569,7 @@ return {
             },
             { "<leader>..", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config"), hidden = true, ignored = true }) end, desc = "設定ファイル一覧" },
             {
-                "<leader>a",
+                "<leader>:",
                 function()
                     vscode_mapping(Snacks.picker.command_history({ layout = "vscode" }),
                         "workbench.action.showCommands")

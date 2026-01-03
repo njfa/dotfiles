@@ -113,6 +113,9 @@ require('command')
 
 -- プラグインの読み込み
 require('lazy').setup("plugins", {
+    rocks = {
+        enabled = false
+    },
     performance = {
         rtp = {
             disabled_plugins = {
