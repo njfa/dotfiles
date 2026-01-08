@@ -204,8 +204,6 @@ return {
                     end,
                     desc = "任意の単語へ移動"
                 },
-                { "<Up>", "<cmd>HopVerticalBC<cr>", desc = "任意の行へ移動（上）" },
-                { "<Down>", "<cmd>HopVerticalAC<cr>", desc = "任意の行へ移動（下）" },
                 {
                     { "m", group = "ファイル編集" },
                     { "mm", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
