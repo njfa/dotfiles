@@ -51,6 +51,7 @@ export SAVEHIST=10000
 export BROWSER=browser.sh
 
 export PATH="$HOME/.dotfiles/bin:$PATH"
+export EDITOR=nvim
 
 # -------------------------------------------------------------------
 # python (pyenv+uv)
@@ -366,6 +367,8 @@ alias vimdiff='nvim -d'
 alias view='nvim -R'
 alias fd='fdfind'
 alias lg='lazygit'
+alias ld='lazydocker'
+alias zz='zellij'
 
 # lsに色を付ける
 alias ls='ls --color=auto'
