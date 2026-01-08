@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+if command -v btop >/dev/null 2>&1; then
+  exec btop
+fi
+
+if command -v htop >/dev/null 2>&1; then
+  exec htop
+fi
+
+if command -v top >/dev/null 2>&1; then
+  exec top
+fi
+
+echo "zellij: no monitor command found (btop/htop/top)." >&2
+if [ -t 0 ]; then
+  printf "Press Enter to close..."
+  read -r _
+else
+  sleep 2
+fi
