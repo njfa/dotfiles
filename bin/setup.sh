@@ -118,7 +118,7 @@ error() {
 }
 
 get_dotfiles() {
-    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig|.claude|.serena)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -v ".config/nvim"
+    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig|.claude|.serena)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -vE ".config/(nvim|zellij)"
 }
 
 exec_cmd() {
@@ -334,6 +334,15 @@ list() {
             printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".config/nvim (symlink)"
         else
             printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".config/nvim (symlink)"
+        fi
+    fi
+
+    # .config/zellijディレクトリの特別処理
+    if [ -d "$DOTFILES_PATH/.config/zellij" ]; then
+        if [ -L "$HOME/.config/zellij" ]; then
+            printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".config/zellij (symlink)"
+        else
+            printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".config/zellij (symlink)"
         fi
     fi
 
@@ -592,6 +601,11 @@ deploy() {
     if [ -d "$DOTFILES_PATH/.config/nvim" -a ! -e "$HOME/.config/nvim" ]; then
         printf "\n\033[36m📝 Linking Neovim configuration...\033[m\n"
         symlink_cmd $DOTFILES_PATH/.config/nvim $HOME/.config/nvim
+    fi
+
+    if [ -d "$DOTFILES_PATH/.config/zellij" -a ! -e "$HOME/.config/zellij" ]; then
+        printf "\n\033[36m🧩 Linking Zellij configuration...\033[m\n"
+        symlink_cmd $DOTFILES_PATH/.config/zellij $HOME/.config/zellij
     fi
 
     if [ -d "$DOTFILES_PATH/.claude" ]; then
