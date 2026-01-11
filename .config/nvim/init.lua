@@ -129,6 +129,7 @@ require('lazy').setup("plugins", {
 })
 -- autocmdの設定
 require('autocmd')
+require('zellij')
 
 if vim.fn.executable('nvr') == 1 then
     vim.env.EDITOR = 'nvr -c "set bufhidden=delete" --remote-tab-wait'

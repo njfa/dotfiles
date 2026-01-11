@@ -269,8 +269,10 @@ return {
 
                 { "H", "<cmd>tabp<cr>", desc = "前のタブに移動" },
                 { "L", "<cmd>tabn<cr>", desc = "次のタブに移動" },
-                { "<C-h>", vscode_mapping("<cmd>BufferLineCyclePrev<cr>", "<cmd>Tabprevious<cr>"), desc = "前のバッファに移動" },
-                { "<C-l>", vscode_mapping("<cmd>BufferLineCycleNext<cr>", "<cmd>Tabnext<cr>"), desc = "次のバッファに移動" },
+                -- { "<C-h>", vscode_mapping("<cmd>BufferLineCyclePrev<cr>", "<cmd>Tabprevious<cr>"), desc = "前のバッファに移動" },
+                { "<C-h>", vscode_mapping("<cmd>bprevious<cr>", "<cmd>Tabprevious<cr>"), desc = "前のバッファに移動" },
+                -- { "<C-l>", vscode_mapping("<cmd>BufferLineCycleNext<cr>", "<cmd>Tabnext<cr>"), desc = "次のバッファに移動" },
+                { "<C-l>", vscode_mapping("<cmd>bnext<cr>", "<cmd>Tabnext<cr>"), desc = "次のバッファに移動" },
 
                 {
                     { "<C-w>", group = "画面操作" },
