@@ -35,8 +35,8 @@ vim.opt.hidden              = true
 vim.opt.mouse               = "a"
 
 -- クリップボードの設定
+vim.opt.clipboard       = "unnamedplus"
 if vim.fn.executable('win32yank.exe') == 1 then
-    vim.opt.clipboard       = "unnamedplus"
     vim.g.clipboard         = {
         name = "win32yank-wsl",
         copy = {
@@ -50,7 +50,7 @@ if vim.fn.executable('win32yank.exe') == 1 then
         cache_enable = 0,
     }
 else
-    vim.opt.clipboard       = "unnamedplus"
+    vim.g.clipboard         = "osc52"
 end
 
 -- netrwを無効化

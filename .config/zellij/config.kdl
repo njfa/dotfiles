@@ -1,6 +1,7 @@
 close_on_exit true
 show_startup_tips false
-copy_command "zellij-copy"
+mouse_mode true
+copy_on_select true
 
 keybinds clear-defaults=true {
     normal {
@@ -187,7 +188,6 @@ plugins {
 // eg. "file:/path/to/my-plugin.wasm"
 // eg. "https://example.com/my-plugin.wasm"
 load_plugins {
-    // zjstatus location="file:~/.local/share/zellij/plugins/zjstatus.wasm"
 }
 web_client {
     font "monospace"

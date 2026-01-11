@@ -123,9 +123,6 @@ local function update_zellij_status_buffers()
             return false
         end
         local name = vim.api.nvim_buf_get_name(buf)
-        if name == "" then
-            return false
-        end
         local file_name = name:match("([^/\\]+)$") or name
         for _, pattern in ipairs(ignore_list) do
             if file_name:lower():find(pattern:lower(), 1, true) then
@@ -139,6 +136,9 @@ local function update_zellij_status_buffers()
         local name = vim.api.nvim_buf_get_name(buf)
         local file_name = name:match("([^/\\]+)$") or name
         file_name = file_name:match("^%s*(.-)%s*$")
+        if file_name == "" then
+            file_name = "[No Name]"
+        end
 
         if is_current then
             return "#[bg=$surface0,fg=$surface1]#[bg=$surface0,fg=$crust,bold]#[bg=$surface1,fg=$green,bold]" .. truncate_file_name(file_name) ..  "#[bg=$surface0,fg=$surface1] "
