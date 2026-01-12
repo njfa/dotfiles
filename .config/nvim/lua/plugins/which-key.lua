@@ -347,7 +347,7 @@ return {
                         desc = "ファイル編集履歴 表示切替"
                     },
                     { "<leader>w", "<cmd>w<cr>", desc = "保存" },
-                    { "<leader>y", "<cmd>HopYankChar1<CR>", desc = "コピー（場所選択）" },
+                    { "<leader>y", group = "コピー機能" },
 
                     { "<leader>m", function() require('treesj').toggle({ split = { recursive = true } }) end, desc = "行分割/結合 切替" },
                     { "<leader>j", function() require('treesj').join({ join = { recursive = false } }) end, desc = "行結合" },
@@ -378,9 +378,9 @@ return {
                     },
 
                     {
-                        { "<leader>.", group = "設定変更" },
+                        { "<leader>,", group = "バッファ関連の設定" },
                         {
-                            "<leader>.t",
+                            "<leader>,<tab>",
                             function()
                                 vim.bo.expandtab = not (vim.bo.expandtab)
                                 vim.notify("インデント文字: " .. (vim.bo.expandtab and "space" or "tab"))
@@ -388,7 +388,7 @@ return {
                             desc = "インデント文字の切替 (space <-> tab)",
                         },
                         {
-                            "<leader>.o",
+                            "<leader>,<cr>",
                             vscode_mapping(
                                 function()
                                     if vim.bo.modifiable then
@@ -410,7 +410,7 @@ return {
                             desc = "ファイルタイプの切替 (unix <-> dos)",
                         },
                         {
-                            "<leader>.w",
+                            "<leader>,i",
                             vscode_mapping(
                                 function()
                                     vim.bo.shiftwidth = (vim.bo.shiftwidth % 4) + 2
@@ -423,7 +423,7 @@ return {
                             desc = "インデント幅の変更 (2 <-> 4)",
                         },
                         {
-                            "<leader>.f",
+                            "<leader>,f",
                             vscode_mapping(
                                 function()
                                     local filetypes = vim.fn.getcompletion("", "filetype")
@@ -444,7 +444,19 @@ return {
                                 end
                             ),
                             desc = "ファイルタイプの変更"
-                        }
+                        },
+                        {
+                            "<leader>,,",
+                            function() vim.fn.setreg('+', vim.fn.expand('%')) end,
+                            desc = "現在バッファのパスをコピー",
+                        },
+                    },
+                    {
+                        { "<leader>a", group = "Sidekick" },
+                    },
+
+                    {
+                        { "<leader>.", group = "neovimの設定" },
                     },
                 },
             },
@@ -489,6 +501,11 @@ return {
             {
                 mode = { "o", "x" },
                 { "R", function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+            },
+
+            {
+                mode = { "t" },
+                { "<C-w>", "<C-\\><C-n><C-w>", desc = "C-w" },
             }
         })
 
