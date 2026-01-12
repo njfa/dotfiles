@@ -35,6 +35,13 @@ vim.opt.hidden              = true
 vim.opt.mouse               = "a"
 
 -- クリップボードの設定
+local function paste()
+  return {
+    vim.fn.split(vim.fn.getreg(""), "\n"),
+    vim.fn.getregtype(""),
+  }
+end
+
 vim.opt.clipboard       = "unnamedplus"
 if vim.fn.executable('win32yank.exe') == 1 then
     vim.g.clipboard         = {
@@ -50,7 +57,17 @@ if vim.fn.executable('win32yank.exe') == 1 then
         cache_enable = 0,
     }
 else
-    vim.g.clipboard         = "osc52"
+    vim.g.clipboard = {
+        name = 'OSC 52',
+        copy = {
+            ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
+            ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+        },
+        paste = {
+            ['+'] = paste,
+            ['*'] = paste,
+        },
+    }
 end
 
 -- netrwを無効化
