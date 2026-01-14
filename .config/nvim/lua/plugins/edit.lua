@@ -290,6 +290,8 @@ return {
         config = function()
             require("render-markdown").setup({
                 render_modes = true,
+                html = { enabled = false },
+                latex = { enabled = false },
                 code = {
                     left_pad = 0,
                     right_pad = 1,

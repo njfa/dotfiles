@@ -202,7 +202,8 @@ return {
                     },
                 },
                 close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
-                popup_border_style = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+                popup_border_style = "rounded",
+                -- popup_border_style = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
                 -- popup_border_style = { "⋅", "⋯", "⋅", "┆", "⋅", "⋯", "⋅", "┆" },
                 enable_git_status = true,
                 enable_diagnostics = true,
@@ -386,6 +387,7 @@ return {
     {
         "folke/snacks.nvim",
         lazy = false,
+        priority = 1000,
         opts = {
             bigfile = {
                 enabled = true,
