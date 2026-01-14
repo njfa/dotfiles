@@ -1,10 +1,10 @@
 ---
 name: openjdk-21
 description: |
-  The Java Development Kit is a distribution of Java Technology by Oracle Corporation.
-  It implements the Java Language Specification and the Java Virtual Machine Specification
-  and provides the Standard Edition of the Java Application Programming Interface.
-homepage: https://jdk.java.net/
+  The Microsoft Build of OpenJDK is a no-cost distribution of OpenJDK that's open source and available for free for anyone to deploy anywhere.
+  It includes Long-Term Support (LTS) binaries for Java 11 and Java 17 on x64 server and desktop environments on macOS, Linux, and Windows,
+  AArch64/ARM64 on Linux and Windows, binaries for macOS on Apple Silicon (AArch64/M1), and musl libc compiled binaries for Alpine Linux on x64.
+homepage: https://learn.microsoft.com/en-us/java/openjdk/
 licenses:
   - GPL-2.0
 languages:
@@ -13,21 +13,46 @@ categories:
   - Runtime
 
 source:
-  id: pkg:generic/java/openjdk@17.0.2
+  id: pkg:generic/java/openjdk@21.0.9
   download:
-    - target: [darwin_x64, darwin_arm64]
+    - target: darwin_x64
       files:
-        openjdk-21.0.2.tar.gz: https://download.java.net/java/GA/jdk21/fd2272bbf8e04c3dbaee13770090416c/35/GPL/openjdk-21_macos-x64_bin.tar.gz
-      bin: jdk-21.0.2.jdk/Contents/Home/bin/java
+        openjdk-21.0.9.tar.gz: https://aka.ms/download-jdk/microsoft-jdk-21.0.9-macos-x64.tar.gz
+      bin: jdk-21.0.9+10/Contents/Home/bin
+      java: java
+      javac: javac
+    - target: darwin_arm64
+      files:
+        openjdk-21.0.9.tar.gz: https://aka.ms/download-jdk/microsoft-jdk-21.0.9-macos-aarch64.tar.gz
+      bin: jdk-21.0.9+10/Contents/Home/bin
+      java: java
+      javac: javac
 
-    - target: linux
+    - target: linux_x64
       files:
-        openjdk-21.0.2.tar.gz: https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz
-      bin: jdk-21.0.2/bin/java
+        openjdk-21.0.9.tar.gz: https://aka.ms/download-jdk/microsoft-jdk-21.0.9-linux-x64.tar.gz
+      bin: jdk-21.0.9+10/bin
+      java: java
+      javac: javac
+    - target: linux_arm64
+      files:
+        openjdk-21.0.9.tar.gz: https://aka.ms/download-jdk/microsoft-jdk-21.0.9-linux-aarch64.tar.gz
+      bin: jdk-21.0.9+10/bin
+      java: java
+      javac: javac
 
-    - target: win
+    - target: win_x64
       files:
-        openjdk-21.0.2.zip: https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip
-      bin: jdk-21.0.2/bin/java.exe
+        openjdk-21.0.9.zip: https://aka.ms/download-jdk/microsoft-jdk-21.0.9-windows-x64.zip
+      bin: jdk-21.0.9+10/bin
+      java: java.exe
+      javac: javac.exe
+    - target: win_arm64
+      files:
+        openjdk-21.0.9.zip: https://aka.ms/download-jdk/microsoft-jdk-21.0.9-windows-aarch64.zip
+      bin: jdk-21.0.9+10/bin
+      java: java.exe
+      javac: javac.exe
 bin:
-  java: "{{source.download.bin}}"
+  java: "{{source.download.bin}}/{{source.download.java}}"
+  javac: "{{source.download.bin}}/{{source.download.javac}}"
