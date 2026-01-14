@@ -11,22 +11,22 @@ local cmp_copilot_enabled = function()
     return vim.g.llm_enabled and is_cmp_copilot_enabled
 end
 
-local default_sources = { 'path', 'snippets', 'lsp', 'buffer', 'markdown' }
+local default_sources = { "path", "snippets", "lsp", "buffer", "markdown" }
 local source_providers = {
     buffer = {
         name = "buf",
         score_offset = 0,
     },
     markdown = {
-        name = 'RenderMarkdown',
-        module = 'render-markdown.integ.blink',
-        fallbacks = { 'lsp' },
+        name = "RenderMarkdown",
+        module = "render-markdown.integ.blink",
+        fallbacks = { "lsp" },
     },
 }
 
 if cmp_copilot_enabled() then
-    table.insert(default_sources, 'copilot')
-    source_providers['copilot'] = {
+    table.insert(default_sources, "copilot")
+    source_providers["copilot"] = {
         name = "copilot",
         module = "blink-cmp-copilot",
         score_offset = 100,
@@ -45,9 +45,9 @@ end
 
 return {
     {
-        'saghen/blink.compat',
+        "saghen/blink.compat",
         -- use the latest release, via version = '*', if you also use the latest release for blink.cmp
-        version = '*',
+        version = "*",
         -- lazy.nvim will automatically load the plugin when it's required by blink.cmp
         lazy = true,
         -- make sure to set opts so that lazy.nvim calls blink.compat's setup
@@ -55,19 +55,19 @@ return {
         cond = not vscode_enabled,
     },
     {
-        'saghen/blink.cmp',
+        "saghen/blink.cmp",
         -- optional: provides snippets for the snippet source
         dependencies = {
-            'L3MON4D3/LuaSnip',
+            "L3MON4D3/LuaSnip",
             {
                 "giuxtaposition/blink-cmp-copilot",
-                cond = vim.g.cmp_copilot_enabled
-            }
+                cond = vim.g.cmp_copilot_enabled,
+            },
         },
         cond = not vscode_enabled,
 
         -- use a release tag to download pre-built binaries
-        version = '*',
+        version = "*",
         -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
         -- build = 'cargo build --release',
         -- If you use nix, you can build from source using latest nightly rust with:
@@ -80,10 +80,10 @@ return {
             -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
             -- See the full "keymap" documentation for information on defining your own keymap.
             keymap = {
-                preset = 'default',
-                ['<C-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
-                ['<C-e>'] = { 'cancel', 'fallback' },
-                ['<Tab>'] = {
+                preset = "default",
+                ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+                ["<C-e>"] = { "cancel", "fallback" },
+                ["<Tab>"] = {
                     function(cmp)
                         if cmp.snippet_active() then
                             return cmp.accept()
@@ -94,72 +94,72 @@ return {
                     function() -- sidekick next edit suggestion
                         return require("sidekick").nes_jump_or_apply()
                     end,
-                    'fallback'
+                    "fallback",
                 },
 
-                ['<C-j>'] = { 'snippet_forward', 'fallback' },
-                ['<C-k>'] = { 'snippet_backward', 'fallback' },
+                ["<C-j>"] = { "snippet_forward", "fallback" },
+                ["<C-k>"] = { "snippet_backward", "fallback" },
 
-                ['<Up>'] = { 'select_prev', 'fallback' },
-                ['<Down>'] = { 'select_next', 'fallback' },
-                ['<C-p>'] = { 'select_prev', 'fallback' },
-                ['<C-n>'] = { 'select_next', 'fallback' },
+                ["<Up>"] = { "select_prev", "fallback" },
+                ["<Down>"] = { "select_next", "fallback" },
+                ["<C-p>"] = { "select_prev", "fallback" },
+                ["<C-n>"] = { "select_next", "fallback" },
 
-                ['<C-b>'] = { 'scroll_documentation_up', 'fallback' },
-                ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
+                ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+                ["<C-f>"] = { "scroll_documentation_down", "fallback" },
 
-                ['<C-d>'] = { 'show_documentation', 'hide_documentation', 'fallback' },
+                ["<C-d>"] = { "show_documentation", "hide_documentation", "fallback" },
             },
 
             appearance = {
                 -- Set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
                 -- Adjusts spacing to ensure icons are aligned
-                nerd_font_variant = 'normal',
+                nerd_font_variant = "normal",
                 -- Blink does not expose its default kind icons so you must copy them all (or set your custom ones) and add Copilot
                 kind_icons = {
                     Copilot = "󱐋",
-                    Text = '󰉿',
-                    Method = '󰊕',
-                    Function = '󰊕',
-                    Constructor = '󰒓',
+                    Text = "󰉿",
+                    Method = "󰊕",
+                    Function = "󰊕",
+                    Constructor = "󰒓",
 
-                    Field = '󰜢',
-                    Variable = '󰆦',
-                    Property = '󰖷',
+                    Field = "󰜢",
+                    Variable = "󰆦",
+                    Property = "󰖷",
 
-                    Class = '󱡠',
-                    Interface = '󱡠',
-                    Struct = '󱡠',
-                    Module = '󰅩',
+                    Class = "󱡠",
+                    Interface = "󱡠",
+                    Struct = "󱡠",
+                    Module = "󰅩",
 
-                    Unit = '󰪚',
-                    Value = '󰦨',
-                    Enum = '󰦨',
-                    EnumMember = '󰦨',
+                    Unit = "󰪚",
+                    Value = "󰦨",
+                    Enum = "󰦨",
+                    EnumMember = "󰦨",
 
-                    Keyword = '󰻾',
-                    Constant = '󰏿',
+                    Keyword = "󰻾",
+                    Constant = "󰏿",
 
-                    Snippet = '󱄽',
-                    Color = '󰏘',
-                    File = '󰈔',
-                    Reference = '󰬲',
-                    Folder = '󰉋',
-                    Event = '󱐋',
-                    Operator = '󰪚',
-                    TypeParameter = '󰬛',
+                    Snippet = "󱄽",
+                    Color = "󰏘",
+                    File = "󰈔",
+                    Reference = "󰬲",
+                    Folder = "󰉋",
+                    Event = "󱐋",
+                    Operator = "󰪚",
+                    TypeParameter = "󰬛",
                 },
             },
 
             completion = {
                 keyword = {
-                    range = 'prefix'
+                    range = "prefix",
                 },
                 list = {
                     selection = {
                         preselect = false,
-                        auto_insert = true
-                    }
+                        auto_insert = true,
+                    },
                 },
                 trigger = {},
                 menu = {
@@ -167,13 +167,13 @@ return {
                     draw = {
                         padding = 1,
                         gap = 1,
-                        treesitter = { 'lsp' },
-                        columns = { { 'kind_icon' }, { 'label', 'label_description', gap = 1 }, { 'kind' } },
+                        treesitter = { "lsp" },
+                        columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" } },
                         components = {
                             source_name = {
                                 -- text = function(ctx) return string.sub(ctx.source_name, 1, 3) end,
-                            }
-                        }
+                            },
+                        },
                     },
                     -- winhighlight = 'Normal:BlinkCmpMenu,FloatBorder:BlinkCmpMenuBorder,CursorLine:BlinkCmpMenuSelection,Search:None',
                 },
@@ -184,30 +184,34 @@ return {
                 },
                 ghost_text = {
                     enabled = true,
-                }
+                },
             },
 
             -- Default list of enabled providers defined so that you can extend it
             -- elsewhere in your config, without redefining it, due to `opts_extend`
             sources = {
                 default = default_sources,
-                providers = source_providers
+                providers = source_providers,
             },
 
             cmdline = {
                 keymap = {
-                    preset = 'cmdline',
-                    ['<Up>'] = { 'select_prev', 'fallback' },
-                    ['<Down>'] = { 'select_next', 'fallback' },
-                    ['<Left>'] = { 'cancel', 'fallback' },
-                    ['<Right>'] = { 'hide', 'fallback' },
+                    preset = "cmdline",
+                    ["<Up>"] = { "select_prev", "fallback" },
+                    ["<Down>"] = { "select_next", "fallback" },
+                    ["<Left>"] = { "cancel", "fallback" },
+                    ["<Right>"] = { "hide", "fallback" },
                 },
                 sources = function()
                     local type = vim.fn.getcmdtype()
                     -- Search forward and backward
-                    if type == '/' or type == '?' then return { 'buffer' } end
+                    if type == "/" or type == "?" then
+                        return { "buffer" }
+                    end
                     -- Commands
-                    if type == ':' or type == '@' then return { 'cmdline' } end
+                    if type == ":" or type == "@" then
+                        return { "cmdline" }
+                    end
                     return {}
                 end,
                 completion = {
@@ -222,20 +226,20 @@ return {
                     -- Whether to automatically show the window when new completion items are available
                     menu = { auto_show = true },
                     -- Displays a preview of the selected item on the current line
-                    ghost_text = { enabled = true }
-                }
+                    ghost_text = { enabled = true },
+                },
             },
-            snippets = { preset = 'luasnip' },
+            snippets = { preset = "luasnip" },
             signature = {
                 enabled = false,
                 trigger = {
                     show_on_insert = true,
                 },
                 window = {
-                    show_documentation = true
-                }
-            }
+                    show_documentation = true,
+                },
+            },
         },
-        opts_extend = { "sources.default" }
-    }
+        opts_extend = { "sources.default" },
+    },
 }

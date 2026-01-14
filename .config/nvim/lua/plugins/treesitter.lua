@@ -1,16 +1,29 @@
 -- treesitterとtreesitterに依存するプラグイン
 return {
     {
-        'nvim-treesitter/nvim-treesitter',
+        "nvim-treesitter/nvim-treesitter",
         branch = "master",
         run = function()
-            local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+            local ts_update = require("nvim-treesitter.install").update({ with_sync = true })
             ts_update()
         end,
         config = function()
-            require('nvim-treesitter.configs').setup {
+            require("nvim-treesitter.configs").setup({
                 -- A list of parser names, or "all"
-                ensure_installed = { "lua", "bash", "java", "rust", "markdown", "markdown_inline", "http", "json", "yaml", "python", "terraform", "diff" },
+                ensure_installed = {
+                    "lua",
+                    "bash",
+                    "java",
+                    "rust",
+                    "markdown",
+                    "markdown_inline",
+                    "http",
+                    "json",
+                    "yaml",
+                    "python",
+                    "terraform",
+                    "diff",
+                },
 
                 -- Install parsers synchronously (only applied to `ensure_installed`)
                 sync_install = false,
@@ -45,27 +58,27 @@ return {
                     -- Instead of true it can also be a list of languages
                     additional_vim_regex_highlighting = false,
                 },
-            }
-        end
+            })
+        end,
     },
 
     {
-        'nvim-treesitter/nvim-treesitter-context',
-        dependencies = 'nvim-treesitter/nvim-treesitter',
+        "nvim-treesitter/nvim-treesitter-context",
+        dependencies = "nvim-treesitter/nvim-treesitter",
         config = function()
-            require('treesitter-context').setup {
-                enable = true,        -- Enable this plugin (Can be enabled/disabled later via commands)
-                max_lines = 0,        -- How many lines the window should span. Values <= 0 mean no limit.
-                trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
-                patterns = {          -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
+            require("treesitter-context").setup({
+                enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+                max_lines = 0, -- How many lines the window should span. Values <= 0 mean no limit.
+                trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+                patterns = { -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
                     -- For all filetypes
                     -- Note that setting an entry here replaces all other patterns for this entry.
                     -- By setting the 'default' entry below, you can control which nodes you want to
                     -- appear in the context window.
                     default = {
-                        'class',
-                        'function',
-                        'method',
+                        "class",
+                        "function",
+                        "method",
                         -- 'for', -- These won't appear in the context
                         -- 'while',
                         -- 'if',
@@ -88,30 +101,33 @@ return {
                 -- [!] The options below are exposed but shouldn't require your attention,
                 --     you can safely ignore them.
 
-                zindex = 20,     -- The Z-index of the context window
-                mode = 'cursor', -- Line used to calculate context. Choices: 'cursor', 'topline'
+                zindex = 20, -- The Z-index of the context window
+                mode = "cursor", -- Line used to calculate context. Choices: 'cursor', 'topline'
                 separator = nil, -- Separator between context and content. Should be a single character string, like '-'.
-            }
-        end
+            })
+        end,
     },
 
     -- 'nvim-treesitter/nvim-treesitter-textobjects', -- これを追加するとLSPの挙動がおかしくなったので無効化
     -- treesitter unitをテキストオブジェクトに追加
-    'David-Kunz/treesitter-unit',
+    "David-Kunz/treesitter-unit",
     {
-        'RRethy/nvim-treesitter-textsubjects',
+        "RRethy/nvim-treesitter-textsubjects",
         config = function()
-            require('nvim-treesitter.configs').setup {
+            require("nvim-treesitter.configs").setup({
                 textsubjects = {
                     enable = true,
-                    prev_selection = ',', -- (Optional) keymap to select the previous selection
+                    prev_selection = ",", -- (Optional) keymap to select the previous selection
                     keymaps = {
-                        ['.'] = 'textsubjects-smart',
-                        [';'] = 'textsubjects-container-outer',
-                        ['i;'] = { 'textsubjects-container-inner', desc = "コンテナ内を選択 (classes, functions, etc.)" },
+                        ["."] = "textsubjects-smart",
+                        [";"] = "textsubjects-container-outer",
+                        ["i;"] = {
+                            "textsubjects-container-inner",
+                            desc = "コンテナ内を選択 (classes, functions, etc.)",
+                        },
                     },
                 },
-            }
-        end
+            })
+        end,
     },
 }

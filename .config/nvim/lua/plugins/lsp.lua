@@ -1,11 +1,11 @@
 local vscode_enabled, _ = pcall(require, "vscode")
 
-vim.lsp.config('*', {
-    root_markers = { '.git' },
+vim.lsp.config("*", {
+    root_markers = { ".git" },
     on_attach = function(_, bufnr)
         require("common").on_attach_lsp(_, bufnr)
     end,
-    capabilities = require('blink.cmp').get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities()),
+    capabilities = require("blink.cmp").get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities()),
 })
 
 -- vim.lsp.enable('jdtls', false)
@@ -19,10 +19,10 @@ return {
     {
         "rachartier/tiny-inline-diagnostic.nvim",
         event = "VeryLazy", -- Or `LspAttach`
-        priority = 1000,    -- needs to be loaded in first
+        priority = 1000, -- needs to be loaded in first
         cond = not vscode_enabled,
         config = function()
-            require('tiny-inline-diagnostic').setup({
+            require("tiny-inline-diagnostic").setup({
                 options = {
                     multilines = {
                         -- Enable multiline diagnostic messages
@@ -31,7 +31,7 @@ return {
                         -- Always show messages on all lines for multiline diagnostics
                         always_show = true,
                     },
-                }
+                },
             })
             vim.diagnostic.config({
                 virtual_text = false,
@@ -44,7 +44,7 @@ return {
                 -- エラーと警告の下線スタイルを設定
                 signs = true,
             }) -- Only if needed in your configuration, if you already have native LSP diagnostics
-        end
+        end,
     },
 
     {
@@ -68,10 +68,10 @@ return {
                         icons = {
                             package_installed = "✓",
                             package_pending = "➜",
-                            package_uninstalled = "✗"
-                        }
-                    }
-                }
+                            package_uninstalled = "✗",
+                        },
+                    },
+                },
             },
             "neovim/nvim-lspconfig",
         },
@@ -80,7 +80,7 @@ return {
                 automatic_enable = {
                     exclude = {
                         "jdtls",
-                    }
+                    },
                 },
                 ensure_installed = {
                     -- "rust_analyzer",
@@ -91,9 +91,9 @@ return {
                     "tflint",
                     "terraformls",
                     "jdtls",
-                }
+                },
             })
-        end
+        end,
     },
 
     -- masonとnone-lsの連携
@@ -171,7 +171,7 @@ return {
                     win = {
                         position = "right",
                         size = 0.3,
-                    }
+                    },
                 },
                 -- The LSP base mode for:
                 -- * lsp_definitions, lsp_references, lsp_implementations
@@ -184,14 +184,14 @@ return {
                     win = {
                         position = "right",
                         size = 0.3,
-                    }
+                    },
                 },
                 lsp = {
                     mode = "lsp",
                     win = {
                         position = "right",
                         size = 0.3,
-                    }
+                    },
                 },
             },
         }, -- for default options, refer to the configuration section for custom setup.

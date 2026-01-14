@@ -15,18 +15,18 @@ function M.reload()
             map("i", "<c-r>", function(_)
                 -- these two a very self-explanatory
                 local entry = require("telescope.actions.state").get_selected_entry()
-                local file_path = vim.fn.stdpath('config') .. "/" .. entry.value
+                local file_path = vim.fn.stdpath("config") .. "/" .. entry.value
 
                 vim.api.nvim_exec("source " .. file_path, false)
                 vim.notify("Reload module: " .. entry.value)
             end)
 
             return true
-        end
+        end,
     }
 
     -- call the builtin method to list files
-    require('telescope.builtin').find_files(opts)
+    require("telescope.builtin").find_files(opts)
 end
 
-return M;
+return M

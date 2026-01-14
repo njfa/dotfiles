@@ -1,20 +1,20 @@
 return {
     -- easymotion likeな見た目のジャンプ機能
     {
-        'smoka7/hop.nvim',
-        version = '*', -- optional but strongly recommended
+        "smoka7/hop.nvim",
+        version = "*", -- optional but strongly recommended
         opts = {
             yank_register = "*",
-            keys = 'asdfghjklweruioxcvm,.'
-        }
+            keys = "asdfghjklweruioxcvm,.",
+        },
     },
 
     -- visualモードでhop.nvimを利用して選択範囲を変更する
     {
-        'mfussenegger/nvim-treehopper',
+        "mfussenegger/nvim-treehopper",
         dependencies = {
-            'smoka7/hop.nvim',
-        }
+            "smoka7/hop.nvim",
+        },
     },
     {
         "folke/flash.nvim",
@@ -23,13 +23,13 @@ return {
             require("flash").setup({
                 labels = "asdfghjklwertyuioxcvbnm,.",
                 label = {
-                    uppercase = true
+                    uppercase = true,
                 },
                 modes = {
                     char = {
                         keys = { "f", "F", [";"] = "<right>", [","] = "<left>" },
-                    }
-                }
+                    },
+                },
             })
         end,
         -- opts = {},

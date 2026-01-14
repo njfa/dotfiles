@@ -29,10 +29,10 @@ return {
             require("dial.config").augends:register_group({
                 -- default augends used when no group name is specified
                 default = {
-                    augend.integer.alias.decimal,  -- nonnegative decimal number (0, 1, 2, 3, ...)
-                    augend.integer.alias.hex,      -- nonnegative hex number  (0x01, 0x1a1f, etc.)
+                    augend.integer.alias.decimal, -- nonnegative decimal number (0, 1, 2, 3, ...)
+                    augend.integer.alias.hex, -- nonnegative hex number  (0x01, 0x1a1f, etc.)
                     augend.date.alias["%Y/%m/%d"], -- date (2022/02/19, etc.)
-                    augend.constant.alias.bool,    -- boolean value (true <-> false)
+                    augend.constant.alias.bool, -- boolean value (true <-> false)
                     augend.constant.new({ elements = { "True", "False" } }),
                     augend.constant.new({ elements = { "する", "しない" } }),
                     augend.constant.new({ elements = { "できる", "できない" } }),
@@ -157,13 +157,13 @@ return {
             vim.g.mkdp_preview_options = {
                 uml = {
                     server = "http://127.0.0.1:18123",
-                    imageFormat = "svg"
+                    imageFormat = "svg",
                 },
                 disable_sync_scroll = 1,
                 content_editable = false,
             }
-            vim.g.mkdp_markdown_css = vim.fn.expand('~/.config/markdown-preview/style.css')
-            vim.g.mkdp_page_title = '${name}'
+            vim.g.mkdp_markdown_css = vim.fn.expand("~/.config/markdown-preview/style.css")
+            vim.g.mkdp_page_title = "${name}"
         end,
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     },
@@ -288,11 +288,11 @@ return {
                         append_args = { "--indent-type", "Spaces", "--indent-width", "4" },
                     },
                     prettier_java = {
-                        command = "prettier"
+                        command = "prettier",
                     },
                     ["google-java-format"] = {
                         append_args = { "-a" },
-                    }
+                    },
                 },
             })
         end,

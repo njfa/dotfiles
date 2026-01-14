@@ -42,17 +42,17 @@ local function update_zellij_status_tabs()
         local buf_name = bufs[1] and bufs[1]:match("^%s*(.-)%s*$")
         buf_name = buf_name and #buf_name > 20 and buf_name:sub(1, 17) .. "..." or buf_name
         message = message
-        .. "#[bg=$surface0,fg=$"
-        .. tab_color
-        .. "]█#[bg=$"
-        .. tab_color
-        .. ",fg=$crust,bold]"
-        .. idx
-        .. " #[bg=$surface1,fg=$"
-        .. tab_color
-        .. ",bold] "
-        .. (buf_name ~= "" and buf_name or ("Tab #" .. idx))
-        .. "#[bg=$surface0,fg=$surface1]█ "
+            .. "#[bg=$surface0,fg=$"
+            .. tab_color
+            .. "]█#[bg=$"
+            .. tab_color
+            .. ",fg=$crust,bold]"
+            .. idx
+            .. " #[bg=$surface1,fg=$"
+            .. tab_color
+            .. ",bold] "
+            .. (buf_name ~= "" and buf_name or ("Tab #" .. idx))
+            .. "#[bg=$surface0,fg=$surface1]█ "
     end
     vim.fn.system("zellij pipe 'zjstatus::pipe::pipe_neovim_tabs::" .. message .. "'")
 end
@@ -141,9 +141,13 @@ local function update_zellij_status_buffers()
         end
 
         if is_current then
-            return "#[bg=$surface0,fg=$surface1]#[bg=$surface0,fg=$crust,bold]#[bg=$surface1,fg=$green,bold]" .. truncate_file_name(file_name) ..  "#[bg=$surface0,fg=$surface1] "
+            return "#[bg=$surface0,fg=$surface1]#[bg=$surface0,fg=$crust,bold]#[bg=$surface1,fg=$green,bold]"
+                .. truncate_file_name(file_name)
+                .. "#[bg=$surface0,fg=$surface1] "
         else
-            return "#[bg=$surface0,fg=$crust,bold]#[bg=$surface0,fg=$overlay1,bold] " .. truncate_file_name(file_name) ..  "#[bg=$surface0,fg=$overlay1]  "
+            return "#[bg=$surface0,fg=$crust,bold]#[bg=$surface0,fg=$overlay1,bold] "
+                .. truncate_file_name(file_name)
+                .. "#[bg=$surface0,fg=$overlay1]  "
         end
     end
 

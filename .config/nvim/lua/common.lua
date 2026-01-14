@@ -14,7 +14,7 @@ end
 
 local function getcwd()
     local cwd = get_git_root()
-    if cwd == '.' then
+    if cwd == "." then
         cwd = vim.fn.getcwd()
     end
     return vim.fn.fnamemodify(cwd, ":~:.")
@@ -48,7 +48,7 @@ M.get_cwd = function()
 end
 
 M.lcd_current_workspace = function()
-    if vim.bo.filetype ~= 'fern' and vim.bo.filetype ~= '' then
+    if vim.bo.filetype ~= "fern" and vim.bo.filetype ~= "" then
         local cwd = M.get_cwd()
 
         vim.notify("Current workspace: " .. cwd)
@@ -95,11 +95,29 @@ M.on_attach_lsp = function(_, bufnr)
             { "ci", "<cmd>Trouble lsp_incoming_calls focus=true<cr>", desc = "コールヒエラルキー (IN)" },
             { "co", "<cmd>Trouble lsp_outgoing_calls focus=true<cr>", desc = "コールヒエラルキー (OUT)" },
             { "mr", "<cmd>Trouble lsp_references<cr>", desc = "リファレンスの表示" },
-            { "ms", function() vim.lsp.buf.rename() end, desc = "リネーム" },
-            { "mn", function() vim.diagnostic.goto_next() end, desc = "次のUiagnosticへ移動" },
-            { "mp", function() vim.diagnostic.goto_prev() end, desc = "前のDiagnosticへ移動" },
+            {
+                "ms",
+                function()
+                    vim.lsp.buf.rename()
+                end,
+                desc = "リネーム",
+            },
+            {
+                "mn",
+                function()
+                    vim.diagnostic.goto_next()
+                end,
+                desc = "次のUiagnosticへ移動",
+            },
+            {
+                "mp",
+                function()
+                    vim.diagnostic.goto_prev()
+                end,
+                desc = "前のDiagnosticへ移動",
+            },
             { "<Tab>", "<cmd>lua vim.lsp.buf.code_action()<cr>", desc = "コードアクション" },
-        }
+        },
     })
 end
 

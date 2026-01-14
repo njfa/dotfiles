@@ -1,97 +1,95 @@
 -- Leaderの設定
-vim.g.mapleader             = " "
+vim.g.mapleader = " "
 
 -- 見栄え
-vim.opt.termguicolors       = true
-vim.opt.number              = true --行番号を表示
-vim.opt.laststatus          = 3    --ステータスバーにウィンドウ毎のステータスを表示する
-vim.opt.splitright          = true --画面を縦分割する際に右に開く
-vim.opt.list                = true
-vim.opt.listchars           = {
-    space = '‸',
-    tab   = '› ',
-    eol   = '¬',
-    trail = '█',
-    nbsp  = '%',
+vim.opt.termguicolors = true
+vim.opt.number = true --行番号を表示
+vim.opt.laststatus = 3 --ステータスバーにウィンドウ毎のステータスを表示する
+vim.opt.splitright = true --画面を縦分割する際に右に開く
+vim.opt.list = true
+vim.opt.listchars = {
+    space = "‸",
+    tab = "› ",
+    eol = "¬",
+    trail = "█",
+    nbsp = "%",
 }
 
 -- インデント
-vim.opt.autoindent          = true --改行時に自動でインデントする
-vim.opt.smartindent         = true --改行時に自動でインデントする
-vim.opt.tabstop             = 4    --タブを何文字の空白に変換するか
-vim.opt.shiftwidth          = 4    --自動インデント時に入力する空白の数
-vim.opt.expandtab           = true --タブ入力を空白に変換
+vim.opt.autoindent = true --改行時に自動でインデントする
+vim.opt.smartindent = true --改行時に自動でインデントする
+vim.opt.tabstop = 4 --タブを何文字の空白に変換するか
+vim.opt.shiftwidth = 4 --自動インデント時に入力する空白の数
+vim.opt.expandtab = true --タブ入力を空白に変換
 
 -- 検索系の設定
-vim.opt.hls                 = true --検索した文字をハイライトする
-vim.opt.ignorecase          = true --検索時に大文字/小文字を区別しない
-vim.opt.incsearch           = true --インクリメンタルサーチ
-vim.opt.smartcase           = true --検索時に大文字入力が入力されたらignorecaseを無効化
-vim.opt.inccommand          = "nosplit"
+vim.opt.hls = true --検索した文字をハイライトする
+vim.opt.ignorecase = true --検索時に大文字/小文字を区別しない
+vim.opt.incsearch = true --インクリメンタルサーチ
+vim.opt.smartcase = true --検索時に大文字入力が入力されたらignorecaseを無効化
+vim.opt.inccommand = "nosplit"
 
 -- 保存していないバッファがあっても新しいバッファを作れるようにする
-vim.opt.hidden              = true
+vim.opt.hidden = true
 
-vim.opt.mouse               = "a"
+vim.opt.mouse = "a"
 
 -- クリップボードの設定
 local function paste()
-  return {
-    vim.fn.split(vim.fn.getreg(""), "\n"),
-    vim.fn.getregtype(""),
-  }
+    return {
+        vim.fn.split(vim.fn.getreg(""), "\n"),
+        vim.fn.getregtype(""),
+    }
 end
 
-vim.opt.clipboard       = "unnamedplus"
-if vim.fn.executable('win32yank.exe') == 1 then
-    vim.g.clipboard         = {
+vim.opt.clipboard = "unnamedplus"
+if vim.fn.executable("win32yank.exe") == 1 then
+    vim.g.clipboard = {
         name = "win32yank-wsl",
         copy = {
             ["+"] = "win32yank.exe -i --crlf",
-            ["*"] = "win32yank.exe -i --crlf"
+            ["*"] = "win32yank.exe -i --crlf",
         },
         paste = {
             ["+"] = "win32yank.exe -o --lf",
-            ["*"] = "win32yank.exe -o --lf"
+            ["*"] = "win32yank.exe -o --lf",
         },
         cache_enable = 0,
     }
 else
     vim.g.clipboard = {
-        name = 'OSC 52',
+        name = "OSC 52",
         copy = {
-            ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
-            ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+            ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+            ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
         },
         paste = {
-            ['+'] = paste,
-            ['*'] = paste,
+            ["+"] = paste,
+            ["*"] = paste,
         },
     }
 end
 
 -- netrwを無効化
-vim.g.loaded_netrw          = 1
-vim.g.loaded_netrwPlugin    = 1
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
 
 -- スワップファイル
-vim.opt.swapfile            = false
-vim.opt.backup              = false
-vim.opt.writebackup         = false
+vim.opt.swapfile = false
+vim.opt.backup = false
+vim.opt.writebackup = false
 -- vim.opt.updatetime = 300
 vim.g.cursorhold_updatetime = 100
 
-vim.opt.completeopt         = { "fuzzy", "popup", "menuone", "noinsert" }
-
+vim.opt.completeopt = { "fuzzy", "popup", "menuone", "noinsert" }
 
 -- lsp.logに記録するログレベルを設定
-vim.lsp.set_log_level 'warn'
+vim.lsp.set_log_level("warn")
 
 -- lsp.logの内容を整形する
-if vim.fn.has 'nvim-0.5.1' == 1 then
-    require('vim.lsp.log').set_format_func(vim.inspect)
+if vim.fn.has("nvim-0.5.1") == 1 then
+    require("vim.lsp.log").set_format_func(vim.inspect)
 end
-
 
 -- sign columnに表示する情報を文字ではなくアイコンに変更
 local signs = { Error = "", Warn = "", Hint = "", Info = "" }
@@ -108,7 +106,7 @@ local get_llm_enabled = function()
     if llm_enabled then
         is_llm_enabled = string.lower(llm_enabled) == "true"
     end
-    return is_llm_enabled and (not status_ok)
+    return is_llm_enabled and not status_ok
 end
 vim.g.llm_enabled = get_llm_enabled()
 
@@ -126,12 +124,12 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-require('command')
+require("command")
 
 -- プラグインの読み込み
-require('lazy').setup("plugins", {
+require("lazy").setup("plugins", {
     rocks = {
-        enabled = false
+        enabled = false,
     },
     performance = {
         rtp = {
@@ -145,10 +143,10 @@ require('lazy').setup("plugins", {
     },
 })
 -- autocmdの設定
-require('autocmd')
-require('zellij')
+require("autocmd")
+require("zellij")
 
-if vim.fn.executable('nvr') == 1 then
+if vim.fn.executable("nvr") == 1 then
     vim.env.EDITOR = 'nvr -c "set bufhidden=delete" --remote-tab-wait'
     vim.env.GIT_EDITOR = 'nvr -c "set bufhidden=delete" --remote-tab-wait'
 end

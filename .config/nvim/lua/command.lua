@@ -22,7 +22,9 @@ local function set_numbering(lines, cursor_line)
         end
     end
 
-    if not start_line then return lines end
+    if not start_line then
+        return lines
+    end
 
     -- Apply numbering to the current header section
     for i = start_line, #lines do
@@ -70,7 +72,9 @@ local function unset_numbering(lines, cursor_line)
         end
     end
 
-    if not start_line then return lines end
+    if not start_line then
+        return lines
+    end
 
     -- Remove numbering from the current header section
     for i = start_line, #lines do
@@ -100,10 +104,10 @@ local function toggle_numbering(lines, cursor_line)
     end
 
     if has_numbers then
-        print('has number')
+        print("has number")
         return unset_numbering(lines, cursor_line)
     else
-        print('does not have number')
+        print("does not have number")
         return set_numbering(lines, cursor_line)
     end
 end
@@ -133,7 +137,7 @@ vim.api.nvim_create_user_command("ToggleHeaderNumber", function()
 end, {})
 
 -- Color replacement commands
-local color_replacer = require('color-replacer')
+local color_replacer = require("color-replacer")
 
 vim.api.nvim_create_user_command("ColorReplace", function(opts)
     local args = vim.split(opts.args, " ")

@@ -18,14 +18,14 @@ return {
             -- dap.listeners.before.event_exited.dapui_config = function()
             --     dapui.close()
             -- end
-        end
+        end,
     },
 
     {
-        'theHamsta/nvim-dap-virtual-text',
+        "theHamsta/nvim-dap-virtual-text",
         dependencies = { "mfussenegger/nvim-dap" },
         config = function()
             require("nvim-dap-virtual-text").setup()
-        end
+        end,
     },
 }

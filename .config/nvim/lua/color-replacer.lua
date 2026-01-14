@@ -70,7 +70,7 @@ function M.find_color(color)
     local results = {
         fg = {},
         bg = {},
-        sp = {}
+        sp = {},
     }
 
     local all_highlights = vim.api.nvim_get_hl(0, {})
@@ -120,46 +120,49 @@ end
 function M.save_color_overrides(filename)
     filename = filename or vim.fn.stdpath("config") .. "/lua/color-overrides.lua"
 
-    local lines = {"-- Auto-generated color overrides", "return function()"}
-        local all_highlights = vim.api.nvim_get_hl(0, {})
+    local lines = { "-- Auto-generated color overrides", "return function()" }
+    local all_highlights = vim.api.nvim_get_hl(0, {})
 
-        for hl_name, hl_def in pairs(all_highlights) do
-            local attrs = {}
+    for hl_name, hl_def in pairs(all_highlights) do
+        local attrs = {}
 
-            if hl_def.fg then
-                table.insert(attrs, string.format("fg = '#%06x'", hl_def.fg))
-            end
-            if hl_def.bg then
-                table.insert(attrs, string.format("bg = '#%06x'", hl_def.bg))
-            end
-            if hl_def.sp then
-                table.insert(attrs, string.format("sp = '#%06x'", hl_def.sp))
-            end
-            if hl_def.bold then
-                table.insert(attrs, "bold = true")
-            end
-            if hl_def.italic then
-                table.insert(attrs, "italic = true")
-            end
-            if hl_def.underline then
-                table.insert(attrs, "underline = true")
-            end
-
-            if #attrs > 0 then
-                table.insert(lines, string.format("    vim.api.nvim_set_hl(0, '%s', { %s })", hl_name, table.concat(attrs, ", ")))
-            end
+        if hl_def.fg then
+            table.insert(attrs, string.format("fg = '#%06x'", hl_def.fg))
+        end
+        if hl_def.bg then
+            table.insert(attrs, string.format("bg = '#%06x'", hl_def.bg))
+        end
+        if hl_def.sp then
+            table.insert(attrs, string.format("sp = '#%06x'", hl_def.sp))
+        end
+        if hl_def.bold then
+            table.insert(attrs, "bold = true")
+        end
+        if hl_def.italic then
+            table.insert(attrs, "italic = true")
+        end
+        if hl_def.underline then
+            table.insert(attrs, "underline = true")
         end
 
-        table.insert(lines, "end")
-
-        local file = io.open(filename, "w")
-        if file then
-            file:write(table.concat(lines, "\n"))
-            file:close()
-            print("Color overrides saved to: " .. filename)
-        else
-            print("Error: Could not save to " .. filename)
+        if #attrs > 0 then
+            table.insert(
+                lines,
+                string.format("    vim.api.nvim_set_hl(0, '%s', { %s })", hl_name, table.concat(attrs, ", "))
+            )
         end
     end
 
-    return M
+    table.insert(lines, "end")
+
+    local file = io.open(filename, "w")
+    if file then
+        file:write(table.concat(lines, "\n"))
+        file:close()
+        print("Color overrides saved to: " .. filename)
+    else
+        print("Error: Could not save to " .. filename)
+    end
+end
+
+return M

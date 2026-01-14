@@ -8,27 +8,27 @@ return {
         local AreaSeparator = {
             provider = function()
                 return "%="
-            end
+            end,
         }
 
         local SegmentSeparator = {
             provider = function()
                 return "┃"
             end,
-            hl       = { fg = "#1f2335" },
+            hl = { fg = "#1f2335" },
         }
 
         local Spacer = {
             provider = function()
                 return " "
-            end
+            end,
         }
 
         local EOL = {
             provider = function()
-                return '▐'
+                return "▐"
             end,
-            hl       = { fg = "blue", bg = "bg_highlight" },
+            hl = { fg = "blue", bg = "bg_highlight" },
         }
 
         local ViMode = {
@@ -125,7 +125,7 @@ return {
                 end,
                 -- Re-evaluate the component only on ModeChanged event!
                 -- Also allows the statusline to be re-evaluated when entering operator-pending mode
-            }
+            },
         }
 
         local FileNameBlock = {
@@ -145,15 +145,15 @@ return {
                         return vim.fn.getcwd()
                     end
 
-                    local cwd = require('picker').get_cwd()
+                    local cwd = require("picker").get_cwd()
                     if not conditions.width_percent_below(#cwd, 0.2) then
                         cwd = vim.fn.pathshorten(cwd)
                     end
                     -- local trail = cwd:sub(-1) == '/' and '' or '/'
                     -- return  " " .. cwd  .. trail
                     return cwd
-                end
-            }
+                end,
+            },
         }
 
         local FileName = {
@@ -161,7 +161,9 @@ return {
                 -- first, trim the pattern relative to the current directory. For other
                 -- options, see :h filename-modifers
                 local filename = vim.fn.fnamemodify(self.filename, ":.")
-                if filename == "" then filename = "[No Name]" end
+                if filename == "" then
+                    filename = "[No Name]"
+                end
                 -- now, if the filename would occupy more than 1/4th of the available
                 -- space, we trim the file path to its initials
                 -- See Flexible Components section below for dynamic truncation
@@ -169,7 +171,7 @@ return {
                 --     filename = vim.fn.pathshorten(filename)
                 -- end
                 return filename
-            end
+            end,
         }
 
         local FileFlags = {
@@ -207,23 +209,23 @@ return {
         FileNameBlock = utils.insert(
             FileNameBlock,
             utils.insert(FileNameModifer, FileName), -- a new table where FileName is a child of FileNameModifier
-            { provider = '%<' }                      -- this means that the statusline is cut here when there's not enough space
+            { provider = "%<" } -- this means that the statusline is cut here when there's not enough space
         )
 
         local FileType = {
             provider = function()
                 -- return "  " .. string.upper(vim.bo.filetype)
                 return string.upper(vim.bo.filetype)
-            end
+            end,
         }
 
         local FileEncoding = {
             {
                 provider = function()
-                    local enc = (vim.bo.fenc ~= '' and vim.bo.fenc) or vim.o.enc -- :h 'enc'
+                    local enc = (vim.bo.fenc ~= "" and vim.bo.fenc) or vim.o.enc -- :h 'enc'
                     return enc:upper()
-                end
-            }
+                end,
+            },
         }
 
         local FileFormat = {
@@ -231,12 +233,12 @@ return {
                 local fmt = vim.bo.fileformat
                 -- return "  " .. fmt:upper() .. " "
                 return fmt:upper()
-            end
+            end,
         }
 
         local FileSize = {
             init = function(self)
-                local suffix = { 'Byte', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' }
+                local suffix = { "Byte", "KB", "MB", "GB", "TB", "PB", "EB" }
                 local fsize = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
                 fsize = (fsize < 0 and 0) or fsize
                 if fsize < 1024 then
@@ -264,7 +266,7 @@ return {
         local ShiftWidth = {
             provider = function()
                 return "Spc " .. vim.fn.shiftwidth()
-            end
+            end,
         }
 
         -- We're getting minimalists here!
@@ -273,7 +275,7 @@ return {
             -- %L = number of lines in the buffer
             -- %c = column number
             -- %P = percentage through file of displayed window
-            provider = "Ln %l (%P)"
+            provider = "Ln %l (%P)",
         }
 
         local Column = {
@@ -281,12 +283,12 @@ return {
             -- %L = number of lines in the buffer
             -- %c = column number
             -- %P = percentage through file of displayed window
-            provider = "Col %2c"
+            provider = "Col %2c",
         }
 
         local LSPActive = {
             condition = conditions.lsp_attached,
-            update = { 'LspAttach', 'LspDetach', 'BufEnter' },
+            update = { "LspAttach", "LspDetach", "BufEnter" },
             hl = { fg = "teal" },
 
             -- You can keep it simple,
@@ -296,7 +298,7 @@ return {
             {
                 provider = function()
                     return " [ "
-                end
+                end,
             },
             {
                 provider = function()
@@ -305,12 +307,12 @@ return {
                         table.insert(names, server.name)
                     end
                     return table.concat(names, " ┊ ")
-                end
+                end,
             },
             {
                 provider = function()
                     return " ]"
-                end
+                end,
             },
         }
         local Git = {
@@ -318,8 +320,9 @@ return {
 
             init = function(self)
                 self.status_dict = vim.b.gitsigns_status_dict
-                self.has_changes = self.status_dict.added ~= 0 or self.status_dict.removed ~= 0 or
-                    self.status_dict.changed ~= 0
+                self.has_changes = self.status_dict.added ~= 0
+                    or self.status_dict.removed ~= 0
+                    or self.status_dict.changed ~= 0
             end,
 
             {
@@ -330,7 +333,7 @@ return {
                         -- return "   " .. self.status_dict.head
                         return " " .. self.status_dict.head
                     end,
-                    hl = { bold = true }
+                    hl = { bold = true },
                 },
                 Spacer,
                 {
@@ -363,9 +366,8 @@ return {
                         return count > 0 and ("󰝤 " .. count .. " ")
                     end,
                     hl = { fg = "orange" },
-                }
-
-            }
+                },
+            },
         }
 
         local Diagnostics = {
@@ -433,7 +435,7 @@ return {
             provider = function()
                 return " " .. require("dap").status()
             end,
-            hl = "Debug"
+            hl = "Debug",
             -- see Click-it! section for clickable actions
         }
 
@@ -450,7 +452,7 @@ return {
                     else
                         return "blue"
                     end
-                end
+                end,
             },
             update = {
                 "User",
@@ -509,7 +511,7 @@ return {
                         local clients = {
                             [chat_client] = {},
                             [inline_client] = {},
-                            [cmd_client] = {}
+                            [cmd_client] = {},
                         }
 
                         local function add_model(client, model)
@@ -531,7 +533,7 @@ return {
 
                         return result
                     else
-                        return '▐'
+                        return "▐"
                     end
                 end,
                 hl = function(self)
@@ -616,7 +618,7 @@ return {
                 Spacer,
             },
             Git,
-            CodeCompanion
+            CodeCompanion,
         }
 
         require("heirline").setup({
@@ -625,5 +627,5 @@ return {
                 colors = require("tokyonight.colors").setup(),
             },
         })
-    end
+    end,
 }

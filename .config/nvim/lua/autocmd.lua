@@ -1,8 +1,8 @@
-local buf_map = require('common').buf_map
-local vscode = require('vscode-utils')
+local buf_map = require("common").buf_map
+local vscode = require("vscode-utils")
 
 -- IMEの自動OFF
-if vim.fn.executable('zenhan.exe') == 1 then
+if vim.fn.executable("zenhan.exe") == 1 then
     vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
         pattern = { "*" },
         command = "call system('zenhan.exe 0')",
@@ -21,17 +21,17 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "qf" },
     callback = function()
-        buf_map(0, 'n', "r", "<cmd>Qfreplace<cr>", { noremap = true })
-        buf_map(0, 'n', "q", "<cmd>cclose<cr>", { noremap = true })
-        buf_map(0, 'n', "<C-n>", "<cmd>cnewer<CR>", { noremap = true })
-        buf_map(0, 'n', "<C-p>", "<cmd>colder<CR>", { noremap = true })
+        buf_map(0, "n", "r", "<cmd>Qfreplace<cr>", { noremap = true })
+        buf_map(0, "n", "q", "<cmd>cclose<cr>", { noremap = true })
+        buf_map(0, "n", "<C-n>", "<cmd>cnewer<CR>", { noremap = true })
+        buf_map(0, "n", "<C-p>", "<cmd>colder<CR>", { noremap = true })
     end,
 })
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "qfreplace" },
     callback = function()
-        buf_map(0, 'n', "q", "<cmd>q<cr><cmd>copen<cr>", { noremap = true })
+        buf_map(0, "n", "q", "<cmd>q<cr><cmd>copen<cr>", { noremap = true })
     end,
 })
 
@@ -39,7 +39,7 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "sagafinder" },
     callback = function()
-        buf_map(0, 'n', "<Esc>", "<cmd>q<cr>", { noremap = true })
+        buf_map(0, "n", "<Esc>", "<cmd>q<cr>", { noremap = true })
     end,
 })
 
@@ -68,7 +68,9 @@ vim.api.nvim_create_autocmd("BufWritePost", {
     callback = function(args)
         -- パスを正規化（シンボリックリンクや相対パスを解決）
         local full_path = vim.loop.fs_realpath(args.file)
-        if not full_path then return end
+        if not full_path then
+            return
+        end
 
         -- 正規化したターゲットパス
         local targets = {
@@ -146,7 +148,7 @@ vim.api.nvim_create_autocmd("LspProgress", {
             title = client.name,
             opts = function(notif)
                 notif.icon = #progress[client.id] == 0 and " "
-                or spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1]
+                    or spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1]
             end,
         })
     end,
