@@ -214,7 +214,7 @@ return {
                     { "sa", [[<Plug>(operator-sandwich-add)]], desc = "Sandwich add" },
                     { "sd", [[<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich delete" },
                     { "sr", [[<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)]], desc = "Sandwich replace" },
-                    { "m=", function() conform.format({ lsp_fallback = true, async = false, timeout_ms = 5000, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
+                    { "m=", function() conform.format({ lsp_fallback = true, timeout_ms = 5000, }) end, desc = "ファイル(normal)/範囲(visual)の整形" },
                 },
                 {
                     { "<leader><leader>t", group = "Table操作" },

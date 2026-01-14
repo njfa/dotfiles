@@ -264,12 +264,15 @@ return {
             require("conform").setup({
                 lsp_format = "fallback",
                 formatters_by_ft = {
-                    lua = {
-                        command = "stylua",
-                        args = { "--indent-type", "Spaces" },
-                    },
+                    lua = { "stylua" },
                     -- Conform will run multiple formatters sequentially
-                    python = { "isort", "black" },
+                    python = function(bufnr)
+                        if require("conform").get_formatter_info("ruff_format", bufnr).available then
+                            return { "ruff_format" }
+                        else
+                            return { "isort", "black" }
+                        end
+                    end,
                     -- You can customize some of the format options for the filetype (:help conform.format)
                     rust = { "rustfmt", lsp_format = "fallback" },
                     -- Conform will run the first available formatter
@@ -279,6 +282,17 @@ return {
                     bash = { "shfmt" },
                     java = { "google-java-format" },
                     markdown = { "markdownlint" },
+                },
+                formatters = {
+                    stylua = {
+                        append_args = { "--indent-type", "Spaces", "--indent-width", "4" },
+                    },
+                    prettier_java = {
+                        command = "prettier"
+                    },
+                    ["google-java-format"] = {
+                        append_args = { "-a" },
+                    }
                 },
             })
         end,
@@ -311,7 +325,7 @@ return {
                         "my_markdown_h5",
                         "my_markdown_h6",
                     },
-                }
+                },
             })
         end,
     },
