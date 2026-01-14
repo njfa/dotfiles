@@ -111,23 +111,4 @@ return {
     -- 'nvim-treesitter/nvim-treesitter-textobjects', -- これを追加するとLSPの挙動がおかしくなったので無効化
     -- treesitter unitをテキストオブジェクトに追加
     "David-Kunz/treesitter-unit",
-    {
-        "RRethy/nvim-treesitter-textsubjects",
-        config = function()
-            require("nvim-treesitter.configs").setup({
-                textsubjects = {
-                    enable = true,
-                    prev_selection = ",", -- (Optional) keymap to select the previous selection
-                    keymaps = {
-                        ["."] = "textsubjects-smart",
-                        [";"] = "textsubjects-container-outer",
-                        ["i;"] = {
-                            "textsubjects-container-inner",
-                            desc = "コンテナ内を選択 (classes, functions, etc.)",
-                        },
-                    },
-                },
-            })
-        end,
-    },
 }
