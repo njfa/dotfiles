@@ -50,7 +50,7 @@ export SAVEHIST=10000
 
 export BROWSER=browser.sh
 
-export PATH="$HOME/.dotfiles/bin:$PATH"
+export PATH="$HOME/.dotfiles/bin:$PATH:~/.bun/bin"
 export EDITOR=nvim
 
 # -------------------------------------------------------------------
@@ -419,3 +419,10 @@ fpath=($HOME/.zsh/completions $fpath)
 [ -f $HOME/.zsh/completions/_delta ] && (( ${+_comps} )) && _comps[delta]=_delta
 
 autoload -Uz compinit && compinit
+
+# bun completions
+[ -s "/home/ubuntu/.bun/_bun" ] && source "/home/ubuntu/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
