@@ -27,7 +27,7 @@ return {
                 },
                 modes = {
                     char = {
-                        keys = { "f", "F", [";"] = "<right>", [","] = "<left>" },
+                        keys = { "f", "F" },
                     },
                 },
             })

@@ -70,6 +70,17 @@ local function has_current_zellij_session()
     return output:match("%(current%)") ~= nil
 end
 
+local wk = require("which-key")
+local status_ok, vscode = pcall(require, "vscode")
+
+local function vscode_mapping(function_native, function_vscode)
+    if status_ok then
+        return function_vscode
+    else
+        return function_native
+    end
+end
+
 if has_current_zellij_session() then
     vim.opt.showtabline = 0 -- hide tabs
     vim.api.nvim_create_autocmd({
@@ -90,8 +101,22 @@ if has_current_zellij_session() then
     vim.api.nvim_create_autocmd("VimLeave", {
         callback = clear_zellij_status_tabs,
     })
+    wk.add({
+        {
+            mode = { "n" },
+            { "<C-h>", vscode_mapping("<cmd>bprevious<cr>", "<cmd>Tabprevious<cr>"), desc = "前のバッファに移動" },
+            { "<C-l>", vscode_mapping("<cmd>bnext<cr>", "<cmd>Tabnext<cr>"), desc = "次のバッファに移動" },
+        },
+    })
 else
     vim.opt.showtabline = 2
+    wk.add({
+        {
+            mode = { "n" },
+            { "<C-h>", vscode_mapping("<cmd>BufferLineCyclePrev<cr>", "<cmd>Tabprevious<cr>"), desc = "前のバッファに移動" },
+            { "<C-l>", vscode_mapping("<cmd>BufferLineCycleNext<cr>", "<cmd>Tabnext<cr>"), desc = "次のバッファに移動" },
+        },
+    })
 end
 
 local function clear_zellij_status_buffers()
@@ -167,16 +192,16 @@ local function update_zellij_status_buffers()
         return
     end
 
-    if total <= 5 or not current_index then
-        -- Show up to 5 buffers directly
+    if total <= 10 or not current_index then
+        -- Show up to 10 buffers directly
         for i, buf in ipairs(display_buffers) do
-            if i > 5 then
+            if i > 10 then
                 break
             end
             message = message .. get_display_name(buf, buf == current_buf)
         end
-        if total > 5 then
-            message = message .. "#[bg=$surface0,fg=$overlay2].." .. (total - 5)
+        if total > 10 then
+            message = message .. "#[bg=$surface0,fg=$overlay2].." .. (total - 10)
         end
     else
         local visible_buffers = {}
@@ -194,13 +219,13 @@ local function update_zellij_status_buffers()
         end
 
         -- Then add up to 2 on the left
-        while #visible_buffers < 5 and left >= 1 do
+        while #visible_buffers < 10 and left >= 1 do
             table.insert(visible_buffers, 1, display_buffers[left])
             left = left - 1
         end
 
         -- Then fill remaining from the right
-        while #visible_buffers < 5 and right <= total do
+        while #visible_buffers < 10 and right <= total do
             table.insert(visible_buffers, display_buffers[right])
             right = right + 1
         end
