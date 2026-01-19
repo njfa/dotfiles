@@ -39,12 +39,12 @@ layout {
                 format_hide_on_overlength "true"
                 format_precedence "lrc"
 
-                border_enabled  "false"
+                border_enabled  "true"
                 border_char     "─"
                 border_format   "#[bg=$surface0]{char}"
                 border_position "top"
 
-                hide_frame_for_single_pane "true"
+                hide_frame_for_single_pane "false"
 
                 mode_normal        "#[bg=$surface0,fg=$blue,bold]NORMAL"
                 mode_tmux          "#[bg=$mauve,fg=$crust,bold] TMUX#[bg=$surface0,fg=$mauve]"

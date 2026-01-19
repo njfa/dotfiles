@@ -1,10 +1,15 @@
 close_on_exit true
+scroll_buffer_size 50000
+styled_underlines false
 show_startup_tips false
 mouse_mode true
 copy_on_select true
+pane_frames false
+theme "vesper"
 
 keybinds clear-defaults=true {
     normal {
+        bind "Ctrl s" { SwitchToMode "scroll"; }
         bind "Alt a" { ToggleActiveSyncTab; }
         bind "Alt b" {
             GoToPreviousTab;
@@ -35,10 +40,10 @@ keybinds clear-defaults=true {
                 floating true
                 hold_on_close false
                 close_on_exit true
-                x "2%"
-                y "2%"
-                width "98%"
-                height "98%"
+                x "1%"
+                y "1%"
+                width "100%"
+                height "100%"
             }
         }
         bind "Alt e" { NewPane "down"; }
@@ -48,10 +53,10 @@ keybinds clear-defaults=true {
                 floating true
                 hold_on_close false
                 close_on_exit true
-                x "2%"
-                y "2%"
-                width "98%"
-                height "98%"
+                x "1%"
+                y "1%"
+                width "100%"
+                height "100%"
             }
         }
         bind "Alt h" {
@@ -162,6 +167,19 @@ keybinds clear-defaults=true {
         bind "k" { Resize "Increase up"; }
         bind "l" { Resize "Increase right"; }
         bind "Ctrl o" { SwitchToMode "normal"; }
+    }
+    scroll {
+        bind "Esc" { SwitchToMode "normal"; }
+        bind "Ctrl s" { SwitchToMode "normal"; }
+        bind "Up" { ScrollUp; }
+        bind "Down" { ScrollDown; }
+        bind "PageUp" { PageScrollUp; }
+        bind "PageDown" { PageScrollDown; }
+        bind "Home" { ScrollToTop; }
+        bind "End" { ScrollToBottom; }
+        // 好みで vim 風
+        bind "k" { ScrollUp; }
+        bind "j" { ScrollDown; }
     }
 }
 
