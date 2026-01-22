@@ -53,3 +53,5 @@ docs/_*
 .serena
 
 compose.*.yml
+.spec-workflow-mcp
+.spec-workflow
