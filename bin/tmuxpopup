@@ -1,0 +1,53 @@
+#!/usr/bin/env sh
+set -eu
+
+title="${1:-}"
+cmd="${2:-}"
+width='100%'
+height='95%'
+
+session="$(tmux display-message -p -F '#{session_name}' 2>/dev/null || true)"
+if [ -z "$session" ]; then
+  exit 0
+fi
+
+if printf '%s' "$session" | grep -q '^popup_'; then
+  tmux detach-client
+  exit 0
+fi
+
+pane_path="$(tmux display-message -p -F '#{pane_current_path}' 2>/dev/null || true)"
+if [ -z "$pane_path" ]; then
+  exit 0
+fi
+
+key="$(basename "$pane_path")"
+
+safe_key="$(printf '%s' "$key" | tr '/ ' '__' | tr -cd 'A-Za-z0-9_.-')"
+if [ -z "$safe_key" ]; then
+  safe_key="pane"
+fi
+
+popup_session="popup_${title}_${safe_key}"
+
+if [ -z "$cmd" ]; then
+  cmd="${SHELL:-/bin/sh} -l -i"
+fi
+
+if [ -z "$title" ]; then
+  title="$(printf '%s' "$cmd" | awk '{print $1}')"
+  if [ -z "$title" ]; then
+    title="shell"
+  fi
+fi
+
+popup_session="popup_${title}_${safe_key}"
+
+exec_cmd="tmux new-session -A -s \"${popup_session}\" ${cmd} \\; set-option -t \"${popup_session}\" status off \\; set-option -t \"${popup_session}\" pane-border-status off \\; set-option -t \"${popup_session}\" pane-border-format ''"
+
+tmux display-popup \
+  -d "#{pane_current_path}" \
+  -xC -yC \
+  -w "$width" -h "$height" \
+  -T "$title" \
+  -E "$exec_cmd"
