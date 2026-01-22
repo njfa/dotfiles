@@ -1,0 +1,81 @@
+[tools]
+# Versions pinned from .env
+python = "3.13"
+neovim = "0.11.5"
+delta = "0.17.0"
+
+# Runtimes / CLIs (keep versions explicit so they can be overridden)
+node = "lts"
+go = "latest"
+terraform = "latest"
+uv = "latest"
+
+# CLI tools managed via mise (plugins may be required)
+jq = "latest"
+yq = "latest"
+fzf = "latest"
+lazygit = "latest"
+lazydocker = "latest"
+ripgrep = "latest"
+fd = "latest"
+bat = "latest"
+terraform-docs = "latest"
+
+[tasks.python-tools]
+# Install python-based tools used by Neovim
+run = ["pip install pynvim neovim-remote isort"]
+
+[tasks.delta-config]
+run = [
+  "git config --global core.pager delta",
+  "git config --global interactive.diffFilter \"delta --color-only\"",
+  "git config --global delta.side-by-side true",
+  "git config --global delta.line-numbers true",
+  "git config --global delta.navigate true",
+  "git config --global delta.light false",
+  "git config --global delta.true-color always",
+  "git config --global delta.syntax-theme Dracula",
+  "git config --global merge.conflictstyle diff3",
+  "git config --global diff.colorMoved default"
+]
+
+[tasks.default]
+run = [
+  "mise install",
+  "mise run rustup",
+  "mise run delta-config",
+  "mise run python-tools",
+  "mise run node-tools",
+  "mise run cargo-tools"
+]
+
+[tasks.optional]
+run = [
+  "mise run zellij"
+]
+
+[tasks.node-tools]
+# Global npm tools
+run = ["npm install -g typescript"]
+
+[tasks.cargo-tools]
+# Cargo-based utilities not covered by mise plugins yet
+run = ["bash -lc 'if [ -f \"$HOME/.cargo/env\" ]; then . \"$HOME/.cargo/env\"; fi; cargo install cargo-binstall tokei'"]
+
+[tasks.zjstatus]
+# Zellij plugin used by existing config
+run = [
+  "mkdir -p $HOME/.local/share/zellij/plugins",
+  "curl -fL -o $HOME/.local/share/zellij/plugins/zjstatus.wasm https://github.com/dj95/zjstatus/releases/latest/download/zjstatus.wasm"
+]
+
+[tasks.zellij]
+run = [
+  "mise install zellij",
+  "mise run zjstatus"
+]
+
+[tasks.rustup]
+run = [
+  "bash -lc 'if ! command -v cargo >/dev/null 2>&1; then curl --proto \"=https\" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; fi'"
+]

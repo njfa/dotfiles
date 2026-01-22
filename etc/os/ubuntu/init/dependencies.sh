@@ -1,9 +1,15 @@
 #!/bin/bash
 
+SUDO="sudo"
 
 if [ -z "$(command -v sudo)" ]; then
-    apt-get update -y
-    apt-get install -y sudo
+    if [ "$UID" -eq 0 ]; then
+        SUDO=""
+    else
+        echo "sudo is required to install dependencies." >&2
+        exit 1
+    fi
 fi
 
-sudo apt-get install -y git curl libc6 wget gpg
+$SUDO apt-get update -y
+$SUDO apt-get install -y git curl libc6 wget gpg

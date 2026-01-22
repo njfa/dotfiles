@@ -117,8 +117,77 @@ error() {
     printf "\n\033[31;1m%s\033[m \n" "$*" 1>&2
 }
 
+ensure_mise() {
+    if command -v mise >/dev/null 2>&1; then
+        return
+    fi
+
+    if ! command -v curl >/dev/null 2>&1; then
+        if command -v apt-get >/dev/null 2>&1; then
+            if ! command -v sudo >/dev/null 2>&1; then
+                apt-get update -y
+                apt-get install -y sudo
+            fi
+            sudo apt-get update -y
+            sudo apt-get install -y curl
+        else
+            error "curl is required to install mise."
+            exit 1
+        fi
+    fi
+
+    curl -fsSL https://mise.jdx.dev/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+    if [ -z "${MISE_CACHE_DIR:-}" ]; then
+        export MISE_CACHE_DIR="/tmp/mise-cache"
+    fi
+    if [ -z "${MISE_DATA_DIR:-}" ]; then
+        export MISE_DATA_DIR="/tmp/mise-data"
+    fi
+}
+
+run_mise() {
+    local label="$1"
+    shift
+
+    printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "$label"
+
+    (
+        cd "$DOTFILES_PATH"
+        if [ -z "${MISE_CACHE_DIR:-}" ]; then
+            export MISE_CACHE_DIR="/tmp/mise-cache"
+        fi
+        if [ -z "${MISE_DATA_DIR:-}" ]; then
+            export MISE_DATA_DIR="/tmp/mise-data"
+        fi
+        if [ -z "${RUSTUP_HOME:-}" ]; then
+            export RUSTUP_HOME="$HOME/.rustup"
+        fi
+        if [ -z "${CARGO_HOME:-}" ]; then
+            export CARGO_HOME="$HOME/.cargo"
+        fi
+        export PATH="$CARGO_HOME/bin:$PATH"
+        "$@"
+    )
+    result=$?
+
+    if [ $result -eq 0 ]; then
+        printf "\033[32;1m[✓]\033[m %s completed successfully\n" "$label"
+    else
+        printf "\033[31;1m[✗]\033[m %s failed\n" "$label" 1>&2
+        exit 1
+    fi
+}
+
+mise_trust() {
+    (
+        cd "$DOTFILES_PATH"
+        MISE_YES=1 mise trust
+    )
+}
+
 get_dotfiles() {
-    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig|.claude|.serena)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -vE ".config/(nvim|zellij)"
+    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig|.codex|.gemini|.claude|.serena|.spec-workflow)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -vE ".config/(nvim|zellij)"
 }
 
 exec_cmd() {
@@ -174,51 +243,128 @@ sudo_symlink_cmd() {
     success $SYMLINK_CMD $SYMLINK_OPTS $1 $2
 }
 
-install() {
-    scripts=${@:1}
+resolve_os_script() {
+    local script="$1"
+    local candidates=(
+        "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}-${ARCH_TYPE}.sh"
+        "$DOTFILES_PATH/etc/os/${OS,,}/init/${script}-${ARCH_TYPE}.sh"
+        "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}.sh"
+        "$DOTFILES_PATH/etc/os/${OS,,}/init/${script}.sh"
+        "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt/${script}-${ARCH_TYPE}.sh"
+        "$DOTFILES_PATH/etc/os/${OS,,}/opt/${script}-${ARCH_TYPE}.sh"
+        "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt/${script}.sh"
+        "$DOTFILES_PATH/etc/os/${OS,,}/opt/${script}.sh"
+    )
+
+    for candidate in "${candidates[@]}"; do
+        if [ -f "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+install_os_scripts() {
+    local scripts=("$@")
+
     if [ $# -eq 0 ]; then
-        # 引数なしの場合はinit/ディレクトリのスクリプトのみを対象とする
         scripts=$(find "$DOTFILES_PATH/etc/os/" -type f -name "*.sh" -not -name "dependencies.sh" \( -path "$DOTFILES_PATH/etc/os/${OS,,}/init/*" -o -path "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/*" \) 2>/dev/null | xargs -r basename -s .sh | sort | uniq)
     fi
 
     for script in $scripts; do
-        # init/ディレクトリのスクリプトを確認
-        TARGET_OS_VERSION_INIT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}.sh"
-        TARGET_OS_INIT="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}.sh"
-        TARGET_OS_ARCH_INIT="$DOTFILES_PATH/etc/os/${OS,,}/init/${script}-${ARCH_TYPE}.sh"
-        TARGET_OS_VERSION_ARCH_INIT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/init/${script}-${ARCH_TYPE}.sh"
-
-        # opt/ディレクトリのスクリプトを確認
-        TARGET_OS_VERSION_OPT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt/${script}.sh"
-        TARGET_OS_OPT="$DOTFILES_PATH/etc/os/${OS,,}/opt/${script}.sh"
-        TARGET_OS_ARCH_OPT="$DOTFILES_PATH/etc/os/${OS,,}/opt/${script}-${ARCH_TYPE}.sh"
-        TARGET_OS_VERSION_ARCH_OPT="$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt/${script}-${ARCH_TYPE}.sh"
-
-        # アーキテクチャ固有のスクリプトを最優先、次にバージョン固有、最後に汎用スクリプト
-        # init/を優先、次にopt/
-        if [ -f "$TARGET_OS_VERSION_ARCH_INIT" ]; then
-            exec_cmd $TARGET_OS_VERSION_ARCH_INIT
-        elif [ -f "$TARGET_OS_ARCH_INIT" ]; then
-            exec_cmd $TARGET_OS_ARCH_INIT
-        elif [ -f "$TARGET_OS_VERSION_INIT" ]; then
-            exec_cmd $TARGET_OS_VERSION_INIT
-        elif [ -f "$TARGET_OS_INIT" ]; then
-            exec_cmd $TARGET_OS_INIT
-        elif [ -f "$TARGET_OS_VERSION_ARCH_OPT" ]; then
-            exec_cmd $TARGET_OS_VERSION_ARCH_OPT
-        elif [ -f "$TARGET_OS_ARCH_OPT" ]; then
-            exec_cmd $TARGET_OS_ARCH_OPT
-        elif [ -f "$TARGET_OS_VERSION_OPT" ]; then
-            exec_cmd $TARGET_OS_VERSION_OPT
-        elif [ -f "$TARGET_OS_OPT" ]; then
-            exec_cmd $TARGET_OS_OPT
+        resolved_script=$(resolve_os_script "$script" || true)
+        if [ -n "$resolved_script" ]; then
+            exec_cmd "$resolved_script"
         fi
     done
+}
+
+install_os_optional() {
+    local scripts=""
+
+    if [ -d "$DOTFILES_PATH/etc/os/${OS,,}/opt" ]; then
+        scripts="$scripts $(find "$DOTFILES_PATH/etc/os/${OS,,}/opt" -type f -name "*.sh" 2>/dev/null | xargs -r basename -s .sh)"
+    fi
+
+    if [ -d "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt" ]; then
+        scripts="$scripts $(find "$DOTFILES_PATH/etc/os/${OS,,}-${VER}/opt" -type f -name "*.sh" 2>/dev/null | xargs -r basename -s .sh)"
+    fi
+
+    if [ -n "$scripts" ]; then
+        install_os_scripts $scripts
+    fi
+}
+
+install() {
+    local targets=("$@")
+    local mise_tasks=("default" "optional" "delta-config" "rustup" "python-tools" "node-tools" "cargo-tools" "zjstatus" "zellij")
+    local mise_tools=()
+    local run_tasks=()
+    local os_scripts=()
+    local run_optional=false
+
+    if [ ${#targets[@]} -eq 0 ]; then
+        install_os_scripts dependencies
+        install_os_scripts
+        ensure_mise
+        mise_trust
+        run_mise "mise run default" mise run default
+        return
+    fi
+
+    for target in "${targets[@]}"; do
+        if [ "$target" = "optional" ]; then
+            run_optional=true
+            run_tasks+=("$target")
+            continue
+        fi
+
+        if printf '%s\n' "${mise_tasks[@]}" | grep -qx "$target"; then
+            run_tasks+=("$target")
+            continue
+        fi
+
+        if resolve_os_script "$target" >/dev/null 2>&1; then
+            os_scripts+=("$target")
+        else
+            mise_tools+=("$target")
+        fi
+    done
+
+    if $run_optional; then
+        install_os_optional
+    fi
+
+    if [ ${#os_scripts[@]} -gt 0 ]; then
+        install_os_scripts "${os_scripts[@]}"
+    fi
+
+    if [ ${#mise_tools[@]} -gt 0 ] || [ ${#run_tasks[@]} -gt 0 ]; then
+        ensure_mise
+        mise_trust
+
+        if [ ${#mise_tools[@]} -gt 0 ]; then
+            run_mise "mise install ${mise_tools[*]}" mise install "${mise_tools[@]}"
+        fi
+
+        if [ ${#run_tasks[@]} -gt 0 ]; then
+            for task in "${run_tasks[@]}"; do
+                run_mise "mise run ${task}" mise run "$task"
+            done
+        fi
+    fi
 }
 
 initialize() {
     header "🚀 Starting initialization process..."
     printf "\033[90m────────────────────────────────────────\033[m\n"
+
+    if [ "$(uname -s)" != "Linux" ]; then
+        error "This setup script supports Linux only."
+        exit 1
+    fi
 
     # ARM64環境で特別な処理が必要な場合の準備
     if [ "$ARCH_TYPE" = "arm64" ]; then
@@ -227,10 +373,6 @@ initialize() {
         export ARCH_TYPE
         export ARCH_DEB
     fi
-
-    # 必須の依存パッケージをインストール
-    printf "\n\033[36m📦 Installing dependencies...\033[m\n"
-    install dependencies
 
     # 指定のパッケージをインストール
     if [ $# -gt 0 ]; then
@@ -298,6 +440,47 @@ list() {
         done
     fi
     printf "\033[35m└─────────────────────────────────────────────────────────────────┘\033[m\n"
+
+    # Mise managed tools
+    if [ -f "$DOTFILES_PATH/.mise.toml" ]; then
+        printf "\n\033[36m┌─ Mise Managed Tools ────────────────────────────────────────────┐\033[m\n"
+        mise_tools=$(awk '
+            /^\[tools\]/{f=1; next}
+            /^\[/{f=0}
+            f && /=/ {
+                gsub(/#.*/, "", $0)
+                gsub(/[[:space:]]+/, "", $0)
+                split($0, a, "=")
+                if (a[1] != "") print a[1]
+            }
+        ' "$DOTFILES_PATH/.mise.toml")
+
+        echo "$mise_tools" | while IFS= read -r tool; do
+            if [ -n "$tool" ]; then
+                check_installed_status "$tool" "\033[36m"
+            fi
+        done
+        printf "\033[36m└─────────────────────────────────────────────────────────────────┘\033[m\n"
+
+        printf "\n\033[35m┌─ Mise Optional Tasks ────────────────────────────────────────────┐\033[m\n"
+        optional_tasks=$(awk '
+            /^\[tasks.optional\]/{f=1; next}
+            /^\[/{f=0}
+            f && /mise run/ {
+                gsub(/.*mise run /, "", $0)
+                gsub(/[" ,\]]/, "", $0)
+                if ($0 != "") print $0
+            }
+        ' "$DOTFILES_PATH/.mise.toml")
+        if [ -n "$optional_tasks" ]; then
+            echo "$optional_tasks" | while IFS= read -r task; do
+                if [ -n "$task" ]; then
+                    check_installed_status "$task" "\033[35m"
+                fi
+            done
+        fi
+        printf "\033[35m└─────────────────────────────────────────────────────────────────┘\033[m\n"
+    fi
 
     # Dotfiles
     printf "\n\033[32m┌─ Dotfiles ──────────────────────────────────────────────────────┐\033[m\n"
