@@ -172,7 +172,6 @@ return {
     -- Gitの変更箇所を表示する
     {
         "lewis6991/gitsigns.nvim",
-        version = "v0.7", -- To the latest release
         cond = not vscode_enabled,
         config = function()
             require("gitsigns").setup({
@@ -366,38 +365,38 @@ return {
         end,
     },
 
-    {
-        "b0o/incline.nvim",
-        cond = not vscode_enabled,
-        config = function()
-            local helpers = require("incline.helpers")
-            local devicons = require("nvim-web-devicons")
-            require("incline").setup({
-                window = {
-                    padding = 0,
-                    margin = { horizontal = 0 },
-                },
-                render = function(props)
-                    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
-                    if filename == "" then
-                        filename = "[No Name]"
-                    end
-                    local ft_icon, ft_color = devicons.get_icon_color(filename)
-                    local modified = vim.bo[props.buf].modified
-                    return {
-                        ft_icon and { " ", ft_icon, " ", guibg = ft_color, guifg = helpers.contrast_color(ft_color) }
-                            or "",
-                        " ",
-                        { filename, gui = modified and "bold,italic" or "bold" },
-                        " ",
-                        guibg = "#44406e",
-                    }
-                end,
-            })
-        end,
-        -- Optional: Lazy load Incline
-        event = "VeryLazy",
-    },
+    -- {
+    --     "b0o/incline.nvim",
+    --     cond = not vscode_enabled,
+    --     config = function()
+    --         local helpers = require("incline.helpers")
+    --         local devicons = require("nvim-web-devicons")
+    --         require("incline").setup({
+    --             window = {
+    --                 padding = 0,
+    --                 margin = { horizontal = 0 },
+    --             },
+    --             render = function(props)
+    --                 local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
+    --                 if filename == "" then
+    --                     filename = "[No Name]"
+    --                 end
+    --                 local ft_icon, ft_color = devicons.get_icon_color(filename)
+    --                 local modified = vim.bo[props.buf].modified
+    --                 return {
+    --                     ft_icon and { " ", ft_icon, " ", guibg = ft_color, guifg = helpers.contrast_color(ft_color) }
+    --                         or "",
+    --                     " ",
+    --                     { filename, gui = modified and "bold,italic" or "bold" },
+    --                     " ",
+    --                     guibg = "#44406e",
+    --                 }
+    --             end,
+    --         })
+    --     end,
+    --     -- Optional: Lazy load Incline
+    --     event = "VeryLazy",
+    -- },
 
     {
         "folke/snacks.nvim",
@@ -918,5 +917,5 @@ return {
             vim.keymap.set("n", "[[", dropbar_api.goto_context_start, { desc = "Go to start of current context" })
             vim.keymap.set("n", "]]", dropbar_api.select_next_context, { desc = "Select next context" })
         end,
-    },
+    }
 }
