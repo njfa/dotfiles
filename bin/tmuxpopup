@@ -31,7 +31,8 @@ fi
 popup_session="popup_${title}_${safe_key}"
 
 if [ -z "$cmd" ]; then
-  cmd="${SHELL:-/bin/sh} -l -i"
+  zsh_path="$(command -v zsh 2>/dev/null || true)"
+  cmd="${zsh_path:-/bin/sh} -l -i"
 fi
 
 if [ -z "$title" ]; then
