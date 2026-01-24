@@ -21,6 +21,10 @@ fd = "latest"
 bat = "latest"
 terraform-docs = "latest"
 
+yazi = "latest"
+zoxide = "latest"
+eza = "latest"
+
 [tasks.python-tools]
 # Install python-based tools used by Neovim
 run = ["pip install pynvim neovim-remote isort"]
