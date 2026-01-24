@@ -90,7 +90,7 @@ fi
 # some more ls aliases
 alias ll='ls -alF'
 alias la='ls -A'
-alias l='ls -CF'
+alias l='eza -al --sort=modified --reverse'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
@@ -117,6 +117,13 @@ if ! shopt -oq posix; then
 fi
 
 umask 022
+
+# -------------------------------------------------------------------
+# mise
+# -------------------------------------------------------------------
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate bash)"
+fi
 
 # -------------------------------------------------------------------
 # pyenv

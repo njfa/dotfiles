@@ -54,6 +54,13 @@ export PATH="$HOME/.dotfiles/bin:$PATH:~/.bun/bin"
 export EDITOR=nvim
 
 # -------------------------------------------------------------------
+# mise
+# -------------------------------------------------------------------
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi
+
+# -------------------------------------------------------------------
 # python (pyenv+uv)
 # -------------------------------------------------------------------
 export PYENV_ROOT="$HOME/.pyenv"
@@ -371,6 +378,7 @@ alias fd='fdfind'
 alias lg='lazygit'
 alias ld='lazydocker'
 alias zz='zellij'
+alias l='eza -al --sort=modified --reverse'
 
 # lsに色を付ける
 alias ls='ls --color=auto'
