@@ -131,7 +131,18 @@ fi
 # -------------------------------------------------------------------
 # fzf
 # -------------------------------------------------------------------
+export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--height=80%"
+export _ZO_FZF_OPTS="--exact --no-sort --bind=ctrl-z:ignore,btab:up,tab:down --cycle --keep-right --border=sharp --height=60% --info=inline --layout=reverse --tabstop=1 --exit-0"
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+# -------------------------------------------------------------------
+# zoxide
+# -------------------------------------------------------------------
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init bash --cmd j)"
+  alias cd='j'
+  bind '"\C-f":"ji\n"'
+fi
 
 # -------------------------------------------------------------------
 # tmux

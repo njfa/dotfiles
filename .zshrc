@@ -232,13 +232,13 @@ fssh() {
 }
 
 fzf-z-search() {
-    local res=$(z | cut -c 12- | tac | fzf --no-sort)
-    if [ -n "$res" ]; then
-        BUFFER+="cd $res"
-        zle accept-line
-    else
+    if ! command -v zoxide >/dev/null 2>&1; then
+        echo "zoxide not found"
         return 1
     fi
+
+    BUFFER="ji"
+    zle accept-line
 }
 
 tmux-create-new-session() {
@@ -314,6 +314,8 @@ zinit load romkatv/powerlevel10k
 # fzf
 # -------------------------------------------------------------------
 # zinit後に読み込まないとctrl-rの動作が変わる
+export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--height=80%"
+export _ZO_FZF_OPTS="--exact --no-sort --bind=ctrl-z:ignore,btab:up,tab:down --cycle --keep-right --border=sharp --height=60% --info=inline --layout=reverse --tabstop=1 --exit-0"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # -------------------------------------------------------------------
@@ -387,18 +389,18 @@ alias start-plantuml='rmp >/dev/null 2>&1; docker run -d -p 18123:8080 --name pl
 alias stop-plantuml='docker kill plantuml && docker rm $(docker ps -a -q)'
 
 # dockerでnoneのイメージを全て削除
-if [ ! -z "$(command -v docker)" ]; then
+if command -v docker >/dev/null 2>&1; then
     alias rmi='docker rmi $(docker images -f "dangling=true" -q)'
     alias rmp='docker rm $(docker ps -a -q)'
 fi
 
 # rust製ツールを入れている場合はコマンドを置き換える
-if [ ! -z "$(command -v lsd)" ]; then
+if command -v lsd >/dev/null 2>&1; then
     alias tree='lsd --tree'
 fi
 
 # インタラクティブにjqを使用できるプラグイン (jq依存)
-if [ ! -z "$(command -v jq)" ]; then
+if command -v jq >/dev/null 2>&1; then
     zinit light reegnz/jq-zsh-plugin
     bindkey '^j' jq-complete 
 fi
@@ -426,3 +428,8 @@ autoload -Uz compinit && compinit
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh --cmd j)"
+    alias cd='j'
+fi
