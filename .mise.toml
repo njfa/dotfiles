@@ -24,6 +24,7 @@ terraform-docs = "latest"
 yazi = "latest"
 zoxide = "latest"
 eza = "latest"
+chezmoi = "latest"
 
 [tasks.python-tools]
 # Install python-based tools used by Neovim

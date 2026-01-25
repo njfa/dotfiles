@@ -149,11 +149,12 @@ ensure_mise() {
 run_mise() {
     local label="$1"
     shift
+    local run_dir="${MISE_RUN_DIR:-$DOTFILES_PATH}"
 
     printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "$label"
 
     (
-        cd "$DOTFILES_PATH"
+        cd "$run_dir"
         if [ -z "${MISE_CACHE_DIR:-}" ]; then
             export MISE_CACHE_DIR="/tmp/mise-cache"
         fi
@@ -167,15 +168,42 @@ run_mise() {
             export CARGO_HOME="$HOME/.cargo"
         fi
         export PATH="$CARGO_HOME/bin:$PATH"
-        "$@"
+        "$@" 2> >(while IFS= read -r line; do
+            printf "  \033[31m│\033[m %s\n" "$line" 1>&2
+        done) | while IFS= read -r line; do
+            printf "  \033[90m│\033[m %s\n" "$line"
+        done
     )
-    result=$?
+    result=${PIPESTATUS[0]}
 
     if [ $result -eq 0 ]; then
         printf "\033[32;1m[✓]\033[m %s completed successfully\n" "$label"
     else
         printf "\033[31;1m[✗]\033[m %s failed\n" "$label" 1>&2
         exit 1
+    fi
+}
+
+mise_use_from_config() {
+    if [ ! -f "$DOTFILES_PATH/.mise.toml" ]; then
+        return
+    fi
+
+    mapfile -t tools < <(awk '
+        /^\[tools\]/{f=1; next}
+        /^\[/{f=0}
+        f && /=/ {
+            gsub(/#.*/, "", $0)
+            split($0, a, "=")
+            gsub(/[[:space:]]+/, "", a[1])
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", a[2])
+            gsub(/^"|"$/, "", a[2])
+            if (a[1] != "" && a[2] != "") print a[1] "@" a[2]
+        }
+    ' "$DOTFILES_PATH/.mise.toml")
+
+    if [ ${#tools[@]} -gt 0 ]; then
+        MISE_RUN_DIR="$HOME" run_mise "mise use --global (config tools)" mise use --global "${tools[@]}"
     fi
 }
 
@@ -311,6 +339,7 @@ install() {
         ensure_mise
         mise_trust
         run_mise "mise run default" mise run default
+        mise_use_from_config
         return
     fi
 
@@ -347,6 +376,7 @@ install() {
 
         if [ ${#mise_tools[@]} -gt 0 ]; then
             run_mise "mise install ${mise_tools[*]}" mise install "${mise_tools[@]}"
+            run_mise "mise use --global ${mise_tools[*]}" mise use --global "${mise_tools[@]}"
         fi
 
         if [ ${#run_tasks[@]} -gt 0 ]; then
