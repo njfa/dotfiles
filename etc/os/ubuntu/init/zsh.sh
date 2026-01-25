@@ -1,23 +1,45 @@
 #!/bin/sh
 
 is_installed=false
+zsh_required_version="${ZSH_VERSION:-}"
 
 if [ -n "$(command -v zsh)" ]; then
     version="$(zsh --version | awk '{print $2}')"
-    echo "zsh is installed. required version: $ZSH_VERSION. now version: $version"
-
-    [ "$version" = "$ZSH_VERSION" ] && is_installed=true
+    if [ -n "$zsh_required_version" ]; then
+        echo "zsh is installed. required version: $zsh_required_version. now version: $version"
+        [ "$version" = "$zsh_required_version" ] && is_installed=true
+    else
+        echo "zsh is installed. now version: $version"
+        is_installed=true
+    fi
 else
-    echo "zsh is not installed. required version: $ZSH_VERSION."
+    if [ -n "$zsh_required_version" ]; then
+        echo "zsh is not installed. required version: $zsh_required_version."
+    else
+        echo "zsh is not installed."
+    fi
 fi
 
 # zshのインストール
 if ! $is_installed; then
+    # 未指定の場合は最新バージョンを取得
+    if [ -z "$zsh_required_version" ]; then
+        if ! command -v curl >/dev/null 2>&1; then
+            sudo apt install -y curl
+        fi
+        zsh_required_version="$(curl -fsSL https://www.zsh.org/pub/ | grep -o 'zsh-[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -n1 | sed 's/zsh-//')"
+        if [ -z "$zsh_required_version" ]; then
+            echo "failed to resolve latest zsh version."
+            exit 1
+        fi
+    fi
+
+    zsh_tarball_url="https://www.zsh.org/pub/zsh-$zsh_required_version.tar.xz"
     sudo apt install -y wget tar make
-    wget https://sourceforge.net/projects/zsh/files/zsh/$ZSH_VERSION/zsh-$ZSH_VERSION.tar.xz/download -O zsh-$ZSH_VERSION.tar.xz
-    tar xvf zsh-$ZSH_VERSION.tar.xz -C ~/
-    rm zsh-$ZSH_VERSION.tar.xz
-    mv ~/zsh-$ZSH_VERSION ~/.zsh-install
+    wget "$zsh_tarball_url" -O zsh-$zsh_required_version.tar.xz
+    tar xvf zsh-$zsh_required_version.tar.xz -C ~/
+    rm zsh-$zsh_required_version.tar.xz
+    mv ~/zsh-$zsh_required_version ~/.zsh-install
     cd ~/.zsh-install
     ./configure --enable-multibyte
     make && sudo make install && rm -rf ~/.zsh-install
