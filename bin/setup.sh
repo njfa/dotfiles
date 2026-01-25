@@ -683,6 +683,14 @@ check_installed_status() {
             version_info="$(tmux -V 2>/dev/null | awk '{print $2}')"
         fi
         ;;
+    tpm)
+        if [ -d "$HOME/.tmux/plugins/tpm" ]; then
+            installed=true
+            if command -v git >/dev/null 2>&1; then
+                version_info="$(git -C "$HOME/.tmux/plugins/tpm" rev-parse --short HEAD 2>/dev/null || true)"
+            fi
+        fi
+        ;;
     sdkman)
         if [ -d "$HOME/.sdkman" ]; then
             installed=true
