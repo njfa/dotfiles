@@ -63,8 +63,12 @@ window_width="$(tmux_option_or_default "@session-switcher-window-width" "100%")"
 window_height="$(tmux_option_or_default "@session-switcher-window-height" "100%")"
 fzf_builtin_tmux="$(tmux_option_or_default "@session-switcher-fzf-builtin-tmux" "off")"
 
-header="enter:attach | ${bind_kill}:kill | ${bind_rename}:rename | ${bind_reload}:reload | esc:close | ${bind_toggle_preview}:preview"
-list_cmd="tmux list-sessions -F '#{session_name}' | awk '!/^popup_session-switcher_/'"
+header=$'Session ┃    Enter ➜ attach  ┊  󰘴 N ➜ new      ┊  󰘴 R ➜ rename  ┊  󰘴 X ➜ kill\nPreview ┃  󰘴 D/󰘴 U ➜ scroll  ┊    ? ➜ toggle   ┊                ┊\nUI      ┃       󱊷  ➜  close  ┊  󰘴 L ➜  reload  ┊                ┊'
+sort_key='#{session_last_attached}'
+if ! tmux list-sessions -F "$sort_key" >/dev/null 2>&1; then
+    sort_key='#{session_activity}'
+fi
+list_cmd="tmux list-sessions -F '${sort_key} #{session_name}' | awk '!/ popup_session-switcher_/' | sort -rn | awk '{print \$2}'"
 reload_cmd="${list_cmd} || true"
 
 fzf_args=(
