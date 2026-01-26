@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+set -eu
+
+tmux_option_or_default() {
+    local value
+    value="$(tmux show-option -gqv "$1" 2>/dev/null || true)"
+    if [ -z "$value" ]; then
+        value="$2"
+    fi
+    printf '%s\n' "$value"
+}
+
+self_path="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+
+if [ -z "${TMUX:-}" ]; then
+    printf '%s\n' "tmux session is required" >&2
+    exit 1
+fi
+
+if ! command -v fzf >/dev/null 2>&1; then
+    printf '%s\n' "fzf is required" >&2
+    exit 1
+fi
+
+if [ "${1:-}" = "--preview" ]; then
+    session="${2:-}"
+    if [ -z "$session" ]; then
+        exit 0
+    fi
+    if ! tmux has-session -t "$session" 2>/dev/null; then
+        printf 'No such session: %s\n' "$session"
+        exit 0
+    fi
+
+    active_pane="$(tmux list-panes -t "$session" -F '#{pane_id} #{pane_active}' | awk '$2==1 {print $1; exit}')"
+    if [ -n "$active_pane" ]; then
+        tmux capture-pane -e -p -t "$active_pane" -S -20
+    fi
+    exit 0
+fi
+
+if [ "${1:-}" = "--new-session" ]; then
+    shift || true
+    session_name="${*:-}"
+    if [ -n "$session_name" ]; then
+        new_session="$(tmux new-session -d -P -F '#S' -s "$session_name" 2>/dev/null || tmux new-session -d -P -F '#S')"
+    else
+        new_session="$(tmux new-session -d -P -F '#S')"
+    fi
+    if [ -n "${new_session:-}" ]; then
+        tmux switch-client -t "$new_session"
+    fi
+    exit 0
+fi
+
+bind_kill="$(tmux_option_or_default "@session-switcher-bind-kill" "ctrl-x")"
+bind_rename="$(tmux_option_or_default "@session-switcher-bind-rename" "ctrl-r")"
+bind_reload="$(tmux_option_or_default "@session-switcher-bind-reload" "ctrl-l")"
+bind_toggle_preview="$(tmux_option_or_default "@session-switcher-bind-toggle-preview" "?")"
+preview_location="$(tmux_option_or_default "@session-switcher-preview-location" "top")"
+preview_size="$(tmux_option_or_default "@session-switcher-preview-size" "50%")"
+window_width="$(tmux_option_or_default "@session-switcher-window-width" "100%")"
+window_height="$(tmux_option_or_default "@session-switcher-window-height" "100%")"
+fzf_builtin_tmux="$(tmux_option_or_default "@session-switcher-fzf-builtin-tmux" "off")"
+
+header="enter:attach | ${bind_kill}:kill | ${bind_rename}:rename | ${bind_reload}:reload | esc:close | ${bind_toggle_preview}:preview"
+list_cmd="tmux list-sessions -F '#{session_name}' | awk '!/^popup_session-switcher_/'"
+reload_cmd="${list_cmd} || true"
+
+fzf_args=(
+    --header "$header"
+    --layout=default
+    --border=none
+    --input-border=rounded
+    --list-border=rounded
+    --preview-border=rounded
+    --color=border:#00FFFF
+    --preview "$0 --preview {}"
+    --preview-window "${preview_location},${preview_size},nowrap"
+    --bind "ctrl-u:preview-half-page-up"
+    --bind "ctrl-d:preview-half-page-down"
+    --bind "ctrl-n:execute-silent(${self_path} --new-session {q})+abort"
+    --expect="${bind_rename}"
+    --bind "${bind_reload}:reload($reload_cmd)"
+    --bind "${bind_kill}:execute-silent(tmux kill-session -t {})+reload($reload_cmd)"
+    --bind "${bind_toggle_preview}:toggle-preview"
+)
+
+fzf_size_arg="-p"
+if [ "$fzf_builtin_tmux" = "on" ]; then
+    fzf_size_arg="--tmux"
+elif ! command -v fzf-tmux >/dev/null 2>&1; then
+    printf '%s\n' "fzf-tmux is required (or set @session-switcher-fzf-builtin-tmux on)" >&2
+    exit 1
+fi
+
+set +e
+selection="$(
+    if [ "$fzf_builtin_tmux" = "on" ]; then
+        eval "$list_cmd" | fzf "${fzf_args[@]}" "${fzf_size_arg}" "$window_width,$window_height"
+    else
+        eval "$list_cmd" | fzf-tmux "${fzf_args[@]}" "${fzf_size_arg}" "$window_width,$window_height"
+    fi
+)"
+
+fzf_status=$?
+set -e
+
+if [ "$fzf_status" -ne 0 ]; then
+    exit 0
+fi
+
+selected_key="$(printf '%s\n' "$selection" | sed -n '1p')"
+selected_item="$(printf '%s\n' "$selection" | sed -n '2p')"
+
+if [ -z "${selected_item:-}" ]; then
+    selected_item="$selected_key"
+    selected_key=""
+fi
+
+if [ -z "${selected_item:-}" ]; then
+    exit 0
+fi
+
+if [ "$selected_key" = "$bind_rename" ]; then
+    tmux command-prompt -I "$selected_item" -p 'New name:' "rename-session -t \"$selected_item\" '%%'" || true
+    exit 0
+fi
+
+if tmux has-session -t "$selected_item" 2>/dev/null; then
+    tmux switch-client -t "$selected_item"
+fi

@@ -3,8 +3,8 @@ set -eu
 
 title="${1:-}"
 cmd="${2:-}"
-width='100%'
-height='95%'
+width="${TMUXPOPUP_WIDTH:-100%}"
+height="${TMUXPOPUP_HEIGHT:-95%}"
 
 session="$(tmux display-message -p -F '#{session_name}' 2>/dev/null || true)"
 if [ -z "$session" ]; then
@@ -22,6 +22,7 @@ if [ -z "$pane_path" ]; then
 fi
 
 key="$(basename "$pane_path")"
+origin_client="$(tmux display-message -p -F '#{client_tty}' 2>/dev/null || true)"
 
 safe_key="$(printf '%s' "$key" | tr '/ ' '__' | tr -cd 'A-Za-z0-9_.-')"
 if [ -z "$safe_key" ]; then
@@ -44,7 +45,12 @@ fi
 
 popup_session="popup_${title}_${safe_key}"
 
-exec_cmd="tmux new-session -A -s \"${popup_session}\" ${cmd} \\; set-option -t \"${popup_session}\" status off \\; set-option -t \"${popup_session}\" pane-border-status off \\; set-option -t \"${popup_session}\" pane-border-format ''"
+exec_cmd="TMUXPOPUP_SESSION=\"${popup_session}\" TMUXPOPUP_ORIGIN_CLIENT=\"${origin_client}\" tmux new-session -A -s \"${popup_session}\" ${cmd} \\; set-option -t \"${popup_session}\" status off \\; set-option -t \"${popup_session}\" pane-border-status off \\; set-option -t \"${popup_session}\" pane-border-format ''"
+
+if [ -n "$origin_client" ]; then
+  tmux set-option -g @tmuxpopup-origin-client "$origin_client"
+fi
+tmux set-option -g @tmuxpopup-session "$popup_session"
 
 tmux display-popup \
   -d "#{pane_current_path}" \
