@@ -42,33 +42,18 @@ local function paste()
     }
 end
 
-vim.opt.clipboard = "unnamedplus"
-if vim.fn.executable("win32yank.exe") == 1 then
-    vim.g.clipboard = {
-        name = "win32yank-wsl",
-        copy = {
-            ["+"] = "win32yank.exe -i --crlf",
-            ["*"] = "win32yank.exe -i --crlf",
-        },
-        paste = {
-            ["+"] = "win32yank.exe -o --lf",
-            ["*"] = "win32yank.exe -o --lf",
-        },
-        cache_enable = 0,
-    }
-else
-    vim.g.clipboard = {
-        name = "OSC 52",
-        copy = {
-            ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-            ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-        },
-        paste = {
-            ["+"] = paste,
-            ["*"] = paste,
-        },
-    }
-end
+vim.opt.clipboard = "unnamed,unnamedplus"
+vim.g.clipboard = {
+    name = "OSC 52",
+    copy = {
+        ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+        ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+    },
+    paste = {
+        ["+"] = paste,
+        ["*"] = paste,
+    },
+}
 
 -- netrwを無効化
 vim.g.loaded_netrw = 1
