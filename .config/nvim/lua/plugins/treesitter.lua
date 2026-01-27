@@ -108,7 +108,7 @@ return {
         end,
     },
 
-    -- 'nvim-treesitter/nvim-treesitter-textobjects', -- これを追加するとLSPの挙動がおかしくなったので無効化
+    'nvim-treesitter/nvim-treesitter-textobjects', -- これを追加するとLSPの挙動がおかしくなったので無効化
     -- treesitter unitをテキストオブジェクトに追加
     "David-Kunz/treesitter-unit",
 }

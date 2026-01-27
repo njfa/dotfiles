@@ -42,7 +42,26 @@ return {
                 underline = true,
 
                 -- エラーと警告の下線スタイルを設定
-                signs = true,
+                signs = {
+                    text = {
+                        [vim.diagnostic.severity.ERROR] = '',
+                        [vim.diagnostic.severity.WARN] = '',
+                        [vim.diagnostic.severity.HINT] = '',
+                        [vim.diagnostic.severity.INFO] = '',
+                    },
+                    linehl = {
+                        [vim.diagnostic.severity.ERROR] = '',
+                        [vim.diagnostic.severity.WARN] = '',
+                        [vim.diagnostic.severity.HINT] = '',
+                        [vim.diagnostic.severity.INFO] = '',
+                    },
+                    numhl = {
+                        [vim.diagnostic.severity.ERROR] = 'DiagnosticSignError',
+                        [vim.diagnostic.severity.WARN] = 'DiagnosticSignWarn',
+                        [vim.diagnostic.severity.HINT] = 'DiagnosticSignHint',
+                        [vim.diagnostic.severity.INFO] = 'DiagnosticSignInfo',
+                    },
+                },
             }) -- Only if needed in your configuration, if you already have native LSP diagnostics
         end,
     },
@@ -112,16 +131,6 @@ return {
                 --     extra_args = { "--disable", "MD007", "MD012", "MD013" }
                 -- })
             }
-
-            -- for _, package in ipairs(mason_registry.get_installed_packages()) do
-            --     local package_categories = package.spec.categories[1]
-            --     if package_categories == mason_package.Cat.Formatter then
-            --         table.insert(null_sources, null_ls.builtins.formatting[package.name])
-            --     end
-            --     if package_categories == mason_package.Cat.Linter then
-            --         table.insert(null_sources, null_ls.builtins.diagnostics[package.name])
-            --     end
-            -- end
 
             require("mason-null-ls").setup({
                 ensure_installed = {

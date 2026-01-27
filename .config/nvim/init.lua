@@ -92,13 +92,6 @@ if vim.fn.has("nvim-0.5.1") == 1 then
     require("vim.lsp.log").set_format_func(vim.inspect)
 end
 
--- sign columnに表示する情報を文字ではなくアイコンに変更
-local signs = { Error = "", Warn = "", Hint = "", Info = "" }
-for type, icon in pairs(signs) do
-    local hl = "DiagnosticSign" .. type
-    vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-end
-
 local get_llm_enabled = function()
     local llm_enabled = vim.env.LLM_ENABLED
     local is_llm_enabled = false
