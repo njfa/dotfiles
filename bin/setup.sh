@@ -144,6 +144,8 @@ ensure_mise() {
     if [ -z "${MISE_DATA_DIR:-}" ]; then
         export MISE_DATA_DIR="/tmp/mise-data"
     fi
+    # Ensure shims are available in this non-interactive shell
+    eval "$(mise activate bash)"
 }
 
 run_mise() {
