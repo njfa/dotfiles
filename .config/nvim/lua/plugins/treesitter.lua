@@ -2,63 +2,95 @@
 return {
     {
         "nvim-treesitter/nvim-treesitter",
-        branch = "master",
+        branch = "main",
         run = function()
             local ts_update = require("nvim-treesitter.install").update({ with_sync = true })
             ts_update()
         end,
         config = function()
-            require("nvim-treesitter.configs").setup({
-                -- A list of parser names, or "all"
-                ensure_installed = {
-                    "lua",
-                    "bash",
-                    "java",
-                    "rust",
-                    "markdown",
-                    "markdown_inline",
-                    "http",
-                    "json",
-                    "yaml",
-                    "python",
-                    "terraform",
-                    "diff",
-                },
+            local ensure_installed = {
+                "lua",
+                "bash",
+                "java",
+                "rust",
+                "markdown",
+                "markdown_inline",
+                "http",
+                "json",
+                "yaml",
+                "python",
+                "terraform",
+                "diff",
+            }
 
-                -- Install parsers synchronously (only applied to `ensure_installed`)
-                sync_install = false,
+            -- require("nvim-treesitter").install(ensure_installed)
 
-                -- Automatically install missing parsers when entering buffer
-                auto_install = true,
+            -- autocmdでファイルタイプごとにTreesitterの機能を起動する
+            local group = vim.api.nvim_create_augroup('MyTreesitterSetup', { clear = true })
+            vim.api.nvim_create_autocmd('FileType', {
+                group = group,
+                pattern = ensure_installed,
+                callback = function(args)
+                    -- ハイライトを有効にする
+                    vim.treesitter.start(args.buf)
 
-                -- List of parsers to ignore installing (for "all")
-                ignore_install = { "gitignore" },
-
-                ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
-                -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
-
-                highlight = {
-                    -- `false` will disable the whole extension
-                    enable = true,
-
-                    -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
-                    -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
-                    -- the name of the parser)
-                    -- list of language that will be disabled
-                    -- disable = { "c", "rust" },
-                    disable = function(_, bufnr)
-                        local buf_name = vim.api.nvim_buf_get_name(bufnr)
-                        local file_size = vim.api.nvim_call_function("getfsize", { buf_name })
-                        return file_size > 256 * 1024
-                    end,
-
-                    -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-                    -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
-                    -- Using this option may slow down your editor, and you may see some duplicate highlights.
-                    -- Instead of true it can also be a list of languages
-                    additional_vim_regex_highlighting = false,
-                },
+                    -- インデントを有効にする
+                    vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                end,
             })
+
+            -- require("nvim-treesitter").setup({})
+            -- require("nvim-treesitter.configs").setup({
+                -- -- A list of parser names, or "all"
+                -- ensure_installed = {
+                --     "lua",
+                --     "bash",
+                --     "java",
+                --     "rust",
+                --     "markdown",
+                --     "markdown_inline",
+                --     "http",
+                --     "json",
+                --     "yaml",
+                --     "python",
+                --     "terraform",
+                --     "diff",
+                -- },
+
+                -- -- Install parsers synchronously (only applied to `ensure_installed`)
+                -- sync_install = false,
+
+                -- -- Automatically install missing parsers when entering buffer
+                -- auto_install = true,
+
+                -- -- List of parsers to ignore installing (for "all")
+                -- ignore_install = { "gitignore" },
+
+                -- ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
+                -- -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
+
+                -- highlight = {
+                --     -- `false` will disable the whole extension
+                --     enable = true,
+
+                --     -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
+                --     -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
+                --     -- the name of the parser)
+                --     -- list of language that will be disabled
+                --     -- disable = { "c", "rust" },
+                --     disable = function(_, bufnr)
+                --         local buf_name = vim.api.nvim_buf_get_name(bufnr)
+                --         local file_size = vim.api.nvim_call_function("getfsize", { buf_name })
+                --         return file_size > 256 * 1024
+                --     end,
+
+                --     -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+                --     -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+                --     -- Using this option may slow down your editor, and you may see some duplicate highlights.
+                --     -- Instead of true it can also be a list of languages
+                --     additional_vim_regex_highlighting = false,
+                -- },
+            -- })
         end,
     },
 
@@ -108,7 +140,11 @@ return {
         end,
     },
 
-    'nvim-treesitter/nvim-treesitter-textobjects', -- これを追加するとLSPの挙動がおかしくなったので無効化
+    {
+        'nvim-treesitter/nvim-treesitter-textobjects',
+        branch = "main",
+    }
+    , -- これを追加するとLSPの挙動がおかしくなったので無効化
     -- treesitter unitをテキストオブジェクトに追加
     "David-Kunz/treesitter-unit",
 }
