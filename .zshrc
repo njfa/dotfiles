@@ -374,7 +374,7 @@ fi
 
 alias vimdiff='nvim -d'
 alias view='nvim -R'
-alias fd='fdfind'
+# alias fd='fdfind'
 alias lg='lazygit'
 alias ld='lazydocker'
 alias zz='zellij'
