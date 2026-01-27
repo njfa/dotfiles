@@ -441,3 +441,7 @@ if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh --cmd j)"
     alias cd='j'
 fi
+
+if command -v yazi >/dev/null 2>&1; then
+    alias y='yazi'
+fi

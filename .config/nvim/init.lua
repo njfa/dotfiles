@@ -55,6 +55,22 @@ vim.g.clipboard = {
     },
 }
 
+-- WSL上で実行する際にはOSC 52だと動作が微妙なので、win32yank.exeがある場合はそちらを利用する
+if vim.fn.executable("win32yank.exe") == 1 then
+    vim.g.clipboard = {
+        name = "win32yank-wsl",
+        copy = {
+            ["+"] = "win32yank.exe -i --crlf",
+            ["*"] = "win32yank.exe -i --crlf",
+        },
+        paste = {
+            ["+"] = "win32yank.exe -o --lf",
+            ["*"] = "win32yank.exe -o --lf",
+        },
+        cache_enable = 0,
+    }
+end
+
 -- netrwを無効化
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
