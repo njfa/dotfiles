@@ -1,31 +1,19 @@
 #!/bin/bash
 
-# 仮想環境のパス設定
-VENV_GLOBAL="$HOME/.local/python-env/global"
+if [ -z "$NEOVIM_VERSION" ]; then
+    echo "neovim required version is not defined."
+    exit 1
+fi
 
 # Pythonの警告を抑制（BrokenPipeErrorは例外なので、一般的な警告のみ抑制）
 export PYTHONWARNINGS="ignore"
 
-# uvとPython環境のセットアップ
-if ! command -v uv >/dev/null 2>&1 || [ ! -d "$VENV_GLOBAL" ]; then
-    echo "Setting up Python environment..."
-    PWD=$(
-        cd $(dirname $0)
-        pwd
-    )
-    sh $PWD/python.sh
-fi
-
-# 仮想環境のパスを設定（python.shで作成された環境を使用）
-export PATH="$VENV_GLOBAL/bin:$PATH"
-export VIRTUAL_ENV="$VENV_GLOBAL"
-
 for p in "pynvim" "neovim-remote" "isort"; do
-    if uv pip list --python "$VENV_GLOBAL" 2>/dev/null | grep -q "$p" 2>/dev/null; then
+    if pip list 2>/dev/null | grep -q "$p" 2>/dev/null; then
         echo "$p is installed."
     else
         echo "$p is not installed."
-        uv pip install --python "$VENV_GLOBAL" $p
+        pip install $p
     fi
 done
 
