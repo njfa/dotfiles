@@ -45,8 +45,7 @@ run = [
   "mise run rustup",
   "mise run delta-config",
   "mise run python-tools",
-  "mise run node-tools",
-  "mise run tree-sitter-cli",
+  "mise run node-tools"
 ]
 
 [tasks.optional]
@@ -58,9 +57,6 @@ run = [
 [tasks.node-tools]
 # Global npm tools
 run = ["npm install -g typescript"]
-
-[tasks.tree-sitter-cli]
-run = ["bash -lc 'if [ -f \"$HOME/.cargo/env\" ]; then . \"$HOME/.cargo/env\"; fi; cargo install --locked tree-sitter-cli'"]
 
 [tasks.cargo-tools]
 # Cargo-based utilities not covered by mise plugins yet
