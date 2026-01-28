@@ -91,9 +91,9 @@ return {
                             return cmp.select_and_accept()
                         end
                     end,
-                    function() -- sidekick next edit suggestion
-                        return require("sidekick").nes_jump_or_apply()
-                    end,
+                    -- function() -- sidekick next edit suggestion
+                    --     return require("sidekick").nes_jump_or_apply()
+                    -- end,
                     "fallback",
                 },
 

@@ -17,23 +17,39 @@ return {
         "folke/sidekick.nvim",
         opts = {
             -- add any options here
+            nes = {
+                enabled = false
+            },
             cli = {
                 mux = {
                     backend = "tmux",
                     enabled = true,
+                    create = "split",
                 },
+            },
+            copilot = {
+                -- track copilot's status with `didChangeStatus`
+                status = {
+                    enabled = false
+                },
+            },
+            tools = {
+                claude = { cmd = { "claude" } },
+                codex = { cmd = { "codex" } },
+                copilot = { cmd = { "copilot", "--banner" } },
+                gemini = { cmd = { "gemini" } },
             },
         },
         keys = {
             {
-                "<leader>aa",
+                ",a",
                 function()
                     require("sidekick.cli").toggle()
                 end,
                 desc = "Sidekick Toggle CLI",
             },
             {
-                "<leader>as",
+                ",s",
                 function()
                     require("sidekick.cli").select()
                 end,
@@ -42,14 +58,14 @@ return {
                 desc = "Select CLI",
             },
             {
-                "<leader>ad",
+                ",d",
                 function()
                     require("sidekick.cli").close()
                 end,
                 desc = "Detach a CLI Session",
             },
             {
-                "<leader>at",
+                ",t",
                 function()
                     require("sidekick.cli").send({ msg = "{this}" })
                 end,
@@ -57,22 +73,22 @@ return {
                 desc = "Send This",
             },
             {
-                "<leader>af",
+                ",f",
                 function()
                     require("sidekick.cli").send({ msg = "{file}" })
                 end,
                 desc = "Send File",
             },
             {
-                "<leader>av",
+                ",v",
                 function()
-                    require("sidekick.cli").send({ msg = "{selection}" })
+                    require("sidekick.cli").send({ msg = "````\n{selection}\n````" })
                 end,
                 mode = { "x" },
                 desc = "Send Visual Selection",
             },
             {
-                "<leader>ap",
+                ",p",
                 function()
                     require("sidekick.cli").prompt()
                 end,
@@ -80,21 +96,21 @@ return {
                 desc = "Sidekick Select Prompt",
             },
             {
-                "<leader>ax",
+                ",x",
                 function()
                     require("sidekick.cli").toggle({ name = "codex", focus = true })
                 end,
                 desc = "Sidekick Toggle Codex",
             },
             {
-                "<leader>ag",
+                ",g",
                 function()
                     require("sidekick.cli").toggle({ name = "gemini", focus = true })
                 end,
                 desc = "Sidekick Toggle Gemini",
             },
             {
-                "<leader>ac",
+                ",c",
                 function()
                     require("sidekick.cli").toggle({ name = "claude", focus = true })
                 end,
