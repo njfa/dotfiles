@@ -34,26 +34,7 @@ vim.opt.hidden = true
 
 vim.opt.mouse = "a"
 
--- クリップボードの設定
-local function paste()
-    return {
-        vim.fn.split(vim.fn.getreg(""), "\n"),
-        vim.fn.getregtype(""),
-    }
-end
-
 vim.opt.clipboard = "unnamed,unnamedplus"
-vim.g.clipboard = {
-    name = "OSC 52",
-    copy = {
-        ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-        ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-    },
-    paste = {
-        ["+"] = paste,
-        ["*"] = paste,
-    },
-}
 
 -- WSL上で実行する際にはOSC 52だと動作が微妙なので、win32yank.exeがある場合はそちらを利用する
 if vim.fn.executable("win32yank.exe") == 1 then
@@ -68,6 +49,18 @@ if vim.fn.executable("win32yank.exe") == 1 then
             ["*"] = "win32yank.exe -o --lf",
         },
         cache_enable = 0,
+    }
+else
+    vim.g.clipboard = {
+        name = "OSC 52",
+        copy = {
+            ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+            ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+        },
+        paste = {
+            ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
+            ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+        },
     }
 end
 
