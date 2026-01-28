@@ -1,18 +1,13 @@
 [tools]
 # Versions pinned from .env
 python = "3.13"
-neovim = "0.11.5"
-delta = "0.17.0"
 
 # Runtimes / CLIs (keep versions explicit so they can be overridden)
 node = "lts"
 go = "latest"
 terraform = "latest"
-uv = "latest"
 
 # CLI tools managed via mise (plugins may be required)
-jq = "latest"
-yq = "latest"
 fzf = "latest"
 lazygit = "latest"
 lazydocker = "latest"
@@ -51,17 +46,21 @@ run = [
   "mise run delta-config",
   "mise run python-tools",
   "mise run node-tools",
-  "mise run cargo-tools"
+  "mise run tree-sitter-cli",
 ]
 
 [tasks.optional]
 run = [
-  "mise run zellij"
+  "mise run zellij",
+  "mise run cargo-tools"
 ]
 
 [tasks.node-tools]
 # Global npm tools
 run = ["npm install -g typescript"]
+
+[tasks.tree-sitter-cli]
+run = ["bash -lc 'if [ -f \"$HOME/.cargo/env\" ]; then . \"$HOME/.cargo/env\"; fi; cargo install --locked tree-sitter-cli'"]
 
 [tasks.cargo-tools]
 # Cargo-based utilities not covered by mise plugins yet

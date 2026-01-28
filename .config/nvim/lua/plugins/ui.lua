@@ -862,6 +862,13 @@ return {
                 end,
                 desc = "LSP Workspace Symbols",
             },
+            {
+                "gh",
+                function()
+                    Snacks.git.blame_line()
+                end,
+                desc = "Toggle Scratch Buffer",
+            },
         },
         init = function()
             vim.api.nvim_create_autocmd("User", {

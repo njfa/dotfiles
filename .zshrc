@@ -54,13 +54,6 @@ export PATH="$HOME/.dotfiles/bin:$PATH:~/.bun/bin"
 export EDITOR=nvim
 
 # -------------------------------------------------------------------
-# mise
-# -------------------------------------------------------------------
-if command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate zsh)"
-fi
-
-# -------------------------------------------------------------------
 # python (pyenv+uv)
 # -------------------------------------------------------------------
 export PYENV_ROOT="$HOME/.pyenv"
@@ -444,4 +437,10 @@ fi
 
 if command -v yazi >/dev/null 2>&1; then
     alias y='yazi'
+fi
+
+# miseのアクティベート
+# 後ろで実行しないと正常に動作しない
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
 fi

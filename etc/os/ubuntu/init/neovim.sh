@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# 仮想環境のパス設定
+VENV_GLOBAL="$HOME/.local/python-env/global"
+
+# Pythonの警告を抑制（BrokenPipeErrorは例外なので、一般的な警告のみ抑制）
+export PYTHONWARNINGS="ignore"
+
+# uvとPython環境のセットアップ
+if ! command -v uv >/dev/null 2>&1 || [ ! -d "$VENV_GLOBAL" ]; then
+    echo "Setting up Python environment..."
+    PWD=$(
+        cd $(dirname $0)
+        pwd
+    )
+    sh $PWD/python.sh
+fi
+
+# 仮想環境のパスを設定（python.shで作成された環境を使用）
+export PATH="$VENV_GLOBAL/bin:$PATH"
+export VIRTUAL_ENV="$VENV_GLOBAL"
+
+for p in "pynvim" "neovim-remote" "isort"; do
+    if uv pip list --python "$VENV_GLOBAL" 2>/dev/null | grep -q "$p" 2>/dev/null; then
+        echo "$p is installed."
+    else
+        echo "$p is not installed."
+        uv pip install --python "$VENV_GLOBAL" $p
+    fi
+done
+
+if command -v rg >/dev/null 2>&1; then
+    echo "ripgrep is installed."
+else
+    echo "ripgrep is not installed."
+    sudo apt install -y ripgrep
+fi
+
+if command -v fdfind >/dev/null 2>&1; then
+    echo "fd-find is installed."
+else
+    echo "fd-find is not installed."
+    sudo apt install -y fd-find
+fi
+
+is_installed=false
+
+# ダウンロード先のディレクトリを生成
+[ ! -d "$HOME/.nvim" ] && mkdir ~/.nvim
+
+if command -v nvim >/dev/null 2>&1; then
+    version="$(nvim --version | grep "NVIM" | awk '{print $2}')"
+    echo "neovim is installed. required version: $NEOVIM_VERSION. now version: $version"
+
+    [ "$version" = "$NEOVIM_VERSION" ] && is_installed=true
+else
+    echo "neovim is not installed. required version: $NEOVIM_VERSION."
+fi
+
+if ! $is_installed; then
+    if [ ! -d "$HOME/.nvim/$NEOVIM_VERSION" ]; then
+        echo "neovim is not downloaded."
+
+        # CPUアーキテクチャを検出
+        arch=$(uname -m)
+        case "$arch" in
+        x86_64)
+            archive_filename="nvim-linux-x86_64.tar.gz"
+            ;;
+        aarch64 | arm64)
+            archive_filename="nvim-linux-arm64.tar.gz"
+            ;;
+        *)
+            echo "Unsupported architecture: $arch"
+            exit 1
+            ;;
+        esac
+
+        download_url="https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/${archive_filename}"
+        echo "Detected architecture: $arch"
+        echo "Trying to download: ${download_url}"
+        if ! curl -fLo "$archive_filename" "$download_url"; then
+            echo "Error: Failed to download ${archive_filename}"
+            echo "Please check if version ${NEOVIM_VERSION} exists and supports your architecture"
+            exit 1
+        fi
+
+        tar -xf "$archive_filename"
+        extracted_dir="${archive_filename%.tar.gz}"
+        if [ ! -d "$extracted_dir" ]; then
+            echo "Error: Expected directory ${extracted_dir} not found after extraction"
+            exit 1
+        fi
+
+        mv "$extracted_dir" ~/.nvim/$NEOVIM_VERSION
+        rm -f "$archive_filename"
+    else
+        echo "neovim is already downloaded."
+    fi
+
+    sudo ln -sf ~/.nvim/$NEOVIM_VERSION/bin/nvim /usr/local/bin/nvim
+    rm -rf ~/.config/nvim/plugin/packer_compiled.lua ~/.local/share/nvim
+fi

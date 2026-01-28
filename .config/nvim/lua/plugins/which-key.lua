@@ -109,7 +109,7 @@ return {
                                     toggle = true,
                                     dir = vim.fn.fnamemodify(require("common").get_cwd(), ":p"),
                                     reveal = true, -- path to file or folder to reveal
-                                    reveal_force_cwd = false, -- change cwd without asking if needed
+                                    reveal_force_cwd = true, -- change cwd without asking if needed
                                 })
                             end,
                             desc = "ファイラーを開く (left)",
@@ -349,7 +349,8 @@ return {
                 { "}", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
 
                 { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
-                { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
+                -- Snacks.git.blame_line()に移行
+                -- { "gh", "<cmd>GitMessenger<cr>", desc = "Git履歴表示" },
 
                 {
                     { "me", group = "ナンバリング" },
@@ -455,7 +456,7 @@ return {
                                 toggle = true,
                                 dir = vim.fn.fnamemodify(require("common").get_cwd(), ":p"),
                                 reveal = true, -- path to file or folder to reveal
-                                reveal_force_cwd = false, -- change cwd without asking if needed
+                                reveal_force_cwd = true, -- change cwd without asking if needed
                             })
                         end, function()
                             vscode.action("workbench.explorer.fileView.focus")
