@@ -36,6 +36,11 @@ return {
                     vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
                 end,
             })
+
+            -- 折り畳みを有効にする
+            vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+            vim.o.foldlevel = 99
+            vim.o.foldmethod = "expr"
         end,
     },
 
