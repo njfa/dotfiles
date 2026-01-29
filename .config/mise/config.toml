@@ -21,10 +21,6 @@ zoxide = "latest"
 eza = "latest"
 chezmoi = "latest"
 
-[tasks.python-tools]
-# Install python-based tools used by Neovim
-run = ["pip install pynvim neovim-remote isort"]
-
 [tasks.delta-config]
 run = [
   "git config --global core.pager delta",
@@ -44,7 +40,6 @@ run = [
   "mise install",
   "mise run rustup",
   "mise run delta-config",
-  "mise run python-tools",
   "mise run node-tools"
 ]
 

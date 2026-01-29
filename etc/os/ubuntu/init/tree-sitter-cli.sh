@@ -1,11 +1,11 @@
 #!/bin/bash
 
-is_installed=false
-
-if [ -z "$TREESITTER_VERSION" ]; then
-    echo "tree-sitter-cli required version is not defined."
+if [ -z "${TREESITTER_VERSION:-}" ]; then
+    echo "TREESITTER_VERSION is not set."
     exit 1
 fi
+
+is_installed=false
 
 if command -v tree-sitter >/dev/null 2>&1; then
     version="$(tree-sitter --version | awk '{print $2}')"

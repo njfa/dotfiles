@@ -400,16 +400,6 @@ if command -v lsd >/dev/null 2>&1; then
     alias tree='lsd --tree'
 fi
 
-# インタラクティブにjqを使用できるプラグイン (jq依存)
-if command -v jq >/dev/null 2>&1; then
-    zinit light reegnz/jq-zsh-plugin
-    bindkey '^j' jq-complete 
-fi
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-
 # 一番最後に読み込むと良いらしい
 zinit load zsh-users/zsh-syntax-highlighting #"ssh"と入力する際にフリーズする
 
@@ -430,6 +420,12 @@ autoload -Uz compinit && compinit
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+# miseのアクティベート
+# 後ろで実行しないと正常に動作しないが、miseでインストールしているものはactivate後にパスが徹ため、それらの前には記載する必要がある。
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi
+
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh --cmd j)"
     alias cd='j'
@@ -439,8 +435,12 @@ if command -v yazi >/dev/null 2>&1; then
     alias y='yazi'
 fi
 
-# miseのアクティベート
-# 後ろで実行しないと正常に動作しない
-if command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate zsh)"
+# インタラクティブにjqを使用できるプラグイン (jq依存)
+if command -v jq >/dev/null 2>&1; then
+    zinit light reegnz/jq-zsh-plugin
+    bindkey '^j' jq-complete
 fi
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"

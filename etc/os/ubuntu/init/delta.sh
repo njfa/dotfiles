@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ -z "${DELTA_VERSION:-}" ]; then
+    echo "DELTA_VERSION is not set."
+    exit 1
+fi
+
 is_installed=false
 
 if command -v delta >/dev/null 2>&1; then

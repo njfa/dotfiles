@@ -1,19 +1,22 @@
 #!/bin/bash
 
-if [ -z "$NEOVIM_VERSION" ]; then
-    echo "neovim required version is not defined."
+if [ -z "${NEOVIM_VERSION:-}" ]; then
+    echo "NEOVIM_VERSION is not set."
     exit 1
 fi
+
+# uvが未インストールの場合はインストールする
+. $(dirname $0)/uv.sh
 
 # Pythonの警告を抑制（BrokenPipeErrorは例外なので、一般的な警告のみ抑制）
 export PYTHONWARNINGS="ignore"
 
 for p in "pynvim" "neovim-remote" "isort"; do
-    if pip list 2>/dev/null | grep -q "$p" 2>/dev/null; then
+    if uv tool list 2>/dev/null | grep -q "$p" 2>/dev/null; then
         echo "$p is installed."
     else
         echo "$p is not installed."
-        pip install $p
+        uv tool install $p
     fi
 done
 
