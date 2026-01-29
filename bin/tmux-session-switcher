@@ -68,7 +68,7 @@ sort_key='#{session_last_attached}'
 if ! tmux list-sessions -F "$sort_key" >/dev/null 2>&1; then
     sort_key='#{session_activity}'
 fi
-list_cmd="tmux list-sessions -F '${sort_key} #{session_name}' | awk '!/ popup_/' | sort -rn | awk '{print \$2}'"
+list_cmd="tmux list-sessions -F '${sort_key} #{session_name}' | awk '\$2 ~ /^popup_session-switcher/ { next } { group=(\$2 ~ /^popup_/ ? 1 : 0); printf \"%d %s %s\\n\", group, \$1, \$2 }' | sort -k1,1n -k2,2rn | awk '{print \$3}'"
 reload_cmd="${list_cmd} || true"
 
 fzf_args=(
