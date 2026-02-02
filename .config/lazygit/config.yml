@@ -10,3 +10,13 @@ os:
   edit: "nvim \"{{filename}}\""
   copyToClipboardCmd: 'echo {{text}} | win32yank.exe -i --crlf'
 
+customCommands:
+  - key: "w"
+    description: "git wt (create/switch, no cd)"
+    context: "localBranches"
+    prompts:
+      - type: "input"
+        title: "worktree/branch name"
+        initialValue: ""
+    command: "git wt --nocd '{{index .PromptResponses 0}}'"
+

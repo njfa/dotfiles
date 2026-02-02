@@ -21,7 +21,7 @@ zoxide = "latest"
 eza = "latest"
 chezmoi = "latest"
 
-[tasks.delta-config]
+[tasks.git-config]
 run = [
   "git config --global core.pager delta",
   "git config --global interactive.diffFilter \"delta --color-only\"",
@@ -32,14 +32,21 @@ run = [
   "git config --global delta.true-color always",
   "git config --global delta.syntax-theme Dracula",
   "git config --global merge.conflictstyle diff3",
-  "git config --global diff.colorMoved default"
+  "git config --global diff.colorMoved default",
+  "git config --global wt.basedir \"../{gitroot}-worktrees\"",
+  "git config --global wt.copyuntracked true",
+  "git config --global wt.copymodified true",
+  "git config --global wt.copymodified true",
+  "git config --global wt.copyignored true",
+  "git config --global wt.nocopy \"tmp/\"",
+  "git config --global --add wt.nocopy \"*.log\""
 ]
 
 [tasks.default]
 run = [
   "mise install",
   "mise run rustup",
-  "mise run delta-config",
+  "mise run git-config",
   "mise run node-tools"
 ]
 
