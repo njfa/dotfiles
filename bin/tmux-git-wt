@@ -1,0 +1,315 @@
+#!/usr/bin/env bash
+set -eu
+
+debug=0
+for arg in "$@"; do
+    case "$arg" in
+        --debug)
+            debug=1
+            ;;
+    esac
+done
+
+log_file=""
+log() {
+    if [ "$debug" -eq 1 ]; then
+        printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" >> "$log_file"
+    fi
+}
+
+init_debug() {
+    if [ "$debug" -eq 1 ]; then
+        mkdir -p tmp
+        log_file="tmp/tmux-git-wt-$(date '+%Y%m%d-%H%M%S').log"
+        printf '%s\n' "$log_file" >&2
+        if [ -n "${TMUX:-}" ]; then
+            tmux display-message "debug log: $log_file" || true
+        fi
+        log "debug start"
+        log "cwd: $(pwd)"
+        log "args: $*"
+    fi
+}
+
+init_debug "$@"
+
+# tmuxの現在のペインのパスを取得して移動
+if [ -n "${TMUX:-}" ]; then
+    pane_path="$(tmux display-message -p -F "#{pane_current_path}")"
+    if [ -n "$pane_path" ] && [ -d "$pane_path" ]; then
+        cd "$pane_path"
+    fi
+fi
+
+# gitリポジトリ内かチェック
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    tmux display-message "Not in a git repository"
+    exit 1
+fi
+
+# git rootを取得
+git_root=$(git rev-parse --show-toplevel)
+git_root_real="$(cd "$git_root" && pwd -P)"
+git_common_dir="$(git rev-parse --git-common-dir)"
+if [[ "$git_common_dir" != /* ]]; then
+    git_common_dir="$(cd "$git_root/$git_common_dir" && pwd -P)"
+fi
+main_root_real="$(cd "$git_common_dir/.." && pwd -P)"
+repo_root="$git_root_real"
+if [ -n "$main_root_real" ]; then
+    repo_root="$main_root_real"
+fi
+log "git_root: $git_root"
+log "git_root_real: $git_root_real"
+log "git_common_dir: $git_common_dir"
+log "main_root_real: $main_root_real"
+log "repo_root: $repo_root"
+
+# オプション設定
+window_width="80%"
+window_height="60%"
+
+# fzfの引数
+header=$'Git Worktree ┃  Enter ➜ switch/create  ┊  󰘴 N ➜ create new'
+fzf_args=(
+    --header "$header"
+    --layout=reverse
+    --border=rounded
+    --prompt="Worktree> "
+    --print-query
+    --header-lines=1
+    --expect="ctrl-n"
+    --exit-0
+)
+
+normalize_branch() {
+    local ref="$1"
+    if [ -z "$ref" ]; then
+        echo "detached"
+        return
+    fi
+    if [[ "$ref" == refs/heads/* ]]; then
+        echo "${ref#refs/heads/}"
+    else
+        echo "$ref"
+    fi
+}
+
+list_worktrees_data() {
+    git worktree list --porcelain | awk '
+        function emit() {
+            if (path != "") {
+                printf "%s\t%s\t%s\n", path, branch, head
+            }
+            path=""; branch=""; head=""
+        }
+        /^worktree / { emit(); path=$2 }
+        /^branch / { branch=$2 }
+        /^HEAD / { head=$2 }
+        /^detached/ { branch="detached" }
+        END { emit() }
+    ' | while IFS=$'\t' read -r path branch head; do
+        branch="$(normalize_branch "$branch")"
+        printf "%s\t%s\t%s\n" "$path" "$branch" "$head"
+    done
+}
+
+list_worktrees_display() {
+    printf "PATH\tBRANCH\tSHA\n"
+    list_worktrees_data
+}
+
+# fzf実行
+if command -v fzf-tmux >/dev/null 2>&1; then
+    set +e
+    out=$(list_worktrees_display | fzf-tmux "${fzf_args[@]}" -p "$window_width,$window_height")
+    fzf_status=$?
+    set -e
+else
+    set +e
+    out=$(list_worktrees_display | fzf "${fzf_args[@]}" --tmux "$window_width,$window_height")
+    fzf_status=$?
+    set -e
+fi
+
+if [ "$fzf_status" -ne 0 ] && [ -z "$out" ]; then
+    log "fzf canceled: status=$fzf_status"
+    exit 0
+fi
+
+query=$(echo "$out" | head -n 1)
+key=$(echo "$out" | sed -n '2p')
+selected=$(echo "$out" | tail -n +3)
+log "query: $query"
+log "key: $key"
+log "selected: $selected"
+
+target_path=""
+target_branch=""
+target_raw_path=""
+request=""
+request_name=""
+request_rel=""
+
+resolve_path() {
+    local p="$1"
+    if [[ "$p" == /* ]]; then
+        echo "$p"
+    else
+        echo "$repo_root/$p"
+    fi
+}
+
+parse_info() {
+    local info="$1"
+    if echo "$info" | grep -q '^\*'; then
+        target_raw_path=$(echo "$info" | awk '{print $2}')
+        target_branch=$(echo "$info" | awk '{print $3}')
+    else
+        target_raw_path=$(echo "$info" | awk '{print $1}')
+        target_branch=$(echo "$info" | awk '{print $2}')
+    fi
+    target_path=$(resolve_path "$target_raw_path")
+}
+
+if [ "$key" = "ctrl-n" ]; then
+    if [ -n "$query" ]; then
+        request="$query"
+    fi
+else
+    if [ -n "$selected" ]; then
+        parse_info "$selected"
+        request="$target_raw_path"
+        request_name="$(basename "$target_raw_path")"
+    elif [ -n "$query" ]; then
+        request="$query"
+    fi
+fi
+
+if [ -z "$request" ]; then
+    log "empty request"
+    exit 0
+fi
+
+if [ -z "$request_name" ]; then
+    if [[ "$request" == /* ]] || [[ "$request" == *"/"* ]]; then
+        request_name="$(basename "$request")"
+    else
+        request_name="$request"
+    fi
+fi
+
+request_real=""
+if [[ "$request" == /* ]]; then
+    request_real="$(cd "$request" 2>/dev/null && pwd -P || true)"
+fi
+log "request_real: $request_real"
+
+if [ "$request" = "." ] || [ "$request" = "$repo_root" ] || [ "$request_real" = "$repo_root" ] || [ "$request" = "/" ]; then
+    if [ -n "${target_branch:-}" ]; then
+        request="$target_branch"
+        request_name="$target_branch"
+    fi
+fi
+log "request_after_root_check: $request"
+log "request: $request"
+log "request_name: $request_name"
+
+if [[ "$request" == "$repo_root/"* ]]; then
+    request_rel="${request#"$repo_root"/}"
+elif [ -n "$request_real" ] && [[ "$request_real" == "$repo_root/"* ]]; then
+    request_rel="${request_real#"$repo_root"/}"
+fi
+log "request_rel: $request_rel"
+
+ensure_worktree() {
+    local req="$1"
+    if [ -z "$req" ]; then
+        return 1
+    fi
+    log "ensure_worktree: $req"
+    git-wt --nocd "$req" >/dev/null 2>&1
+}
+
+effective_request="$request"
+if ! ensure_worktree "$request"; then
+    if ensure_worktree "$request_rel"; then
+        effective_request="$request_rel"
+    elif ensure_worktree "$request_name"; then
+        effective_request="$request_name"
+    else
+        tmux display-message "Failed to ensure worktree: $request"
+        log "ensure_worktree failed: $request"
+        exit 1
+    fi
+fi
+log "effective_request: $effective_request"
+
+find_info_by_request() {
+    local request_value="$1"
+    local line=""
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        parse_info "$line"
+        if [ "$target_branch" = "$request_value" ]; then
+            return 0
+        fi
+        if [ "$target_raw_path" = "$request_value" ]; then
+            return 0
+        fi
+        if [ "$target_path" = "$request_value" ]; then
+            return 0
+        fi
+        if [ "$(basename "$target_raw_path")" = "$request_value" ]; then
+            return 0
+        fi
+    done < <(list_worktrees_data)
+    return 1
+}
+
+if ! find_info_by_request "$effective_request"; then
+    tmux display-message "Error: Failed to resolve worktree: $effective_request"
+    log "find_info_by_request failed: $effective_request"
+    exit 1
+fi
+
+if [ -z "$target_path" ] || [ ! -d "$target_path" ]; then
+    tmux display-message "Error: Invalid target path: $target_path"
+    log "invalid target_path: $target_path"
+    exit 1
+fi
+log "target_path: $target_path"
+log "target_branch: $target_branch"
+
+worktree_name=$(basename "$target_path")
+if [ -z "$worktree_name" ]; then
+    worktree_name="root"
+fi
+# セッション名の区切りは ":" ではなく "_" を使う（tmuxのターゲット指定と競合するため）。
+# safe_branch は ":" を "_" に置換し、空の場合は "detached" にする。
+safe_branch=$(echo "${target_branch:-detached}" | tr ':' '_')
+safe_worktree=$(echo "$worktree_name" | tr ':./' '___')
+session_name="${safe_branch}__${safe_worktree}"
+log "worktree_name: $worktree_name"
+log "safe_worktree: $safe_worktree"
+log "session_name: $session_name"
+
+if tmux has-session -t "$session_name" 2>/dev/null; then
+    if [ -n "${TMUX:-}" ]; then
+        tmux switch-client -t "$session_name" || true
+    else
+        tmux attach-session -t "$session_name" || true
+    fi
+else
+    # new-sessionのエラーをキャプチャして表示
+    if ! msg=$(tmux new-session -d -s "$session_name" -c "$target_path" 2>&1); then
+        tmux display-message "Error creating session: $msg"
+        log "new-session error: $msg"
+        exit 1
+    fi
+    if [ -n "${TMUX:-}" ]; then
+        tmux switch-client -t "$session_name" || true
+    else
+        tmux attach-session -t "$session_name" || true
+    fi
+fi
