@@ -35,6 +35,7 @@ init_debug "$@"
 
 # tmuxの現在のペインのパスを取得して移動
 if [ -n "${TMUX:-}" ]; then
+    tmux_client_name="$(tmux display-message -p -F "#{client_name}")"
     pane_path="$(tmux display-message -p -F "#{pane_current_path}")"
     if [ -n "$pane_path" ] && [ -d "$pane_path" ]; then
         cd "$pane_path"
@@ -231,20 +232,6 @@ ensure_worktree() {
     git-wt --nocd "$req" >/dev/null 2>&1
 }
 
-effective_request="$request"
-if ! ensure_worktree "$request"; then
-    if ensure_worktree "$request_rel"; then
-        effective_request="$request_rel"
-    elif ensure_worktree "$request_name"; then
-        effective_request="$request_name"
-    else
-        tmux display-message "Failed to ensure worktree: $request"
-        log "ensure_worktree failed: $request"
-        exit 1
-    fi
-fi
-log "effective_request: $effective_request"
-
 find_info_by_request() {
     local request_value="$1"
     local line=""
@@ -267,11 +254,56 @@ find_info_by_request() {
     return 1
 }
 
-if ! find_info_by_request "$effective_request"; then
-    tmux display-message "Error: Failed to resolve worktree: $effective_request"
-    log "find_info_by_request failed: $effective_request"
-    exit 1
+add_candidate() {
+    local candidate="$1"
+    local existing=""
+    [ -z "$candidate" ] && return
+    for existing in "${candidates[@]}"; do
+        if [ "$existing" = "$candidate" ]; then
+            return
+        fi
+    done
+    candidates+=("$candidate")
+}
+
+resolve_existing_worktree() {
+    local candidate=""
+    for candidate in "${candidates[@]}"; do
+        if find_info_by_request "$candidate"; then
+            effective_request="$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+candidates=()
+add_candidate "$request"
+add_candidate "$request_real"
+add_candidate "$request_rel"
+if [[ "$request" != *"/"* ]]; then
+    add_candidate "$request_name"
 fi
+
+if ! resolve_existing_worktree; then
+    if ! ensure_worktree "$request"; then
+        if ensure_worktree "$request_rel"; then
+            effective_request="$request_rel"
+        elif [[ "$request" != *"/"* ]] && ensure_worktree "$request_name"; then
+            effective_request="$request_name"
+        else
+            tmux display-message "Failed to ensure worktree: $request"
+            log "ensure_worktree failed: $request"
+            exit 1
+        fi
+    fi
+    if ! resolve_existing_worktree; then
+        tmux display-message "Error: Failed to resolve worktree: $effective_request"
+        log "find_info_by_request failed: $effective_request"
+        exit 1
+    fi
+fi
+log "effective_request: $effective_request"
 
 if [ -z "$target_path" ] || [ ! -d "$target_path" ]; then
     tmux display-message "Error: Invalid target path: $target_path"
@@ -281,24 +313,48 @@ fi
 log "target_path: $target_path"
 log "target_branch: $target_branch"
 
+remote_url="$(git remote get-url origin 2>/dev/null || true)"
+if [ -z "$remote_url" ]; then
+    remote_url="$repo_root"
+fi
+if [ -z "$remote_url" ]; then
+    remote_url="local"
+fi
 worktree_name=$(basename "$target_path")
 if [ -z "$worktree_name" ]; then
     worktree_name="root"
 fi
-# セッション名の区切りは ":" ではなく "_" を使う（tmuxのターゲット指定と競合するため）。
-# safe_branch は ":" を "_" に置換し、空の場合は "detached" にする。
-safe_branch=$(echo "${target_branch:-detached}" | tr ':' '_')
-safe_worktree=$(echo "$worktree_name" | tr ':./' '___')
-session_name="${safe_branch}__${safe_worktree}"
+branch_name="${target_branch:-detached}"
+name_suffix="$worktree_name"
+if [ "$target_path" = "$repo_root" ] && [ "$branch_name" != "detached" ]; then
+    name_suffix="$branch_name"
+fi
+# tmuxのセッション名で ":" は使えないため、区切りは "@" を使う。
+remote_name="$remote_url"
+if [[ "$remote_name" == *"://"* ]]; then
+    remote_name="${remote_name#*://}"
+fi
+if [[ "$remote_name" == *":"* ]]; then
+    remote_name="${remote_name##*:}"
+fi
+remote_name=$(echo "$remote_name" | tr ' ' '_')
+name_suffix=$(echo "$name_suffix" | tr ' ' '_')
+session_name="${remote_name}@${name_suffix}"
+log "remote_url: $remote_url"
 log "worktree_name: $worktree_name"
-log "safe_worktree: $safe_worktree"
+log "branch_name: $branch_name"
+log "name_suffix: $name_suffix"
 log "session_name: $session_name"
 
-if tmux has-session -t "$session_name" 2>/dev/null; then
+if tmux has-session -t "=$session_name" 2>/dev/null; then
     if [ -n "${TMUX:-}" ]; then
-        tmux switch-client -t "$session_name" || true
+        if [ -n "${tmux_client_name:-}" ]; then
+            tmux switch-client -c "$tmux_client_name" -t "=$session_name" || tmux switch-client -t "=$session_name" || true
+        else
+            tmux switch-client -t "=$session_name" || true
+        fi
     else
-        tmux attach-session -t "$session_name" || true
+        tmux attach-session -t "=$session_name" || true
     fi
 else
     # new-sessionのエラーをキャプチャして表示
@@ -308,8 +364,12 @@ else
         exit 1
     fi
     if [ -n "${TMUX:-}" ]; then
-        tmux switch-client -t "$session_name" || true
+        if [ -n "${tmux_client_name:-}" ]; then
+            tmux switch-client -c "$tmux_client_name" -t "=$session_name" || tmux switch-client -t "=$session_name" || true
+        else
+            tmux switch-client -t "=$session_name" || true
+        fi
     else
-        tmux attach-session -t "$session_name" || true
+        tmux attach-session -t "=$session_name" || true
     fi
 fi

@@ -27,14 +27,35 @@ if [ "${1:-}" = "--preview" ]; then
     if [ -z "$session" ]; then
         exit 0
     fi
-    if ! tmux has-session -t "$session" 2>/dev/null; then
+    if ! tmux has-session -t "=$session" 2>/dev/null; then
         printf 'No such session: %s\n' "$session"
         exit 0
     fi
 
-    active_pane="$(tmux list-panes -t "$session" -F '#{pane_id} #{pane_active}' | awk '$2==1 {print $1; exit}')"
+    active_pane="$(tmux list-panes -t "=$session" -F '#{pane_id} #{pane_active}' | awk '$2==1 {print $1; exit}')"
     if [ -n "$active_pane" ]; then
         tmux capture-pane -e -p -t "$active_pane" -S -20
+    fi
+    exit 0
+fi
+
+if [ "${1:-}" = "--kill" ]; then
+    session="${2:-}"
+    if [ -n "$session" ]; then
+        tmux kill-session -t "=$session" 2>/dev/null || true
+    fi
+    exit 0
+fi
+
+if [ "${1:-}" = "--rename-env" ]; then
+    shift || true
+    new_name="${1:-}"
+    old_encoded="$(
+        tmux show-environment -g session_switcher_rename_target 2>/dev/null | sed 's/^session_switcher_rename_target=//'
+    )"
+    tmux set-environment -gu session_switcher_rename_target 2>/dev/null || true
+    if [ -n "$old_encoded" ] && [ -n "$new_name" ]; then
+        tmux rename-session -t "=$old_encoded" "$new_name"
     fi
     exit 0
 fi
@@ -68,9 +89,9 @@ sort_key='#{session_last_attached}'
 if ! tmux list-sessions -F "$sort_key" >/dev/null 2>&1; then
     sort_key='#{session_activity}'
 fi
-list_delim=$'\x1f'
+list_delim=$'\t'
 list_format="${sort_key}${list_delim}#{session_name}"
-list_cmd="tmux list-sessions -F '${list_format}' | awk -F '${list_delim}' '\$2 ~ /^popup_session-switcher/ { next } { group=(\$2 ~ /^popup_/ ? 1 : 0); printf \"%d${list_delim}%s${list_delim}%s\\n\", group, \$1, \$2 }' | sort -t '${list_delim}' -k1,1n -k2,2rn | cut -d '${list_delim}' -f3-"
+list_cmd="tmux list-sessions -F '${list_format}' | awk -F '${list_delim}' '\$2 ~ /^popup_session-switcher/ { next } { group=(\$2 ~ /^popup_/ ? 1 : 0); printf \"%d${list_delim}%s${list_delim}%s\\n\", group, \$1, \$2 }' | sort -t '${list_delim}' -k1,1n -k2,2rn | cut -d '${list_delim}' -f3"
 reload_cmd="${list_cmd} || true"
 
 fzf_args=(
@@ -88,7 +109,7 @@ fzf_args=(
     --bind "ctrl-n:execute-silent(${self_path} --new-session {q})+abort"
     --expect="${bind_rename}"
     --bind "${bind_reload}:reload($reload_cmd)"
-    --bind "${bind_kill}:execute-silent(tmux kill-session -t {})+reload($reload_cmd)"
+    --bind "${bind_kill}:execute-silent(${self_path} --kill {})+reload($reload_cmd)"
     --bind "${bind_toggle_preview}:toggle-preview"
 )
 
@@ -117,22 +138,25 @@ if [ "$fzf_status" -ne 0 ]; then
 fi
 
 selected_key="$(printf '%s\n' "$selection" | sed -n '1p')"
-selected_item="$(printf '%s\n' "$selection" | sed -n '2p')"
+selected_line="$(printf '%s\n' "$selection" | sed -n '2p')"
 
-if [ -z "${selected_item:-}" ]; then
-    selected_item="$selected_key"
+if [ -z "${selected_line:-}" ]; then
+    selected_line="$selected_key"
     selected_key=""
 fi
+
+selected_item="$selected_line"
 
 if [ -z "${selected_item:-}" ]; then
     exit 0
 fi
 
 if [ "$selected_key" = "$bind_rename" ]; then
-    tmux command-prompt -I "$selected_item" -p 'New name:' "rename-session -t \"$selected_item\" '%%'" || true
+    tmux set-environment -g session_switcher_rename_target "$selected_item"
+    tmux command-prompt -I "$selected_item" -p 'New name:' "run-shell '${self_path} --rename-env \"%%\"'" || true
     exit 0
 fi
 
-if tmux has-session -t "$selected_item" 2>/dev/null; then
-    tmux switch-client -t "$selected_item"
+if tmux has-session -t "=$selected_item" 2>/dev/null; then
+    tmux switch-client -t "=$selected_item"
 fi
