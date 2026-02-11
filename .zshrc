@@ -379,6 +379,8 @@ alias view='nvim -R'
 # alias fd='fdfind'
 alias lg='lazygit'
 alias ld='lazydocker'
+alias lazypodman='DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock lazydocker'
+alias lp='DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock lazydocker'
 alias zz='zellij'
 alias l='eza -al --sort=modified --reverse'
 
