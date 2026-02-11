@@ -242,6 +242,8 @@ fzf-z-search() {
 }
 
 tmux-create-new-session() {
+    local session_name candidate suffix
+
     if [ -z "$(command -v fzf)" ]; then
         echo "fzf not found"
         return
@@ -251,7 +253,14 @@ tmux-create-new-session() {
     session_id=$(echo -e "$new_session\n$(tmux list-sessions 2>/dev/null)" | grep -v ^\$ | fzf | cut -d: -f1)
 
     if [ "$session_id" = "$new_session" ]; then
-        tmux new-session
+        session_name=$(date "+%Y-%m-%d_%H-%M-%S")
+        candidate="$session_name"
+        suffix=1
+        while tmux has-session -t "$candidate" 2>/dev/null; do
+            candidate="${session_name}-${suffix}"
+            suffix=$((suffix + 1))
+        done
+        tmux new-session -s "$candidate"
     elif [ -n "$session_id" ]; then
         tmux attach-session -t "$session_id"
     fi
@@ -448,4 +457,3 @@ export SDKMAN_DIR="$HOME/.sdkman"
 if command -v git-wt >/dev/null 2>&1; then
     eval "$(git wt --init zsh)"
 fi
-
