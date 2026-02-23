@@ -124,7 +124,7 @@ return {
                         { "<leader><leader>J", require("treesj").split, desc = "行分割" },
                         { "<leader><leader>m", require("treesj").toggle, desc = "行分割/結合 切替" },
                         --                { "<leader><leader>p", "<cmd>Telescope registers<CR>", desc = "クリップボード履歴" },
-                        { "<leader><leader>r", [[:<c-u>%s/\v]], desc = "文字列置換 (正規表現)" },
+                        { "<leader><leader>r", "<cmd>GrugFar<cr>", desc = "検索/置換（GrugFar）" },
                         { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
                         { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
                     },
@@ -413,7 +413,7 @@ return {
                         desc = "バッファ作成",
                     },
                     { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
-                    { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換" },
+                    { "<leader>r", [[:<c-u>%s/\v]], desc = "文字列置換 (正規表現)" },
                     {
                         "<leader>U",
                         vscode_mapping("<cmd>UndotreeToggle<cr>", function()
@@ -590,8 +590,7 @@ return {
 
                 {
                     { "<leader>", group = "leader" },
-                    { "<leader>r", [[:<c-u>'<,'>s/]], desc = "文字列置換" },
-                    { "<leader><leader>r", [[:<c-u>'<,'>s/\v]], desc = "文字列置換 (正規表現)" },
+                    { "<leader>r", [[:<c-u>'<,'>s/\v]], desc = "文字列置換" },
                 },
             },
 
