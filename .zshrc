@@ -323,7 +323,7 @@ zinit load romkatv/powerlevel10k
 # fzf
 # -------------------------------------------------------------------
 # zinit後に読み込まないとctrl-rの動作が変わる
-export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--height=80%"
+# export FZF_DEFAULT_OPTS="--height=0%"
 export _ZO_FZF_OPTS="--exact --no-sort --bind=ctrl-z:ignore,btab:up,tab:down --cycle --keep-right --border=sharp --height=60% --info=inline --layout=reverse --tabstop=1 --exit-0"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
