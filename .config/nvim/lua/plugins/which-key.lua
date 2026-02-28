@@ -413,7 +413,7 @@ return {
                         desc = "バッファ作成",
                     },
                     { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
-                    { "<leader>r", [[:<c-u>%s/\v]], desc = "文字列置換 (正規表現)" },
+                    { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換 (正規表現)" },
                     {
                         "<leader>U",
                         vscode_mapping("<cmd>UndotreeToggle<cr>", function()
@@ -590,7 +590,7 @@ return {
 
                 {
                     { "<leader>", group = "leader" },
-                    { "<leader>r", [[:<c-u>'<,'>s/\v]], desc = "文字列置換" },
+                    { "<leader>r", [[:<c-u>'<,'>s/]], desc = "文字列置換" },
                 },
             },
 
