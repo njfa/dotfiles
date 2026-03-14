@@ -38,7 +38,7 @@ run = [
   "git config --global wt.copymodified true",
   "git config --global wt.copymodified true",
   "git config --global wt.copyignored true",
-  "git config --global wt.nocopy \"tmp/\"",
+  "git config --global --replace-all wt.nocopy \"tmp/\"",
   "git config --global --add wt.nocopy \"*.log\""
 ]
 
