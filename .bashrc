@@ -126,6 +126,15 @@ if command -v mise >/dev/null 2>&1; then
 fi
 
 # -------------------------------------------------------------------
+# homebrew
+# -------------------------------------------------------------------
+if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [ -x "$HOME/.linuxbrew/bin/brew" ]; then
+  eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
+fi
+
+# -------------------------------------------------------------------
 # pyenv
 # -------------------------------------------------------------------
 export PYENV_ROOT="$HOME/.pyenv"

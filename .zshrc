@@ -54,6 +54,15 @@ export PATH="$HOME/.dotfiles/bin:$PATH:~/.bun/bin"
 export EDITOR=nvim
 
 # -------------------------------------------------------------------
+# homebrew
+# -------------------------------------------------------------------
+if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [ -x "$HOME/.linuxbrew/bin/brew" ]; then
+  eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
+fi
+
+# -------------------------------------------------------------------
 # python (pyenv+uv)
 # -------------------------------------------------------------------
 export PYENV_ROOT="$HOME/.pyenv"
