@@ -12,4 +12,4 @@ if [ -z "$(command -v sudo)" ]; then
 fi
 
 $SUDO apt-get update -y
-$SUDO apt-get install -y git curl libc6 wget gpg
+$SUDO apt-get install -y git curl libc6 wget gpg clang libclang-dev llvm-dev

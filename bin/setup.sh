@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -euo pipefail
 
 PWD=$(
     cd $(dirname $0)
@@ -8,6 +8,7 @@ PWD=$(
 )
 DOTFILES_PATH=$(dirname $PWD)
 DOTENV=$DOTFILES_PATH/.env
+MISE_CONFIG_PATH="$HOME/.config/mise/config.toml"
 
 export $(grep -v '^#' $DOTENV | xargs)
 
@@ -148,46 +149,8 @@ ensure_mise() {
     eval "$(mise activate bash)"
 }
 
-run_mise() {
-    local label="$1"
-    shift
-    local run_dir="${MISE_RUN_DIR:-$DOTFILES_PATH}"
-
-    printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "$label"
-
-    (
-        cd "$run_dir"
-        if [ -z "${MISE_CACHE_DIR:-}" ]; then
-            export MISE_CACHE_DIR="/tmp/mise-cache"
-        fi
-        if [ -z "${MISE_DATA_DIR:-}" ]; then
-            export MISE_DATA_DIR="/tmp/mise-data"
-        fi
-        if [ -z "${RUSTUP_HOME:-}" ]; then
-            export RUSTUP_HOME="$HOME/.rustup"
-        fi
-        if [ -z "${CARGO_HOME:-}" ]; then
-            export CARGO_HOME="$HOME/.cargo"
-        fi
-        export PATH="$CARGO_HOME/bin:$PATH"
-        "$@" 2> >(while IFS= read -r line; do
-            printf "  \033[31m│\033[m %s\n" "$line" 1>&2
-        done) | while IFS= read -r line; do
-            printf "  \033[90m│\033[m %s\n" "$line"
-        done
-    )
-    result=${PIPESTATUS[0]}
-
-    if [ $result -eq 0 ]; then
-        printf "\033[32;1m[✓]\033[m %s completed successfully\n" "$label"
-    else
-        printf "\033[31;1m[✗]\033[m %s failed\n" "$label" 1>&2
-        exit 1
-    fi
-}
-
 mise_use_from_config() {
-    if [ ! -f "$DOTFILES_PATH/.mise.toml" ]; then
+    if [ ! -f "$MISE_CONFIG_PATH" ]; then
         return
     fi
 
@@ -198,15 +161,30 @@ mise_use_from_config() {
             gsub(/#.*/, "", $0)
             split($0, a, "=")
             gsub(/[[:space:]]+/, "", a[1])
+            gsub(/^"|"$/, "", a[1])
             gsub(/^[[:space:]]+|[[:space:]]+$/, "", a[2])
             gsub(/^"|"$/, "", a[2])
             if (a[1] != "" && a[2] != "") print a[1] "@" a[2]
         }
-    ' "$DOTFILES_PATH/.mise.toml")
+    ' "$MISE_CONFIG_PATH")
 
     if [ ${#tools[@]} -gt 0 ]; then
-        MISE_RUN_DIR="$HOME" run_mise "mise use --global (config tools)" mise use --global "${tools[@]}"
+        printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise use --global (config tools)"
+        (
+            cd "$HOME"
+            mise use --global "${tools[@]}"
+        )
+        printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise use --global (config tools)"
     fi
+}
+
+ensure_mise_config_deployed() {
+    if [ -f "$MISE_CONFIG_PATH" ]; then
+        return
+    fi
+
+    printf "\n\033[36m📁 Mise config not found at %s. Running deploy...\033[m\n" "$MISE_CONFIG_PATH"
+    deploy
 }
 
 mise_trust() {
@@ -338,10 +316,16 @@ install() {
     if [ ${#targets[@]} -eq 0 ]; then
         install_os_scripts dependencies
         install_os_scripts
+        ensure_mise_config_deployed
         ensure_mise
         mise_trust
-        run_mise "mise run default" mise run default
         mise_use_from_config
+        printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise install"
+        mise install
+        printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise install"
+        printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise run default"
+        mise run default
+        printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise run default"
         return
     fi
 
@@ -373,17 +357,31 @@ install() {
     fi
 
     if [ ${#mise_tools[@]} -gt 0 ] || [ ${#run_tasks[@]} -gt 0 ]; then
+        ensure_mise_config_deployed
         ensure_mise
         mise_trust
+        mise_use_from_config
+        printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise install"
+        mise install
+        printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise install"
 
         if [ ${#mise_tools[@]} -gt 0 ]; then
-            run_mise "mise install ${mise_tools[*]}" mise install "${mise_tools[@]}"
-            run_mise "mise use --global ${mise_tools[*]}" mise use --global "${mise_tools[@]}"
+            printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise install ${mise_tools[*]}"
+            mise install "${mise_tools[@]}"
+            printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise install ${mise_tools[*]}"
+            printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise use --global ${mise_tools[*]}"
+            (
+                cd "$HOME"
+                mise use --global "${mise_tools[@]}"
+            )
+            printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise use --global ${mise_tools[*]}"
         fi
 
         if [ ${#run_tasks[@]} -gt 0 ]; then
             for task in "${run_tasks[@]}"; do
-                run_mise "mise run ${task}" mise run "$task"
+                printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise run ${task}"
+                mise run "$task"
+                printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise run ${task}"
             done
         fi
     fi
@@ -474,7 +472,7 @@ list() {
     printf "\033[35m└─────────────────────────────────────────────────────────────────┘\033[m\n"
 
     # Mise managed tools
-    if [ -f "$DOTFILES_PATH/.mise.toml" ]; then
+    if [ -f "$MISE_CONFIG_PATH" ]; then
         printf "\n\033[36m┌─ Mise Managed Tools ────────────────────────────────────────────┐\033[m\n"
         mise_tools=$(awk '
             /^\[tools\]/{f=1; next}
@@ -483,9 +481,10 @@ list() {
                 gsub(/#.*/, "", $0)
                 gsub(/[[:space:]]+/, "", $0)
                 split($0, a, "=")
+                gsub(/^"|"$/, "", a[1])
                 if (a[1] != "") print a[1]
             }
-        ' "$DOTFILES_PATH/.mise.toml")
+        ' "$MISE_CONFIG_PATH")
 
         echo "$mise_tools" | while IFS= read -r tool; do
             if [ -n "$tool" ]; then
@@ -503,7 +502,7 @@ list() {
                 gsub(/[" ,\]]/, "", $0)
                 if ($0 != "") print $0
             }
-        ' "$DOTFILES_PATH/.mise.toml")
+        ' "$MISE_CONFIG_PATH")
         if [ -n "$optional_tasks" ]; then
             echo "$optional_tasks" | while IFS= read -r task; do
                 if [ -n "$task" ]; then

@@ -15,6 +15,7 @@ ripgrep = "latest"
 fd = "latest"
 bat = "latest"
 terraform-docs = "latest"
+"pipx:pre-commit" = "latest"
 
 yazi = "latest"
 zoxide = "latest"
@@ -44,7 +45,6 @@ run = [
 
 [tasks.default]
 run = [
-  "mise install",
   "mise run rustup",
   "mise run git-config",
   "mise run node-tools"
