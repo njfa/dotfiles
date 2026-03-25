@@ -124,7 +124,6 @@ return {
                         { "<leader><leader>J", require("treesj").split, desc = "行分割" },
                         { "<leader><leader>m", require("treesj").toggle, desc = "行分割/結合 切替" },
                         --                { "<leader><leader>p", "<cmd>Telescope registers<CR>", desc = "クリップボード履歴" },
-                        { "<leader><leader>r", "<cmd>GrugFar<cr>", desc = "検索/置換（GrugFar）" },
                         { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
                         { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
                     },
@@ -244,6 +243,16 @@ return {
                 { "x", '"_x', desc = "x (レジスタを書き換えない)" },
                 { "n", "nzz", desc = "次の検索結果へ" },
                 { "N", "Nzz", desc = "前の検索結果へ" },
+
+                {
+                    "<leader><leader>r",
+                    function()
+                        require("grug-far").open(vim.tbl_deep_extend("force", {
+                            visualSelectionUsage = "prefill-search",
+                        }, {}))
+                    end,
+                    desc = "検索/置換（GrugFar）",
+                },
 
                 {
                     ")",
