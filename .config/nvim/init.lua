@@ -1,6 +1,10 @@
 -- Leaderの設定
 vim.g.mapleader = " "
 
+-- 文字コード
+vim.opt.encoding = "utf-8"
+vim.opt.fileencodings = { "utf-8", "cp932", "sjis" }
+
 -- 見栄え
 vim.opt.termguicolors = true
 vim.opt.number = true --行番号を表示
