@@ -55,16 +55,25 @@ if vim.fn.executable("win32yank.exe") == 1 then
         cache_enable = 0,
     }
 else
+    local osc52 = require("vim.ui.clipboard.osc52")
+
+    local function paste_from_nvim_register(reg)
+        return function()
+            return vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
+        end
+    end
+
     vim.g.clipboard = {
-        name = "OSC 52",
+        name = "OSC 52 copy only",
         copy = {
-            ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-            ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+            ["+"] = osc52.copy("+"),
+            ["*"] = osc52.copy("*"),
         },
         paste = {
-            ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
-            ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+            ["+"] = paste_from_nvim_register('"'),
+            ["*"] = paste_from_nvim_register('"'),
         },
+        cache_enable = 0,
     }
 end
 
