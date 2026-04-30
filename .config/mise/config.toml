@@ -1,6 +1,6 @@
 [tools]
 # Versions pinned from .env
-python = "3.13"
+python = "3.13.11"
 
 # Runtimes / CLIs (keep versions explicit so they can be overridden)
 node = "lts"
