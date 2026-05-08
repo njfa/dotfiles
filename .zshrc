@@ -48,7 +48,10 @@ export HISTSIZE=1000
 # 履歴ファイルに保存される履歴の件数
 export SAVEHIST=10000
 
-export BROWSER=browser.sh
+if grep -qi microsoft /proc/version 2>/dev/null; then
+    # Windowsのデフォルトブラウザで開くための設定
+    export BROWSER='/mnt/c/Windows/System32/rundll32.exe url.dll,FileProtocolHandler'
+fi
 
 export PATH="$HOME/.dotfiles/bin:$PATH:~/.bun/bin"
 export EDITOR=nvim
