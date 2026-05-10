@@ -5,6 +5,7 @@ set -eu
 tmux_installer="etc/os/ubuntu/init/tmux.sh"
 win32yank_installer="etc/os/ubuntu/init/win32yank.sh"
 tmux_conf=".config/tmux/tmux.conf"
+tmux_copy="bin/tmux-copy"
 
 assert_contains() {
     local file="$1"
@@ -34,6 +35,11 @@ assert_contains "$win32yank_installer" 'windows_bin_dir="\$\(wslpath -u "\$USERP
 assert_contains "$win32yank_installer" 'mkdir -p "\$windows_bin_dir"'
 assert_not_contains "$tmux_installer" 'win32yank'
 
-assert_contains "$tmux_conf" 'if-shell .command -v win32yank\.exe >/dev/null 2>&1 && \{ test -n "\$WSL_DISTRO_NAME" \|\| grep -qiE .*/proc/version 2>/dev/null; \}.'
-assert_contains "$tmux_conf" 'bind -T copy-mode-vi y send -X copy-pipe "win32yank\.exe -i --crlf"'
-assert_contains "$tmux_conf" 'bind -T copy-mode-vi Enter send -X copy-pipe-and-cancel "win32yank\.exe -i --crlf"'
+assert_not_contains "$tmux_conf" 'copy-pipe "win32yank\.exe -i --crlf"'
+assert_not_contains "$tmux_conf" 'copy-pipe-and-cancel "win32yank\.exe -i --crlf"'
+assert_contains "$tmux_conf" 'bind -T copy-mode-vi y send -X copy-pipe "\$HOME/\.dotfiles/bin/tmux-copy"'
+assert_contains "$tmux_conf" 'bind -T copy-mode-vi Enter send -X copy-pipe-and-cancel "\$HOME/\.dotfiles/bin/tmux-copy"'
+
+assert_contains "$tmux_copy" 'win32yank\.exe -i --crlf'
+assert_contains "$tmux_copy" 'base64'
+assert_contains "$tmux_copy" '52;c;'

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+has_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+if has_cmd win32yank.exe; then
+  if win32yank.exe -i --crlf; then
+    exit 0
+  fi
+fi
+
+if ! has_cmd base64; then
+  echo "tmux-copy: base64 not found for OSC52 fallback" >&2
+  exit 1
+fi
+
+payload=$(base64 | tr -d '\n')
+if [ -w /dev/tty ]; then
+  printf '\033]52;c;%s\a' "$payload" > /dev/tty
+else
+  printf '\033]52;c;%s\a' "$payload"
+fi
+exit 0
