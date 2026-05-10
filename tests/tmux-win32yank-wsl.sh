@@ -4,7 +4,7 @@ set -eu
 
 tmux_installer="etc/os/ubuntu/init/tmux.sh"
 win32yank_installer="etc/os/ubuntu/init/win32yank.sh"
-tmux_conf=".config/tmux/tmux.conf"
+tmux_conf="dot_config/tmux/tmux.conf"
 tmux_copy="bin/tmux-copy"
 
 assert_contains() {

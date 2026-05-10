@@ -8,7 +8,7 @@ PWD=$(
 )
 DOTFILES_PATH=$(dirname $PWD)
 DOTENV=$DOTFILES_PATH/.env
-MISE_CONFIG_PATH="$HOME/.config/mise/config.toml"
+MISE_CONFIG_PATH="$DOTFILES_PATH/dot_config/mise/config.toml"
 
 export $(grep -v '^#' $DOTENV | xargs)
 
@@ -149,6 +149,20 @@ ensure_mise() {
     eval "$(mise activate bash)"
 }
 
+ensure_chezmoi() {
+    if command -v chezmoi >/dev/null 2>&1; then
+        return
+    fi
+
+    ensure_mise_config_deployed
+    ensure_mise
+    mise_trust
+    mise_use_from_config
+    printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "mise install chezmoi"
+    mise install chezmoi
+    printf "\033[32;1m[✓]\033[m %s completed successfully\n" "mise install chezmoi"
+}
+
 mise_use_from_config() {
     if [ ! -f "$MISE_CONFIG_PATH" ]; then
         return
@@ -179,12 +193,18 @@ mise_use_from_config() {
 }
 
 ensure_mise_config_deployed() {
-    if [ -f "$MISE_CONFIG_PATH" ]; then
+    if [ ! -f "$MISE_CONFIG_PATH" ]; then
+        error "Mise config not found at $MISE_CONFIG_PATH"
+        exit 1
+    fi
+
+    mkdir -p "$HOME/.config/mise"
+    if [ -f "$HOME/.config/mise/config.toml" ] && cmp -s "$MISE_CONFIG_PATH" "$HOME/.config/mise/config.toml"; then
         return
     fi
 
-    printf "\n\033[36m📁 Mise config not found at %s. Running deploy...\033[m\n" "$MISE_CONFIG_PATH"
-    deploy
+    printf "\n\033[36m📁 Installing mise config to %s...\033[m\n" "$HOME/.config/mise/config.toml"
+    cp "$MISE_CONFIG_PATH" "$HOME/.config/mise/config.toml"
 }
 
 mise_trust() {
@@ -192,10 +212,6 @@ mise_trust() {
         cd "$DOTFILES_PATH"
         MISE_YES=1 mise trust
     )
-}
-
-get_dotfiles() {
-    find $DOTFILES_PATH -mindepth 1 -name ".*" | grep -vE "(.git|.history|.gitignore|.DS_Store|.wslconfig|.codex|.gemini|.claude|.serena|.spec-workflow)" | xargs -I {} find {} -type f | sed -e "s|$DOTFILES_PATH/||g" | grep -vE ".config/(nvim|zellij)"
 }
 
 exec_cmd() {
@@ -307,7 +323,7 @@ install_os_optional() {
 
 install() {
     local targets=("$@")
-    local mise_tasks=("default" "optional" "delta-config" "rustup" "python-tools" "node-tools" "cargo-tools" "zjstatus" "zellij")
+    local mise_tasks=("default" "optional" "rustup" "node-tools" "neovim" "cargo-tools" "zjstatus" "zellij")
     local mise_tools=()
     local run_tasks=()
     local os_scripts=()
@@ -513,113 +529,24 @@ list() {
         printf "\033[35m└─────────────────────────────────────────────────────────────────┘\033[m\n"
     fi
 
-    # Dotfiles
-    printf "\n\033[32m┌─ Dotfiles ──────────────────────────────────────────────────────┐\033[m\n"
-
-    # 通常のdotfilesを取得（.claudeと.config/nvimは除外したまま）
-    all_dotfiles=$(get_dotfiles)
-
-    # 通常のdotfilesを表示（差分チェック付き）
-    echo "$all_dotfiles" | while IFS= read -r f; do
-        if [ -n "$f" ]; then
-            if [ -L "$HOME/$f" ]; then
-                # シンボリックリンクの場合、リンク先が正しいかチェック
-                if [ "$(readlink "$HOME/$f")" = "$DOTFILES_PATH/$f" ]; then
-                    printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" "$f (symlink)"
-                else
-                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" "$f (wrong symlink)"
-                fi
-            elif [ -f "$HOME/$f" ]; then
-                # 通常ファイルの場合、内容を比較
-                if diff -q "$DOTFILES_PATH/$f" "$HOME/$f" >/dev/null 2>&1; then
-                    printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" "$f (file synced)"
-                else
-                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" "$f (file outdated)"
-                fi
-            else
-                printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" "$f"
-            fi
-        fi
-    done
-
-    # .config/nvimディレクトリの特別処理
-    if [ -d "$DOTFILES_PATH/.config/nvim" ]; then
-        if [ -L "$HOME/.config/nvim" ]; then
-            printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".config/nvim (symlink)"
-        else
-            printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".config/nvim (symlink)"
-        fi
-    fi
-
-    # .config/zellijディレクトリの特別処理
-    if [ -d "$DOTFILES_PATH/.config/zellij" ]; then
-        if [ -L "$HOME/.config/zellij" ]; then
-            printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".config/zellij (symlink)"
-        else
-            printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".config/zellij (symlink)"
-        fi
-    fi
-
-    # .claudeディレクトリの特別処理（サブディレクトリ単位で表示）
-    if [ -d "$DOTFILES_PATH/.claude" ]; then
-        # .claudeディレクトリ直下のファイル
-        direct_files=$(find "$DOTFILES_PATH/.claude" -maxdepth 1 -type f | wc -l)
-        if [ "$direct_files" -gt 0 ]; then
-            if [ -d "$HOME/.claude" ]; then
-                # 直下のファイルをチェック
-                diff_count=0
-                for source_file in $(find "$DOTFILES_PATH/.claude" -maxdepth 1 -type f); do
-                    target_file="$HOME/.claude/$(basename "$source_file")"
-                    if [ ! -f "$target_file" ] || ! diff -q "$source_file" "$target_file" >/dev/null 2>&1; then
-                        diff_count=$((diff_count + 1))
-                        break
+    # Chezmoi managed dotfiles
+    printf "\n\033[32m┌─ Chezmoi Dotfiles ──────────────────────────────────────────────┐\033[m\n"
+    if command -v chezmoi >/dev/null 2>&1; then
+        if managed_files=$(chezmoi managed --source "$DOTFILES_PATH" 2>/dev/null); then
+            if [ -n "$managed_files" ]; then
+                printf '%s\n' "$managed_files" | sort | while IFS= read -r f; do
+                    if [ -n "$f" ]; then
+                        printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" "$f"
                     fi
                 done
-
-                if [ "$diff_count" -eq 0 ]; then
-                    printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".claude/* (files synced)"
-                else
-                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" ".claude/* (files outdated)"
-                fi
             else
-                printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".claude/* (files)"
+                printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" "no managed files"
             fi
+        else
+            printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" "chezmoi managed failed"
         fi
-
-        # 各サブディレクトリをチェック
-        for subdir in $(find "$DOTFILES_PATH/.claude" -maxdepth 1 -type d ! -path "$DOTFILES_PATH/.claude" | sort); do
-            subdir_name=$(basename "$subdir")
-
-            if [ -d "$HOME/.claude/$subdir_name" ]; then
-                # サブディレクトリのファイル数をチェック
-                source_files=$(find "$subdir" -type f | wc -l)
-                target_files=$(find "$HOME/.claude/$subdir_name" -type f 2>/dev/null | wc -l)
-
-                if [ "$source_files" -eq "$target_files" ]; then
-                    # 内容の同一性をチェック
-                    diff_count=0
-                    for source_file in $(find "$subdir" -type f); do
-                        relative_path=${source_file#$subdir/}
-                        target_file="$HOME/.claude/$subdir_name/$relative_path"
-
-                        if [ ! -f "$target_file" ] || ! diff -q "$source_file" "$target_file" >/dev/null 2>&1; then
-                            diff_count=$((diff_count + 1))
-                            break
-                        fi
-                    done
-
-                    if [ "$diff_count" -eq 0 ]; then
-                        printf "\033[32m│\033[m \033[32m✓\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/ (synced)"
-                    else
-                        printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/ (outdated)"
-                    fi
-                else
-                    printf "\033[32m│\033[m \033[33m~\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/ (partial)"
-                fi
-            else
-                printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" ".claude/$subdir_name/"
-            fi
-        done
+    else
+        printf "\033[32m│\033[m \033[90m○\033[m %-61s \033[32m│\033[m\n" "chezmoi not installed"
     fi
     printf "\033[32m└─────────────────────────────────────────────────────────────────┘\033[m\n"
 
@@ -812,63 +739,17 @@ deploy() {
     header "🔗 Starting dotfiles deployment..."
     printf "\033[90m────────────────────────────────────────\033[m\n"
 
-    printf "\n\033[36m📁 Creating symbolic links...\033[m\n"
-    for f in $(get_dotfiles); do
-        if [ ! -d $(dirname "$HOME/$f") ]; then
-            mkdir -p $(dirname "$HOME/$f")
-        fi
-        symlink_cmd "$DOTFILES_PATH/$f" "$HOME/$f"
-    done
+    printf "\n\033[36m📁 Applying chezmoi-managed dotfiles...\033[m\n"
+    ensure_chezmoi
+    printf "\n\033[34;1m[%s]\033[m %s\n" "RUN" "chezmoi apply --source $DOTFILES_PATH"
+    chezmoi apply --source "$DOTFILES_PATH"
+    printf "\033[32;1m[✓]\033[m %s completed successfully\n" "chezmoi apply"
 
-    if [ -d "$DOTFILES_PATH/.config/nvim" -a ! -e "$HOME/.config/nvim" ]; then
-        printf "\n\033[36m📝 Linking Neovim configuration...\033[m\n"
-        symlink_cmd $DOTFILES_PATH/.config/nvim $HOME/.config/nvim
-    fi
-
-    if [ -d "$DOTFILES_PATH/.config/zellij" -a ! -e "$HOME/.config/zellij" ]; then
-        printf "\n\033[36m🧩 Linking Zellij configuration...\033[m\n"
-        symlink_cmd $DOTFILES_PATH/.config/zellij $HOME/.config/zellij
-    fi
-
-    if [ -d "$DOTFILES_PATH/.claude" ]; then
-        printf "\n\033[36m🤖 Setting up Claude configuration...\033[m\n"
-
-        # まずディレクトリ構造を作成
-        if [ ! -d "$HOME/.claude" ]; then
-            mkdir -p "$HOME/.claude"
-            printf "  \033[90m│\033[m Created ~/.claude directory\n"
-        fi
-
-        # サブディレクトリを先に作成
-        for f in $DOTFILES_PATH/.claude/*/; do
-            if [ -d "$f" ]; then
-                subdir_name=$(basename "$f")
-                if [ ! -d "$HOME/.claude/$subdir_name" ]; then
-                    mkdir -p "$HOME/.claude/$subdir_name"
-                    printf "  \033[90m│\033[m Created ~/.claude/$subdir_name directory\n"
-                fi
-            fi
-        done
-
-        # その後ファイルとディレクトリの内容を配置
-        for f in $DOTFILES_PATH/.claude/*; do
-            if [ -d "$f" ]; then
-                # ディレクトリの場合は内容をコピー
-                cp -rf "$f" "$HOME/.claude/"
-                printf "  \033[90m│\033[m Copied $(basename $f) directory contents\n"
-            else
-                # ファイルの場合はコピー
-                cp "$f" "$HOME/.claude/"
-                printf "  \033[90m│\033[m Copied $(basename $f) file\n"
-            fi
-        done
-    fi
-
-    # Claude Code設定ファイルの初期化
+    # Claude Code config is runtime state; create it only when missing.
     printf "\n\033[36m🤖 Initializing Claude Code configuration...\033[m\n"
     if [ ! -f "$HOME/.claude.json" ]; then
         printf "  \033[90m│\033[m Creating ~/.claude.json\n"
-        echo '{}' >"$HOME/.claude.json"
+        printf '{}' >"$HOME/.claude.json"
         printf "  \033[90m│\033[m ~/.claude.json created\n"
     else
         printf "  \033[90m│\033[m ~/.claude.json already exists\n"

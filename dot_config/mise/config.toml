@@ -16,6 +16,12 @@ fd = "latest"
 bat = "latest"
 terraform-docs = "latest"
 "pipx:pre-commit" = "latest"
+jq = "latest"
+yq = "latest"
+delta = "latest"
+neovim = "latest"
+uv = "latest"
+"npm:tree-sitter-cli" = "latest"
 
 yazi = "latest"
 zoxide = "latest"
@@ -47,7 +53,8 @@ run = [
 run = [
   "mise run rustup",
   "mise run git-config",
-  "mise run node-tools"
+  "mise run node-tools",
+  "mise run neovim"
 ]
 
 [tasks.optional]
@@ -59,6 +66,15 @@ run = [
 [tasks.node-tools]
 # Global npm tools
 run = ["npm install -g typescript"]
+
+[tasks.neovim]
+run = [
+  "mise install neovim uv ripgrep fd",
+  "uv tool install pynvim",
+  "uv tool install neovim-remote",
+  "uv tool install isort",
+  "rm -rf $HOME/.cache/nvim $HOME/.local/state/nvim"
+]
 
 [tasks.cargo-tools]
 # Cargo-based utilities not covered by mise plugins yet

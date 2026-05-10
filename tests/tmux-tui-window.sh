@@ -2,7 +2,7 @@
 
 set -eu
 
-tmux_conf=".config/tmux/tmux.conf"
+tmux_conf="dot_config/tmux/tmux.conf"
 tmuxpopup="bin/tmuxpopup"
 
 assert_contains() {

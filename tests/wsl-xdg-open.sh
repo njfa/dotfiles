@@ -2,7 +2,7 @@
 
 set -eu
 
-zshrc=".zshrc"
+zshrc="dot_zshrc"
 wrapper="bin/xdg-open"
 installer="etc/os/ubuntu/init/xdg-open.sh"
 

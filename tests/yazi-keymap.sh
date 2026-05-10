@@ -2,7 +2,7 @@
 
 set -eu
 
-keymap=".config/yazi/keymap.toml"
+keymap="dot_config/yazi/keymap.toml"
 
 assert_file_exists() {
     local file="$1"
