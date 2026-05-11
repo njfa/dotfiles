@@ -19,14 +19,76 @@ terraform-docs = "latest"
 jq = "latest"
 yq = "latest"
 delta = "latest"
-neovim = "latest"
+neovim = "0.12"
 uv = "latest"
 "npm:tree-sitter-cli" = "latest"
+"pipx:apm-cli" = "latest"
 
 yazi = "latest"
 zoxide = "latest"
 eza = "latest"
 chezmoi = "latest"
+
+[tasks.os-dependencies]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
+test -x "$DOTFILES_PATH/bin/devenv"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/dependencies.sh'
+'''
+
+[tasks.setup]
+depends = ["os-dependencies"]
+run = [
+  "mise run default"
+]
+
+[tasks.deploy]
+run = [
+  '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
+test -x "$DOTFILES_PATH/bin/devenv"
+mise install chezmoi >/dev/null
+mise exec chezmoi -- chezmoi apply --source "$DOTFILES_PATH"'
+''',
+  "bash -lc 'set -euo pipefail; if [ ! -f \"$HOME/.claude.json\" ]; then printf \"{}\" > \"$HOME/.claude.json\"; fi'",
+  "git config --global core.editor vim",
+  "git config --global core.autoCRLF false"
+]
+
+[tasks.sync]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
+test -x "$DOTFILES_PATH/bin/devenv"
+windows_home=/mnt/c/Users/${USER:-}
+if [ ! -d "$windows_home" ]; then
+  if [ -n "${USERPROFILE:-}" ]; then
+    windows_home=$(printf "%s" "$USERPROFILE" | sed "s|\\\\|/|g" | sed "s|^C:|/mnt/c|")
+  else
+    echo "Windows home directory not found. Please ensure you are running in WSL." >&2
+    exit 1
+  fi
+fi
+test -d "$windows_home"
+target="$windows_home/$(basename "$DOTFILES_PATH")"
+mkdir -p "$target"
+rsync -av --delete --exclude=.git "$DOTFILES_PATH/" "$target/"'
+'''
+
+[tasks.list]
+run = [
+  "mise ls",
+  '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
+test -x "$DOTFILES_PATH/bin/devenv"
+mise install chezmoi >/dev/null
+mise exec chezmoi -- chezmoi managed --source "$DOTFILES_PATH"'
+'''
+]
 
 [tasks.git-config]
 run = [
@@ -78,7 +140,7 @@ run = [
 
 [tasks.cargo-tools]
 # Cargo-based utilities not covered by mise plugins yet
-run = ["bash -lc 'if [ -f \"$HOME/.cargo/env\" ]; then . \"$HOME/.cargo/env\"; fi; cargo install cargo-binstall tokei'"]
+run = ["bash -lc 'set -euo pipefail; if [ -f \"$HOME/.cargo/env\" ]; then . \"$HOME/.cargo/env\"; fi; cargo install cargo-binstall tokei'"]
 
 [tasks.zjstatus]
 # Zellij plugin used by existing config
@@ -94,6 +156,22 @@ run = [
 ]
 
 [tasks.rustup]
-run = [
-  "bash -lc 'if ! command -v cargo >/dev/null 2>&1; then curl --proto \"=https\" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; fi'"
-]
+run = '''bash -lc 'set -euo pipefail
+if command -v cargo >/dev/null 2>&1; then
+  exit 0
+fi
+
+rustup_home=${RUSTUP_HOME:-"$HOME/.rustup"}
+cargo_home=${CARGO_HOME:-"$HOME/.cargo"}
+rustup_parent=$(dirname "$rustup_home")
+cargo_parent=$(dirname "$cargo_home")
+
+if { [ -e "$rustup_home" ] && [ ! -w "$rustup_home" ]; } || { [ ! -e "$rustup_home" ] && [ ! -w "$rustup_parent" ]; } || { [ -e "$cargo_home" ] && [ ! -w "$cargo_home" ]; } || { [ ! -e "$cargo_home" ] && [ ! -w "$cargo_parent" ]; }; then
+  echo "Skipping rustup: RUSTUP_HOME or CARGO_HOME is not writable." >&2
+  exit 0
+fi
+
+export RUSTUP_HOME="$rustup_home"
+export CARGO_HOME="$cargo_home"
+curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
+'''

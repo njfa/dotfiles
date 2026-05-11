@@ -1,39 +1,30 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the main branch
 on:
   push:
-    branches: [ main, feature/test-improvement ]
+    branches: [ main ]
+  pull_request:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  # build-ubuntu-18_04:
-  #   runs-on: ubuntu-18.04
-
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: change permission
-  #     run: chmod +x bin/setup.sh
-  #   - name: Initialize dotfiles
-  #     run: bin/setup.sh init
-  #   - name: Deploy dotfiles
-  #     run: bin/setup.sh deploy
-
-  build-ubuntu-20_04:
-    runs-on: ubuntu-20.04
+  build-ubuntu-latest:
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
     - name: change permission
-      run: chmod +x bin/setup.sh
+      run: chmod +x bin/devenv
+    - name: Run devenv contract test
+      run: bash tests/devenv-contract.sh
+    - name: Run focused shell tests
+      run: bash tests/mise-config.sh && bash tests/dependencies-skip-without-privilege.sh && bash tests/rustup-skip-without-writable-home.sh
+    - name: Validate shell syntax
+      run: bash -n bin/devenv etc/os/ubuntu/init/dependencies.sh tests/devenv-contract.sh
+    - name: Validate mise tasks
+      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
     - name: Initialize dotfiles
-      run: bin/setup.sh init
+      run: bin/devenv
     - name: Deploy dotfiles
-      run: bin/setup.sh deploy
+      run: bin/devenv mise run deploy
 
   build-ubuntu-22_04:
     runs-on: ubuntu-22.04
@@ -41,11 +32,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: change permission
-      run: chmod +x bin/setup.sh
+      run: chmod +x bin/devenv
+    - name: Run devenv contract test
+      run: bash tests/devenv-contract.sh
+    - name: Run focused shell tests
+      run: bash tests/mise-config.sh && bash tests/dependencies-skip-without-privilege.sh && bash tests/rustup-skip-without-writable-home.sh
+    - name: Validate shell syntax
+      run: bash -n bin/devenv etc/os/ubuntu/init/dependencies.sh tests/devenv-contract.sh
+    - name: Validate mise tasks
+      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
     - name: Initialize dotfiles
-      run: bin/setup.sh init
+      run: bin/devenv
     - name: Deploy dotfiles
-      run: bin/setup.sh deploy
+      run: bin/devenv mise run deploy
 
   build-ubuntu-24_04:
     runs-on: ubuntu-24.04
@@ -53,11 +52,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: change permission
-      run: chmod +x bin/setup.sh
+      run: chmod +x bin/devenv
+    - name: Run devenv contract test
+      run: bash tests/devenv-contract.sh
+    - name: Run focused shell tests
+      run: bash tests/mise-config.sh && bash tests/dependencies-skip-without-privilege.sh && bash tests/rustup-skip-without-writable-home.sh
+    - name: Validate shell syntax
+      run: bash -n bin/devenv etc/os/ubuntu/init/dependencies.sh tests/devenv-contract.sh
+    - name: Validate mise tasks
+      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
     - name: Initialize dotfiles
-      run: bin/setup.sh init
+      run: bin/devenv
     - name: Deploy dotfiles
-      run: bin/setup.sh deploy
+      run: bin/devenv mise run deploy
 
   build-windows:
     runs-on: windows-latest

@@ -1,0 +1,266 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly RESET=$'\033[0m'
+readonly GREY=$'\033[90m'
+readonly RED=$'\033[31m'
+readonly GREEN=$'\033[32m'
+readonly CYAN=$'\033[36m'
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: devenv [command] [args...]
+
+Commands:
+  install [--repo URL] [--branch NAME] [--path PATH]
+  mise [args...]
+  chezmoi [args...]
+  apm [args...]
+  help
+USAGE
+}
+
+run_formatted() {
+  local label=$1
+  shift
+
+  printf '\n%s[RUN] %s%s\n' "$CYAN" "$label" "$RESET"
+
+  local stdout_file stderr_file status
+  stdout_file=$(mktemp)
+  stderr_file=$(mktemp)
+
+  set +e
+  "$@" >"$stdout_file" 2>"$stderr_file"
+  status=$?
+  set -e
+
+  while IFS= read -r line; do
+    printf '%s│%s %s\n' "$GREY" "$RESET" "$line"
+  done <"$stdout_file"
+
+  while IFS= read -r line; do
+    printf '%s│%s %s\n' "$RED" "$RESET" "$line" >&2
+  done <"$stderr_file"
+
+  rm -f "$stdout_file" "$stderr_file"
+
+  if [[ $status -eq 0 ]]; then
+    printf '%s[OK] %s%s\n' "$GREEN" "$label" "$RESET"
+  else
+    printf '%s[FAIL] %s exited with %s%s\n' "$RED" "$label" "$status" "$RESET" >&2
+  fi
+
+  return "$status"
+}
+
+ensure_git() {
+  if command -v git >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if command -v apt-get >/dev/null 2>&1; then
+    if command -v sudo >/dev/null 2>&1; then
+      sudo apt-get update
+      sudo apt-get install -y git
+    elif [[ $(id -u) -eq 0 ]]; then
+      apt-get update
+      apt-get install -y git
+    fi
+  fi
+
+  if ! command -v git >/dev/null 2>&1; then
+    printf 'git is required to install dotfiles.\n' >&2
+    exit 1
+  fi
+}
+
+install_dotfiles() {
+  local repo='https://github.com/njfa/dotfiles.git'
+  local branch='main'
+  local target_path="${DOTFILES_PATH:-$HOME/.dotfiles}"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --repo)
+        if [[ $# -lt 2 || -z ${2:-} ]]; then
+          usage
+          return 2
+        fi
+        repo=$2
+        shift 2
+        ;;
+      --branch)
+        if [[ $# -lt 2 || -z ${2:-} ]]; then
+          usage
+          return 2
+        fi
+        branch=$2
+        shift 2
+        ;;
+      --path)
+        if [[ $# -lt 2 || -z ${2:-} ]]; then
+          usage
+          return 2
+        fi
+        target_path=$2
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        return 0
+        ;;
+      *)
+        usage
+        return 2
+        ;;
+    esac
+  done
+
+  if [[ -z $repo || -z $branch || -z $target_path ]]; then
+    usage
+    return 2
+  fi
+
+  if [[ -e $target_path ]]; then
+    printf 'Install target already exists: %s\n' "$target_path" >&2
+    return 1
+  fi
+
+  ensure_git
+  run_formatted 'git clone' git clone --branch "$branch" -- "$repo" "$target_path"
+  "$target_path/bin/devenv"
+}
+
+if [[ ${1:-} == install ]]; then
+  shift
+  install_dotfiles "$@"
+  exit $?
+fi
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+DOTFILES_PATH=$(cd "$SCRIPT_DIR/.." && pwd)
+export DOTFILES_PATH
+MISE_CONFIG_PATH="$DOTFILES_PATH/dot_config/mise/config.toml"
+export MISE_CONFIG_FILE="$MISE_CONFIG_PATH"
+MISE_BIN=''
+
+ensure_mise() {
+  if command -v mise >/dev/null 2>&1; then
+    MISE_BIN=$(command -v mise)
+    return 0
+  fi
+
+  if ! command -v curl >/dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+      if command -v sudo >/dev/null 2>&1; then
+        sudo apt-get update
+        sudo apt-get install -y curl
+      elif [[ $(id -u) -eq 0 ]]; then
+        apt-get update
+        apt-get install -y curl
+      else
+        printf 'curl is required to install mise.\n' >&2
+        exit 1
+      fi
+    fi
+  fi
+
+  if ! command -v curl >/dev/null 2>&1; then
+    printf 'curl is required to install mise.\n' >&2
+    exit 1
+  fi
+
+  curl -fsSL https://mise.jdx.dev/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
+  MISE_BIN=$(command -v mise)
+}
+
+ensure_mise_config() {
+  local target_dir="$HOME/.config/mise"
+  local target_path="$target_dir/config.toml"
+
+  mkdir -p "$target_dir"
+  if [[ ! -f "$target_path" ]] || ! cmp -s "$MISE_CONFIG_PATH" "$target_path"; then
+    cp "$MISE_CONFIG_PATH" "$target_path"
+  fi
+}
+
+activate_mise() {
+  export PATH="$HOME/.local/bin:$PATH"
+  if [[ -n $MISE_BIN ]]; then
+    local activation
+    activation=$("$MISE_BIN" activate bash)
+    if [[ $activation == *'export '* || $activation == *'PATH='* || $activation == *'mise '* ]]; then
+      eval "$activation"
+    fi
+  fi
+}
+
+trust_mise_config() {
+  (cd "$DOTFILES_PATH" && MISE_YES=1 "$MISE_BIN" trust) >/dev/null 2>&1 || true
+}
+
+ensure_base() {
+  ensure_mise
+  ensure_mise_config
+  activate_mise
+  trust_mise_config
+}
+
+ensure_mise_passthrough() {
+  ensure_mise
+  activate_mise
+}
+
+ensure_tool() {
+  local command_name=$1
+  local mise_tool_spec=$2
+
+  if command -v "$command_name" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  ensure_base
+  run_formatted "mise install $mise_tool_spec" "$MISE_BIN" install "$mise_tool_spec"
+  activate_mise
+}
+
+main() {
+  case "${1:-}" in
+    '')
+      ensure_base
+      run_formatted 'mise run os-dependencies' "$MISE_BIN" run os-dependencies
+      run_formatted 'mise install' "$MISE_BIN" install
+      run_formatted 'mise run setup' "$MISE_BIN" run setup
+      ;;
+    install)
+      shift
+      install_dotfiles "$@"
+      ;;
+    mise)
+      shift
+      ensure_mise_passthrough
+      run_formatted "mise $*" "$MISE_BIN" "$@"
+      ;;
+    chezmoi)
+      shift
+      ensure_tool chezmoi chezmoi
+      run_formatted "chezmoi $*" chezmoi "$@"
+      ;;
+    apm)
+      shift
+      ensure_tool apm 'pipx:apm-cli'
+      run_formatted "apm $*" apm "$@"
+      ;;
+    -h|--help|help)
+      usage
+      ;;
+    *)
+      usage
+      return 2
+      ;;
+  esac
+}
+
+main "$@"

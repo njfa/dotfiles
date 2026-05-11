@@ -5,20 +5,33 @@
 ### Linux (WSL / Ubuntu Server)
 
 ```bash
-cd /path/to/dotfiles
-./bin/setup.sh init
+curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install
 ```
 
-### 検証 (コンテナ)
+```bash
+curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install --path "$HOME/.dotfiles" --branch main
+```
+
+```bash
+cd /path/to/dotfiles
+./bin/devenv
+./bin/devenv mise run deploy
+```
+
+```bash
+# ツールのパススルー実行例
+./bin/devenv mise --version
+./bin/devenv chezmoi apply --source .
+./bin/devenv apm --version
+```
+
+### 検証
 
 ```bash
 # リポジトリ直下で実行
-docker compose run --rm claude-code bash -lc "cd /workspace && ./bin/setup.sh init"
-```
-
-```bash
-# 主要ツールの動作確認例
-docker compose run --rm claude-code bash -lc "cd /workspace && mise --version && node --version && python --version && go version && terraform -version && nvim --version"
+./bin/devenv
+./bin/devenv mise --version
+./bin/devenv apm --version
 ```
 
 ### Windows

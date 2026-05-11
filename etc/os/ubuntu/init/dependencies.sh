@@ -6,8 +6,8 @@ if [ -z "$(command -v sudo)" ]; then
     if [ "$UID" -eq 0 ]; then
         SUDO=""
     else
-        echo "sudo is required to install dependencies." >&2
-        exit 1
+        echo "Skipping OS dependencies: sudo is unavailable and current user is not root." >&2
+        exit 0
     fi
 fi
 
