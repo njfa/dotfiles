@@ -48,9 +48,120 @@ assert_not_exists() {
   fi
 }
 
+bash_path=$(command -v bash)
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-home" "$repo_root/bin/devenv" help)
+assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+assert_contains "$help_output" 'Usage:'
+assert_contains "$help_output" 'Commands:'
+assert_contains "$help_output" 'Examples:'
+assert_contains "$help_output" 'devenv help <command>'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-long-home" "$repo_root/bin/devenv" --help)
+assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+assert_contains "$help_output" 'Usage:'
+assert_contains "$help_output" 'Commands:'
+assert_contains "$help_output" 'Examples:'
+assert_contains "$help_output" 'devenv help <command>'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-short-home" "$repo_root/bin/devenv" -h)
+assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+assert_contains "$help_output" 'Usage:'
+assert_contains "$help_output" 'Commands:'
+assert_contains "$help_output" 'Examples:'
+assert_contains "$help_output" 'devenv help <command>'
+
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-ja-home" "$repo_root/bin/devenv" help)
+assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+assert_contains "$help_output" '使い方:'
+assert_contains "$help_output" 'コマンド:'
+assert_contains "$help_output" '例:'
+assert_contains "$help_output" 'devenv help <command>'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-lang-ja-home" "$repo_root/bin/devenv" help)
+assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja HOME="$tmp_dir/help-lang-ja-short-home" "$repo_root/bin/devenv" help)
+assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja.UTF-8 HOME="$tmp_dir/help-lang-ja-dot-home" "$repo_root/bin/devenv" help)
+assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+
+help_output=$(env -u LC_ALL -u LANGUAGE DEVENV_LANG=en LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-env-en-home" "$repo_root/bin/devenv" help)
+assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+assert_not_contains "$help_output" 'dotfilesの初期化'
+
+help_output=$(env -u LC_ALL -u LANGUAGE DEVENV_LANG=fr LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-env-unsupported-home" "$repo_root/bin/devenv" help)
+assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+assert_not_contains "$help_output" 'dotfilesの初期化'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-install-home" "$repo_root/bin/devenv" help install)
+assert_contains "$help_output" 'devenv install'
+assert_contains "$help_output" '--repo URL'
+assert_contains "$help_output" '--branch NAME'
+assert_contains "$help_output" '--path PATH'
+assert_contains "$help_output" 'raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-install-option-home" "$repo_root/bin/devenv" install --help)
+assert_contains "$help_output" 'devenv install'
+assert_contains "$help_output" '--repo URL'
+assert_contains "$help_output" '--branch NAME'
+assert_contains "$help_output" '--path PATH'
+
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-install-option-ja-home" "$repo_root/bin/devenv" install --help)
+assert_contains "$help_output" 'devenv install - dotfilesをclone後、clone先のbin/devenvを実行'
+assert_contains "$help_output" '使い方:'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-mise-home" "$repo_root/bin/devenv" help mise)
+assert_contains "$help_output" 'devenv mise'
+assert_contains "$help_output" 'Passes arguments through to mise.'
+assert_contains "$help_output" 'devenv mise run deploy'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-chezmoi-home" "$repo_root/bin/devenv" help chezmoi)
+assert_contains "$help_output" 'devenv chezmoi'
+assert_contains "$help_output" 'Installs chezmoi through mise when missing.'
+assert_contains "$help_output" 'devenv chezmoi apply --source .'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-apm-home" "$repo_root/bin/devenv" help apm)
+assert_contains "$help_output" 'devenv apm'
+assert_contains "$help_output" 'Installs apm through mise as pipx:apm-cli when missing.'
+assert_contains "$help_output" 'devenv apm --version'
+
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-install-ja-home" "$repo_root/bin/devenv" help install)
+assert_contains "$help_output" 'devenv install - dotfilesをclone後、clone先のbin/devenvを実行'
+assert_contains "$help_output" '--repo URL'
+assert_contains "$help_output" '--branch NAME'
+assert_contains "$help_output" '--path PATH'
+
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-mise-ja-home" "$repo_root/bin/devenv" help mise)
+assert_contains "$help_output" 'devenv mise - miseへ引数を委譲'
+assert_contains "$help_output" 'miseが未導入の場合はインストールします。'
+
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-chezmoi-ja-home" "$repo_root/bin/devenv" help chezmoi)
+assert_contains "$help_output" 'devenv chezmoi - chezmoiへ引数を委譲'
+assert_contains "$help_output" 'chezmoiが未導入の場合はmise経由でインストールします。'
+
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-apm-ja-home" "$repo_root/bin/devenv" help apm)
+assert_contains "$help_output" 'devenv apm - apmへ引数を委譲'
+assert_contains "$help_output" 'apmが未導入の場合はmiseでpipx:apm-cliとしてインストールします。'
+
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-raw-home" "$bash_path" -s -- help install <"$repo_root/bin/devenv")
+assert_contains "$help_output" 'devenv install'
+assert_contains "$help_output" 'raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv'
+
+if env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-unknown-home" "$repo_root/bin/devenv" help unknown >"$tmp_dir/help-unknown.out" 2>"$tmp_dir/help-unknown.err"; then
+  fail 'unknown help topic should fail'
+fi
+assert_contains "$(cat "$tmp_dir/help-unknown.err")" 'Unknown help topic: unknown'
+
 output=$(HOME="$tmp_dir/mise-home" "$repo_root/bin/devenv" mise --version)
 assert_contains "$output" '[RUN] mise --version'
 assert_contains "$output" '[STUB mise] --version'
+
+output=$(HOME="$tmp_dir/mise-help-home" "$repo_root/bin/devenv" mise --help)
+assert_contains "$output" '[RUN] mise --help'
+assert_contains "$output" '[STUB mise] --help'
+assert_not_contains "$output" 'devenv mise - pass arguments through to mise'
 
 home_without_config="$tmp_dir/home-without-config"
 output=$(HOME="$home_without_config" "$repo_root/bin/devenv" mise --version)
@@ -62,9 +173,19 @@ output=$(HOME="$tmp_dir/chezmoi-home" "$repo_root/bin/devenv" chezmoi apply --so
 assert_contains "$output" '[RUN] chezmoi apply --source'
 assert_contains "$output" '[STUB chezmoi] apply --source'
 
+output=$(HOME="$tmp_dir/chezmoi-help-home" "$repo_root/bin/devenv" chezmoi --help)
+assert_contains "$output" '[RUN] chezmoi --help'
+assert_contains "$output" '[STUB chezmoi] --help'
+assert_not_contains "$output" 'devenv chezmoi - pass arguments through to chezmoi'
+
 output=$(HOME="$tmp_dir/apm-home" "$repo_root/bin/devenv" apm --version)
 assert_contains "$output" '[RUN] apm --version'
 assert_contains "$output" '[STUB apm] --version'
+
+output=$(HOME="$tmp_dir/apm-help-home" "$repo_root/bin/devenv" apm --help)
+assert_contains "$output" '[RUN] apm --help'
+assert_contains "$output" '[STUB apm] --help'
+assert_not_contains "$output" 'devenv apm - pass arguments through to apm'
 
 missing_apm_dir="$tmp_dir/missing-apm-bin"
 missing_apm_tools="$tmp_dir/missing-apm-tools"
@@ -126,7 +247,6 @@ install_target="$tmp_dir/dotfiles-target"
 install_log="$tmp_dir/install-git.log"
 mkdir -p "$install_bin" "$install_tools"
 
-bash_path=$(command -v bash)
 for tool in bash dirname mktemp rm mkdir cat chmod; do
   tool_path=$(command -v "$tool") || fail "required test tool not found: $tool"
   ln -s "$tool_path" "$install_tools/$tool"

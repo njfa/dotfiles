@@ -7,6 +7,34 @@ readonly RED=$'\033[31m'
 readonly GREEN=$'\033[32m'
 readonly CYAN=$'\033[36m'
 
+devenv_lang() {
+  case "${DEVENV_LANG:-}" in
+    ja)
+      printf 'ja\n'
+      return
+      ;;
+    en)
+      printf 'en\n'
+      return
+      ;;
+    '')
+      ;;
+    *)
+      printf 'en\n'
+      return
+      ;;
+  esac
+
+  case "${LANG:-}" in
+    ja|ja_*|ja.*)
+      printf 'ja\n'
+      ;;
+    *)
+      printf 'en\n'
+      ;;
+  esac
+}
+
 usage() {
   cat >&2 <<'USAGE'
 Usage: devenv [command] [args...]
@@ -16,8 +44,254 @@ Commands:
   mise [args...]
   chezmoi [args...]
   apm [args...]
-  help
+  help [command]
 USAGE
+}
+
+help_overview() {
+  case "$(devenv_lang)" in
+    ja)
+      cat <<'HELP'
+devenv - dotfilesの初期化とツール委譲コマンド
+
+使い方:
+  devenv
+  devenv install [--repo URL] [--branch NAME] [--path PATH]
+  devenv mise [args...]
+  devenv chezmoi [args...]
+  devenv apm [args...]
+  devenv help [command]
+
+コマンド:
+  install   dotfilesをclone後、clone先のbin/devenvを実行
+  mise      miseをインストール後、miseへ引数を委譲
+  chezmoi   chezmoiをインストール後、chezmoiへ引数を委譲
+  apm       apmをインストール後、apmへ引数を委譲
+  help      全体helpまたはコマンド別helpを表示
+
+例:
+  devenv
+  devenv install --path "$HOME/.dotfiles" --branch main
+  devenv mise run deploy
+  devenv chezmoi apply --source .
+  devenv apm --version
+
+コマンド別の詳細は `devenv help <command>` を実行してください。
+HELP
+      ;;
+    *)
+      cat <<'HELP'
+devenv - dotfiles bootstrap and passthrough command
+
+Usage:
+  devenv
+  devenv install [--repo URL] [--branch NAME] [--path PATH]
+  devenv mise [args...]
+  devenv chezmoi [args...]
+  devenv apm [args...]
+  devenv help [command]
+
+Commands:
+  install   Clone dotfiles and run the cloned devenv
+  mise      Ensure mise, then pass arguments through to mise
+  chezmoi   Ensure chezmoi, then pass arguments through to chezmoi
+  apm       Ensure apm, then pass arguments through to apm
+  help      Show overview or command-specific help
+
+Examples:
+  devenv
+  devenv install --path "$HOME/.dotfiles" --branch main
+  devenv mise run deploy
+  devenv chezmoi apply --source .
+  devenv apm --version
+
+Run `devenv help <command>` for command-specific details.
+HELP
+      ;;
+  esac
+}
+
+help_install() {
+  case "$(devenv_lang)" in
+    ja)
+      cat <<'HELP'
+devenv install - dotfilesをclone後、clone先のbin/devenvを実行
+
+使い方:
+  devenv install [--repo URL] [--branch NAME] [--path PATH]
+
+オプション:
+  --repo URL       cloneするGit repository。Default: https://github.com/njfa/dotfiles.git
+  --branch NAME    cloneするGit branch。Default: main
+  --path PATH      install先。Default: ${DOTFILES_PATH:-$HOME/.dotfiles}
+
+例:
+  curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install
+  devenv install --path "$HOME/.dotfiles" --branch main
+
+補足:
+  install先が既に存在する場合はgit clone前に停止します。
+HELP
+      ;;
+    *)
+      cat <<'HELP'
+devenv install - clone dotfiles and run the cloned devenv
+
+Usage:
+  devenv install [--repo URL] [--branch NAME] [--path PATH]
+
+Options:
+  --repo URL       Git repository to clone. Default: https://github.com/njfa/dotfiles.git
+  --branch NAME    Git branch to clone. Default: main
+  --path PATH      Install target. Default: ${DOTFILES_PATH:-$HOME/.dotfiles}
+
+Examples:
+  curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install
+  devenv install --path "$HOME/.dotfiles" --branch main
+
+Notes:
+  Existing target paths stop the install before git clone.
+HELP
+      ;;
+  esac
+}
+
+help_mise() {
+  case "$(devenv_lang)" in
+    ja)
+      cat <<'HELP'
+devenv mise - miseへ引数を委譲
+
+使い方:
+  devenv mise [args...]
+
+動作:
+  miseへ引数を委譲します。
+  miseが未導入の場合はインストールします。
+  単純な委譲ではmise configをコピーしません。
+
+例:
+  devenv mise --version
+  devenv mise tasks
+  devenv mise run deploy
+HELP
+      ;;
+    *)
+      cat <<'HELP'
+devenv mise - pass arguments through to mise
+
+Usage:
+  devenv mise [args...]
+
+Behavior:
+  Passes arguments through to mise.
+  Installs mise when missing.
+  Simple passthrough does not copy the mise config.
+
+Examples:
+  devenv mise --version
+  devenv mise tasks
+  devenv mise run deploy
+HELP
+      ;;
+  esac
+}
+
+help_chezmoi() {
+  case "$(devenv_lang)" in
+    ja)
+      cat <<'HELP'
+devenv chezmoi - chezmoiへ引数を委譲
+
+使い方:
+  devenv chezmoi [args...]
+
+動作:
+  chezmoiが未導入の場合はmise経由でインストールします。
+  setup後にchezmoiへ引数を委譲します。
+
+例:
+  devenv chezmoi apply --source .
+  devenv chezmoi managed
+HELP
+      ;;
+    *)
+      cat <<'HELP'
+devenv chezmoi - pass arguments through to chezmoi
+
+Usage:
+  devenv chezmoi [args...]
+
+Behavior:
+  Installs chezmoi through mise when missing.
+  Passes arguments through to chezmoi after setup.
+
+Examples:
+  devenv chezmoi apply --source .
+  devenv chezmoi managed
+HELP
+      ;;
+  esac
+}
+
+help_apm() {
+  case "$(devenv_lang)" in
+    ja)
+      cat <<'HELP'
+devenv apm - apmへ引数を委譲
+
+使い方:
+  devenv apm [args...]
+
+動作:
+  apmが未導入の場合はmiseでpipx:apm-cliとしてインストールします。
+  setup後にapmへ引数を委譲します。
+
+例:
+  devenv apm --version
+HELP
+      ;;
+    *)
+      cat <<'HELP'
+devenv apm - pass arguments through to apm
+
+Usage:
+  devenv apm [args...]
+
+Behavior:
+  Installs apm through mise as pipx:apm-cli when missing.
+  Passes arguments through to apm after setup.
+
+Examples:
+  devenv apm --version
+HELP
+      ;;
+  esac
+}
+
+show_help() {
+  case "${1:-}" in
+    ''|-h|--help|help)
+      help_overview
+      ;;
+    install)
+      help_install
+      ;;
+    mise)
+      help_mise
+      ;;
+    chezmoi)
+      help_chezmoi
+      ;;
+    apm)
+      help_apm
+      ;;
+    *)
+      printf 'Unknown help topic: %s\n' "$1" >&2
+      usage
+      return 2
+      ;;
+  esac
 }
 
 run_formatted() {
@@ -107,7 +381,7 @@ install_dotfiles() {
         shift 2
         ;;
       -h|--help)
-        usage
+        help_install
         return 0
         ;;
       *)
@@ -135,6 +409,14 @@ install_dotfiles() {
 if [[ ${1:-} == install ]]; then
   shift
   install_dotfiles "$@"
+  exit $?
+fi
+
+if [[ ${1:-} == help || ${1:-} == --help || ${1:-} == -h ]]; then
+  if [[ ${1:-} == help ]]; then
+    shift
+  fi
+  show_help "${1:-}"
   exit $?
 fi
 
@@ -252,9 +534,6 @@ main() {
       shift
       ensure_tool apm 'pipx:apm-cli'
       run_formatted "apm $*" apm "$@"
-      ;;
-    -h|--help|help)
-      usage
       ;;
     *)
       usage
