@@ -55,6 +55,7 @@ Usage: de [command] [args...]
 
 Commands:
   install [--repo URL] [--branch NAME] [--path PATH]
+  init
   mise|m [args...]
   chezmoi|c [args...]
   apm|a [args...]
@@ -71,6 +72,7 @@ de - dotfilesの初期化とツール委譲コマンド
 使い方:
   de
   de install [--repo URL] [--branch NAME] [--path PATH]
+  de init
   de mise|m [args...]
   de chezmoi|c [args...]
   de apm|a [args...]
@@ -78,6 +80,7 @@ de - dotfilesの初期化とツール委譲コマンド
 
 コマンド:
   install   dotfilesをclone後、applyとセットアップを実行
+  init      dotfilesを反映し、セットアップを実行
   mise      miseをインストール後、miseへ引数を委譲
   m         miseの別名
   chezmoi   chezmoiをインストール後、chezmoiへ引数を委譲
@@ -89,6 +92,7 @@ de - dotfilesの初期化とツール委譲コマンド
 例:
   de
   de install --path "$HOME/.dotfiles" --branch main
+  de init
   de m run deploy
   de c apply --source .
   de a --version
@@ -103,6 +107,7 @@ de - dotfiles bootstrap and passthrough command
 Usage:
   de
   de install [--repo URL] [--branch NAME] [--path PATH]
+  de init
   de mise|m [args...]
   de chezmoi|c [args...]
   de apm|a [args...]
@@ -110,6 +115,7 @@ Usage:
 
 Commands:
   install   Clone dotfiles, apply them, and run setup
+  init      Apply dotfiles and run setup
   mise      Ensure mise, then pass arguments through to mise
   m         Alias for mise
   chezmoi   Ensure chezmoi, then pass arguments through to chezmoi
@@ -121,6 +127,7 @@ Commands:
 Examples:
   de
   de install --path "$HOME/.dotfiles" --branch main
+  de init
   de m run deploy
   de c apply --source .
   de a --version
@@ -173,6 +180,45 @@ Examples:
   Notes:
    After cloning, the cloned bin/de runs apply and setup.
    Existing target paths stop the install before git clone.
+HELP
+      ;;
+  esac
+}
+
+help_init() {
+  case "$(devenv_lang)" in
+    ja)
+      cat <<'HELP'
+de init - dotfilesを反映し、セットアップを実行
+
+使い方:
+  de init
+
+動作:
+  chezmoi applyでdotfilesを反映します。
+  mise installでツールをインストールします。
+  mise run setupでOS別セットアップを実行します。
+
+例:
+  cd "$HOME/.dotfiles"
+  ./bin/de init
+HELP
+      ;;
+    *)
+      cat <<'HELP'
+de init - apply dotfiles and run setup
+
+Usage:
+  de init
+
+Behavior:
+  Applies dotfiles with chezmoi apply.
+  Installs tools with mise install.
+  Runs OS-specific setup with mise run setup.
+
+Examples:
+  cd "$HOME/.dotfiles"
+  ./bin/de init
 HELP
       ;;
   esac
@@ -299,6 +345,9 @@ show_help() {
     install)
       help_install
       ;;
+    init)
+      help_init
+      ;;
     mise|m)
       help_mise
       ;;
@@ -414,10 +463,10 @@ install_dotfiles() {
 
   ensure_git
   run_formatted 'git clone' git clone --branch "$branch" -- "$repo" "$target_path"
-  "$target_path/bin/de" install-bootstrap
+  "$target_path/bin/de" init
 }
 
-run_install_bootstrap() {
+run_init() {
   ensure_base
   ensure_tool chezmoi chezmoi
   run_formatted 'chezmoi apply' chezmoi apply --source "$DOTFILES_PATH"
@@ -542,9 +591,9 @@ main() {
       shift
       install_dotfiles "$@"
       ;;
-    install-bootstrap)
+    init)
       shift
-      run_install_bootstrap "$@"
+      run_init "$@"
       ;;
     mise|m)
       shift

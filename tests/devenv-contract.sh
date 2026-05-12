@@ -74,6 +74,7 @@ assert_contains "$help_output" 'de help <command>'
 assert_contains "$help_output" 'm         Alias for mise'
 assert_contains "$help_output" 'c         Alias for chezmoi'
 assert_contains "$help_output" 'a         Alias for apm'
+assert_contains "$help_output" 'init      Apply dotfiles and run setup'
 
 help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-long-home" "$de_cmd" --help)
 assert_contains "$help_output" 'de - dotfiles bootstrap and passthrough command'
@@ -98,6 +99,7 @@ assert_contains "$help_output" 'de help <command>'
 assert_contains "$help_output" 'm         miseの別名'
 assert_contains "$help_output" 'c         chezmoiの別名'
 assert_contains "$help_output" 'a         apmの別名'
+assert_contains "$help_output" 'init      dotfilesを反映し、セットアップを実行'
 
 help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-lang-ja-home" "$de_cmd" help)
 assert_contains "$help_output" 'de - dotfilesの初期化とツール委譲コマンド'
@@ -146,9 +148,19 @@ assert_contains "$help_output" '--repo URL'
 assert_contains "$help_output" '--branch NAME'
 assert_contains "$help_output" '--path PATH'
 
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-init-home" "$de_cmd" help init)
+assert_contains "$help_output" 'de init - apply dotfiles and run setup'
+assert_contains "$help_output" 'chezmoi apply'
+assert_contains "$help_output" 'mise install'
+assert_contains "$help_output" 'mise run setup'
+
 help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-install-option-ja-home" "$de_cmd" install --help)
 assert_contains "$help_output" 'de install - dotfilesをclone後、applyとセットアップを実行'
 assert_contains "$help_output" '使い方:'
+
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-init-ja-home" "$de_cmd" help init)
+assert_contains "$help_output" 'de init - dotfilesを反映し、セットアップを実行'
+assert_contains "$help_output" 'chezmoi apply'
 
 help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-mise-home" "$de_cmd" help mise)
 assert_contains "$help_output" 'de mise'
@@ -400,7 +412,7 @@ assert_contains "$(cat "$install_log")" 'clone --branch feature/test -- https://
 assert_contains "$(cat "$install_log")" "$install_target"
 assert_contains "$install_output" '[RUN] git clone'
 assert_not_contains "$install_output" '[RUN] de'
-assert_contains "$install_output" '[CLONED de] install-bootstrap'
+assert_contains "$install_output" '[CLONED de] init'
 
 dash_repo_target="$tmp_dir/dash-repo-target"
 dash_repo_log="$tmp_dir/dash-repo-git.log"
@@ -408,7 +420,7 @@ output=$(HOME="$tmp_dir/dash-repo-home" PATH="$install_bin:$install_tools" INSTA
 assert_contains "$(cat "$dash_repo_log")" "clone --branch dash/test -- ./-repo $dash_repo_target"
 assert_contains "$output" '[RUN] git clone'
 assert_not_contains "$output" '[RUN] de'
-assert_contains "$output" '[CLONED de] install-bootstrap'
+assert_contains "$output" '[CLONED de] init'
 
 raw_install_target="$tmp_dir/raw-dotfiles-target"
 raw_install_log="$tmp_dir/raw-install-git.log"
@@ -417,7 +429,7 @@ assert_contains "$(cat "$raw_install_log")" 'clone --branch raw/test -- https://
 assert_contains "$(cat "$raw_install_log")" "$raw_install_target"
 assert_contains "$output" '[RUN] git clone'
 assert_not_contains "$output" '[RUN] de'
-assert_contains "$output" '[CLONED de] install-bootstrap'
+assert_contains "$output" '[CLONED de] init'
 
 install_bootstrap_bin="$tmp_dir/install-bootstrap-bin"
 install_bootstrap_tools="$tmp_dir/install-bootstrap-tools"
@@ -468,7 +480,7 @@ esac
 STUB
 chmod +x "$install_bootstrap_bin/mise"
 
-output=$(HOME="$tmp_dir/install-bootstrap-home" PATH="$install_bootstrap_bin:$install_bootstrap_tools" INSTALL_BOOTSTRAP_LOG="$install_bootstrap_log" INSTALL_BOOTSTRAP_SHIMS="$install_bootstrap_shims" /usr/bin/bash "$de_cmd" install-bootstrap)
+output=$(HOME="$tmp_dir/init-home" PATH="$install_bootstrap_bin:$install_bootstrap_tools" INSTALL_BOOTSTRAP_LOG="$install_bootstrap_log" INSTALL_BOOTSTRAP_SHIMS="$install_bootstrap_shims" /usr/bin/bash "$de_cmd" init)
 bootstrap_log_output=$(cat "$install_bootstrap_log")
 assert_contains "$output" '[RUN] mise install chezmoi'
 assert_contains "$output" '[RUN] chezmoi apply'
@@ -477,6 +489,11 @@ assert_contains "$output" '[RUN] mise run setup'
 assert_line_before "$bootstrap_log_output" 'MISE:install chezmoi' "CHEZMOI:apply --source $repo_root"
 assert_line_before "$bootstrap_log_output" "CHEZMOI:apply --source $repo_root" 'MISE:install-default'
 assert_line_before "$bootstrap_log_output" 'MISE:install-default' 'MISE:run-setup'
+
+if HOME="$tmp_dir/install-bootstrap-home" PATH="$install_bootstrap_bin:$install_bootstrap_tools" INSTALL_BOOTSTRAP_LOG="$install_bootstrap_log" INSTALL_BOOTSTRAP_SHIMS="$install_bootstrap_shims" /usr/bin/bash "$de_cmd" install-bootstrap >"$tmp_dir/install-bootstrap.out" 2>"$tmp_dir/install-bootstrap.err"; then
+  fail 'install-bootstrap should no longer be a supported subcommand'
+fi
+assert_contains "$(cat "$tmp_dir/install-bootstrap.err")" 'Usage: de'
 
 existing_target="$tmp_dir/existing-dotfiles"
 mkdir -p "$existing_target"

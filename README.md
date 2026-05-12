@@ -17,6 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s
 ```bash
 cd /path/to/dotfiles
 ./bin/de
+./bin/de init
 ./bin/de m run deploy
 ./bin/de m run sync-to-windows
 ```
