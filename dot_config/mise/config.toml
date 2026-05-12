@@ -31,7 +31,7 @@ chezmoi = "latest"
 
 [tasks.os-dependencies]
 quiet = true
-run = "bash -lc 'set -euo pipefail; : \"${DOTFILES_PATH:?DOTFILES_PATH is required}\"; test -f \"$DOTFILES_PATH/dot_config/mise/config.toml\"; test -x \"$DOTFILES_PATH/bin/devenv\"; cd \"$DOTFILES_PATH\"; bash etc/os/ubuntu/init/dependencies.sh'"
+run = "bash -lc 'set -euo pipefail; : \"${DOTFILES_PATH:?DOTFILES_PATH is required}\"; test -f \"$DOTFILES_PATH/dot_config/mise/config.toml\"; test -x \"$DOTFILES_PATH/bin/de\"; cd \"$DOTFILES_PATH\"; bash etc/os/ubuntu/init/dependencies.sh'"
 
 [tasks.setup]
 depends = ["os-dependencies"]
@@ -44,7 +44,7 @@ run = [
   '''bash -lc 'set -euo pipefail
 : "${DOTFILES_PATH:?DOTFILES_PATH is required}"
 test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
-test -x "$DOTFILES_PATH/bin/devenv"
+test -x "$DOTFILES_PATH/bin/de"
 mise install chezmoi >/dev/null
 mise exec chezmoi -- chezmoi apply --source "$DOTFILES_PATH"'
 ''',
@@ -56,7 +56,7 @@ mise exec chezmoi -- chezmoi apply --source "$DOTFILES_PATH"'
 run = '''bash -lc 'set -euo pipefail
 : "${DOTFILES_PATH:?DOTFILES_PATH is required}"
 test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
-test -x "$DOTFILES_PATH/bin/devenv"
+test -x "$DOTFILES_PATH/bin/de"
 windows_home=/mnt/c/Users/${USER:-}
 if [ ! -d "$windows_home" ]; then
   if [ -n "${USERPROFILE:-}" ]; then
@@ -78,7 +78,7 @@ run = [
   '''bash -lc 'set -euo pipefail
 : "${DOTFILES_PATH:?DOTFILES_PATH is required}"
 test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
-test -x "$DOTFILES_PATH/bin/devenv"
+test -x "$DOTFILES_PATH/bin/de"
 mise install chezmoi >/dev/null
 mise exec chezmoi -- chezmoi managed --source "$DOTFILES_PATH"'
 '''

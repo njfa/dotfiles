@@ -5,34 +5,34 @@
 ### Linux (WSL / Ubuntu Server)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install
+curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install
 ```
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install --path "$HOME/.dotfiles" --branch main
+curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install --path "$HOME/.dotfiles" --branch main
 ```
 
 ```bash
 cd /path/to/dotfiles
-./bin/devenv
-./bin/devenv mise run deploy
-./bin/devenv mise run sync-to-windows
+./bin/de
+./bin/de m run deploy
+./bin/de m run sync-to-windows
 ```
 
 ```bash
 # ツールのパススルー実行例
-./bin/devenv mise --version
-./bin/devenv chezmoi apply --source .
-./bin/devenv apm --version
+./bin/de m --version
+./bin/de c apply --source .
+./bin/de a --version
 ```
 
 ### 検証
 
 ```bash
 # リポジトリ直下で実行
-./bin/devenv
-./bin/devenv mise --version
-./bin/devenv apm --version
+./bin/de
+./bin/de m --version
+./bin/de a --version
 ```
 
 ### Windows

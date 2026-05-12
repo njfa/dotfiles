@@ -37,13 +37,13 @@ devenv_lang() {
 
 usage() {
   cat >&2 <<'USAGE'
-Usage: devenv [command] [args...]
+Usage: de [command] [args...]
 
 Commands:
   install [--repo URL] [--branch NAME] [--path PATH]
-  mise [args...]
-  chezmoi [args...]
-  apm [args...]
+  mise|m [args...]
+  chezmoi|c [args...]
+  apm|a [args...]
   help [command]
 USAGE
 }
@@ -52,60 +52,66 @@ help_overview() {
   case "$(devenv_lang)" in
     ja)
       cat <<'HELP'
-devenv - dotfilesの初期化とツール委譲コマンド
+de - dotfilesの初期化とツール委譲コマンド
 
 使い方:
-  devenv
-  devenv install [--repo URL] [--branch NAME] [--path PATH]
-  devenv mise [args...]
-  devenv chezmoi [args...]
-  devenv apm [args...]
-  devenv help [command]
+  de
+  de install [--repo URL] [--branch NAME] [--path PATH]
+  de mise|m [args...]
+  de chezmoi|c [args...]
+  de apm|a [args...]
+  de help [command]
 
 コマンド:
-  install   dotfilesをclone後、clone先のbin/devenvを実行
+  install   dotfilesをclone後、clone先のbin/deを実行
   mise      miseをインストール後、miseへ引数を委譲
+  m         miseの別名
   chezmoi   chezmoiをインストール後、chezmoiへ引数を委譲
+  c         chezmoiの別名
   apm       apmをインストール後、apmへ引数を委譲
+  a         apmの別名
   help      全体helpまたはコマンド別helpを表示
 
 例:
-  devenv
-  devenv install --path "$HOME/.dotfiles" --branch main
-  devenv mise run deploy
-  devenv chezmoi apply --source .
-  devenv apm --version
+  de
+  de install --path "$HOME/.dotfiles" --branch main
+  de m run deploy
+  de c apply --source .
+  de a --version
 
-コマンド別の詳細は `devenv help <command>` を実行してください。
+コマンド別の詳細は `de help <command>` を実行してください。
 HELP
       ;;
     *)
       cat <<'HELP'
-devenv - dotfiles bootstrap and passthrough command
+de - dotfiles bootstrap and passthrough command
 
 Usage:
-  devenv
-  devenv install [--repo URL] [--branch NAME] [--path PATH]
-  devenv mise [args...]
-  devenv chezmoi [args...]
-  devenv apm [args...]
-  devenv help [command]
+  de
+  de install [--repo URL] [--branch NAME] [--path PATH]
+  de mise|m [args...]
+  de chezmoi|c [args...]
+  de apm|a [args...]
+  de help [command]
 
 Commands:
-  install   Clone dotfiles and run the cloned devenv
+  install   Clone dotfiles and run the cloned de
   mise      Ensure mise, then pass arguments through to mise
+  m         Alias for mise
   chezmoi   Ensure chezmoi, then pass arguments through to chezmoi
+  c         Alias for chezmoi
   apm       Ensure apm, then pass arguments through to apm
+  a         Alias for apm
   help      Show overview or command-specific help
 
 Examples:
-  devenv
-  devenv install --path "$HOME/.dotfiles" --branch main
-  devenv mise run deploy
-  devenv chezmoi apply --source .
-  devenv apm --version
+  de
+  de install --path "$HOME/.dotfiles" --branch main
+  de m run deploy
+  de c apply --source .
+  de a --version
 
-Run `devenv help <command>` for command-specific details.
+Run `de help <command>` for command-specific details.
 HELP
       ;;
   esac
@@ -115,10 +121,10 @@ help_install() {
   case "$(devenv_lang)" in
     ja)
       cat <<'HELP'
-devenv install - dotfilesをclone後、clone先のbin/devenvを実行
+de install - dotfilesをclone後、clone先のbin/deを実行
 
 使い方:
-  devenv install [--repo URL] [--branch NAME] [--path PATH]
+  de install [--repo URL] [--branch NAME] [--path PATH]
 
 オプション:
   --repo URL       cloneするGit repository。Default: https://github.com/njfa/dotfiles.git
@@ -126,8 +132,8 @@ devenv install - dotfilesをclone後、clone先のbin/devenvを実行
   --path PATH      install先。Default: ${DOTFILES_PATH:-$HOME/.dotfiles}
 
 例:
-  curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install
-  devenv install --path "$HOME/.dotfiles" --branch main
+  curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install
+  de install --path "$HOME/.dotfiles" --branch main
 
 補足:
   install先が既に存在する場合はgit clone前に停止します。
@@ -135,10 +141,10 @@ HELP
       ;;
     *)
       cat <<'HELP'
-devenv install - clone dotfiles and run the cloned devenv
+de install - clone dotfiles and run the cloned de
 
 Usage:
-  devenv install [--repo URL] [--branch NAME] [--path PATH]
+  de install [--repo URL] [--branch NAME] [--path PATH]
 
 Options:
   --repo URL       Git repository to clone. Default: https://github.com/njfa/dotfiles.git
@@ -146,8 +152,8 @@ Options:
   --path PATH      Install target. Default: ${DOTFILES_PATH:-$HOME/.dotfiles}
 
 Examples:
-  curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bash -s -- install
-  devenv install --path "$HOME/.dotfiles" --branch main
+  curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install
+  de install --path "$HOME/.dotfiles" --branch main
 
 Notes:
   Existing target paths stop the install before git clone.
@@ -160,10 +166,10 @@ help_mise() {
   case "$(devenv_lang)" in
     ja)
       cat <<'HELP'
-devenv mise - miseへ引数を委譲
+de mise - miseへ引数を委譲
 
 使い方:
-  devenv mise [args...]
+  de mise|m [args...]
 
 動作:
   miseへ引数を委譲します。
@@ -171,17 +177,17 @@ devenv mise - miseへ引数を委譲
   単純な委譲ではmise configをコピーしません。
 
 例:
-  devenv mise --version
-  devenv mise tasks
-  devenv mise run deploy
+  de m --version
+  de m tasks
+  de m run deploy
 HELP
       ;;
     *)
       cat <<'HELP'
-devenv mise - pass arguments through to mise
+de mise - pass arguments through to mise
 
 Usage:
-  devenv mise [args...]
+  de mise|m [args...]
 
 Behavior:
   Passes arguments through to mise.
@@ -189,9 +195,9 @@ Behavior:
   Simple passthrough does not copy the mise config.
 
 Examples:
-  devenv mise --version
-  devenv mise tasks
-  devenv mise run deploy
+  de m --version
+  de m tasks
+  de m run deploy
 HELP
       ;;
   esac
@@ -201,34 +207,34 @@ help_chezmoi() {
   case "$(devenv_lang)" in
     ja)
       cat <<'HELP'
-devenv chezmoi - chezmoiへ引数を委譲
+de chezmoi - chezmoiへ引数を委譲
 
 使い方:
-  devenv chezmoi [args...]
+  de chezmoi|c [args...]
 
 動作:
   chezmoiが未導入の場合はmise経由でインストールします。
   setup後にchezmoiへ引数を委譲します。
 
 例:
-  devenv chezmoi apply --source .
-  devenv chezmoi managed
+  de c apply --source .
+  de c managed
 HELP
       ;;
     *)
       cat <<'HELP'
-devenv chezmoi - pass arguments through to chezmoi
+de chezmoi - pass arguments through to chezmoi
 
 Usage:
-  devenv chezmoi [args...]
+  de chezmoi|c [args...]
 
 Behavior:
   Installs chezmoi through mise when missing.
   Passes arguments through to chezmoi after setup.
 
 Examples:
-  devenv chezmoi apply --source .
-  devenv chezmoi managed
+  de c apply --source .
+  de c managed
 HELP
       ;;
   esac
@@ -238,32 +244,32 @@ help_apm() {
   case "$(devenv_lang)" in
     ja)
       cat <<'HELP'
-devenv apm - apmへ引数を委譲
+de apm - apmへ引数を委譲
 
 使い方:
-  devenv apm [args...]
+  de apm|a [args...]
 
 動作:
   apmが未導入の場合はmiseでpipx:apm-cliとしてインストールします。
   setup後にapmへ引数を委譲します。
 
 例:
-  devenv apm --version
+  de a --version
 HELP
       ;;
     *)
       cat <<'HELP'
-devenv apm - pass arguments through to apm
+de apm - pass arguments through to apm
 
 Usage:
-  devenv apm [args...]
+  de apm|a [args...]
 
 Behavior:
   Installs apm through mise as pipx:apm-cli when missing.
   Passes arguments through to apm after setup.
 
 Examples:
-  devenv apm --version
+  de a --version
 HELP
       ;;
   esac
@@ -277,13 +283,13 @@ show_help() {
     install)
       help_install
       ;;
-    mise)
+    mise|m)
       help_mise
       ;;
-    chezmoi)
+    chezmoi|c)
       help_chezmoi
       ;;
-    apm)
+    apm|a)
       help_apm
       ;;
     *)
@@ -392,7 +398,7 @@ install_dotfiles() {
 
   ensure_git
   run_formatted 'git clone' git clone --branch "$branch" -- "$repo" "$target_path"
-  "$target_path/bin/devenv"
+  "$target_path/bin/de"
 }
 
 if [[ ${1:-} == install ]]; then
@@ -497,6 +503,10 @@ ensure_tool() {
   activate_mise
 }
 
+run_passthrough() {
+  "$@"
+}
+
 main() {
   case "${1:-}" in
     '')
@@ -508,20 +518,20 @@ main() {
       shift
       install_dotfiles "$@"
       ;;
-    mise)
+    mise|m)
       shift
       ensure_mise_passthrough
-      run_formatted "mise $*" "$MISE_BIN" "$@"
+      run_passthrough "$MISE_BIN" "$@"
       ;;
-    chezmoi)
+    chezmoi|c)
       shift
       ensure_tool chezmoi chezmoi
-      run_formatted "chezmoi $*" chezmoi "$@"
+      run_passthrough chezmoi "$@"
       ;;
-    apm)
+    apm|a)
       shift
       ensure_tool apm 'pipx:apm-cli'
-      run_formatted "apm $*" apm "$@"
+      run_passthrough apm "$@"
       ;;
     *)
       usage

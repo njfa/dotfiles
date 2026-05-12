@@ -12,8 +12,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: change permission
-      run: chmod +x bin/devenv
-    - name: Run devenv contract test
+      run: chmod +x bin/de
+    - name: Run de contract test
       run: bash tests/devenv-contract.sh
     - name: Run focused shell tests
       run: |
@@ -28,13 +28,13 @@ jobs:
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
     - name: Validate shell syntax
-      run: bash -n $(git ls-files '*.sh' 'bin/devenv')
+      run: bash -n $(git ls-files '*.sh' 'bin/de')
     - name: Validate mise tasks
-      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
+      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/de m tasks validate
     - name: Initialize dotfiles
-      run: bin/devenv
+      run: bin/de
     - name: Deploy dotfiles
-      run: bin/devenv mise run deploy
+      run: bin/de m run deploy
 
   build-ubuntu-22_04:
     runs-on: ubuntu-22.04
@@ -42,8 +42,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: change permission
-      run: chmod +x bin/devenv
-    - name: Run devenv contract test
+      run: chmod +x bin/de
+    - name: Run de contract test
       run: bash tests/devenv-contract.sh
     - name: Run focused shell tests
       run: |
@@ -58,13 +58,13 @@ jobs:
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
     - name: Validate shell syntax
-      run: bash -n $(git ls-files '*.sh' 'bin/devenv')
+      run: bash -n $(git ls-files '*.sh' 'bin/de')
     - name: Validate mise tasks
-      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
+      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/de m tasks validate
     - name: Initialize dotfiles
-      run: bin/devenv
+      run: bin/de
     - name: Deploy dotfiles
-      run: bin/devenv mise run deploy
+      run: bin/de m run deploy
 
   build-ubuntu-24_04:
     runs-on: ubuntu-24.04
@@ -72,8 +72,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: change permission
-      run: chmod +x bin/devenv
-    - name: Run devenv contract test
+      run: chmod +x bin/de
+    - name: Run de contract test
       run: bash tests/devenv-contract.sh
     - name: Run focused shell tests
       run: |
@@ -88,13 +88,13 @@ jobs:
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
     - name: Validate shell syntax
-      run: bash -n $(git ls-files '*.sh' 'bin/devenv')
+      run: bash -n $(git ls-files '*.sh' 'bin/de')
     - name: Validate mise tasks
-      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
+      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/de m tasks validate
     - name: Initialize dotfiles
-      run: bin/devenv
+      run: bin/de
     - name: Deploy dotfiles
-      run: bin/devenv mise run deploy
+      run: bin/de m run deploy
 
   build-windows:
     runs-on: windows-latest

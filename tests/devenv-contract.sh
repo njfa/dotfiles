@@ -63,119 +63,158 @@ assert_line_before() {
 }
 
 bash_path=$(command -v bash)
+de_cmd="$repo_root/bin/de"
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-home" "$repo_root/bin/devenv" help)
-assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-home" "$de_cmd" help)
+assert_contains "$help_output" 'de - dotfiles bootstrap and passthrough command'
 assert_contains "$help_output" 'Usage:'
 assert_contains "$help_output" 'Commands:'
 assert_contains "$help_output" 'Examples:'
-assert_contains "$help_output" 'devenv help <command>'
+assert_contains "$help_output" 'de help <command>'
+assert_contains "$help_output" 'm         Alias for mise'
+assert_contains "$help_output" 'c         Alias for chezmoi'
+assert_contains "$help_output" 'a         Alias for apm'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-long-home" "$repo_root/bin/devenv" --help)
-assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-long-home" "$de_cmd" --help)
+assert_contains "$help_output" 'de - dotfiles bootstrap and passthrough command'
 assert_contains "$help_output" 'Usage:'
 assert_contains "$help_output" 'Commands:'
 assert_contains "$help_output" 'Examples:'
-assert_contains "$help_output" 'devenv help <command>'
+assert_contains "$help_output" 'de help <command>'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-short-home" "$repo_root/bin/devenv" -h)
-assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-short-home" "$de_cmd" -h)
+assert_contains "$help_output" 'de - dotfiles bootstrap and passthrough command'
 assert_contains "$help_output" 'Usage:'
 assert_contains "$help_output" 'Commands:'
 assert_contains "$help_output" 'Examples:'
-assert_contains "$help_output" 'devenv help <command>'
+assert_contains "$help_output" 'de help <command>'
 
-help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-ja-home" "$repo_root/bin/devenv" help)
-assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-ja-home" "$de_cmd" help)
+assert_contains "$help_output" 'de - dotfilesの初期化とツール委譲コマンド'
 assert_contains "$help_output" '使い方:'
 assert_contains "$help_output" 'コマンド:'
 assert_contains "$help_output" '例:'
-assert_contains "$help_output" 'devenv help <command>'
+assert_contains "$help_output" 'de help <command>'
+assert_contains "$help_output" 'm         miseの別名'
+assert_contains "$help_output" 'c         chezmoiの別名'
+assert_contains "$help_output" 'a         apmの別名'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-lang-ja-home" "$repo_root/bin/devenv" help)
-assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-lang-ja-home" "$de_cmd" help)
+assert_contains "$help_output" 'de - dotfilesの初期化とツール委譲コマンド'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja HOME="$tmp_dir/help-lang-ja-short-home" "$repo_root/bin/devenv" help)
-assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja HOME="$tmp_dir/help-lang-ja-short-home" "$de_cmd" help)
+assert_contains "$help_output" 'de - dotfilesの初期化とツール委譲コマンド'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja.UTF-8 HOME="$tmp_dir/help-lang-ja-dot-home" "$repo_root/bin/devenv" help)
-assert_contains "$help_output" 'devenv - dotfilesの初期化とツール委譲コマンド'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=ja.UTF-8 HOME="$tmp_dir/help-lang-ja-dot-home" "$de_cmd" help)
+assert_contains "$help_output" 'de - dotfilesの初期化とツール委譲コマンド'
 
-help_output=$(env -u LC_ALL -u LANGUAGE DEVENV_LANG=en LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-env-en-home" "$repo_root/bin/devenv" help)
-assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+help_output=$(env -u LC_ALL -u LANGUAGE DEVENV_LANG=en LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-env-en-home" "$de_cmd" help)
+assert_contains "$help_output" 'de - dotfiles bootstrap and passthrough command'
 assert_not_contains "$help_output" 'dotfilesの初期化'
 
-help_output=$(env -u LC_ALL -u LANGUAGE DEVENV_LANG=fr LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-env-unsupported-home" "$repo_root/bin/devenv" help)
-assert_contains "$help_output" 'devenv - dotfiles bootstrap and passthrough command'
+help_output=$(env -u LC_ALL -u LANGUAGE DEVENV_LANG=fr LANG=ja_JP.UTF-8 HOME="$tmp_dir/help-env-unsupported-home" "$de_cmd" help)
+assert_contains "$help_output" 'de - dotfiles bootstrap and passthrough command'
 assert_not_contains "$help_output" 'dotfilesの初期化'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-install-home" "$repo_root/bin/devenv" help install)
-assert_contains "$help_output" 'devenv install'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-install-home" "$de_cmd" help install)
+assert_contains "$help_output" 'de install'
 assert_contains "$help_output" '--repo URL'
 assert_contains "$help_output" '--branch NAME'
 assert_contains "$help_output" '--path PATH'
-assert_contains "$help_output" 'raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv'
+assert_contains "$help_output" 'raw.githubusercontent.com/njfa/dotfiles/main/bin/de'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-install-option-home" "$repo_root/bin/devenv" install --help)
-assert_contains "$help_output" 'devenv install'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-install-option-home" "$de_cmd" install --help)
+assert_contains "$help_output" 'de install'
 assert_contains "$help_output" '--repo URL'
 assert_contains "$help_output" '--branch NAME'
 assert_contains "$help_output" '--path PATH'
 
-help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-install-option-ja-home" "$repo_root/bin/devenv" install --help)
-assert_contains "$help_output" 'devenv install - dotfilesをclone後、clone先のbin/devenvを実行'
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-install-option-ja-home" "$de_cmd" install --help)
+assert_contains "$help_output" 'de install - dotfilesをclone後、clone先のbin/deを実行'
 assert_contains "$help_output" '使い方:'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-mise-home" "$repo_root/bin/devenv" help mise)
-assert_contains "$help_output" 'devenv mise'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-mise-home" "$de_cmd" help mise)
+assert_contains "$help_output" 'de mise'
 assert_contains "$help_output" 'Passes arguments through to mise.'
-assert_contains "$help_output" 'devenv mise run deploy'
+assert_contains "$help_output" 'de m run deploy'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-chezmoi-home" "$repo_root/bin/devenv" help chezmoi)
-assert_contains "$help_output" 'devenv chezmoi'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-chezmoi-home" "$de_cmd" help chezmoi)
+assert_contains "$help_output" 'de chezmoi'
 assert_contains "$help_output" 'Installs chezmoi through mise when missing.'
-assert_contains "$help_output" 'devenv chezmoi apply --source .'
+assert_contains "$help_output" 'de c apply --source .'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-apm-home" "$repo_root/bin/devenv" help apm)
-assert_contains "$help_output" 'devenv apm'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-apm-home" "$de_cmd" help apm)
+assert_contains "$help_output" 'de apm'
 assert_contains "$help_output" 'Installs apm through mise as pipx:apm-cli when missing.'
-assert_contains "$help_output" 'devenv apm --version'
+assert_contains "$help_output" 'de a --version'
 
-help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-install-ja-home" "$repo_root/bin/devenv" help install)
-assert_contains "$help_output" 'devenv install - dotfilesをclone後、clone先のbin/devenvを実行'
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-install-ja-home" "$de_cmd" help install)
+assert_contains "$help_output" 'de install - dotfilesをclone後、clone先のbin/deを実行'
 assert_contains "$help_output" '--repo URL'
 assert_contains "$help_output" '--branch NAME'
 assert_contains "$help_output" '--path PATH'
 
-help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-mise-ja-home" "$repo_root/bin/devenv" help mise)
-assert_contains "$help_output" 'devenv mise - miseへ引数を委譲'
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-mise-ja-home" "$de_cmd" help mise)
+assert_contains "$help_output" 'de mise - miseへ引数を委譲'
 assert_contains "$help_output" 'miseが未導入の場合はインストールします。'
 
-help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-chezmoi-ja-home" "$repo_root/bin/devenv" help chezmoi)
-assert_contains "$help_output" 'devenv chezmoi - chezmoiへ引数を委譲'
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-chezmoi-ja-home" "$de_cmd" help chezmoi)
+assert_contains "$help_output" 'de chezmoi - chezmoiへ引数を委譲'
 assert_contains "$help_output" 'chezmoiが未導入の場合はmise経由でインストールします。'
 
-help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-apm-ja-home" "$repo_root/bin/devenv" help apm)
-assert_contains "$help_output" 'devenv apm - apmへ引数を委譲'
+help_output=$(DEVENV_LANG=ja HOME="$tmp_dir/help-apm-ja-home" "$de_cmd" help apm)
+assert_contains "$help_output" 'de apm - apmへ引数を委譲'
 assert_contains "$help_output" 'apmが未導入の場合はmiseでpipx:apm-cliとしてインストールします。'
 
-help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-raw-home" "$bash_path" -s -- help install <"$repo_root/bin/devenv")
-assert_contains "$help_output" 'devenv install'
-assert_contains "$help_output" 'raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv'
+help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-raw-home" "$bash_path" -s -- help install <"$de_cmd")
+assert_contains "$help_output" 'de install'
+assert_contains "$help_output" 'raw.githubusercontent.com/njfa/dotfiles/main/bin/de'
 
-if env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-unknown-home" "$repo_root/bin/devenv" help unknown >"$tmp_dir/help-unknown.out" 2>"$tmp_dir/help-unknown.err"; then
+if env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-unknown-home" "$de_cmd" help unknown >"$tmp_dir/help-unknown.out" 2>"$tmp_dir/help-unknown.err"; then
   fail 'unknown help topic should fail'
 fi
 assert_contains "$(cat "$tmp_dir/help-unknown.err")" 'Unknown help topic: unknown'
 
-output=$(HOME="$tmp_dir/mise-home" "$repo_root/bin/devenv" mise --version)
-assert_contains "$output" '[RUN] mise --version'
+output=$(HOME="$tmp_dir/mise-home" "$de_cmd" mise --version)
 assert_contains "$output" '[STUB mise] --version'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
 
-output=$(HOME="$tmp_dir/mise-help-home" "$repo_root/bin/devenv" mise --help)
-assert_contains "$output" '[RUN] mise --help'
+output=$(HOME="$tmp_dir/mise-alias-home" "$de_cmd" m --version)
+assert_contains "$output" '[STUB mise] --version'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+
+no_args_bin="$tmp_dir/no-args-bin"
+mkdir -p "$no_args_bin"
+for tool in mise apm chezmoi; do
+  cat >"$no_args_bin/$tool" <<STUB
+#!$bash_path
+set -euo pipefail
+printf '[STUB $tool] argc=%s args=%s\n' "\$#" "\$*"
+STUB
+  chmod +x "$no_args_bin/$tool"
+done
+output=$(HOME="$tmp_dir/mise-no-args-home" PATH="$no_args_bin:$main_path:$PATH" "$de_cmd" m)
+assert_contains "$output" '[STUB mise] argc=0 args='
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+
+output=$(HOME="$tmp_dir/chezmoi-no-args-home" PATH="$no_args_bin:$main_path:$PATH" "$de_cmd" c)
+assert_contains "$output" '[STUB chezmoi] argc=0 args='
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+
+output=$(HOME="$tmp_dir/apm-no-args-home" PATH="$no_args_bin:$main_path:$PATH" "$de_cmd" a)
+assert_contains "$output" '[STUB apm] argc=0 args='
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+
+output=$(HOME="$tmp_dir/mise-help-home" "$de_cmd" mise --help)
 assert_contains "$output" '[STUB mise] --help'
-assert_not_contains "$output" 'devenv mise - pass arguments through to mise'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+assert_not_contains "$output" 'de mise - pass arguments through to mise'
 
 ordered_bin="$tmp_dir/ordered-bin"
 mkdir -p "$ordered_bin"
@@ -196,33 +235,48 @@ case "\$*" in
 esac
 STUB
 chmod +x "$ordered_bin/mise"
-ordered_output=$(HOME="$tmp_dir/ordered-home" PATH="$ordered_bin:$main_path:$PATH" "$repo_root/bin/devenv" mise ordered-output 2>&1)
+ordered_output=$(HOME="$tmp_dir/ordered-home" PATH="$ordered_bin:$main_path:$PATH" "$de_cmd" mise ordered-output 2>&1)
 assert_line_before "$ordered_output" 'stdout-before' 'stderr-middle'
 assert_line_before "$ordered_output" 'stderr-middle' 'stdout-after'
 
 home_without_config="$tmp_dir/home-without-config"
-output=$(HOME="$home_without_config" "$repo_root/bin/devenv" mise --version)
-assert_contains "$output" '[RUN] mise --version'
+output=$(HOME="$home_without_config" "$de_cmd" mise --version)
 assert_contains "$output" '[STUB mise] --version'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
 assert_not_exists "$home_without_config/.config/mise/config.toml"
 
-output=$(HOME="$tmp_dir/chezmoi-home" "$repo_root/bin/devenv" chezmoi apply --source "$repo_root")
-assert_contains "$output" '[RUN] chezmoi apply --source'
+output=$(HOME="$tmp_dir/chezmoi-home" "$de_cmd" chezmoi apply --source "$repo_root")
 assert_contains "$output" '[STUB chezmoi] apply --source'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
 
-output=$(HOME="$tmp_dir/chezmoi-help-home" "$repo_root/bin/devenv" chezmoi --help)
-assert_contains "$output" '[RUN] chezmoi --help'
+output=$(HOME="$tmp_dir/chezmoi-alias-home" "$de_cmd" c apply --source "$repo_root")
+assert_contains "$output" '[STUB chezmoi] apply --source'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+
+output=$(HOME="$tmp_dir/chezmoi-help-home" "$de_cmd" chezmoi --help)
 assert_contains "$output" '[STUB chezmoi] --help'
-assert_not_contains "$output" 'devenv chezmoi - pass arguments through to chezmoi'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+assert_not_contains "$output" 'de chezmoi - pass arguments through to chezmoi'
 
-output=$(HOME="$tmp_dir/apm-home" "$repo_root/bin/devenv" apm --version)
-assert_contains "$output" '[RUN] apm --version'
+output=$(HOME="$tmp_dir/apm-home" "$de_cmd" apm --version)
 assert_contains "$output" '[STUB apm] --version'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
 
-output=$(HOME="$tmp_dir/apm-help-home" "$repo_root/bin/devenv" apm --help)
-assert_contains "$output" '[RUN] apm --help'
+output=$(HOME="$tmp_dir/apm-alias-home" "$de_cmd" a --version)
+assert_contains "$output" '[STUB apm] --version'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+
+output=$(HOME="$tmp_dir/apm-help-home" "$de_cmd" apm --help)
 assert_contains "$output" '[STUB apm] --help'
-assert_not_contains "$output" 'devenv apm - pass arguments through to apm'
+assert_not_contains "$output" '[RUN]'
+assert_not_contains "$output" '[OK]'
+assert_not_contains "$output" 'de apm - pass arguments through to apm'
 
 missing_apm_dir="$tmp_dir/missing-apm-bin"
 missing_apm_tools="$tmp_dir/missing-apm-tools"
@@ -259,23 +313,24 @@ set -euo pipefail
 printf '[STUB apm] %s\n' "$*"
 STUB
 chmod +x "$missing_apm_shim_dir/apm"
-output=$(HOME="$tmp_dir/missing-apm-home" PATH="$missing_apm_dir:$missing_apm_tools" MISE_STUB_LOG="$missing_apm_log" APM_SHIM_DIR="$missing_apm_shim_dir" /usr/bin/bash "$repo_root/bin/devenv" apm --version)
+output=$(HOME="$tmp_dir/missing-apm-home" PATH="$missing_apm_dir:$missing_apm_tools" MISE_STUB_LOG="$missing_apm_log" APM_SHIM_DIR="$missing_apm_shim_dir" /usr/bin/bash "$de_cmd" apm --version)
 assert_contains "$(cat "$missing_apm_log")" 'install pipx:apm-cli'
 assert_contains "$(cat "$missing_apm_log")" "MISE_CONFIG_FILE=$repo_root/dot_config/mise/config.toml"
 assert_contains "$(cat "$missing_apm_log")" "PWD=$repo_root"
-assert_contains "$output" '[RUN] apm --version'
 assert_contains "$output" '[STUB apm] --version'
+assert_not_contains "$output" '[RUN] apm --version'
+assert_not_contains "$output" '[OK] apm --version'
 
-output=$(HOME="$tmp_dir/default-home" "$repo_root/bin/devenv")
+output=$(HOME="$tmp_dir/default-home" "$de_cmd")
 assert_not_contains "$output" '[RUN] mise run os-dependencies'
 assert_contains "$output" '[RUN] mise install'
 assert_contains "$output" '[RUN] mise run setup'
 assert_contains "$output" '[STUB mise] run setup'
 
-if "$repo_root/bin/devenv" unknown >"$tmp_dir/devenv-unknown.out" 2>"$tmp_dir/devenv-unknown.err"; then
+if "$de_cmd" unknown >"$tmp_dir/devenv-unknown.out" 2>"$tmp_dir/devenv-unknown.err"; then
   fail 'unknown subcommand should fail'
 fi
-assert_contains "$(cat "$tmp_dir/devenv-unknown.err")" 'Usage: devenv'
+assert_contains "$(cat "$tmp_dir/devenv-unknown.err")" 'Usage: de'
 
 install_bin="$tmp_dir/install-bin"
 install_tools="$tmp_dir/install-tools"
@@ -305,18 +360,18 @@ printf '%s\n' "\$*" >>"\$INSTALL_GIT_LOG"
 if [[ \$1 == clone ]]; then
   target="\${@: -1}"
   mkdir -p "\$target/bin"
-  cat >"\$target/bin/devenv" <<'INNER'
+  cat >"\$target/bin/de" <<'INNER'
 #!$bash_path
 set -euo pipefail
-printf '[CLONED devenv] %s\n' "\$*"
+printf '[CLONED de] %s\n' "\$*"
 INNER
-  chmod +x "\$target/bin/devenv"
+  chmod +x "\$target/bin/de"
 fi
 STUB
 chmod +x "$install_bin/git"
 
 set +e
-HOME="$tmp_dir/install-success-home" PATH="$install_bin:$install_tools" INSTALL_GIT_LOG="$install_log" "$repo_root/bin/devenv" install --repo https://example.com/dotfiles.git --branch feature/test --path "$install_target" >"$tmp_dir/install-success.out" 2>"$tmp_dir/install-success.err"
+HOME="$tmp_dir/install-success-home" PATH="$install_bin:$install_tools" INSTALL_GIT_LOG="$install_log" "$de_cmd" install --repo https://example.com/dotfiles.git --branch feature/test --path "$install_target" >"$tmp_dir/install-success.out" 2>"$tmp_dir/install-success.err"
 install_status=$?
 set -e
 install_output=$(cat "$tmp_dir/install-success.out")
@@ -327,30 +382,30 @@ fi
 assert_contains "$(cat "$install_log")" 'clone --branch feature/test -- https://example.com/dotfiles.git'
 assert_contains "$(cat "$install_log")" "$install_target"
 assert_contains "$install_output" '[RUN] git clone'
-assert_not_contains "$install_output" '[RUN] devenv'
-assert_contains "$install_output" '[CLONED devenv]'
+assert_not_contains "$install_output" '[RUN] de'
+assert_contains "$install_output" '[CLONED de]'
 
 dash_repo_target="$tmp_dir/dash-repo-target"
 dash_repo_log="$tmp_dir/dash-repo-git.log"
-output=$(HOME="$tmp_dir/dash-repo-home" PATH="$install_bin:$install_tools" INSTALL_GIT_LOG="$dash_repo_log" "$repo_root/bin/devenv" install --repo ./-repo --branch dash/test --path "$dash_repo_target")
+output=$(HOME="$tmp_dir/dash-repo-home" PATH="$install_bin:$install_tools" INSTALL_GIT_LOG="$dash_repo_log" "$de_cmd" install --repo ./-repo --branch dash/test --path "$dash_repo_target")
 assert_contains "$(cat "$dash_repo_log")" "clone --branch dash/test -- ./-repo $dash_repo_target"
 assert_contains "$output" '[RUN] git clone'
-assert_not_contains "$output" '[RUN] devenv'
-assert_contains "$output" '[CLONED devenv]'
+assert_not_contains "$output" '[RUN] de'
+assert_contains "$output" '[CLONED de]'
 
 raw_install_target="$tmp_dir/raw-dotfiles-target"
 raw_install_log="$tmp_dir/raw-install-git.log"
-output=$(HOME="$tmp_dir/raw-install-home" PATH="$install_bin:$install_tools" INSTALL_GIT_LOG="$raw_install_log" "$bash_path" -s -- install --repo https://example.com/raw.git --branch raw/test --path "$raw_install_target" <"$repo_root/bin/devenv")
+output=$(HOME="$tmp_dir/raw-install-home" PATH="$install_bin:$install_tools" INSTALL_GIT_LOG="$raw_install_log" "$bash_path" -s -- install --repo https://example.com/raw.git --branch raw/test --path "$raw_install_target" <"$de_cmd")
 assert_contains "$(cat "$raw_install_log")" 'clone --branch raw/test -- https://example.com/raw.git'
 assert_contains "$(cat "$raw_install_log")" "$raw_install_target"
 assert_contains "$output" '[RUN] git clone'
-assert_not_contains "$output" '[RUN] devenv'
-assert_contains "$output" '[CLONED devenv]'
+assert_not_contains "$output" '[RUN] de'
+assert_contains "$output" '[CLONED de]'
 
 existing_target="$tmp_dir/existing-dotfiles"
 mkdir -p "$existing_target"
 set +e
-HOME="$tmp_dir/install-existing-home" PATH="$install_bin:$install_tools" "$repo_root/bin/devenv" install --path "$existing_target" >"$tmp_dir/install-existing.out" 2>"$tmp_dir/install-existing.err"
+HOME="$tmp_dir/install-existing-home" PATH="$install_bin:$install_tools" "$de_cmd" install --path "$existing_target" >"$tmp_dir/install-existing.out" 2>"$tmp_dir/install-existing.err"
 install_existing_status=$?
 set -e
 if [[ $install_existing_status -eq 0 ]]; then
@@ -360,14 +415,14 @@ assert_contains "$(cat "$tmp_dir/install-existing.err")" 'already exists'
 
 for option in --repo --branch --path; do
   set +e
-  HOME="$tmp_dir/install-missing-value-home" PATH="$install_bin:$install_tools" "$repo_root/bin/devenv" install "$option" >"$tmp_dir/install-missing-value.out" 2>"$tmp_dir/install-missing-value.err"
+  HOME="$tmp_dir/install-missing-value-home" PATH="$install_bin:$install_tools" "$de_cmd" install "$option" >"$tmp_dir/install-missing-value.out" 2>"$tmp_dir/install-missing-value.err"
   install_missing_value_status=$?
   set -e
   if [[ $install_missing_value_status -ne 2 ]]; then
     printf 'stdout was:\n%s\nstderr was:\n%s\n' "$(cat "$tmp_dir/install-missing-value.out")" "$(cat "$tmp_dir/install-missing-value.err")" >&2
     fail "install $option without a value should exit 2"
   fi
-  assert_contains "$(cat "$tmp_dir/install-missing-value.err")" 'Usage: devenv'
+  assert_contains "$(cat "$tmp_dir/install-missing-value.err")" 'Usage: de'
 done
 
 missing_git_bin="$tmp_dir/missing-git-bin"
@@ -384,7 +439,7 @@ STUB
 chmod +x "$missing_git_bin/id"
 
 set +e
-HOME="$tmp_dir/install-home" PATH="$missing_git_bin" "$bash_path" "$repo_root/bin/devenv" install --path "$tmp_dir/no-git-target" >"$tmp_dir/install-missing-git.out" 2>"$tmp_dir/install-missing-git.err"
+HOME="$tmp_dir/install-home" PATH="$missing_git_bin" "$bash_path" "$de_cmd" install --path "$tmp_dir/no-git-target" >"$tmp_dir/install-missing-git.out" 2>"$tmp_dir/install-missing-git.err"
 install_missing_git_status=$?
 set -e
 if [[ $install_missing_git_status -eq 0 ]]; then
@@ -404,7 +459,7 @@ fi
 STUB
 chmod +x "$missing_tools_dir/id"
 
-if HOME="$tmp_dir/bootstrap-home" PATH="$missing_tools_dir" /usr/bin/bash "$repo_root/bin/devenv" mise --version >"$tmp_dir/missing-curl.out" 2>"$tmp_dir/missing-curl.err"; then
+if HOME="$tmp_dir/bootstrap-home" PATH="$missing_tools_dir" /usr/bin/bash "$de_cmd" mise --version >"$tmp_dir/missing-curl.out" 2>"$tmp_dir/missing-curl.err"; then
   fail 'missing curl bootstrap should fail'
 fi
 assert_contains "$(cat "$tmp_dir/missing-curl.err")" 'curl is required to install mise.'
