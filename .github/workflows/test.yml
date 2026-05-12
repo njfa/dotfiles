@@ -16,9 +16,19 @@ jobs:
     - name: Run devenv contract test
       run: bash tests/devenv-contract.sh
     - name: Run focused shell tests
-      run: bash tests/mise-config.sh && bash tests/dependencies-skip-without-privilege.sh && bash tests/rustup-skip-without-writable-home.sh
+      run: |
+        bash tests/mise-config.sh
+        bash tests/chezmoiignore.sh
+        bash tests/dependencies-skip-without-privilege.sh
+        bash tests/rustup-skip-without-writable-home.sh
+        bash tests/sudo-required-tasks-skip-without-sudo.sh
+        bash tests/tmux-tui-window.sh
+        bash tests/tmux-win32yank-wsl.sh
+        bash tests/wsl-xdg-open.sh
+        bash tests/yazi-keymap.sh
+        bash tests/dashlane-cli-install.sh
     - name: Validate shell syntax
-      run: bash -n bin/devenv etc/os/ubuntu/init/dependencies.sh tests/devenv-contract.sh
+      run: bash -n $(git ls-files '*.sh' 'bin/devenv')
     - name: Validate mise tasks
       run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
     - name: Initialize dotfiles
@@ -36,9 +46,19 @@ jobs:
     - name: Run devenv contract test
       run: bash tests/devenv-contract.sh
     - name: Run focused shell tests
-      run: bash tests/mise-config.sh && bash tests/dependencies-skip-without-privilege.sh && bash tests/rustup-skip-without-writable-home.sh
+      run: |
+        bash tests/mise-config.sh
+        bash tests/chezmoiignore.sh
+        bash tests/dependencies-skip-without-privilege.sh
+        bash tests/rustup-skip-without-writable-home.sh
+        bash tests/sudo-required-tasks-skip-without-sudo.sh
+        bash tests/tmux-tui-window.sh
+        bash tests/tmux-win32yank-wsl.sh
+        bash tests/wsl-xdg-open.sh
+        bash tests/yazi-keymap.sh
+        bash tests/dashlane-cli-install.sh
     - name: Validate shell syntax
-      run: bash -n bin/devenv etc/os/ubuntu/init/dependencies.sh tests/devenv-contract.sh
+      run: bash -n $(git ls-files '*.sh' 'bin/devenv')
     - name: Validate mise tasks
       run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
     - name: Initialize dotfiles
@@ -56,9 +76,19 @@ jobs:
     - name: Run devenv contract test
       run: bash tests/devenv-contract.sh
     - name: Run focused shell tests
-      run: bash tests/mise-config.sh && bash tests/dependencies-skip-without-privilege.sh && bash tests/rustup-skip-without-writable-home.sh
+      run: |
+        bash tests/mise-config.sh
+        bash tests/chezmoiignore.sh
+        bash tests/dependencies-skip-without-privilege.sh
+        bash tests/rustup-skip-without-writable-home.sh
+        bash tests/sudo-required-tasks-skip-without-sudo.sh
+        bash tests/tmux-tui-window.sh
+        bash tests/tmux-win32yank-wsl.sh
+        bash tests/wsl-xdg-open.sh
+        bash tests/yazi-keymap.sh
+        bash tests/dashlane-cli-install.sh
     - name: Validate shell syntax
-      run: bash -n bin/devenv etc/os/ubuntu/init/dependencies.sh tests/devenv-contract.sh
+      run: bash -n $(git ls-files '*.sh' 'bin/devenv')
     - name: Validate mise tasks
       run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/devenv mise tasks validate
     - name: Initialize dotfiles

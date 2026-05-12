@@ -48,6 +48,20 @@ assert_not_exists() {
   fi
 }
 
+assert_line_before() {
+  local haystack="$1"
+  local first="$2"
+  local second="$3"
+  local first_line second_line
+
+  first_line=$(printf '%s\n' "$haystack" | grep -nF "$first" | head -n1 | cut -d: -f1 || true)
+  second_line=$(printf '%s\n' "$haystack" | grep -nF "$second" | head -n1 | cut -d: -f1 || true)
+  if [[ -z $first_line || -z $second_line || $first_line -ge $second_line ]]; then
+    printf 'Output was:\n%s\n' "$haystack" >&2
+    fail "expected '$first' to appear before '$second'"
+  fi
+}
+
 bash_path=$(command -v bash)
 
 help_output=$(env -u DEVENV_LANG -u LC_ALL -u LANGUAGE LANG=C HOME="$tmp_dir/help-home" "$repo_root/bin/devenv" help)
@@ -163,6 +177,29 @@ assert_contains "$output" '[RUN] mise --help'
 assert_contains "$output" '[STUB mise] --help'
 assert_not_contains "$output" 'devenv mise - pass arguments through to mise'
 
+ordered_bin="$tmp_dir/ordered-bin"
+mkdir -p "$ordered_bin"
+cat >"$ordered_bin/mise" <<STUB
+#!$bash_path
+set -euo pipefail
+case "\$*" in
+  'activate bash')
+    ;;
+  ordered-output)
+    printf 'stdout-before\n'
+    printf 'stderr-middle\n' >&2
+    printf 'stdout-after\n'
+    ;;
+  *)
+    printf '[STUB mise] %s\n' "\$*"
+    ;;
+esac
+STUB
+chmod +x "$ordered_bin/mise"
+ordered_output=$(HOME="$tmp_dir/ordered-home" PATH="$ordered_bin:$main_path:$PATH" "$repo_root/bin/devenv" mise ordered-output 2>&1)
+assert_line_before "$ordered_output" 'stdout-before' 'stderr-middle'
+assert_line_before "$ordered_output" 'stderr-middle' 'stdout-after'
+
 home_without_config="$tmp_dir/home-without-config"
 output=$(HOME="$home_without_config" "$repo_root/bin/devenv" mise --version)
 assert_contains "$output" '[RUN] mise --version'
@@ -230,8 +267,7 @@ assert_contains "$output" '[RUN] apm --version'
 assert_contains "$output" '[STUB apm] --version'
 
 output=$(HOME="$tmp_dir/default-home" "$repo_root/bin/devenv")
-assert_contains "$output" '[RUN] mise run os-dependencies'
-assert_contains "$output" '[STUB mise] run os-dependencies'
+assert_not_contains "$output" '[RUN] mise run os-dependencies'
 assert_contains "$output" '[RUN] mise install'
 assert_contains "$output" '[RUN] mise run setup'
 assert_contains "$output" '[STUB mise] run setup'

@@ -300,24 +300,13 @@ run_formatted() {
 
   printf '\n%s[RUN] %s%s\n' "$CYAN" "$label" "$RESET"
 
-  local stdout_file stderr_file status
-  stdout_file=$(mktemp)
-  stderr_file=$(mktemp)
-
+  local status
   set +e
-  "$@" >"$stdout_file" 2>"$stderr_file"
-  status=$?
-  set -e
-
-  while IFS= read -r line; do
+  "$@" 2>&1 | while IFS= read -r line; do
     printf '%s│%s %s\n' "$GREY" "$RESET" "$line"
-  done <"$stdout_file"
-
-  while IFS= read -r line; do
-    printf '%s│%s %s\n' "$RED" "$RESET" "$line" >&2
-  done <"$stderr_file"
-
-  rm -f "$stdout_file" "$stderr_file"
+  done
+  status=${PIPESTATUS[0]}
+  set -e
 
   if [[ $status -eq 0 ]]; then
     printf '%s[OK] %s%s\n' "$GREEN" "$label" "$RESET"
@@ -512,7 +501,6 @@ main() {
   case "${1:-}" in
     '')
       ensure_base
-      run_formatted 'mise run os-dependencies' "$MISE_BIN" run os-dependencies
       run_formatted 'mise install' "$MISE_BIN" install
       run_formatted 'mise run setup' "$MISE_BIN" run setup
       ;;

@@ -14,6 +14,11 @@ if ! grep -Fq 'git config --global wt.basedir \".worktrees\"' "$config"; then
   exit 1
 fi
 
+if [[ $(grep -Fc 'git config --global wt.copymodified true' "$config") -ne 1 ]]; then
+  printf 'FAIL: expected wt.copymodified to be configured exactly once in %s\n' "$config" >&2
+  exit 1
+fi
+
 if grep -qx '\[tasks\.sync\]' "$config"; then
   printf 'FAIL: expected ambiguous sync task to be removed from %s\n' "$config" >&2
   exit 1
@@ -84,6 +89,18 @@ fi
 
 if grep -qx 'opencode = "latest"' "$config" || grep -qx '\[tasks\.opencode\]' "$config"; then
   printf 'FAIL: expected opencode not to be managed in %s\n' "$config" >&2
+  exit 1
+fi
+
+neovim_task=$(awk '/^\[tasks\.neovim\]/{f=1; next} /^\[/{f=0} f' "$config")
+if [[ "$neovim_task" == *'rm -rf $HOME/.cache/nvim $HOME/.local/state/nvim'* ]]; then
+  printf 'FAIL: expected neovim task not to remove user cache/state in %s\n' "$config" >&2
+  exit 1
+fi
+
+neovim_clean_task=$(awk '/^\[tasks\.neovim-clean\]/{f=1; next} /^\[/{f=0} f' "$config")
+if [[ "$neovim_clean_task" != *'rm -rf $HOME/.cache/nvim $HOME/.local/state/nvim'* ]]; then
+  printf 'FAIL: expected neovim-clean task to explicitly remove Neovim cache/state in %s\n' "$config" >&2
   exit 1
 fi
 

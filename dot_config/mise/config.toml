@@ -99,7 +99,6 @@ run = [
   "git config --global wt.basedir \".worktrees\"",
   "git config --global wt.copyuntracked true",
   "git config --global wt.copymodified true",
-  "git config --global wt.copymodified true",
   "git config --global wt.copyignored true",
   "git config --global --replace-all wt.nocopy \"tmp/\"",
   "git config --global --add wt.nocopy \"*.log\""
@@ -138,9 +137,11 @@ run = [
   "mise install neovim uv ripgrep fd",
   "uv tool install pynvim",
   "uv tool install neovim-remote",
-  "uv tool install isort",
-  "rm -rf $HOME/.cache/nvim $HOME/.local/state/nvim"
+  "uv tool install isort"
 ]
+
+[tasks.neovim-clean]
+run = "rm -rf $HOME/.cache/nvim $HOME/.local/state/nvim"
 
 [tasks.cargo-tools]
 # Cargo-based utilities not covered by mise plugins yet

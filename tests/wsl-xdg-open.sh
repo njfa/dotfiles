@@ -41,4 +41,4 @@ fi
 
 assert_contains "$wrapper" '^#!/bin/sh$'
 assert_contains "$wrapper" '/mnt/c/Windows/System32/rundll32\.exe url\.dll,FileProtocolHandler "\$@"'
-assert_contains "$installer" 'sudo ln -sf "\$DOTFILES_PATH/bin/xdg-open" /usr/local/bin/xdg-open'
+assert_contains "$installer" '\$SUDO ln -sf "\$DOTFILES_PATH/bin/xdg-open" /usr/local/bin/xdg-open'
