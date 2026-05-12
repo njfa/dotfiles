@@ -5,10 +5,12 @@
 ### Linux (WSL / Ubuntu Server)
 
 ```bash
+# clone, apply dotfiles, and run initial setup
 curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install
 ```
 
 ```bash
+# choose a custom clone path or branch, then apply and bootstrap
 curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install --path "$HOME/.dotfiles" --branch main
 ```
 

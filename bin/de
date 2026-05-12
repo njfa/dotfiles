@@ -7,6 +7,20 @@ readonly RED=$'\033[31m'
 readonly GREEN=$'\033[32m'
 readonly CYAN=$'\033[36m'
 
+locale_hint() {
+  if [[ -n ${LC_ALL:-} ]]; then
+    printf '%s\n' "$LC_ALL"
+    return
+  fi
+
+  if [[ -n ${LANGUAGE:-} ]]; then
+    printf '%s\n' "${LANGUAGE%%:*}"
+    return
+  fi
+
+  printf '%s\n' "${LANG:-}"
+}
+
 devenv_lang() {
   case "${DEVENV_LANG:-}" in
     ja)
@@ -25,8 +39,8 @@ devenv_lang() {
       ;;
   esac
 
-  case "${LANG:-}" in
-    ja|ja_*|ja.*)
+  case "$(locale_hint)" in
+    ja|ja_*|ja.*|ja-*)
       printf 'ja\n'
       ;;
     *)
@@ -63,7 +77,7 @@ de - dotfilesの初期化とツール委譲コマンド
   de help [command]
 
 コマンド:
-  install   dotfilesをclone後、clone先のbin/deを実行
+  install   dotfilesをclone後、applyとセットアップを実行
   mise      miseをインストール後、miseへ引数を委譲
   m         miseの別名
   chezmoi   chezmoiをインストール後、chezmoiへ引数を委譲
@@ -95,7 +109,7 @@ Usage:
   de help [command]
 
 Commands:
-  install   Clone dotfiles and run the cloned de
+  install   Clone dotfiles, apply them, and run setup
   mise      Ensure mise, then pass arguments through to mise
   m         Alias for mise
   chezmoi   Ensure chezmoi, then pass arguments through to chezmoi
@@ -121,7 +135,7 @@ help_install() {
   case "$(devenv_lang)" in
     ja)
       cat <<'HELP'
-de install - dotfilesをclone後、clone先のbin/deを実行
+de install - dotfilesをclone後、applyとセットアップを実行
 
 使い方:
   de install [--repo URL] [--branch NAME] [--path PATH]
@@ -135,13 +149,14 @@ de install - dotfilesをclone後、clone先のbin/deを実行
   curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install
   de install --path "$HOME/.dotfiles" --branch main
 
-補足:
-  install先が既に存在する場合はgit clone前に停止します。
+  補足:
+   clone後、clone先のbin/deでapplyとセットアップを実行します。
+   install先が既に存在する場合はgit clone前に停止します。
 HELP
       ;;
     *)
       cat <<'HELP'
-de install - clone dotfiles and run the cloned de
+de install - clone dotfiles, apply them, and run setup
 
 Usage:
   de install [--repo URL] [--branch NAME] [--path PATH]
@@ -155,8 +170,9 @@ Examples:
   curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/de | bash -s -- install
   de install --path "$HOME/.dotfiles" --branch main
 
-Notes:
-  Existing target paths stop the install before git clone.
+  Notes:
+   After cloning, the cloned bin/de runs apply and setup.
+   Existing target paths stop the install before git clone.
 HELP
       ;;
   esac
@@ -398,7 +414,15 @@ install_dotfiles() {
 
   ensure_git
   run_formatted 'git clone' git clone --branch "$branch" -- "$repo" "$target_path"
-  "$target_path/bin/de"
+  "$target_path/bin/de" install-bootstrap
+}
+
+run_install_bootstrap() {
+  ensure_base
+  ensure_tool chezmoi chezmoi
+  run_formatted 'chezmoi apply' chezmoi apply --source "$DOTFILES_PATH"
+  run_formatted 'mise install' "$MISE_BIN" install
+  run_formatted 'mise run setup' "$MISE_BIN" run setup
 }
 
 if [[ ${1:-} == install ]]; then
@@ -517,6 +541,10 @@ main() {
     install)
       shift
       install_dotfiles "$@"
+      ;;
+    install-bootstrap)
+      shift
+      run_install_bootstrap "$@"
       ;;
     mise|m)
       shift

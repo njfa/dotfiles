@@ -87,6 +87,28 @@ if grep -q '\.claude\.json' "$config"; then
   exit 1
 fi
 
+deploy_task=$(awk '/^\[tasks\.deploy\]/{f=1; next} /^\[/{f=0} f' "$config")
+if [[ "$deploy_task" != *'if [ -f "$DOTFILES_PATH/wsl.conf" ]; then'* ]]; then
+  printf 'FAIL: expected deploy task to guard wsl.conf deployment in %s\n' "$config" >&2
+  exit 1
+fi
+if [[ "$deploy_task" != *'if [ "$(id -u)" -eq 0 ]; then'* ]]; then
+  printf 'FAIL: expected deploy task to copy wsl.conf directly as root in %s\n' "$config" >&2
+  exit 1
+fi
+if [[ "$deploy_task" != *'elif command -v sudo >/dev/null 2>&1 && { sudo -n true >/dev/null 2>&1 || { [ -t 0 ] && sudo -v >/dev/null 2>&1; }; }; then'* ]]; then
+  printf 'FAIL: expected deploy task to use sudo for wsl.conf deployment in %s\n' "$config" >&2
+  exit 1
+fi
+if [[ "$deploy_task" != *'sudo cp "$DOTFILES_PATH/wsl.conf" /etc/wsl.conf'* ]]; then
+  printf 'FAIL: expected deploy task to copy wsl.conf with sudo in %s\n' "$config" >&2
+  exit 1
+fi
+if [[ "$deploy_task" != *'Skipping wsl.conf deployment: sudo is unavailable or unusable in this session.'* ]]; then
+  printf 'FAIL: expected deploy task to emit a skip message for unprivileged wsl.conf deployment in %s\n' "$config" >&2
+  exit 1
+fi
+
 if grep -qx 'opencode = "latest"' "$config" || grep -qx '\[tasks\.opencode\]' "$config"; then
   printf 'FAIL: expected opencode not to be managed in %s\n' "$config" >&2
   exit 1

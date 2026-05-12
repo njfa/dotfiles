@@ -46,7 +46,17 @@ run = [
 test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
 test -x "$DOTFILES_PATH/bin/de"
 mise install chezmoi >/dev/null
-mise exec chezmoi -- chezmoi apply --source "$DOTFILES_PATH"'
+mise exec chezmoi -- chezmoi apply --source "$DOTFILES_PATH"
+
+if [ -f "$DOTFILES_PATH/wsl.conf" ]; then
+  if [ "$(id -u)" -eq 0 ]; then
+    cp "$DOTFILES_PATH/wsl.conf" /etc/wsl.conf
+  elif command -v sudo >/dev/null 2>&1 && { sudo -n true >/dev/null 2>&1 || { [ -t 0 ] && sudo -v >/dev/null 2>&1; }; }; then
+    sudo cp "$DOTFILES_PATH/wsl.conf" /etc/wsl.conf
+  else
+    echo "Skipping wsl.conf deployment: sudo is unavailable or unusable in this session." >&2
+  fi
+fi'
 ''',
   "git config --global core.editor vim",
   "git config --global core.autoCRLF false"
