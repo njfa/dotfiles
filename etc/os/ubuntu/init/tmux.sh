@@ -8,13 +8,22 @@ if [ -z "${TMUX_VERSION:-}" ]; then
     exit 1
 fi
 
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+elif command -v sudo >/dev/null 2>&1; then
+    SUDO="sudo"
+else
+    echo "Skipping tmux: sudo is unavailable and current user is not root." >&2
+    exit 0
+fi
+
 current_version=""
 if command -v tmux >/dev/null 2>&1; then
     current_version="$(tmux -V 2>/dev/null | awk '{print $2}')"
 fi
 
 if [ "$current_version" != "$TMUX_VERSION" ]; then
-    sudo apt install -y automake bison build-essential pkg-config libevent-dev libncurses5-dev
+    $SUDO apt install -y automake bison build-essential pkg-config libevent-dev libncurses5-dev
 
     ARCHIVE_NAME="tmux-${TMUX_VERSION}.tar.gz"
     SRC_DIR="${TMUX_SRC_ROOT}/tmux-${TMUX_VERSION}"
@@ -34,6 +43,6 @@ if [ "$current_version" != "$TMUX_VERSION" ]; then
     make
     make install
 
-    sudo ln -sf "$INSTALL_DIR/bin/tmux" /usr/local/bin/tmux
+    $SUDO ln -sf "$INSTALL_DIR/bin/tmux" /usr/local/bin/tmux
     tmux -V
 fi

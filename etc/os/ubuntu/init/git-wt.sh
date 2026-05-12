@@ -5,6 +5,15 @@ if [ -z "${GIT_WT_VERSION:-}" ]; then
     exit 1
 fi
 
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+elif command -v sudo >/dev/null 2>&1; then
+    SUDO="sudo"
+else
+    echo "Skipping git-wt: sudo is unavailable and current user is not root." >&2
+    exit 0
+fi
+
 is_installed=false
 
 if command -v git-wt >/dev/null 2>&1; then
@@ -53,5 +62,5 @@ if ! $is_installed; then
         echo "git-wt is already downloaded."
     fi
 
-    sudo ln -sf ~/.git-wt/$GIT_WT_VERSION/git-wt /usr/local/bin/git-wt
+    $SUDO ln -sf ~/.git-wt/$GIT_WT_VERSION/git-wt /usr/local/bin/git-wt
 fi

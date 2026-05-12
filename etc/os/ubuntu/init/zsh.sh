@@ -3,6 +3,15 @@
 is_installed=false
 zsh_required_version="${ZSH_VERSION:-}"
 
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+elif command -v sudo >/dev/null 2>&1; then
+    SUDO="sudo"
+else
+    echo "Skipping zsh: sudo is unavailable and current user is not root." >&2
+    exit 0
+fi
+
 if [ -n "$(command -v zsh)" ]; then
     version="$(zsh --version | awk '{print $2}')"
     if [ -n "$zsh_required_version" ]; then
@@ -25,7 +34,7 @@ if ! $is_installed; then
     # 未指定の場合は最新バージョンを取得
     if [ -z "$zsh_required_version" ]; then
         if ! command -v curl >/dev/null 2>&1; then
-            sudo apt install -y curl
+            $SUDO apt install -y curl
         fi
         zsh_required_version="$(curl -fsSL https://www.zsh.org/pub/ | grep -o 'zsh-[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -n1 | sed 's/zsh-//')"
         if [ -z "$zsh_required_version" ]; then
@@ -35,21 +44,21 @@ if ! $is_installed; then
     fi
 
     zsh_tarball_url="https://www.zsh.org/pub/zsh-$zsh_required_version.tar.xz"
-    sudo apt install -y wget tar make
+    $SUDO apt install -y wget tar make
     wget "$zsh_tarball_url" -O zsh-$zsh_required_version.tar.xz
     tar xvf zsh-$zsh_required_version.tar.xz -C ~/
     rm zsh-$zsh_required_version.tar.xz
     mv ~/zsh-$zsh_required_version ~/.zsh-install
     cd ~/.zsh-install
     ./configure --enable-multibyte
-    make && sudo make install && rm -rf ~/.zsh-install
+    make && $SUDO make install && rm -rf ~/.zsh-install
 fi
 
 # /etc/shellsに含まれていない場合は追加
 if [ -z "$(cat /etc/shells | grep $(which zsh))" ]; then
     echo "zsh is not listed in /etc/shells."
 
-    sudo sh -c "echo $(which zsh) >> /etc/shells"
+    $SUDO sh -c "echo $(which zsh) >> /etc/shells"
 else
     echo "zsh is listed in /etc/shells."
 fi

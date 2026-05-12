@@ -1,5 +1,5 @@
 [tools]
-# Versions pinned from .env
+# Versions are pinned here so setup does not depend on .env.
 python = "3.13.11"
 
 # Runtimes / CLIs (keep versions explicit so they can be overridden)
@@ -30,13 +30,8 @@ eza = "latest"
 chezmoi = "latest"
 
 [tasks.os-dependencies]
-run = '''bash -lc 'set -euo pipefail
-: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
-test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
-test -x "$DOTFILES_PATH/bin/devenv"
-cd "$DOTFILES_PATH"
-bash etc/os/ubuntu/init/dependencies.sh'
-'''
+quiet = true
+run = "bash -lc 'set -euo pipefail; : \"${DOTFILES_PATH:?DOTFILES_PATH is required}\"; test -f \"$DOTFILES_PATH/dot_config/mise/config.toml\"; test -x \"$DOTFILES_PATH/bin/devenv\"; cd \"$DOTFILES_PATH\"; bash etc/os/ubuntu/init/dependencies.sh'"
 
 [tasks.setup]
 depends = ["os-dependencies"]
@@ -53,12 +48,11 @@ test -x "$DOTFILES_PATH/bin/devenv"
 mise install chezmoi >/dev/null
 mise exec chezmoi -- chezmoi apply --source "$DOTFILES_PATH"'
 ''',
-  "bash -lc 'set -euo pipefail; if [ ! -f \"$HOME/.claude.json\" ]; then printf \"{}\" > \"$HOME/.claude.json\"; fi'",
   "git config --global core.editor vim",
   "git config --global core.autoCRLF false"
 ]
 
-[tasks.sync]
+[tasks.sync-to-windows]
 run = '''bash -lc 'set -euo pipefail
 : "${DOTFILES_PATH:?DOTFILES_PATH is required}"
 test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
@@ -102,7 +96,7 @@ run = [
   "git config --global delta.syntax-theme Dracula",
   "git config --global merge.conflictstyle diff3",
   "git config --global diff.colorMoved default",
-  "git config --global wt.basedir \"../{gitroot}-worktrees\"",
+  "git config --global wt.basedir \".worktrees\"",
   "git config --global wt.copyuntracked true",
   "git config --global wt.copymodified true",
   "git config --global wt.copymodified true",
@@ -115,6 +109,16 @@ run = [
 run = [
   "mise run rustup",
   "mise run git-config",
+  "mise run tpm",
+  "mise run mdformat",
+  "mise run git-wt",
+  "mise run zsh",
+  "mise run tmux",
+  "mise run sdkman",
+  "mise run connect",
+  "mise run xdg-open",
+  "mise run win32yank",
+  "mise run docker",
   "mise run node-tools",
   "mise run neovim"
 ]
@@ -154,6 +158,84 @@ run = [
   "mise install zellij",
   "mise run zjstatus"
 ]
+
+[tasks.tpm]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/tpm.sh'
+'''
+
+[tasks.mdformat]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/mdformat.sh'
+'''
+
+[tasks.git-wt]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+export GIT_WT_VERSION=v0.17.0
+bash etc/os/ubuntu/init/git-wt.sh'
+'''
+
+[tasks.zsh]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/zsh.sh'
+'''
+
+[tasks.tmux]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+export TMUX_VERSION=3.6a
+bash etc/os/ubuntu/init/tmux.sh'
+'''
+
+[tasks.sdkman]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/sdkman.sh'
+'''
+
+[tasks.connect]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/connect.sh'
+'''
+
+[tasks.xdg-open]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/xdg-open.sh'
+'''
+
+[tasks.win32yank]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/win32yank.sh'
+'''
+
+[tasks.docker]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/init/docker.sh'
+'''
+
+[tasks.psql]
+run = "sudo apt-get update -y && sudo apt-get install -y postgresql-client"
+
+[tasks.mysql]
+run = "sudo apt-get update -y && sudo apt-get install -y mysql-client"
 
 [tasks.rustup]
 run = '''bash -lc 'set -euo pipefail

@@ -16,6 +16,7 @@ curl -fsSL https://raw.githubusercontent.com/njfa/dotfiles/main/bin/devenv | bas
 cd /path/to/dotfiles
 ./bin/devenv
 ./bin/devenv mise run deploy
+./bin/devenv mise run sync-to-windows
 ```
 
 ```bash
