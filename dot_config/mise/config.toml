@@ -47,6 +47,12 @@ test -x "$DOTFILES_PATH/bin/de"
 mise install chezmoi >/dev/null
 mise exec chezmoi -- chezmoi apply --source "$DOTFILES_PATH"
 
+agents_path=${AGENTS_PATH:-"$HOME/.agents"}
+if [ -d "$agents_path" ]; then
+  test -f "$agents_path/.chezmoiignore"
+  mise exec chezmoi -- chezmoi apply --source "$agents_path"
+fi
+
 if [ -f "$DOTFILES_PATH/wsl.conf" ]; then
   if [ "$(id -u)" -eq 0 ]; then
     cp "$DOTFILES_PATH/wsl.conf" /etc/wsl.conf
@@ -89,7 +95,12 @@ run = [
 test -f "$DOTFILES_PATH/dot_config/mise/config.toml"
 test -x "$DOTFILES_PATH/bin/de"
 mise install chezmoi >/dev/null
-mise exec chezmoi -- chezmoi managed --source "$DOTFILES_PATH"'
+mise exec chezmoi -- chezmoi managed --source "$DOTFILES_PATH"
+agents_path=${AGENTS_PATH:-"$HOME/.agents"}
+if [ -d "$agents_path" ]; then
+  test -f "$agents_path/.chezmoiignore"
+  mise exec chezmoi -- chezmoi managed --source "$agents_path"
+fi'
 '''
 ]
 
