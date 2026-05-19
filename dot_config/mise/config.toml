@@ -22,7 +22,6 @@ delta = "latest"
 neovim = "0.12"
 uv = "latest"
 "npm:tree-sitter-cli" = "latest"
-"pipx:apm-cli" = "latest"
 
 yazi = "latest"
 zoxide = "latest"
@@ -116,6 +115,7 @@ run = [
 
 [tasks.default]
 run = [
+  "mise run apm",
   "mise run rustup",
   "mise run git-config",
   "mise run tpm",
@@ -136,6 +136,11 @@ run = [
 run = [
   "mise run zellij",
   "mise run cargo-tools"
+]
+
+[tasks.apm]
+run = [
+  "curl -sSL https://aka.ms/apm-unix | sh"
 ]
 
 [tasks.node-tools]
