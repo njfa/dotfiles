@@ -33,6 +33,77 @@ local function first_glob(pattern)
     return matches[1]
 end
 
+local function normalize_dir(path)
+    return vim.fn.fnamemodify(path, ":p"):gsub("/$", "")
+end
+
+local function dirname(path)
+    return vim.fn.fnamemodify(path, ":p:h")
+end
+
+local function parent_dir(path)
+    return vim.fn.fnamemodify(path, ":h")
+end
+
+local function is_file(path)
+    return vim.fn.filereadable(path) == 1
+end
+
+local function find_upwards(start_dir, filename, stop_dir)
+    local dir = normalize_dir(start_dir)
+    local stop = stop_dir and normalize_dir(stop_dir) or nil
+
+    while dir and dir ~= "" do
+        if is_file(dir .. "/" .. filename) then
+            return dir
+        end
+        if stop and dir == stop then
+            return nil
+        end
+
+        local parent = parent_dir(dir)
+        if parent == dir then
+            return nil
+        end
+        dir = parent
+    end
+end
+
+local function pom_has_modules(pom_path)
+    local ok, lines = pcall(vim.fn.readfile, pom_path, "", 200)
+    if not ok then
+        return false
+    end
+
+    return vim.iter(lines):any(function(line)
+        return line:match("<modules>") ~= nil
+    end)
+end
+
+local function find_topmost_aggregator_pom(start_dir, git_root)
+    local dir = normalize_dir(start_dir)
+    local stop = git_root and normalize_dir(git_root) or nil
+    local found = nil
+
+    while dir and dir ~= "" do
+        local pom = dir .. "/pom.xml"
+        if is_file(pom) and pom_has_modules(pom) then
+            found = dir
+        end
+        if stop and dir == stop then
+            return found
+        end
+
+        local parent = parent_dir(dir)
+        if parent == dir then
+            return found
+        end
+        dir = parent
+    end
+
+    return found
+end
+
 local root_markers = {
     ".git",
     "gradlew",
@@ -43,7 +114,11 @@ local root_markers = {
     "settings.gradle",
     "settings.gradle.kts",
 }
-local root_dir = jdtls_setup.find_root(root_markers)
+local current_file_dir = dirname(vim.api.nvim_buf_get_name(0))
+local git_root = jdtls_setup.find_root({ ".git" })
+local explicit_root = find_upwards(current_file_dir, ".jdtls-root", git_root)
+local aggregator_root = find_topmost_aggregator_pom(current_file_dir, git_root)
+local root_dir = explicit_root or aggregator_root or jdtls_setup.find_root(root_markers)
 if not root_dir then
     return
 end
@@ -52,7 +127,8 @@ if not require('common').is_floating_window() and root_dir then
 end
 
 local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
-local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name
+local root_hash = vim.fn.sha256(vim.fn.fnamemodify(root_dir, ":p")):sub(1, 12)
+local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name .. "-" .. root_hash
 
 local jdk_runtimes = {}
 local path_to_java21 = first_glob(home .. "/.sdkman/candidates/java/21.*-amzn/")
@@ -229,6 +305,7 @@ config.settings = {
             useBlocks = true,
         },
         configuration = {
+            updateBuildConfiguration = "interactive",
             runtimes = jdk_runtimes
         }
     }
