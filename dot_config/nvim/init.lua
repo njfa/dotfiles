@@ -9,6 +9,7 @@ vim.opt.fileencodings = { "utf-8", "cp932", "sjis" }
 vim.opt.termguicolors = true
 vim.opt.number = true --行番号を表示
 vim.opt.laststatus = 3 --ステータスバーにウィンドウ毎のステータスを表示する
+vim.opt.showtabline = 2
 vim.opt.splitright = true --画面を縦分割する際に右に開く
 vim.opt.list = true
 vim.opt.listchars = {
@@ -142,11 +143,9 @@ require("lazy").setup("plugins", {
         },
     },
 })
+require("keymaps")
 -- autocmdの設定
 require("autocmd")
-if vim.fn.executable("zellij") == 1 then
-    require("zellij")
-end
 
 if vim.fn.executable("nvr") == 1 then
     vim.env.EDITOR = 'nvr -c "set bufhidden=delete" --remote-tab-wait'
