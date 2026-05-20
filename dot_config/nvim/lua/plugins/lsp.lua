@@ -1,11 +1,5 @@
 local vscode_enabled, _ = pcall(require, "vscode")
 
-local function filter_jdt_uri_items(items)
-    return vim.tbl_filter(function(item)
-        return not (type(item.filename) == "string" and vim.startswith(item.filename, "jdt://"))
-    end, items)
-end
-
 vim.lsp.config("*", {
     root_markers = { ".git" },
     on_attach = function(_, bufnr)
@@ -183,7 +177,6 @@ return {
                 lsp_references = {
                     auto_jump = false,
                     auto_preview = false,
-                    filter = filter_jdt_uri_items,
                     -- some modes are configurable, see the source code for more details
                     params = {
                         include_declaration = true,
@@ -196,30 +189,10 @@ return {
                 lsp_definitions = {
                     auto_jump = false,
                     auto_preview = false,
-                    filter = filter_jdt_uri_items,
                 },
                 lsp_implementations = {
                     auto_jump = false,
                     auto_preview = false,
-                    filter = filter_jdt_uri_items,
-                },
-                lsp_type_definitions = {
-                    auto_jump = false,
-                    auto_preview = false,
-                    filter = filter_jdt_uri_items,
-                },
-                lsp_declarations = {
-                    auto_jump = false,
-                    auto_preview = false,
-                    filter = filter_jdt_uri_items,
-                },
-                lsp_incoming_calls = {
-                    auto_preview = false,
-                    filter = filter_jdt_uri_items,
-                },
-                lsp_outgoing_calls = {
-                    auto_preview = false,
-                    filter = filter_jdt_uri_items,
                 },
                 -- The LSP base mode for:
                 -- * lsp_definitions, lsp_references, lsp_implementations
@@ -227,7 +200,6 @@ return {
                 lsp_base = {
                     auto_jump = false,
                     auto_preview = false,
-                    filter = filter_jdt_uri_items,
                     params = {
                         -- don't include the current location in the results
                         include_current = false,
@@ -246,7 +218,6 @@ return {
                     },
                     auto_jump = false,
                     auto_preview = false,
-                    filter = filter_jdt_uri_items,
                     win = {
                         position = "right",
                         size = 0.3,
@@ -256,43 +227,5 @@ return {
         }, -- for default options, refer to the configuration section for custom setup.
         cmd = "Trouble",
         keys = {},
-        config = function(_, opts)
-            local lsp = require("trouble.sources.lsp")
-            local locations_to_ranges = lsp._dotfiles_locations_to_ranges or lsp.locations_to_ranges
-            lsp._dotfiles_locations_to_ranges = locations_to_ranges
-
-            lsp.locations_to_ranges = function(client, locs)
-                local normal_locs = {}
-                local jdt_locs = {}
-
-                for _, loc in ipairs(locs) do
-                    local uri = loc.uri or loc.targetUri
-                    if type(uri) == "string" and vim.startswith(uri, "jdt://") then
-                        table.insert(jdt_locs, loc)
-                    else
-                        table.insert(normal_locs, loc)
-                    end
-                end
-
-                local ret = locations_to_ranges(client, normal_locs)
-                for _, loc in ipairs(jdt_locs) do
-                    local uri = loc.uri or loc.targetUri
-                    local range = loc.range or loc.targetSelectionRange
-                    ret[loc] = {
-                        filename = uri,
-                        pos = { range.start.line + 1, range.start.character },
-                        end_pos = { range["end"].line + 1, range["end"].character },
-                        source = "lsp",
-                        client = client,
-                        location = loc,
-                        line = "",
-                    }
-                end
-
-                return ret
-            end
-
-            require("trouble").setup(opts)
-        end,
     },
 }

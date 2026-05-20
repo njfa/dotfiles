@@ -33,36 +33,6 @@ local function first_glob(pattern)
     return matches[1]
 end
 
-local function disable_jdt_uri_loading()
-    for _, pattern in ipairs({ "jdt://*", "*.class" }) do
-        for _, autocmd in ipairs(vim.api.nvim_get_autocmds({ event = "BufReadCmd", pattern = pattern })) do
-            if autocmd.group_name == "jdtls" then
-                vim.api.nvim_del_autocmd(autocmd.id)
-            end
-        end
-    end
-
-    vim.api.nvim_create_autocmd("BufReadCmd", {
-        group = vim.api.nvim_create_augroup("dotfiles_jdt_uri", { clear = true }),
-        pattern = { "jdt://*", "*.class" },
-        callback = function(args)
-            local buf = args.buf
-            vim.bo[buf].buftype = "nofile"
-            vim.bo[buf].bufhidden = "wipe"
-            vim.bo[buf].swapfile = false
-            vim.bo[buf].filetype = "java"
-            vim.bo[buf].modifiable = true
-            vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
-                "// jdt:// locations are intentionally not loaded.",
-                "// Use project sources or Maven/Gradle downloaded sources instead.",
-            })
-            vim.bo[buf].modifiable = false
-        end,
-    })
-end
-
-disable_jdt_uri_loading()
-
 local root_markers = {
     ".git",
     "gradlew",
