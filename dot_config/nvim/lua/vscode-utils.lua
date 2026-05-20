@@ -33,7 +33,6 @@ function M.should_use_native_in_vscode(plugin_name)
         ["nvim-dap"] = true, -- デバッグ
 
         -- LSP関連
-        ["lspsaga"] = true, -- LSP UI
         ["nvim-lspconfig"] = true, -- LSP設定
         ["null-ls"] = true, -- フォーマッタ
         ["mason"] = true, -- LSPマネージャ

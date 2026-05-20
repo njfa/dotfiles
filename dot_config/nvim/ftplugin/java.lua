@@ -28,8 +28,55 @@ end
 local jdtls_setup = require("jdtls.setup")
 local home = os.getenv("HOME")
 
-local root_markers = { ".git" }
+local function first_glob(pattern)
+    local matches = vim.fn.glob(pattern, true, true)
+    return matches[1]
+end
+
+local function disable_jdt_uri_loading()
+    for _, pattern in ipairs({ "jdt://*", "*.class" }) do
+        for _, autocmd in ipairs(vim.api.nvim_get_autocmds({ event = "BufReadCmd", pattern = pattern })) do
+            if autocmd.group_name == "jdtls" then
+                vim.api.nvim_del_autocmd(autocmd.id)
+            end
+        end
+    end
+
+    vim.api.nvim_create_autocmd("BufReadCmd", {
+        group = vim.api.nvim_create_augroup("dotfiles_jdt_uri", { clear = true }),
+        pattern = { "jdt://*", "*.class" },
+        callback = function(args)
+            local buf = args.buf
+            vim.bo[buf].buftype = "nofile"
+            vim.bo[buf].bufhidden = "wipe"
+            vim.bo[buf].swapfile = false
+            vim.bo[buf].filetype = "java"
+            vim.bo[buf].modifiable = true
+            vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
+                "// jdt:// locations are intentionally not loaded.",
+                "// Use project sources or Maven/Gradle downloaded sources instead.",
+            })
+            vim.bo[buf].modifiable = false
+        end,
+    })
+end
+
+disable_jdt_uri_loading()
+
+local root_markers = {
+    ".git",
+    "gradlew",
+    "mvnw",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle",
+    "settings.gradle.kts",
+}
 local root_dir = jdtls_setup.find_root(root_markers)
+if not root_dir then
+    return
+end
 if not require('common').is_floating_window() and root_dir then
     vim.notify("jdtls root dir: " .. root_dir, vim.log.levels.INFO)
 end
@@ -38,32 +85,32 @@ local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
 local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name
 
 local jdk_runtimes = {}
-local path_to_java21 = vim.fn.glob(home .. "/.sdkman/candidates/java/21.*-amzn/", true, true)[1]
-if path_to_java21 ~= "" then
+local path_to_java21 = first_glob(home .. "/.sdkman/candidates/java/21.*-amzn/")
+if path_to_java21 then
     table.insert(jdk_runtimes, {
         name = "JavaSE-21",
         path = path_to_java21
     })
 end
 
-local path_to_java17 = vim.fn.glob(home .. "/.sdkman/candidates/java/17.*-amzn/", true, true)[1]
-if path_to_java17 ~= "" then
+local path_to_java17 = first_glob(home .. "/.sdkman/candidates/java/17.*-amzn/")
+if path_to_java17 then
     table.insert(jdk_runtimes, {
         name = "JavaSE-17",
         path = path_to_java17
     })
 end
 
-local path_to_java11 = vim.fn.glob(home .. "/.sdkman/candidates/java/11.*-amzn/", true, true)[1]
-if path_to_java11 ~= "" then
+local path_to_java11 = first_glob(home .. "/.sdkman/candidates/java/11.*-amzn/")
+if path_to_java11 then
     table.insert(jdk_runtimes, {
         name = "JavaSE-11",
         path = path_to_java11
     })
 end
 
-local path_to_java8 = vim.fn.glob(home .. "/.sdkman/candidates/java/8.*-amzn/", true, true)[1]
-if path_to_java8 ~= "" then
+local path_to_java8 = first_glob(home .. "/.sdkman/candidates/java/8.*-amzn/")
+if path_to_java8 then
     table.insert(jdk_runtimes, {
         name = "JavaSE-1.8",
         path = path_to_java8
@@ -72,7 +119,7 @@ end
 
 local path_to_mason_packages = vim.fn.stdpath('data') .. "/mason/packages"
 
-local path_to_openjdk21 = vim.fn.glob(path_to_mason_packages .. "/openjdk-21/jdk-21.*/", true)
+local path_to_openjdk21 = first_glob(path_to_mason_packages .. "/openjdk-21/jdk-21.*/")
 local path_to_jdtls = path_to_mason_packages .. "/jdtls"
 local path_to_jdebug = path_to_mason_packages .. "/java-debug-adapter"
 local path_to_jtest = path_to_mason_packages .. "/java-test"
@@ -82,6 +129,10 @@ local path_to_config = path_to_jdtls .. '/' .. get_config_dir()
 local path_to_lombok = path_to_mason_packages .. "/lombok-nightly/lombok.jar"
 
 local path_to_jar = vim.fn.glob(path_to_jdtls .. "/plugins/org.eclipse.equinox.launcher_*.jar", true)
+if path_to_jar == "" or vim.fn.isdirectory(path_to_config) == 0 then
+    vim.notify("jdtls is not installed correctly", vim.log.levels.WARN)
+    return
+end
 
 local jar_patterns = {
     path_to_jdebug .. "/extension/server/com.microsoft.java.debug.plugin-*.jar",
@@ -107,6 +158,8 @@ end
 
 -- LSP settings for Java.
 local on_attach = function(client, bufnr)
+    client.server_capabilities.typeDefinitionProvider = false
+
     jdtls.setup_dap({ hotcodereplace = "auto" })
     -- jdtls_dap.setup_dap_main_class_configs()
     jdtls_setup.add_commands()
@@ -126,18 +179,9 @@ local on_attach = function(client, bufnr)
     })
 end
 
-local capabilities = {
-    workspace = {
-        configuration = true
-    },
-    textDocument = {
-        completion = {
-            completionItem = {
-                snippetSupport = true
-            }
-        }
-    }
-}
+local capabilities = require("blink.cmp").get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
+capabilities.workspace.configuration = true
+capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 local config = {
     capabilities = capabilities,
@@ -145,16 +189,15 @@ local config = {
 }
 
 config.cmd = {
-    path_to_openjdk21 .. 'bin/java', -- or '/path/to/java17_or_newer/bin/java'
+    path_to_openjdk21 and (path_to_openjdk21 .. 'bin/java') or 'java', -- or '/path/to/java17_or_newer/bin/java'
     -- depends on if `java` is in your $PATH env variable and if it points to the right version.
 
     "-Declipse.application=org.eclipse.jdt.ls.core.id1",
     "-Dosgi.bundles.defaultStartLevel=4",
     "-Declipse.product=org.eclipse.jdt.ls.core.product",
-    "-Dlog.protocol=true",
-    "-Dlog.level=ALL",
+    "-Dlog.protocol=false",
+    "-Dlog.level=ERROR",
     "-Xmx2g",
-    "-javaagent:" .. path_to_lombok,
     "--add-modules=ALL-SYSTEM",
     "--add-opens", "java.base/java.util=ALL-UNNAMED",
     "--add-opens", "java.base/java.lang=ALL-UNNAMED",
@@ -162,6 +205,10 @@ config.cmd = {
     "-configuration", path_to_config,
     "-data", workspace_dir,
 }
+
+if vim.fn.filereadable(path_to_lombok) == 1 then
+    table.insert(config.cmd, 8, "-javaagent:" .. path_to_lombok)
+end
 
 config.settings = {
     java = {

@@ -46,7 +46,7 @@ return {
         "andymass/vim-matchup",
         init = function()
             -- statusに設定するとnvim_context_vtと機能が被る
-            -- また、popupにするとlspsagaでエラーが起きるようになるため無効化
+            -- popupにすると一部のフローティングUIで崩れるため無効化
             vim.g.matchup_matchparen_offscreen = {}
         end,
     },

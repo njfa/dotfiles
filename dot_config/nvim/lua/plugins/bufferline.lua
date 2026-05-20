@@ -107,13 +107,6 @@ return {
                         highlight = "MatchParen",
                         separator = true,
                     },
-                    {
-                        filetype = "sagaoutline",
-                        text = "OUTLINE",
-                        text_align = "center",
-                        highlight = "MatchParen",
-                        separator = true,
-                    },
                 },
                 -- WindowsTerminalではhoverイベントが効かないため無効かする
                 hover = {

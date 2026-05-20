@@ -30,7 +30,10 @@ return {
                 pattern = ensure_installed,
                 callback = function(args)
                     -- ハイライトを有効にする
-                    vim.treesitter.start(args.buf)
+                    local ok = pcall(vim.treesitter.start, args.buf)
+                    if not ok then
+                        return
+                    end
 
                     -- インデントを有効にする
                     vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"

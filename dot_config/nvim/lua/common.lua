@@ -105,14 +105,14 @@ M.on_attach_lsp = function(_, bufnr)
             {
                 "mn",
                 function()
-                    vim.diagnostic.goto_next()
+                    vim.diagnostic.jump({ count = 1, float = true })
                 end,
-                desc = "次のUiagnosticへ移動",
+                desc = "次のDiagnosticへ移動",
             },
             {
                 "mp",
                 function()
-                    vim.diagnostic.goto_prev()
+                    vim.diagnostic.jump({ count = -1, float = true })
                 end,
                 desc = "前のDiagnosticへ移動",
             },

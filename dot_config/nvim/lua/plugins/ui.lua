@@ -110,7 +110,7 @@ return {
                 styles = {
                     functions = {},
                 },
-                sidebars = { "qf", "vista_kind", "terminal", "packer", "fern", "sagaoutline", "aerial" },
+                sidebars = { "qf", "vista_kind", "terminal", "packer", "fern", "aerial" },
             })
 
             vim.cmd.colorscheme("tokyonight-night")
@@ -227,7 +227,7 @@ return {
                     { event = events.FILE_MOVED, handler = on_move },
                     { event = events.FILE_RENAMED, handler = on_move },
                 },
-                open_files_do_not_replace_types = { "terminal", "trouble", "qf", "sagafinder" }, -- when opening files, do not use windows containing these filetypes or buftypes
+                open_files_do_not_replace_types = { "terminal", "trouble", "qf" }, -- when opening files, do not use windows containing these filetypes or buftypes
                 filesystem = {
                     filtered_items = {
                         visible = false, -- when true, they will just be displayed differently than normal items
@@ -265,7 +265,6 @@ return {
     },
 
     -- ターミナルの表示
-    -- Lspsagaにも同様の機能があるが、こちらのほうが挙動が良い
     {
         "akinsho/toggleterm.nvim",
         version = "*",
@@ -310,7 +309,7 @@ return {
         cond = not vscode_enabled,
         config = function()
             require("aerial").setup({
-                backends = { "lsp", "treesitter", "markdown", "man" },
+                backends = { "lsp", "markdown", "man" },
 
                 layout = {
                     -- These control the width of the aerial window.
@@ -865,9 +864,16 @@ return {
             {
                 "gh",
                 function()
+                    local file = vim.api.nvim_buf_get_name(0)
+                    local root = Snacks.git.get_root()
+                    if file == "" or not root then
+                        vim.notify("Git blame is only available for files in a git repository", vim.log.levels.WARN)
+                        return
+                    end
+
                     Snacks.git.blame_line()
                 end,
-                desc = "Toggle Scratch Buffer",
+                desc = "Git blame line",
             },
         },
         init = function()

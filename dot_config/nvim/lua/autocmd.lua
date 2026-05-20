@@ -35,14 +35,6 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     end,
 })
 
--- lspsagaのUI上でESCを使えるようにする
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "sagafinder" },
-    callback = function()
-        buf_map(0, "n", "<Esc>", "<cmd>q<cr>", { noremap = true })
-    end,
-})
-
 -- bufferlineのタブ名にcwdを設定する
 --vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 --    pattern = { "*" },
@@ -118,6 +110,9 @@ vim.api.nvim_create_autocmd("LspProgress", {
         local client = vim.lsp.get_client_by_id(ev.data.client_id)
         local value = ev.data.params.value --[[@as {percentage?: number, title?: string, message?: string, kind: "begin" | "report" | "end"}]]
         if not client or type(value) ~= "table" then
+            return
+        end
+        if value.kind ~= "end" then
             return
         end
         local p = progress[client.id]

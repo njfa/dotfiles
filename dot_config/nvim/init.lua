@@ -91,7 +91,7 @@ vim.g.cursorhold_updatetime = 100
 vim.opt.completeopt = { "fuzzy", "popup", "menuone", "noinsert" }
 
 -- lsp.logに記録するログレベルを設定
-vim.lsp.set_log_level("warn")
+vim.lsp.log.set_level("error")
 
 -- lsp.logの内容を整形する
 if vim.fn.has("nvim-0.5.1") == 1 then
@@ -144,7 +144,9 @@ require("lazy").setup("plugins", {
 })
 -- autocmdの設定
 require("autocmd")
-require("zellij")
+if vim.fn.executable("zellij") == 1 then
+    require("zellij")
+end
 
 if vim.fn.executable("nvr") == 1 then
     vim.env.EDITOR = 'nvr -c "set bufhidden=delete" --remote-tab-wait'
