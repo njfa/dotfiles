@@ -284,3 +284,10 @@ export RUSTUP_HOME="$rustup_home"
 export CARGO_HOME="$cargo_home"
 curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
 '''
+
+[tasks.dashlane-cli]
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+bash etc/os/ubuntu/opt/dashlane-cli.sh'
+'''
