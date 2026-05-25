@@ -28,6 +28,8 @@ zoxide = "latest"
 eza = "latest"
 chezmoi = "latest"
 
+"ubi:gitlab-org/cli" = { version = "latest", exe = "glab", provider = "gitlab" }
+
 [tasks.os-dependencies]
 quiet = true
 run = "bash -lc 'set -euo pipefail; : \"${DOTFILES_PATH:?DOTFILES_PATH is required}\"; test -f \"$DOTFILES_PATH/dot_config/mise/config.toml\"; test -x \"$DOTFILES_PATH/bin/de\"; cd \"$DOTFILES_PATH\"; bash etc/os/ubuntu/init/dependencies.sh'"
@@ -290,4 +292,9 @@ run = '''bash -lc 'set -euo pipefail
 : "${DOTFILES_PATH:?DOTFILES_PATH is required}"
 cd "$DOTFILES_PATH"
 bash etc/os/ubuntu/opt/dashlane-cli.sh'
+'''
+
+[tasks.homebrew]
+run = '''bash -lc 'set -euo pipefail
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
 '''
