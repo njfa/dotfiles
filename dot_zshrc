@@ -237,12 +237,21 @@ fssh() {
 }
 
 fzf-z-search() {
+    local dir
+
     if ! command -v zoxide >/dev/null 2>&1; then
-        echo "zoxide not found"
+        zle -M "zoxide not found"
         return 1
     fi
 
-    BUFFER="ji"
+    dir="$(command zoxide query --interactive --)" || {
+        BUFFER=""
+        zle accept-line
+        return 0
+    }
+
+    __zoxide_cd "$dir" || return 1
+    BUFFER=""
     zle accept-line
 }
 
