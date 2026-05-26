@@ -6,3 +6,4 @@ tmp
 *.log
 *.gz
 *.zip
+.serena
