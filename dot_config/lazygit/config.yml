@@ -8,7 +8,7 @@ git:
 
 os:
   edit: "nvim \"{{filename}}\""
-  copyToClipboardCmd: 'echo {{text}} | win32yank.exe -i --crlf'
+  copyToClipboardCmd: 'echo {{text}} | $HOME/.dotfiles/bin/tmux-copy'
 
 customCommands:
   - key: "w"
@@ -19,4 +19,3 @@ customCommands:
         title: "worktree/branch name"
         initialValue: ""
     command: "git wt --nocd '{{index .PromptResponses 0}}'"
-

@@ -6,6 +6,7 @@ tmux_installer="etc/os/ubuntu/init/tmux.sh"
 win32yank_installer="etc/os/ubuntu/init/win32yank.sh"
 tmux_conf="dot_config/tmux/tmux.conf"
 tmux_copy="bin/tmux-copy"
+lazygit_config="dot_config/lazygit/config.yml"
 
 assert_contains() {
     local file="$1"
@@ -43,3 +44,6 @@ assert_contains "$tmux_conf" 'bind -T copy-mode-vi Enter send -X copy-pipe-and-c
 assert_contains "$tmux_copy" 'win32yank\.exe -i --crlf'
 assert_contains "$tmux_copy" 'base64'
 assert_contains "$tmux_copy" '52;c;'
+
+assert_not_contains "$lazygit_config" 'copyToClipboardCmd: .*win32yank\.exe -i --crlf'
+assert_contains "$lazygit_config" 'copyToClipboardCmd: '\''echo \{\{text\}\} \| \$HOME/\.dotfiles/bin/tmux-copy'\'''
