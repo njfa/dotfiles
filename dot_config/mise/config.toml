@@ -221,7 +221,7 @@ bash etc/os/ubuntu/init/zsh.sh'
 run = '''bash -lc 'set -euo pipefail
 : "${DOTFILES_PATH:?DOTFILES_PATH is required}"
 cd "$DOTFILES_PATH"
-export TMUX_VERSION=3.6a
+export TMUX_VERSION=3.7
 bash etc/os/ubuntu/init/tmux.sh'
 '''
 
