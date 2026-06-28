@@ -39,10 +39,9 @@ vim.opt.hidden = true
 
 vim.opt.mouse = "a"
 
-vim.opt.clipboard = "unnamed,unnamedplus"
-
 -- WSL上で実行する際にはOSC 52だと動作が微妙なので、win32yank.exeがある場合はそちらを利用する
 if vim.fn.executable("win32yank.exe") == 1 then
+    vim.opt.clipboard = "unnamed,unnamedplus"
     vim.g.clipboard = {
         name = "win32yank-wsl",
         copy = {
@@ -53,29 +52,35 @@ if vim.fn.executable("win32yank.exe") == 1 then
             ["+"] = "win32yank.exe -o --lf",
             ["*"] = "win32yank.exe -o --lf",
         },
-        cache_enable = 0,
+        cache_enabled = 0,
     }
 else
+    vim.opt.clipboard = ""
     local osc52 = require("vim.ui.clipboard.osc52")
-
-    local function paste_from_nvim_register(reg)
-        return function()
-            return vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
-        end
-    end
+    local osc52_copy = osc52.copy("+")
 
     vim.g.clipboard = {
-        name = "OSC 52 copy only",
+        name = "OSC 52",
         copy = {
             ["+"] = osc52.copy("+"),
             ["*"] = osc52.copy("*"),
         },
         paste = {
-            ["+"] = paste_from_nvim_register('"'),
-            ["*"] = paste_from_nvim_register('"'),
+            ["+"] = osc52.paste("+"),
+            ["*"] = osc52.paste("*"),
         },
-        cache_enable = 0,
     }
+
+    vim.api.nvim_create_autocmd("TextYankPost", {
+        group = vim.api.nvim_create_augroup("osc52-yank", { clear = true }),
+        callback = function()
+            if vim.v.event.operator ~= "y" then
+                return
+            end
+
+            osc52_copy(vim.v.event.regcontents, vim.v.event.regtype)
+        end
+    })
 end
 
 -- netrwを無効化
