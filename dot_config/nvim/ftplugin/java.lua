@@ -221,6 +221,15 @@ local on_attach = function(client, bufnr)
             { "mi",  "<Cmd>lua require('jdtls').organize_imports()<CR>", desc = "Organize imports" },
             { "mev", "<Cmd>lua require('jdtls').extract_variable()<CR>", desc = "Extract variables" },
             { "mec", "<Cmd>lua require('jdtls').extract_constant()<CR>", desc = "Extract constant" },
+            {
+                "mdc",
+                -- 起動時に自動実行するとメインクラス走査が走って重いため、launch方式で
+                -- デバッグしたいときにオンデマンドで実行する
+                function()
+                    require("jdtls.dap").setup_dap_main_class_configs({ verbose = true })
+                end,
+                desc = "メインクラスを検出してデバッグ設定を生成",
+            },
         }
     })
 end
@@ -234,7 +243,18 @@ local config = {
     on_attach = not require('common').is_floating_window() and on_attach or nil
 }
 
-config.cmd = {
+-- マルチモジュールの初回インポートでjdtlsが全コアを使い切りPC全体が固まるため、
+-- 使用コア数を物理コアの半分(最低2)に制限し、プロセス優先度も下げる
+local cpu_count = #vim.uv.cpu_info()
+local jdtls_cpu_limit = math.max(2, math.floor(cpu_count / 2))
+
+config.cmd = {}
+
+if vim.fn.executable("nice") == 1 then
+    vim.list_extend(config.cmd, { "nice", "-n", "10" })
+end
+
+vim.list_extend(config.cmd, {
     path_to_openjdk21 and (path_to_openjdk21 .. 'bin/java') or 'java', -- or '/path/to/java17_or_newer/bin/java'
     -- depends on if `java` is in your $PATH env variable and if it points to the right version.
 
@@ -243,30 +263,58 @@ config.cmd = {
     "-Declipse.product=org.eclipse.jdt.ls.core.product",
     "-Dlog.protocol=false",
     "-Dlog.level=ERROR",
+    "-Dsun.zip.disableMemoryMapping=true",
+    -- VS Code Java拡張のデフォルトに合わせたGC設定。スループット重視でGC時間の上限を抑える
+    "-XX:+UseParallelGC",
+    "-XX:GCTimeRatio=4",
+    "-XX:AdaptiveSizePolicyWeight=90",
+    "-XX:ActiveProcessorCount=" .. jdtls_cpu_limit,
+    "-Xms256m",
     "-Xmx2g",
+})
+
+if vim.fn.filereadable(path_to_lombok) == 1 then
+    table.insert(config.cmd, "-javaagent:" .. path_to_lombok)
+end
+
+vim.list_extend(config.cmd, {
     "--add-modules=ALL-SYSTEM",
     "--add-opens", "java.base/java.util=ALL-UNNAMED",
     "--add-opens", "java.base/java.lang=ALL-UNNAMED",
     "-jar", path_to_jar,
     "-configuration", path_to_config,
     "-data", workspace_dir,
-}
-
-if vim.fn.filereadable(path_to_lombok) == 1 then
-    table.insert(config.cmd, 8, "-javaagent:" .. path_to_lombok)
-end
+})
 
 config.settings = {
     java = {
         references = {
             includeDecompiledSources = true,
         },
+        -- 依存ライブラリのsources JARは自動ダウンロードしない(初回インポートの負荷軽減)
+        -- ライブラリ実装を読みたいときは `mvn dependency:sources` で手動取得すれば拾われる。
+        -- 未取得の依存へのジャンプはfernflowerのデコンパイル結果にフォールバックする
         eclipse = {
-            downloadSources = true,
+            downloadSources = false,
         },
         maven = {
-            downloadSources = true,
+            downloadSources = false,
         },
+        import = {
+            -- ビルド成果物ディレクトリをプロジェクト探索から除外する
+            -- (targetやbuild配下に生成されたpom.xml等を別プロジェクトとして誤認識させない)
+            exclusions = {
+                "**/node_modules/**",
+                "**/.metadata/**",
+                "**/archetype-resources/**",
+                "**/META-INF/maven/**",
+                "**/target/**",
+                "**/build/**",
+            },
+            generatesMetadataFilesAtProjectRoot = false,
+        },
+        -- 複数モジュールのビルドが並列に走るとCPUを使い切るため直列化する
+        maxConcurrentBuilds = 1,
         contentProvider = { preferred = "fernflower" },
         completion = {
             favoriteStaticMembers = {
