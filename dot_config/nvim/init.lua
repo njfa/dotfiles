@@ -55,32 +55,32 @@ if vim.fn.executable("win32yank.exe") == 1 then
         cache_enabled = 0,
     }
 else
-    vim.opt.clipboard = ""
+    -- ssh先で開いたnvimでもヤンク結果をホスト側クリップボードへ届けられるよう、
+    -- コピーは常にOSC 52で端末へ送信する
+    vim.opt.clipboard = "unnamed,unnamedplus"
+
     local osc52 = require("vim.ui.clipboard.osc52")
-    local osc52_copy = osc52.copy("+")
+
+    -- OSC 52のクエリ(貼り付け)は応答しない端末で毎回タイムアウト待ちが発生するため、
+    -- 貼り付けはnvim内部のレジスタから行う
+    local function paste_from_register(reg)
+        return function()
+            return vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
+        end
+    end
 
     vim.g.clipboard = {
-        name = "OSC 52",
+        name = "OSC 52 copy only",
         copy = {
             ["+"] = osc52.copy("+"),
             ["*"] = osc52.copy("*"),
         },
         paste = {
-            ["+"] = osc52.paste("+"),
-            ["*"] = osc52.paste("*"),
+            ["+"] = paste_from_register('"'),
+            ["*"] = paste_from_register('"'),
         },
+        cache_enabled = 0,
     }
-
-    vim.api.nvim_create_autocmd("TextYankPost", {
-        group = vim.api.nvim_create_augroup("osc52-yank", { clear = true }),
-        callback = function()
-            if vim.v.event.operator ~= "y" then
-                return
-            end
-
-            osc52_copy(vim.v.event.regcontents, vim.v.event.regtype)
-        end
-    })
 end
 
 -- netrwを無効化

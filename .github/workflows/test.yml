@@ -24,6 +24,7 @@ jobs:
         bash tests/sudo-required-tasks-skip-without-sudo.sh
         bash tests/tmux-tui-window.sh
         bash tests/tmux-win32yank-wsl.sh
+        bash tests/tmux-osc52-clipboard.sh
         bash tests/wsl-xdg-open.sh
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
@@ -54,6 +55,7 @@ jobs:
         bash tests/sudo-required-tasks-skip-without-sudo.sh
         bash tests/tmux-tui-window.sh
         bash tests/tmux-win32yank-wsl.sh
+        bash tests/tmux-osc52-clipboard.sh
         bash tests/wsl-xdg-open.sh
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
@@ -84,6 +86,7 @@ jobs:
         bash tests/sudo-required-tasks-skip-without-sudo.sh
         bash tests/tmux-tui-window.sh
         bash tests/tmux-win32yank-wsl.sh
+        bash tests/tmux-osc52-clipboard.sh
         bash tests/wsl-xdg-open.sh
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh

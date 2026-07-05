@@ -24,9 +24,18 @@ assert_not_contains() {
     fi
 }
 
+# ヤンク・削除が常にclipboardプロバイダを経由してOSC 52で送信されること
 assert_contains "$nvim_config" 'vim\.opt\.clipboard = "unnamed,unnamedplus"'
-assert_contains "$nvim_config" 'vim\.opt\.clipboard = ""'
-assert_contains "$nvim_config" 'vim\.api\.nvim_create_autocmd\("TextYankPost"'
-assert_contains "$nvim_config" 'if vim\.v\.event\.operator ~= "y" then'
-assert_contains "$nvim_config" 'osc52_copy\(vim\.v\.event\.regcontents, vim\.v\.event\.regtype\)'
+assert_contains "$nvim_config" 'osc52\.copy\("\+"\)'
+assert_contains "$nvim_config" 'osc52\.copy\("\*"\)'
+
+# 貼り付けはOSC 52クエリではなくnvim内部レジスタから行うこと
+assert_contains "$nvim_config" "paste_from_register\('\"'\)"
+assert_not_contains "$nvim_config" 'osc52\.paste'
+
+# eb84959のautocmdベースの設計が残っていないこと
+assert_not_contains "$nvim_config" 'TextYankPost'
+assert_not_contains "$nvim_config" 'vim\.opt\.clipboard = ""'
+
+# 正しいオプション名はcache_enabled
 assert_not_contains "$nvim_config" 'cache_enable ='
