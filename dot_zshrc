@@ -457,6 +457,17 @@ if command -v zoxide >/dev/null 2>&1; then
 fi
 
 if command -v yazi >/dev/null 2>&1; then
+    # tmux内では画像プレビュー用にyaziのペインのみallow-passthroughを有効化する
+    # (グローバルにonにするとopencode等のクエリ応答が他ペインに化け文字として入力されるため)
+    yazi() {
+        if [[ -n "$TMUX" ]]; then
+            tmux set -p allow-passthrough on
+            command yazi "$@"
+            tmux set -p -u allow-passthrough
+        else
+            command yazi "$@"
+        fi
+    }
     alias y='yazi'
 fi
 

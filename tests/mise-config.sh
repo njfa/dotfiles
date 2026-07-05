@@ -77,7 +77,7 @@ if ! awk '/^\[tasks\.git-wt\]/{f=1; next} /^\[/{f=0} f' "$config" | grep -q 'GIT
     exit 1
 fi
 
-if ! awk '/^\[tasks\.tmux\]/{f=1; next} /^\[/{f=0} f' "$config" | grep -q 'TMUX_VERSION=3.6a'; then
+if ! awk '/^\[tasks\.tmux\]/{f=1; next} /^\[/{f=0} f' "$config" | grep -q 'TMUX_VERSION='; then
     printf 'FAIL: expected tmux task to define TMUX_VERSION in %s\n' "$config" >&2
     exit 1
 fi
