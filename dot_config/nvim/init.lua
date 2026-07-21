@@ -65,7 +65,7 @@ else
     -- 貼り付けはnvim内部のレジスタから行う
     local function paste_from_register(reg)
         return function()
-            return vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
+            return { vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg) }
         end
     end
 
