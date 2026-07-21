@@ -32,6 +32,9 @@ assert_contains "$nvim_config" 'osc52\.copy\("\*"\)'
 # 貼り付けはOSC 52クエリではなくnvim内部レジスタから行うこと
 assert_contains "$nvim_config" "paste_from_register\('\"'\)"
 assert_not_contains "$nvim_config" 'osc52\.paste'
+# paste providerは[lines, regtype]を1つのリストとして返すこと
+assert_contains "$nvim_config" 'return \{ vim\.fn\.getreg\(reg, 1, true\), vim\.fn\.getregtype\(reg\) \}'
+assert_not_contains "$nvim_config" 'return vim\.fn\.getreg\(reg, 1, true\), vim\.fn\.getregtype\(reg\)'
 
 # eb84959のautocmdベースの設計が残っていないこと
 assert_not_contains "$nvim_config" 'TextYankPost'
