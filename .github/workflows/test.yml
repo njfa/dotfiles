@@ -28,6 +28,7 @@ jobs:
         bash tests/wsl-xdg-open.sh
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
+        bash tests/orca-server-install.sh
     - name: Validate shell syntax
       run: bash -n $(git ls-files '*.sh' 'bin/de')
     - name: Validate mise tasks
@@ -59,6 +60,7 @@ jobs:
         bash tests/wsl-xdg-open.sh
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
+        bash tests/orca-server-install.sh
     - name: Validate shell syntax
       run: bash -n $(git ls-files '*.sh' 'bin/de')
     - name: Validate mise tasks
@@ -90,6 +92,7 @@ jobs:
         bash tests/wsl-xdg-open.sh
         bash tests/yazi-keymap.sh
         bash tests/dashlane-cli-install.sh
+        bash tests/orca-server-install.sh
     - name: Validate shell syntax
       run: bash -n $(git ls-files '*.sh' 'bin/de')
     - name: Validate mise tasks

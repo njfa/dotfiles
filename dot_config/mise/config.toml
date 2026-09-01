@@ -151,6 +151,17 @@ run = [
   "mise run cargo-tools"
 ]
 
+[tasks.orca-server]
+description = "Install and run the headless Orca server over Tailscale (explicit opt-in)"
+run = '''bash -lc 'set -euo pipefail
+: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
+cd "$DOTFILES_PATH"
+export ORCA_VERSION=v1.4.194
+export ORCA_SHA256_AMD64=1c7f75361c743d0d4d5618828b74e4877df8d23adfdc39eb97d471173333916c
+export ORCA_SHA256_ARM64=be60c412b8286392f0fa98537099a172ecd4e66971bbbd657195e09239af81aa
+bash etc/os/ubuntu/opt/orca-server.sh'
+'''
+
 [tasks.apm]
 run = [
   "curl -sSL https://aka.ms/apm-unix | sh"

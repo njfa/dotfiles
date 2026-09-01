@@ -38,6 +38,24 @@ cd /path/to/dotfiles
 ./bin/de a --version
 ```
 
+### Orca Server（個別インストール）
+
+Orca Serverは通常セットアップおよび`optional`タスクには含まれません。事前にTailscaleをインストールしてtailnetへ接続したうえで、個別にインストールします。タスクは`tailscaled.service`の起動状態を確認し、`tailscale ip -4`から広告アドレスを自動設定します。
+
+```bash
+./bin/de m run orca-server
+```
+
+起動が完了すると、スマートフォン用のペアリングURLとQRコードがターミナルに表示されます。スマートフォンも同じtailnetへ接続し、Orca Mobileで`Pair`を選択して、QRコードを読み取るかペアリングURLを貼り付けます。ペアリングコードは短時間で期限切れになるため、その場合はタスクをもう一度実行して新しいコードを生成します。
+
+既定ではポート`6768`を使用し、実行ユーザーの権限で`orca-serve.service`を起動します。ポートを変える場合は`ORCA_PORT`を指定します。
+
+```bash
+ORCA_PORT=16768 ./bin/de m run orca-server
+```
+
+Orcaは全ネットワークインターフェースで待ち受けるため、クラウド側のセキュリティグループまたはホスト側のファイアウォールで、ポートへのアクセスをTailscaleインターフェースなどに制限してください。公開インターネットへポートを直接開放しないでください。表示されたペアリングURLは認証情報として扱い、接続するスマートフォン以外とは共有しないでください。
+
 ### Windows
 
 ```powershell
