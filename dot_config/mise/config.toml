@@ -19,9 +19,9 @@ terraform-docs = "latest"
 jq = "latest"
 yq = "latest"
 delta = "latest"
-neovim = "0.12"
+neovim = "nightly"
 uv = "latest"
-"npm:tree-sitter-cli" = "latest"
+tree-sitter = "latest"
 
 yazi = "latest"
 zoxide = "latest"
@@ -29,6 +29,7 @@ eza = "latest"
 chezmoi = "latest"
 
 "ubi:gitlab-org/cli" = { version = "latest", exe = "glab", provider = "gitlab" }
+gh = "latest"
 
 [tasks.os-dependencies]
 quiet = true

@@ -4,8 +4,17 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 config="$repo_root/dot_config/mise/config.toml"
 
-if ! grep -qx 'neovim = "0.12"' "$config"; then
-    printf 'FAIL: expected neovim = "0.12" in %s\n' "$config" >&2
+if ! grep -qx 'neovim = "nightly"' "$config"; then
+    printf 'FAIL: expected neovim = "nightly" in %s\n' "$config" >&2
+    exit 1
+fi
+
+if ! grep -qx 'tree-sitter = "latest"' "$config"; then
+    printf 'FAIL: expected the prebuilt tree-sitter CLI in %s\n' "$config" >&2
+    exit 1
+fi
+if grep -q 'npm:tree-sitter-cli\|cargo:tree-sitter-cli' "$config"; then
+    printf 'FAIL: expected tree-sitter-cli not to use npm or cargo in %s\n' "$config" >&2
     exit 1
 fi
 
