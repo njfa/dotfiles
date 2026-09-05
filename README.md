@@ -33,10 +33,16 @@ cd /path/to/dotfiles
 
 ```bash
 # リポジトリ直下で実行
-./bin/de
-./bin/de m --version
-./bin/de a --version
+bash tests/run.sh
+# PowerShellがある環境で、設定の保全と失敗時の終了コードを検証
+pwsh -NoProfile -File tests/windows-setup.ps1
 ```
+
+chezmoiの適用時に `~/.config/dotfiles/bin` からリポジトリ内の `bin` へのリンクを作成します。カスタム配置先でもシェル・tmux・lazygitはこのリンクを使用します。配置先を移動した場合は、新しい場所から `./bin/de init` を実行してください。
+
+Neovimのプラグイン構成は `dot_config/nvim/lazy-lock.json` で管理します。プラグイン更新を確認した後、適用先の `~/.config/nvim/lazy-lock.json` をこのファイルへコピーして差分をコミットしてください。固定された構成への復元はNeovimの `:Lazy restore` で行います。
+
+WindowsのNeovim設定はコピー完了後に置き換え、既存設定は同じ親ディレクトリの `nvim.backup.<ID>` に保持します。セットアップに失敗すると終了コード1を返します。
 
 ### Orca Server（個別インストール）
 
