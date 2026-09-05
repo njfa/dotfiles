@@ -53,11 +53,6 @@ return {
                     { "gd", "<cmd>Trouble lsp_definitions<cr>", desc = "定義の表示" },
                     { "gi", "<cmd>Trouble lsp_implementations<cr>", desc = "実装箇所の検索" },
                     { "gt", "<cmd>Trouble lsp_type_definitions<cr>", desc = "タイプ定義の表示" },
-                    {
-                        "<leader>i",
-                        "<cmd>Neotree buffers float reveal<CR>",
-                        desc = "バッファ一覧を開く (floating window)",
-                    },
                     { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
                     --            { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
 
@@ -103,22 +98,9 @@ return {
                         {
                             "<leader><leader>e",
                             function()
-                                require("neo-tree.command").execute({
-                                    action = "focus", -- OPTIONAL, this is the default value
-                                    source = "filesystem", -- OPTIONAL, this is the default value
-                                    position = "left", -- OPTIONAL, this is the default value
-                                    toggle = true,
-                                    dir = vim.fn.fnamemodify(require("common").get_cwd(), ":p"),
-                                    reveal = true, -- path to file or folder to reveal
-                                    reveal_force_cwd = true, -- change cwd without asking if needed
-                                })
+                                Snacks.explorer({ cwd = require("common").get_cwd() })
                             end,
-                            desc = "ファイラーを開く (left)",
-                        },
-                        {
-                            "<leader><leader>i",
-                            "<cmd>Neotree buffers bottom reveal toggle<CR>",
-                            desc = "バッファ一覧を開く (bottom)",
+                            desc = "プロジェクトのファイルツリーを開く",
                         },
                         --                { "<leader><leader>h", "<cmd>lua require('telescope').extensions.frecency.frecency()<CR>", desc = "ファイル閲覧履歴 (頻度考慮)" },
                         { "<leader><leader>j", require("treesj").join, desc = "行結合" },
@@ -415,20 +397,19 @@ return {
 
                     {
                         "<leader>e",
+                        vscode_mapping("<cmd>Yazi<cr>", function()
+                            vscode.action("workbench.explorer.fileView.focus")
+                        end),
+                        desc = "現在ファイルの位置でファイラーを開く",
+                    },
+                    {
+                        "<leader>E",
                         vscode_mapping(function()
-                            require("neo-tree.command").execute({
-                                action = "focus", -- OPTIONAL, this is the default value
-                                source = "filesystem", -- OPTIONAL, this is the default value
-                                position = "float", -- OPTIONAL, this is the default value
-                                toggle = true,
-                                dir = vim.fn.fnamemodify(require("common").get_cwd(), ":p"),
-                                reveal = true, -- path to file or folder to reveal
-                                reveal_force_cwd = true, -- change cwd without asking if needed
-                            })
+                            require("yazi").yazi(nil, require("common").get_cwd())
                         end, function()
                             vscode.action("workbench.explorer.fileView.focus")
                         end),
-                        desc = "ファイラーを開く (floating window)",
+                        desc = "プロジェクトルートでYaziを開く",
                     },
 
                     {
