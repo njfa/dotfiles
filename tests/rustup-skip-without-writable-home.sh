@@ -18,12 +18,23 @@ exit 1
 STUB
 chmod +x "$tools_dir/curl"
 
+# Run the task body directly so this test does not depend on a mise installation.
+task=$(python3 - "$repo_root/dot_config/mise/config.toml" <<'PY'
+import sys
+text = open(sys.argv[1]).read().split('[tasks.rustup]', 1)[1].split("'''", 2)[1]
+assert text.startswith("bash -lc '") and text.rstrip().endswith("'")
+print(text[len("bash -lc '"):].rstrip()[:-1])
+PY
+)
+if [[ $UID -eq 0 ]]; then
+  echo 'SKIP: writable-directory checks require a non-root user'
+  exit 0
+fi
 output=$(
   PATH="$tools_dir:/usr/bin:/bin" \
     RUSTUP_HOME="$readonly_dir/rustup" \
     CARGO_HOME="$readonly_dir/cargo" \
-    MISE_CONFIG_FILE="$repo_root/dot_config/mise/config.toml" \
-    mise run rustup 2>&1
+    /bin/bash -c "$task" 2>&1
 )
 
 if [[ "$output" != *'Skipping rustup: RUSTUP_HOME or CARGO_HOME is not writable.'* ]]; then

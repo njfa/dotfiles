@@ -6,95 +6,19 @@ on:
   pull_request:
 
 jobs:
-  build-ubuntu-latest:
-    runs-on: ubuntu-latest
+  build-ubuntu:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
     - name: change permission
       run: chmod +x bin/de
-    - name: Run de contract test
-      run: bash tests/devenv-contract.sh
-    - name: Run focused shell tests
-      run: |
-        bash tests/mise-config.sh
-        bash tests/chezmoiignore.sh
-        bash tests/dependencies-skip-without-privilege.sh
-        bash tests/rustup-skip-without-writable-home.sh
-        bash tests/sudo-required-tasks-skip-without-sudo.sh
-        bash tests/tmux-tui-window.sh
-        bash tests/tmux-win32yank-wsl.sh
-        bash tests/tmux-osc52-clipboard.sh
-        bash tests/wsl-xdg-open.sh
-        bash tests/yazi-keymap.sh
-        bash tests/dashlane-cli-install.sh
-        bash tests/orca-server-install.sh
-    - name: Validate shell syntax
-      run: bash -n $(git ls-files '*.sh' 'bin/de')
-    - name: Validate mise tasks
-      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/de m tasks validate
-    - name: Initialize dotfiles
-      run: bin/de
-    - name: Deploy dotfiles
-      run: bin/de m run deploy
-
-  build-ubuntu-22_04:
-    runs-on: ubuntu-22.04
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: change permission
-      run: chmod +x bin/de
-    - name: Run de contract test
-      run: bash tests/devenv-contract.sh
-    - name: Run focused shell tests
-      run: |
-        bash tests/mise-config.sh
-        bash tests/chezmoiignore.sh
-        bash tests/dependencies-skip-without-privilege.sh
-        bash tests/rustup-skip-without-writable-home.sh
-        bash tests/sudo-required-tasks-skip-without-sudo.sh
-        bash tests/tmux-tui-window.sh
-        bash tests/tmux-win32yank-wsl.sh
-        bash tests/tmux-osc52-clipboard.sh
-        bash tests/wsl-xdg-open.sh
-        bash tests/yazi-keymap.sh
-        bash tests/dashlane-cli-install.sh
-        bash tests/orca-server-install.sh
-    - name: Validate shell syntax
-      run: bash -n $(git ls-files '*.sh' 'bin/de')
-    - name: Validate mise tasks
-      run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/de m tasks validate
-    - name: Initialize dotfiles
-      run: bin/de
-    - name: Deploy dotfiles
-      run: bin/de m run deploy
-
-  build-ubuntu-24_04:
-    runs-on: ubuntu-24.04
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: change permission
-      run: chmod +x bin/de
-    - name: Run de contract test
-      run: bash tests/devenv-contract.sh
-    - name: Run focused shell tests
-      run: |
-        bash tests/mise-config.sh
-        bash tests/chezmoiignore.sh
-        bash tests/dependencies-skip-without-privilege.sh
-        bash tests/rustup-skip-without-writable-home.sh
-        bash tests/sudo-required-tasks-skip-without-sudo.sh
-        bash tests/tmux-tui-window.sh
-        bash tests/tmux-win32yank-wsl.sh
-        bash tests/tmux-osc52-clipboard.sh
-        bash tests/wsl-xdg-open.sh
-        bash tests/yazi-keymap.sh
-        bash tests/dashlane-cli-install.sh
-        bash tests/orca-server-install.sh
-    - name: Validate shell syntax
-      run: bash -n $(git ls-files '*.sh' 'bin/de')
+    - name: Run shell tests and syntax checks
+      run: bash tests/run.sh
     - name: Validate mise tasks
       run: DOTFILES_PATH="$PWD" MISE_CONFIG_FILE="$PWD/dot_config/mise/config.toml" bin/de m tasks validate
     - name: Initialize dotfiles
@@ -107,6 +31,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Test Windows setup
+      run: pwsh -NoProfile -File tests/windows-setup.ps1
+    - name: Test Windows PowerShell compatibility
+      run: powershell -NoProfile -File tests/windows-setup.ps1
     - name: init
       run: bin/setup.ps1 init
       env:
