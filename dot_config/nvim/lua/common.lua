@@ -91,32 +91,33 @@ M.on_attach_lsp = function(_, bufnr)
         {
             mode = { "n" },
             buffer = bufnr,
-            { "mf", "<cmd>Trouble lsp focus=true<cr>", desc = "定義/呼び出し箇所の検索" },
-            { "ci", "<cmd>Trouble lsp_incoming_calls focus=true<cr>", desc = "コールヒエラルキー (IN)" },
-            { "co", "<cmd>Trouble lsp_outgoing_calls focus=true<cr>", desc = "コールヒエラルキー (OUT)" },
-            { "mr", "<cmd>Trouble lsp_references<cr>", desc = "リファレンスの表示" },
+            { "<leader>l", group = "LSP" },
+            { "<leader>lf", "<cmd>Trouble lsp focus=true<cr>", desc = "定義/呼び出し箇所の検索" },
+            { "<leader>li", "<cmd>Trouble lsp_incoming_calls focus=true<cr>", desc = "コールヒエラルキー (IN)" },
+            { "<leader>lo", "<cmd>Trouble lsp_outgoing_calls focus=true<cr>", desc = "コールヒエラルキー (OUT)" },
+            { "<leader>lr", "<cmd>Trouble lsp_references<cr>", desc = "リファレンスの表示" },
             {
-                "ms",
+                "<leader>lR",
                 function()
                     vim.lsp.buf.rename()
                 end,
                 desc = "リネーム",
             },
             {
-                "mn",
+                "<leader>ln",
                 function()
                     vim.diagnostic.jump({ count = 1, float = true })
                 end,
                 desc = "次のDiagnosticへ移動",
             },
             {
-                "mp",
+                "<leader>lp",
                 function()
                     vim.diagnostic.jump({ count = -1, float = true })
                 end,
                 desc = "前のDiagnosticへ移動",
             },
-            { "<Tab>", "<cmd>lua vim.lsp.buf.code_action()<cr>", desc = "コードアクション" },
+            { "<leader>la", vim.lsp.buf.code_action, desc = "コードアクション" },
         },
     })
 end

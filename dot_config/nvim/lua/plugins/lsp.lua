@@ -13,11 +13,6 @@ vim.lsp.config("*", {
 vim.lsp.enable('jdtls', false)
 
 return {
-    -- 色定義の追加
-    {
-        "folke/lsp-colors.nvim",
-        cond = not vscode_enabled,
-    },
     {
         "rachartier/tiny-inline-diagnostic.nvim",
         event = "VeryLazy", -- Or `LspAttach`
@@ -122,7 +117,7 @@ return {
         "jay-babu/mason-null-ls.nvim",
         cond = not vscode_enabled,
         dependencies = {
-            "williamboman/mason.nvim",
+            "mason-org/mason.nvim",
             "nvimtools/none-ls.nvim",
         },
         config = function()

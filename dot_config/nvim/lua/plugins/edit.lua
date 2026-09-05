@@ -8,10 +8,39 @@ return {
     -- align機能の追加
     "junegunn/vim-easy-align",
 
-    -- quickfixを利用した編集が可能になる
-    "thinca/vim-qfreplace",
-    -- quickfixを編集可能に変更する
-    "itchyny/vim-qfedit",
+    {
+        "stevearc/quicker.nvim",
+        ft = "qf",
+        opts = {
+            keys = {
+                {
+                    ">",
+                    function()
+                        require("quicker").expand({ before = 2, after = 2, add_to_existing = true })
+                    end,
+                    desc = "Quickfixの前後を表示",
+                },
+                {
+                    "<",
+                    function()
+                        require("quicker").collapse()
+                    end,
+                    desc = "Quickfixの前後を非表示",
+                },
+            },
+        },
+    },
+
+    {
+        "folke/todo-comments.nvim",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        opts = {},
+        keys = {
+            { "]t", function() require("todo-comments").jump_next() end, desc = "次のTODOへ移動" },
+            { "[t", function() require("todo-comments").jump_prev() end, desc = "前のTODOへ移動" },
+            { "<leader>xt", "<cmd>TodoTrouble<cr>", desc = "TODO一覧" },
+        },
+    },
 
     -- 単語や演算子を反対の意味に切り替える
     {
@@ -56,8 +85,6 @@ return {
         end,
     },
 
-    -- コメント機能の拡張
-    "tpope/vim-commentary",
     -- textobjectの拡張
     "wellle/targets.vim",
     -- アスタリスクを拡張
@@ -116,6 +143,23 @@ return {
         dependencies = {
             "nvim-lua/plenary.nvim",
         },
+        keys = {
+            { "<leader><leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Git差分を表示" },
+            { "<leader><leader>gD", "<cmd>DiffviewOpen --cached<cr>", desc = "stage済みGit差分を表示" },
+            { "<leader><leader>gf", "<cmd>DiffviewFileHistory %<cr>", desc = "現在ファイルのGit履歴を表示" },
+            {
+                "<leader><leader>gl",
+                "<cmd>.,.DiffviewFileHistory<cr>",
+                desc = "現在行のGit履歴を表示",
+            },
+            {
+                "<leader><leader>gl",
+                ":<C-U>'<,'>DiffviewFileHistory<cr>",
+                mode = "x",
+                desc = "選択範囲のGit履歴を表示",
+            },
+            { "<leader><leader>gc", "<cmd>DiffviewClose<cr>", desc = "Git差分表示を閉じる" },
+        },
         config = function()
             -- local actions = require("diffview.actions")
 
@@ -168,17 +212,6 @@ return {
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     },
 
-    {
-        "rhysd/git-messenger.vim",
-        cond = not vscode_enabled,
-        init = function()
-            vim.g.git_messenger_no_default_mappings = true
-            vim.g.git_messenger_include_diff = "current"
-            vim.g.git_messenger_floating_win_opts = { border = "single" }
-            vim.g.git_messenger_max_popup_height = 50
-        end,
-    },
-
     -- 対応する括弧を自動挿入する
     {
         "windwp/nvim-autopairs",
@@ -198,35 +231,8 @@ return {
         version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
         -- install jsregexp (optional!).
         build = "make install_jsregexp",
-    },
-
-    {
-        "ixru/nvim-markdown",
-        dependencies = {
-            "godlygeek/tabular",
-        },
-        cond = not vscode_enabled,
-        init = function()
-            vim.g.vim_markdown_conceal = 0
-            vim.g.vim_markdown_toc_autofit = 0
-        end,
-    },
-
-    -- 対応する括弧をわかりやすくする
-    {
-        "haringsrob/nvim_context_vt",
-        dependencies = {
-            "nvim-treesitter/nvim-treesitter",
-        },
-        cond = not vscode_enabled,
-        -- init = function()
-        --     require("nvim-treesitter.parsers")
-        -- end,
         config = function()
-            require("nvim_context_vt").setup({
-                -- disable_ft = {'yml', 'py'},
-                disable_virtual_lines = true,
-            })
+            require("luasnip.loaders.from_vscode").lazy_load()
         end,
     },
 
@@ -359,7 +365,7 @@ return {
                     applyNext = { n = "<leader>j" },
                     applyPrev = { n = "<leader>k" },
                     syncNext = { n = "<leader>n" },
-                    syncPrev = { n = "<leader>p" },
+                    syncPrev = { n = "<leader>P" },
                     syncFile = { n = "<leader>v" },
                     nextInput = { n = "<tab>" },
                     prevInput = { n = "<s-tab>" },

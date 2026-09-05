@@ -31,6 +31,22 @@ return {
             hl = { fg = "blue", bg = "bg_highlight" },
         }
 
+        local mode_colors = {
+            n = "blue",
+            i = "green2",
+            v = "yellow",
+            V = "orange",
+            ["\22"] = "red",
+            c = "purple",
+            s = "purple",
+            S = "purple",
+            ["\19"] = "purple",
+            R = "red1",
+            r = "red1",
+            ["!"] = "red1",
+            t = "blue2",
+        }
+
         local ViMode = {
             -- get vim current mode, this information will be required by the provider
             -- and the highlight functions, so we compute it only once per component
@@ -78,21 +94,7 @@ return {
                     ["!"] = "!",
                     t = "TERMINAL",
                 },
-                mode_colors = {
-                    n = "blue",
-                    i = "green2",
-                    v = "yellow",
-                    V = "orange",
-                    ["\22"] = "red",
-                    c = "purple",
-                    s = "purple",
-                    S = "purple",
-                    ["\19"] = "purple",
-                    R = "red1",
-                    r = "red1",
-                    ["!"] = "red1",
-                    t = "blue2",
-                },
+                mode_colors = mode_colors,
             },
 
             update = {
@@ -126,6 +128,33 @@ return {
                 -- Re-evaluate the component only on ModeChanged event!
                 -- Also allows the statusline to be re-evaluated when entering operator-pending mode
             },
+        }
+
+        local multicursor_namespace = vim.api.nvim_create_namespace("nvim.multicursor")
+        local function multicursor_active()
+            return #vim.api.nvim_buf_get_extmarks(0, multicursor_namespace, 0, -1, { limit = 1 }) > 0
+        end
+
+        local MultiCursor = {
+            init = function(self)
+                self.count = #vim.api.nvim_buf_get_extmarks(0, multicursor_namespace, 0, -1, {})
+            end,
+            provider = function(self)
+                return " MC ×" .. self.count .. " "
+            end,
+            hl = { bold = true },
+            update = { "CmdAtom", "BufEnter" },
+        }
+        local MultiCursorSection = {
+            condition = multicursor_active,
+            hl = function()
+                return {
+                    fg = "#1f2335",
+                    bg = mode_colors[vim.fn.mode(1):sub(1, 1)] or "blue",
+                }
+            end,
+            SegmentSeparator,
+            MultiCursor,
         }
 
         local FileNameBlock = {
@@ -557,6 +586,7 @@ return {
         local StatusLine = {
             hl = { fg = "fg_dark", bg = "bg_highlight" },
             ViMode,
+            MultiCursorSection,
             {
                 Spacer,
                 FileNameBlock,

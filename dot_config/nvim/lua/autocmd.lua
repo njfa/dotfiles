@@ -1,6 +1,91 @@
 local buf_map = require("common").buf_map
 local vscode = require("vscode-utils")
 
+local multicursor_namespace = vim.api.nvim_create_namespace("nvim.multicursor")
+local multicursor_overlay_namespace = vim.api.nvim_create_namespace("dotfiles.multicursor")
+local original_cursor_highlight
+local original_guicursor
+local multicursor_highlight_enabled = false
+local multicursor_mode_colors = {
+    n = "#7aa2f7",
+    i = "#73daca",
+    v = "#e0af68",
+    V = "#ff9e64",
+    ["\22"] = "#f7768e",
+    c = "#9d7cd8",
+    s = "#9d7cd8",
+    S = "#9d7cd8",
+    ["\19"] = "#9d7cd8",
+    R = "#f7768e",
+    r = "#f7768e",
+    ["!"] = "#f7768e",
+    t = "#7dcfff",
+}
+
+local function apply_multicursor_highlights()
+    local color = multicursor_mode_colors[vim.fn.mode(1):sub(1, 1)] or multicursor_mode_colors.n
+    vim.api.nvim_set_hl(0, "MCursor", { fg = "#1f2335", bg = color, bold = true, nocombine = true })
+    vim.api.nvim_set_hl(0, "MCursorVisual", { bg = color, bold = true, nocombine = true })
+    vim.api.nvim_set_hl(0, "MCursorOverlay", { fg = "#1f2335", bg = color, bold = true, nocombine = true })
+end
+
+local function update_multicursor_highlight()
+    local cursors = vim.api.nvim_buf_get_extmarks(0, multicursor_namespace, 0, -1, {})
+    local active = #cursors > 0
+
+    if active then
+        apply_multicursor_highlights()
+    end
+
+    vim.api.nvim_buf_clear_namespace(0, multicursor_overlay_namespace, 0, -1)
+    for _, cursor in ipairs(cursors) do
+        local line = vim.api.nvim_buf_get_lines(0, cursor[2], cursor[2] + 1, false)[1] or ""
+        local character = vim.fn.strcharpart(line:sub(cursor[3] + 1), 0, 1)
+        if character == "" or character == "\t" then
+            character = " "
+        end
+
+        vim.api.nvim_buf_set_extmark(0, multicursor_overlay_namespace, cursor[2], cursor[3], {
+            virt_text = { { character, "MCursorOverlay" } },
+            virt_text_pos = "overlay",
+            priority = 10000,
+        })
+    end
+
+    if active and not multicursor_highlight_enabled then
+        original_cursor_highlight = vim.api.nvim_get_hl(0, { name = "Cursor", link = true })
+        original_guicursor = vim.o.guicursor
+        vim.api.nvim_set_hl(0, "Cursor", { link = "MCursor" })
+        vim.o.guicursor = original_guicursor .. ",a:block-MCursor"
+        multicursor_highlight_enabled = true
+    elseif not active and multicursor_highlight_enabled then
+        vim.api.nvim_set_hl(0, "Cursor", original_cursor_highlight or {})
+        vim.o.guicursor = original_guicursor or vim.o.guicursor
+        original_cursor_highlight = nil
+        original_guicursor = nil
+        multicursor_highlight_enabled = false
+    end
+
+    vim.cmd("redraw")
+end
+
+vim.api.nvim_create_autocmd({ "CmdAtom", "BufEnter", "ModeChanged" }, {
+    callback = vim.schedule_wrap(update_multicursor_highlight),
+})
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+    callback = function()
+        if multicursor_highlight_enabled then
+            original_cursor_highlight = vim.api.nvim_get_hl(0, { name = "Cursor", link = true })
+            apply_multicursor_highlights()
+            vim.api.nvim_set_hl(0, "Cursor", { link = "MCursor" })
+            vim.schedule(function()
+                vim.cmd("redraw")
+            end)
+        end
+    end,
+})
+
 -- IMEの自動OFF
 if vim.fn.executable("zenhan.exe") == 1 then
     vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
@@ -21,17 +106,9 @@ vim.api.nvim_create_autocmd({ "BufReadPost" }, {
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "qf" },
     callback = function()
-        buf_map(0, "n", "r", "<cmd>Qfreplace<cr>", { noremap = true })
         buf_map(0, "n", "q", "<cmd>cclose<cr>", { noremap = true })
         buf_map(0, "n", "<C-n>", "<cmd>cnewer<CR>", { noremap = true })
         buf_map(0, "n", "<C-p>", "<cmd>colder<CR>", { noremap = true })
-    end,
-})
-
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "qfreplace" },
-    callback = function()
-        buf_map(0, "n", "q", "<cmd>q<cr><cmd>copen<cr>", { noremap = true })
     end,
 })
 

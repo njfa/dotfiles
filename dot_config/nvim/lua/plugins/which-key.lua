@@ -97,6 +97,7 @@ return {
 
                     {
                         { "<leader><leader>", group = "leader" },
+                        { "<leader><leader>g", group = "Git差分/検索" },
                         { "<leader><leader>c", "<cmd>tabnew<cr>", desc = "タブ作成" },
                         { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
                         {
@@ -141,8 +142,6 @@ return {
                 },
                 {
                     mode = { "x" },
-                    --            { "gs", function() require('gitsigns').stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git stage hunk" },
-                    --            { "gr", function() require('gitsigns').reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end, desc = "Git reset hunk" },
                     {
                         { "<leader>", group = "leader" },
                         {
@@ -186,20 +185,6 @@ return {
                         desc = "ドキュメントを表示する",
                     },
                     {
-                        "<C-j>",
-                        function()
-                            require("luasnip").jump(1)
-                        end,
-                        desc = "次の要素へ移動",
-                    },
-                    {
-                        "<C-k>",
-                        function()
-                            require("luasnip").jump(-1)
-                        end,
-                        desc = "前の要素へ移動",
-                    },
-                    {
                         "<C-c>",
                         function()
                             if require("luasnip").choice_active() then
@@ -212,13 +197,6 @@ return {
 
                 {
                     mode = { "i" },
-                    {
-                        "<C-e>",
-                        function()
-                            require("luasnip").expand()
-                        end,
-                        desc = "スニペットの展開",
-                    },
                     {
                         "<C-l>",
                         function()
@@ -254,33 +232,6 @@ return {
                     desc = "検索/置換（GrugFar）",
                 },
 
-                {
-                    ")",
-                    function()
-                        require("hop").hint_lines_skip_whitespace({})
-                    end,
-                    desc = "任意の行頭へ移動（空行は無視）",
-                },
-                {
-                    "t",
-                    function()
-                        require("hop").hint_camel_case({
-                            current_line_only = false,
-                            hint_position = require("hop.hint").HintPosition.BEGIN,
-                        })
-                    end,
-                    desc = "任意の単語へ移動",
-                },
-                {
-                    "T",
-                    function()
-                        require("hop").hint_camel_case({
-                            current_line_only = false,
-                            hint_position = require("hop.hint").HintPosition.END,
-                        })
-                    end,
-                    desc = "任意の単語へ移動",
-                },
                 {
                     { "m", group = "ファイル編集" },
                     { "mm", "<cmd>Switch<cr>", desc = "カーソル下の単語を反転 (true→false等)" },
@@ -354,8 +305,16 @@ return {
                     desc = "g# (カーソルを移動しない)",
                 },
 
-                { "{", "<cmd>cp<CR>zz", desc = "quickfixの前の要素に移動する" },
-                { "}", "<cmd>cn<CR>zz", desc = "quickfixの次の要素に移動する" },
+                { "{", "[C", desc = "前のマルチカーソルへ移動" },
+                { "}", "]C", desc = "次のマルチカーソルへ移動" },
+                {
+                    "zq",
+                    function()
+                        local namespace = vim.api.nvim_create_namespace("nvim.multicursor")
+                        vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
+                    end,
+                    desc = "マルチカーソルをすべて解除",
+                },
 
                 { "gb", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "Git blameの表示切替" },
                 -- Snacks.git.blame_line()に移行
@@ -421,7 +380,6 @@ return {
                         end),
                         desc = "バッファ作成",
                     },
-                    { "<leader>p", "<cmd>HopPasteChar1<CR>", desc = "貼り付け（場所選択）" },
                     { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換 (正規表現)" },
                     {
                         "<leader>U",
@@ -558,9 +516,6 @@ return {
                 { ">", ">gv", desc = "インデントを上げる (選択範囲を維持)" },
                 { "<", "<gv", desc = "インデントを下げる (選択範囲を維持)" },
 
-                { "<C-a>", "<C-a>gv", desc = "<C-a> (選択範囲を維持)" },
-                { "<C-x>", "<C-x>gv", desc = "<C-x> (選択範囲を維持)" },
-
                 { "<C-Up>", '"zx<Up>"zP`[V`]', desc = "カーソル行を1行移動 (上)" },
                 { "<C-Down>", '"zx"zp`[V`]', desc = "カーソル行を1行移動 (下)" },
 
@@ -588,7 +543,6 @@ return {
                 { "<cr>", "<Plug>(EasyAlign)", desc = "指定文字で整列 (*で全一致箇所)" },
                 { "<Bar>", ":EasyAlign*<Bar><CR>", desc = "|で整形" },
 
-                { "v", ":lua require('tsht').nodes()<cr>", desc = "選択範囲を拡大" },
                 {
                     "R",
                     function()

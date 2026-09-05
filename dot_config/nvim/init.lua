@@ -11,6 +11,7 @@ vim.opt.number = true --行番号を表示
 vim.opt.laststatus = 3 --ステータスバーにウィンドウ毎のステータスを表示する
 vim.opt.showtabline = 2
 vim.opt.splitright = true --画面を縦分割する際に右に開く
+vim.opt.splitbelow = true --画面を横分割する際に下に開く
 vim.opt.list = true
 vim.opt.listchars = {
     space = "‸",
@@ -36,6 +37,9 @@ vim.opt.inccommand = "nosplit"
 
 -- 保存していないバッファがあっても新しいバッファを作れるようにする
 vim.opt.hidden = true
+vim.opt.confirm = true
+vim.opt.scrolloff = 4
+vim.opt.sidescrolloff = 4
 
 vim.opt.mouse = "a"
 
@@ -91,7 +95,7 @@ vim.g.loaded_netrwPlugin = 1
 vim.opt.swapfile = false
 vim.opt.backup = false
 vim.opt.writebackup = false
--- vim.opt.updatetime = 300
+vim.opt.updatetime = 300
 vim.g.cursorhold_updatetime = 100
 
 vim.opt.completeopt = { "fuzzy", "popup", "menuone", "noinsert" }
@@ -118,7 +122,7 @@ vim.g.llm_enabled = get_llm_enabled()
 
 -- lazy.nvimの読み込み
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
     vim.fn.system({
         "git",
         "clone",

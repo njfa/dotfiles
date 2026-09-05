@@ -127,6 +127,9 @@ return {
             vim.cmd.highlight({ "BlinkCmpMenu", "guibg=#202a42" })
             vim.cmd.highlight({ "BlinkCmpMenuSelection", "guibg=#324268" })
             vim.cmd.highlight({ "BlinkCmpDoc", "guibg=#202a42" })
+            vim.api.nvim_set_hl(0, "MCursor", { fg = "#1f2335", bg = "#7aa2f7", bold = true, nocombine = true })
+            vim.api.nvim_set_hl(0, "MCursorVisual", { bg = "#7aa2f7", bold = true, nocombine = true })
+            vim.api.nvim_set_hl(0, "MCursorOverlay", { fg = "#1f2335", bg = "#7aa2f7", bold = true, nocombine = true })
             vim.cmd.highlight({ "BlinkCmpDocBorder", "guibg=#202a42" })
             vim.cmd.highlight({ "BlinkCmpDocSeparator", "guibg=#202a42" })
             vim.cmd.highlight({ "BlinkCmpSignatureHelp", "guibg=#202a42" })
@@ -182,6 +185,21 @@ return {
                     ignore_whitespace = false,
                     virt_text_priority = 100,
                 },
+                on_attach = function(bufnr)
+                    local gitsigns = require("gitsigns")
+                    local function map(mode, lhs, rhs, desc)
+                        vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
+                    end
+
+                    map("n", "]h", function()
+                        gitsigns.nav_hunk("next")
+                    end, "次のGit差分へ移動")
+                    map("n", "[h", function()
+                        gitsigns.nav_hunk("prev")
+                    end, "前のGit差分へ移動")
+                    map("n", "<leader><leader>gp", gitsigns.preview_hunk, "現在のGit差分をプレビュー")
+                    map({ "o", "x" }, "ih", gitsigns.select_hunk, "Git差分を選択")
+                end,
             })
         end,
     },
@@ -261,45 +279,6 @@ return {
                     },
                 },
             })
-        end,
-    },
-
-    -- ターミナルの表示
-    {
-        "akinsho/toggleterm.nvim",
-        version = "*",
-        cond = not vscode_enabled,
-        config = function()
-            require("toggleterm").setup()
-
-            local Terminal = require("toggleterm.terminal").Terminal
-            local floatterm = Terminal:new({
-                dir = ".",
-                autochdir = true,
-                direction = "float",
-                hidden = true,
-            })
-
-            function TermToggle()
-                floatterm:toggle()
-            end
-
-            map("n", "<A-d>", "<cmd>lua TermToggle()<cr>", {})
-            map("t", "<A-d>", "<cmd>lua TermToggle()<cr>", {})
-        end,
-    },
-
-    -- lazygitをカレントファイルに対して実行する
-    -- toggleterm.nvimだと工夫が必要なのでこちらで実行する
-    {
-        "kdheepak/lazygit.nvim",
-        -- optional for floating window border decoration
-        cond = not vscode_enabled,
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-        },
-        config = function()
-            map("n", "<A-g>", "<cmd>LazyGitCurrentFile<cr>", {})
         end,
     },
 
@@ -559,6 +538,21 @@ return {
         },
         keys = {
             {
+                "<A-d>",
+                function()
+                    Snacks.terminal()
+                end,
+                mode = { "n", "t" },
+                desc = "ターミナルの表示切替",
+            },
+            {
+                "<A-g>",
+                function()
+                    Snacks.lazygit({ cwd = vim.fn.expand("%:p:h") })
+                end,
+                desc = "現在のファイルでLazygitを開く",
+            },
+            {
                 "<leader>sm",
                 function()
                     Snacks.scratch()
@@ -689,7 +683,7 @@ return {
                 desc = "Gitファイル検索",
             },
             {
-                "<leader><leader>g",
+                "<leader><leader>gg",
                 function()
                     Snacks.picker.git_grep({
                         hidden = true,
@@ -701,7 +695,23 @@ return {
                         },
                     })
                 end,
-                desc = "Grep検索",
+                desc = "Git管理ファイルをGrep検索",
+            },
+            {
+                "<leader><leader>gs",
+                function()
+                    Snacks.picker.git_status({
+                        win = {
+                            input = {
+                                keys = {
+                                    ["<Tab>"] = false,
+                                    ["<C-r>"] = false,
+                                },
+                            },
+                        },
+                    })
+                end,
+                desc = "Git変更ファイルを検索",
             },
             {
                 "<leader><leader>/",
@@ -925,6 +935,15 @@ return {
             build = "make",
         },
         config = function()
+            require("dropbar").setup({
+                bar = {
+                    -- BufModifiedSet was removed in Neovim 0.13.
+                    update_events = {
+                        buf = { "FileChangedShellPost", "TextChanged", "ModeChanged" },
+                    },
+                },
+            })
+
             local dropbar_api = require("dropbar.api")
             vim.keymap.set("n", "<Leader>z", dropbar_api.pick, { desc = "Pick symbols in winbar" })
             vim.keymap.set("n", "[[", dropbar_api.goto_context_start, { desc = "Go to start of current context" })
