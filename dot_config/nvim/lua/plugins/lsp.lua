@@ -2,10 +2,22 @@ local vscode_enabled, _ = pcall(require, "vscode")
 
 vim.lsp.config("*", {
     root_markers = { ".git" },
-    on_attach = function(_, bufnr)
-        require("common").on_attach_lsp(_, bufnr)
-    end,
     capabilities = require("blink.cmp").get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities()),
+})
+
+-- Server-specific on_attach callbacks must not hide the shared keymaps.
+vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("dotfiles_lsp_attach", { clear = true }),
+    callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if not client then
+            return
+        end
+        if client.name == "ruff" then
+            client.server_capabilities.hoverProvider = false
+        end
+        require("common").on_attach_lsp(client, args.buf)
+    end,
 })
 
 -- jdtls is started by ftplugin/java.lua via nvim-jdtls.
@@ -65,6 +77,7 @@ return {
 
     {
         "mfussenegger/nvim-jdtls",
+        dependencies = { "mfussenegger/nvim-dap" },
         ft = { "java" },
         lazy = false,
         priority = 999,
@@ -96,6 +109,7 @@ return {
                 automatic_enable = {
                     exclude = {
                         "jdtls",
+                        "pylsp", -- Replaced by Pyright; may still be installed in Mason.
                     },
                 },
                 ensure_installed = {
@@ -103,7 +117,8 @@ return {
                     "ts_ls",
                     "lua_ls",
                     "ruff",
-                    "pylsp",
+                    "pyright",
+                    "gopls",
                     "tflint",
                     "terraformls",
                     "jdtls",
@@ -135,6 +150,10 @@ return {
                     "markdownlint",
                     "openjdk-21",
                     "lombok-nightly",
+                    "java-debug-adapter",
+                    "java-test",
+                    "debugpy",
+                    "delve",
                     "google-java-format",
                     "prettier",
                     "stylua",

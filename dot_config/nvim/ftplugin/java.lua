@@ -24,101 +24,20 @@ if not status_ok then
     return false
 end
 
--- local jdtls_dap = require("jdtls.dap")
-local jdtls_setup = require("jdtls.setup")
-local home = os.getenv("HOME")
+-- Bundles are fixed in init_options and take effect after :JdtRestart. JDT LS
+-- asks VS Code to refresh its dynamic bundle list even though Neovim has none.
+vim.lsp.commands["_java.reloadBundles.command"] = vim.lsp.commands["_java.reloadBundles.command"] or function()
+    return vim.NIL
+end
+
+local home = vim.uv.os_homedir()
 
 local function first_glob(pattern)
     local matches = vim.fn.glob(pattern, true, true)
     return matches[1]
 end
 
-local function normalize_dir(path)
-    return vim.fn.fnamemodify(path, ":p"):gsub("/$", "")
-end
-
-local function dirname(path)
-    return vim.fn.fnamemodify(path, ":p:h")
-end
-
-local function parent_dir(path)
-    return vim.fn.fnamemodify(path, ":h")
-end
-
-local function is_file(path)
-    return vim.fn.filereadable(path) == 1
-end
-
-local function find_upwards(start_dir, filename, stop_dir)
-    local dir = normalize_dir(start_dir)
-    local stop = stop_dir and normalize_dir(stop_dir) or nil
-
-    while dir and dir ~= "" do
-        if is_file(dir .. "/" .. filename) then
-            return dir
-        end
-        if stop and dir == stop then
-            return nil
-        end
-
-        local parent = parent_dir(dir)
-        if parent == dir then
-            return nil
-        end
-        dir = parent
-    end
-end
-
-local function pom_has_modules(pom_path)
-    local ok, lines = pcall(vim.fn.readfile, pom_path, "", 200)
-    if not ok then
-        return false
-    end
-
-    return vim.iter(lines):any(function(line)
-        return line:match("<modules>") ~= nil
-    end)
-end
-
-local function find_topmost_aggregator_pom(start_dir, git_root)
-    local dir = normalize_dir(start_dir)
-    local stop = git_root and normalize_dir(git_root) or nil
-    local found = nil
-
-    while dir and dir ~= "" do
-        local pom = dir .. "/pom.xml"
-        if is_file(pom) and pom_has_modules(pom) then
-            found = dir
-        end
-        if stop and dir == stop then
-            return found
-        end
-
-        local parent = parent_dir(dir)
-        if parent == dir then
-            return found
-        end
-        dir = parent
-    end
-
-    return found
-end
-
-local root_markers = {
-    ".git",
-    "gradlew",
-    "mvnw",
-    "pom.xml",
-    "build.gradle",
-    "build.gradle.kts",
-    "settings.gradle",
-    "settings.gradle.kts",
-}
-local current_file_dir = dirname(vim.api.nvim_buf_get_name(0))
-local git_root = jdtls_setup.find_root({ ".git" })
-local explicit_root = find_upwards(current_file_dir, ".jdtls-root", git_root)
-local aggregator_root = find_topmost_aggregator_pom(current_file_dir, git_root)
-local root_dir = explicit_root or aggregator_root or jdtls_setup.find_root(root_markers)
+local root_dir = require("java_root").find_root(vim.api.nvim_buf_get_name(0))
 if not root_dir then
     return
 end
@@ -126,9 +45,9 @@ if not require('common').is_floating_window() and root_dir then
     vim.notify("jdtls root dir: " .. root_dir, vim.log.levels.INFO)
 end
 
-local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
+local project_name = vim.fs.basename(root_dir)
 local root_hash = vim.fn.sha256(vim.fn.fnamemodify(root_dir, ":p")):sub(1, 12)
-local workspace_dir = home .. "/.cache/jdtls/workspace/" .. project_name .. "-" .. root_hash
+local workspace_dir = vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. project_name .. "-" .. root_hash
 
 local jdk_runtimes = {}
 local path_to_java21 = first_glob(home .. "/.sdkman/candidates/java/21.*-amzn/")
@@ -165,73 +84,73 @@ end
 
 local path_to_mason_packages = vim.fn.stdpath('data') .. "/mason/packages"
 
-local path_to_openjdk21 = first_glob(path_to_mason_packages .. "/openjdk-21/jdk-21.*/")
+local runtime = require("java_runtime")
+local ok, java, jdtls_cpu_limit, max_heap = pcall(function()
+    local executable = runtime.resolve()
+    runtime.validate(executable)
+    local cpus, heap = runtime.limits()
+    return executable, cpus, heap
+end)
+if not ok then
+    vim.notify(java, vim.log.levels.ERROR)
+    return
+end
+jdk_runtimes = vim.g.jdtls_runtimes or jdk_runtimes
 local path_to_jdtls = path_to_mason_packages .. "/jdtls"
-local path_to_jdebug = path_to_mason_packages .. "/java-debug-adapter"
-local path_to_jtest = path_to_mason_packages .. "/java-test"
-local path_to_jdecompiler = path_to_mason_packages .. "/vscode-java-decompiler"
-
 local path_to_config = path_to_jdtls .. '/' .. get_config_dir()
 local path_to_lombok = path_to_mason_packages .. "/lombok-nightly/lombok.jar"
 
-local path_to_jar = vim.fn.glob(path_to_jdtls .. "/plugins/org.eclipse.equinox.launcher_*.jar", true)
-if path_to_jar == "" or vim.fn.isdirectory(path_to_config) == 0 then
+local path_to_jar = first_glob(path_to_jdtls .. "/plugins/org.eclipse.equinox.launcher_*.jar")
+if not path_to_jar or vim.fn.isdirectory(path_to_config) == 0 then
     vim.notify("jdtls is not installed correctly", vim.log.levels.WARN)
     return
 end
 
-local jar_patterns = {
-    path_to_jdebug .. "/extension/server/com.microsoft.java.debug.plugin-*.jar",
-    path_to_jtest .. "/extension/server/*.jar",
-    path_to_jdecompiler .. '/server/*.jar',
-}
-
-local bundles = {}
-for _, jar_pattern in ipairs(jar_patterns) do
-    for _, bundle in ipairs(vim.split(vim.fn.glob(jar_pattern), '\n')) do
-        if not vim.endswith(bundle, 'com.microsoft.java.test.runner-jar-with-dependencies.jar')
-            and not vim.endswith(bundle, 'com.microsoft.java.test.runner.jar')
-            and string.find(bundle, 'junit-platform-commons', 1, true) == nil
-            and string.find(bundle, 'org.apiguardian.api', 1, true) == nil
-            and string.find(bundle, 'junit-platform-engine', 1, true) == nil
-            and string.find(bundle, 'junit-platform-launcher', 1, true) == nil
-            and string.find(bundle, 'org.opentest4j', 1, true) == nil
-        then
-            table.insert(bundles, bundle)
-        end
-    end
+local bundles = require("java_bundles").collect(path_to_mason_packages)
+local has_java_debug = vim.iter(bundles):any(function(path)
+    return path:find("com.microsoft.java.debug.plugin-", 1, true) ~= nil
+end)
+if has_java_debug then
+    -- Register before LspAttach so nvim-jdtls keeps these options when it adds commands.
+    jdtls.setup_dap({ hotcodereplace = "auto" })
 end
 
 -- LSP settings for Java.
 local on_attach = function(client, bufnr)
     client.server_capabilities.typeDefinitionProvider = false
 
-    jdtls.setup_dap({ hotcodereplace = "auto" })
-    -- jdtls_dap.setup_dap_main_class_configs()
-    jdtls_setup.add_commands()
+    local commands = (client.server_capabilities.executeCommandProvider or {}).commands or {}
+    if vim.tbl_contains(commands, "vscode.java.startDebugSession") then
+        require("dap").providers.configs.jdtls = nil
+    else
+        vim.notify("Javaデバッグには :MasonInstall java-debug-adapter が必要です。導入後に :JdtRestart", vim.log.levels.WARN)
+    end
 
-    require('common').on_attach_lsp(client, bufnr)
-    local wk = require("which-key")
-
-    wk.add({
+    local java_mappings = {
+        { "mi",  "<Cmd>lua require('jdtls').organize_imports()<CR>", desc = "Organize imports" },
+        { "mev", "<Cmd>lua require('jdtls').extract_variable()<CR>", desc = "Extract variables" },
+        { "mec", "<Cmd>lua require('jdtls').extract_constant()<CR>", desc = "Extract constant" },
         {
-            mode = { "n" },
-            buffer = bufnr,
+            "mdc",
+            -- 起動時に自動実行するとメインクラス走査が走って重いため、launch方式で
+            -- デバッグしたいときにオンデマンドで実行する
+            function()
+                require("jdtls.dap").setup_dap_main_class_configs({ verbose = true })
+            end,
+            desc = "メインクラスを検出してデバッグ設定を生成",
+        },
+    }
+    if vim.tbl_contains(commands, "vscode.java.test.junit.argument") then
+        table.insert(java_mappings, { "mtc", function() jdtls.test_class() end, desc = "テストクラスをデバッグ" })
+        table.insert(java_mappings, { "mtn", function() jdtls.test_nearest_method() end, desc = "最寄りのテストをデバッグ" })
+    end
 
-            { "mi",  "<Cmd>lua require('jdtls').organize_imports()<CR>", desc = "Organize imports" },
-            { "mev", "<Cmd>lua require('jdtls').extract_variable()<CR>", desc = "Extract variables" },
-            { "mec", "<Cmd>lua require('jdtls').extract_constant()<CR>", desc = "Extract constant" },
-            {
-                "mdc",
-                -- 起動時に自動実行するとメインクラス走査が走って重いため、launch方式で
-                -- デバッグしたいときにオンデマンドで実行する
-                function()
-                    require("jdtls.dap").setup_dap_main_class_configs({ verbose = true })
-                end,
-                desc = "メインクラスを検出してデバッグ設定を生成",
-            },
-        }
-    })
+    local group = {
+        mode = { "n" },
+        buffer = bufnr,
+    }
+    vim.list_extend(group, java_mappings)
+    require("which-key").add({ group })
 end
 
 local capabilities = require("blink.cmp").get_lsp_capabilities(vim.lsp.protocol.make_client_capabilities())
@@ -243,11 +162,7 @@ local config = {
     on_attach = not require('common').is_floating_window() and on_attach or nil
 }
 
--- マルチモジュールの初回インポートでjdtlsが全コアを使い切りPC全体が固まるため、
--- 使用コア数を物理コアの半分(最低2)に制限し、プロセス優先度も下げる
-local cpu_count = #vim.uv.cpu_info()
-local jdtls_cpu_limit = math.max(2, math.floor(cpu_count / 2))
-
+-- JVMの並列度を抑える。CPU使用率の強制上限ではない。
 config.cmd = {}
 
 if vim.fn.executable("nice") == 1 then
@@ -255,8 +170,7 @@ if vim.fn.executable("nice") == 1 then
 end
 
 vim.list_extend(config.cmd, {
-    path_to_openjdk21 and (path_to_openjdk21 .. 'bin/java') or 'java', -- or '/path/to/java17_or_newer/bin/java'
-    -- depends on if `java` is in your $PATH env variable and if it points to the right version.
+    java,
 
     "-Declipse.application=org.eclipse.jdt.ls.core.id1",
     "-Dosgi.bundles.defaultStartLevel=4",
@@ -270,7 +184,7 @@ vim.list_extend(config.cmd, {
     "-XX:AdaptiveSizePolicyWeight=90",
     "-XX:ActiveProcessorCount=" .. jdtls_cpu_limit,
     "-Xms256m",
-    "-Xmx2g",
+    "-Xmx" .. max_heap,
 })
 
 if vim.fn.filereadable(path_to_lombok) == 1 then

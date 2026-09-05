@@ -19,21 +19,9 @@ return {
             --     dapui.close()
             -- end
 
-            -- Javaはアタッチ方式を基本とする。アプリ側をjdwp付きで起動しておき、
-            -- ポート指定で接続する(アプリ系統ごとにポートを分ければ同時デバッグ可能)。
-            -- リポジトリ固有の定義は.vscode/launch.jsonに書けばnvim-dapが自動で読み込む
-            dap.configurations.java = {
-                {
-                    type = "java",
-                    request = "attach",
-                    name = "実行中のJVMにアタッチ (ポート指定)",
-                    hostName = "localhost",
-                    port = function()
-                        return tonumber(vim.fn.input("デバッグポート: ", "5005"))
-                    end,
-                },
-            }
+            require("debugging").setup()
 
+            vim.keymap.set("n", "<F11>", dap.terminate, { desc = "デバッグ終了" })
             local widgets = require("dap.ui.widgets")
             vim.keymap.set("n", "<F4>", function()
                 dap.set_breakpoint(vim.fn.input("ブレークポイント条件: "))

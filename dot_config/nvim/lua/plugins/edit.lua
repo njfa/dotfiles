@@ -287,6 +287,7 @@ return {
                     },
                     bash = { "shfmt" },
                     java = { "google-java-format" },
+                    go = { lsp_format = "prefer" },
                     markdown = { "markdownlint" },
                 },
                 formatters = {
