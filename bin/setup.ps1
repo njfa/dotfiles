@@ -9,7 +9,10 @@ $MAJOR_VERSION = (Get-Host).Version.Major
 
 # Path definitions
 $DOTFILES = "$env:USERPROFILE\.dotfiles"
-$WINDOTFILES = "$env:USERPROFILE\.dotfiles\etc\os\windows"
+if ($PSScriptRoot -and (Test-Path (Join-Path $PSScriptRoot '../dot_config/nvim/init.lua'))) {
+    $DOTFILES = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+}
+$WINDOTFILES = Join-Path $DOTFILES 'etc/os/windows'
 $WINDOWS_TERMINAL = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_*\LocalState\ -ErrorAction SilentlyContinue
 $WINDOWS_TERMINAL_PREVIEW = Get-ChildItem $env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreView_*\LocalState\ -ErrorAction SilentlyContinue
 $VSCODE_EXE_PATH = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\Code.exe"
@@ -41,6 +44,17 @@ function Write-Success {
 function Write-Error {
     param([string]$Message)
     Write-Host "[ERROR] $Message" -ForegroundColor Red
+}
+
+# Works in Windows PowerShell 5.1 as well as PowerShell 7.
+function Invoke-CheckedCommand {
+    param([scriptblock]$Command)
+    $global:LASTEXITCODE = 0
+    & $Command | Out-Host
+    $commandExitCode = $global:LASTEXITCODE
+    if ($commandExitCode -ne 0) {
+        throw "External command failed with exit code ${commandExitCode}: $Command"
+    }
 }
 
 function Test-Administrator {
@@ -287,7 +301,7 @@ function Deploy-Settings {
     try {
         if (Test-Administrator) {
             Write-Host "  Using symbolic link (Administrator mode)" -ForegroundColor Gray
-            New-Item -ItemType SymbolicLink -Path $DestPath -Name $DestFilename -Value $SourcePath -ErrorAction Stop
+            New-Item -ItemType SymbolicLink -Path $DestPath -Name $DestFilename -Value $SourcePath -ErrorAction Stop | Out-Null
         }
         else {
             Write-Host "  Using file copy (User mode)" -ForegroundColor Gray
@@ -330,7 +344,7 @@ function Set-PathVariable {
     
     $newPath = @(
         "$env:USERPROFILE\bin"
-        "$env:USERPROFILE\.dotfiles\bin"
+        "$DOTFILES\bin"
         "$env:USERPROFILE\.cargo\bin"
         "$env:USERPROFILE\scoop\shims"
         "$env:USERPROFILE\scoop\apps\gcc\current\bin"
@@ -400,21 +414,21 @@ function Install-ScoopPackages {
     
     try {
         Write-Host "  Installing dependencies..." -ForegroundColor Gray
-        scoop install $DEPENDENCIES
+        Invoke-CheckedCommand { scoop install $DEPENDENCIES }
         
         Write-Host "  Adding buckets..." -ForegroundColor Gray
-        scoop bucket add versions
-        scoop bucket add extras
-        scoop bucket add java
+        Invoke-CheckedCommand { scoop bucket add versions }
+        Invoke-CheckedCommand { scoop bucket add extras }
+        Invoke-CheckedCommand { scoop bucket add java }
         
         Write-Host "  Updating packages..." -ForegroundColor Gray
-        scoop update *
+        Invoke-CheckedCommand { scoop update * }
         
         Write-Host "  Installing utilities..." -ForegroundColor Gray
-        scoop install $UTILS
+        Invoke-CheckedCommand { scoop install $UTILS }
         
         Write-Host "  Installing packages..." -ForegroundColor Gray
-        scoop install $PACKAGES
+        Invoke-CheckedCommand { scoop install $PACKAGES }
         
         Write-Success "Scoop packages installed successfully"
         return $true
@@ -429,7 +443,7 @@ function Install-OhMyPosh {
     Write-Step "Installing Oh My Posh"
     
     try {
-        winget install JanDeDobbeleer.OhMyPosh -s winget
+        Invoke-CheckedCommand { winget install JanDeDobbeleer.OhMyPosh -s winget }
         Write-Success "Oh My Posh installed successfully"
         return $true
     }
@@ -450,46 +464,17 @@ function Install-PythonPackages {
         return $false
     }
     
-    $allSuccess = $true
-    
     foreach ($package in $PIP3PACKAGES) {
-        Write-Host "  Processing package: $package" -ForegroundColor Gray
-        
         try {
-            # Use --upgrade --quiet flags to suppress errors
-            $result = python -m pip install --upgrade --quiet $package 2>&1
-            
-            # Check pip return value (0 is success)
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "  [OK] $package processed successfully" -ForegroundColor Green
-            }
-            else {
-                # Even if error code is not 0, skip if already installed
-                $errorOutput = $result -join "`n"
-                if ($errorOutput -match "Requirement already satisfied" -or $errorOutput -match "already installed") {
-                    Write-Host "  [OK] $package is already up to date" -ForegroundColor Green
-                }
-                else {
-                    Write-Host "  [WARN] $package installation had issues but continuing..." -ForegroundColor Yellow
-                    Write-Host "    Output: $errorOutput" -ForegroundColor Gray
-                }
-            }
+            Invoke-CheckedCommand { python -m pip install --upgrade --quiet $package }
         }
         catch {
-            Write-Host "  [WARN] Failed to process $package, but continuing with other packages..." -ForegroundColor Yellow
-            Write-Host "    Error: $($_.Exception.Message)" -ForegroundColor Gray
-            $allSuccess = $false
+            Write-Error "Failed to install ${package}: $($_.Exception.Message)"
+            return $false
         }
     }
-    
-    if ($allSuccess) {
-        Write-Success "Python packages processed successfully"
-    }
-    else {
-        Write-Host "[OK] Python packages processing completed (some issues encountered but not critical)" -ForegroundColor Yellow
-    }
-    
-    return $true  # Return true even if errors occurred to allow continuation
+    Write-Success "Python packages installed successfully"
+    return $true
 }
 
 function Install-PSReadLine {
@@ -519,18 +504,18 @@ function Set-GitConfiguration {
     Write-Step "Configuring Git"
     
     try {
-        git config --global core.editor "vim"
-        git config --global core.autoCRLF false
-        git config --global core.pager delta
-        git config --global interactive.diffFilter "delta --color-only"
-        git config --global delta.side-by-side true
-        git config --global delta.line-numbers true
-        git config --global delta.navigate true
-        git config --global delta.light false
-        git config --global delta.true-color always
-        git config --global delta.syntax-theme Dracula
-        git config --global merge.conflictstyle diff3
-        git config --global diff.colorMoved default
+        Invoke-CheckedCommand { git config --global core.editor "vim" }
+        Invoke-CheckedCommand { git config --global core.autoCRLF false }
+        Invoke-CheckedCommand { git config --global core.pager delta }
+        Invoke-CheckedCommand { git config --global interactive.diffFilter "delta --color-only" }
+        Invoke-CheckedCommand { git config --global delta.side-by-side true }
+        Invoke-CheckedCommand { git config --global delta.line-numbers true }
+        Invoke-CheckedCommand { git config --global delta.navigate true }
+        Invoke-CheckedCommand { git config --global delta.light false }
+        Invoke-CheckedCommand { git config --global delta.true-color always }
+        Invoke-CheckedCommand { git config --global delta.syntax-theme Dracula }
+        Invoke-CheckedCommand { git config --global merge.conflictstyle diff3 }
+        Invoke-CheckedCommand { git config --global diff.colorMoved default }
         
         Write-Success "Git configured successfully"
         return $true
@@ -550,7 +535,7 @@ function Clone-Dotfiles {
     }
     
     try {
-        git clone https://github.com/njfa/dotfiles.git $DOTFILES
+        Invoke-CheckedCommand { git clone https://github.com/njfa/dotfiles.git $DOTFILES }
         Write-Success "Dotfiles repository cloned successfully"
         return $true
     }
@@ -574,14 +559,16 @@ function Install-Fonts {
         Write-Host "  Installing Sarasa Gothic..." -ForegroundColor Gray
         if (Get-LatestRelease "be5invis/Sarasa-Gothic" "Sarasa-SuperTTC-*.7z") {
             try {
-                7z x .\latestRelease -o"$env:USERPROFILE\fonts\sarasa-gothic"
+                Invoke-CheckedCommand { 7z x .\latestRelease -o"$env:USERPROFILE\fonts\sarasa-gothic" }
                 Remove-Item latestRelease -ErrorAction SilentlyContinue
                 Write-Success "Sarasa Gothic installed"
             }
             catch {
                 Write-Error "Failed to extract Sarasa Gothic: $($_.Exception.Message)"
+                return $false
             }
         }
+        else { return $false }
     }
     
     # UDEV Gothic
@@ -589,14 +576,16 @@ function Install-Fonts {
         Write-Host "  Installing UDEV Gothic..." -ForegroundColor Gray
         if (Get-LatestRelease "yuru7/udev-gothic" "UDEVGothic_NF_*.zip") {
             try {
-                7z x .\latestRelease -o"$env:USERPROFILE\fonts\UDEV"
+                Invoke-CheckedCommand { 7z x .\latestRelease -o"$env:USERPROFILE\fonts\UDEV" }
                 Remove-Item latestRelease -ErrorAction SilentlyContinue
                 Write-Success "UDEV Gothic installed"
             }
             catch {
                 Write-Error "Failed to extract UDEV Gothic: $($_.Exception.Message)"
+                return $false
             }
         }
+        else { return $false }
     }
     
     # Moralerspace
@@ -604,14 +593,16 @@ function Install-Fonts {
         Write-Host "  Installing Moralerspace..." -ForegroundColor Gray
         if (Get-LatestRelease "yuru7/moralerspace" "MoralerspaceHWNF*.zip") {
             try {
-                7z x .\latestRelease -o"$env:USERPROFILE\fonts\Moralerspace"
+                Invoke-CheckedCommand { 7z x .\latestRelease -o"$env:USERPROFILE\fonts\Moralerspace" }
                 Remove-Item latestRelease -ErrorAction SilentlyContinue
                 Write-Success "Moralerspace installed"
             }
             catch {
                 Write-Error "Failed to extract Moralerspace: $($_.Exception.Message)"
+                return $false
             }
         }
+        else { return $false }
     }
     
     return $true
@@ -685,7 +676,7 @@ function Install-NerdFonts {
     if (-not (Test-PathExists "$env:USERPROFILE\.nerd-fonts")) {
         Write-Step "Cloning Nerd Fonts repository"
         try {
-            git clone --depth 1 --single-branch --branch master https://github.com/ryanoasis/nerd-fonts $env:USERPROFILE\.nerd-fonts
+            Invoke-CheckedCommand { git clone --depth 1 --single-branch --branch master https://github.com/ryanoasis/nerd-fonts $env:USERPROFILE\.nerd-fonts }
             Move-Item "$env:USERPROFILE\.nerd-fonts\font-patcher" "$env:USERPROFILE\.nerd-fonts\font-patcher.py"
             Write-Success "Nerd Fonts repository cloned"
         }
@@ -699,7 +690,7 @@ function Install-NerdFonts {
     if (-not (Test-PathExists "$env:USERPROFILE\fonts\sarasa-gothic-ttf")) {
         Write-Step "Extracting TTF files from Sarasa Gothic"
         try {
-            New-Item -ItemType Directory -Path "$env:USERPROFILE\fonts\sarasa-gothic-ttf" -Force
+            New-Item -ItemType Directory -Path "$env:USERPROFILE\fonts\sarasa-gothic-ttf" -Force | Out-Null
             
             $unitettcExe = if ($ARCH_TYPE -eq "arm64" -and (Test-PathExists "$env:USERPROFILE\bin\unitettcARM64.exe")) {
                 "unitettcARM64.exe"
@@ -709,7 +700,7 @@ function Install-NerdFonts {
             }
             
             Get-ChildItem "$env:USERPROFILE\fonts\sarasa-gothic\*.ttc" | ForEach-Object {
-                & "$env:USERPROFILE\bin\$unitettcExe" $_.FullName
+                Invoke-CheckedCommand { & "$env:USERPROFILE\bin\$unitettcExe" $_.FullName }
             }
             
             Move-Item "$env:USERPROFILE\fonts\sarasa-gothic\*017.ttf" "$env:USERPROFILE\fonts\sarasa-gothic-ttf"
@@ -725,15 +716,15 @@ function Install-NerdFonts {
     # Install FontForge and apply patches
     Write-Step "Installing FontForge and applying Nerd Fonts patches"
     try {
-        scoop install "fontforge"
+        Invoke-CheckedCommand { scoop install "fontforge" }
         
         if (-not (Test-PathExists "$env:USERPROFILE\fonts\sarasa-gothic-nerd")) {
-            New-Item -ItemType Directory -Path "$env:USERPROFILE\fonts\sarasa-gothic-nerd" -Force
+            New-Item -ItemType Directory -Path "$env:USERPROFILE\fonts\sarasa-gothic-nerd" -Force | Out-Null
         }
         
         Get-ChildItem "$env:USERPROFILE\fonts\sarasa-gothic-ttf" | ForEach-Object {
             Write-Host "  Patching $($_.Name)..." -ForegroundColor Gray
-            fontforge.cmd -script "$env:USERPROFILE\.nerd-fonts\font-patcher.py" $_.FullName -ext ttf --debug -out "$env:USERPROFILE\fonts\sarasa-gothic-nerd"
+            Invoke-CheckedCommand { fontforge.cmd -script "$env:USERPROFILE\.nerd-fonts\font-patcher.py" $_.FullName -ext ttf --debug -out "$env:USERPROFILE\fonts\sarasa-gothic-nerd" }
         }
         
         Write-Success "Nerd Fonts patches applied"
@@ -779,9 +770,12 @@ function Deploy-TerminalSettings {
                 ForEach-Object { $_ -replace """list"": \[\]", """list"": $PROFILES" } | 
                 Out-File -Encoding utf8 $NEW_SETTINGS
             
-            Deploy-Settings $NEW_SETTINGS $WINDOWS_TERMINAL "settings.json"
+            if (-not (Deploy-Settings $NEW_SETTINGS $WINDOWS_TERMINAL "settings.json")) {
+                return $false
+            }
             Write-Success "Windows Terminal settings deployed"
         }
+        else { return $false }
     }
     catch {
         Write-Error "Failed to deploy Terminal settings: $($_.Exception.Message)"
@@ -801,12 +795,16 @@ function Deploy-TerminalSettings {
                     ForEach-Object { $_ -replace """list"": \[\]", """list"": $PROFILES" } | 
                     Out-File -Encoding utf8 $NEW_SETTINGS
                 
-                Deploy-Settings $NEW_SETTINGS $WINDOWS_TERMINAL_PREVIEW "settings.json"
+                if (-not (Deploy-Settings $NEW_SETTINGS $WINDOWS_TERMINAL_PREVIEW "settings.json")) {
+                    return $false
+                }
                 Write-Success "Windows Terminal Preview settings deployed"
             }
+            else { return $false }
         }
         catch {
             Write-Error "Failed to deploy Terminal Preview settings: $($_.Exception.Message)"
+            return $false
         }
     }
     
@@ -830,6 +828,7 @@ function Deploy-VSCodeSettings {
         
         if (-not (Test-PathExists $VSCODE_PATH)) {
             Write-Error "Please start VS Code first."
+            $success = $false
         }
         else {
             Write-Step "Deploying VS Code settings"
@@ -844,6 +843,7 @@ function Deploy-VSCodeSettings {
         
         if (-not (Test-PathExists $SCOOP_VSCODE_PATH)) {
             Write-Error "Please start VS Code (Scoop) first."
+            $success = $false
         }
         else {
             Write-Step "Deploying VS Code (Scoop) settings"
@@ -853,14 +853,14 @@ function Deploy-VSCodeSettings {
     }
     
     # Install extensions
-    if (Test-PathExists "$env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions") {
+    if (Test-PathExists "$WINDOTFILES\vscode\extensions") {
         $VSCODE_CMD_PATH = Get-Command "code.cmd" -ErrorAction SilentlyContinue
         if ($null -ne $VSCODE_CMD_PATH) {
             Write-Step "Installing VS Code extensions"
             try {
-                Get-Content "$env:USERPROFILE\.dotfiles\etc\os\windows\vscode\extensions" | ForEach-Object {
+                Get-Content "$WINDOTFILES\vscode\extensions" | ForEach-Object {
                     Write-Host "  Installing extension: $_" -ForegroundColor Gray
-                    code.cmd --install-extension $_
+                    Invoke-CheckedCommand { code.cmd --install-extension $_ }
                 }
                 Write-Success "VS Code extensions installed"
             }
@@ -901,7 +901,7 @@ function Deploy-PowerShellProfile {
     if (-not (Test-PathExists $DEST_PATH)) {
         Write-Step "Creating PowerShell profile directory"
         try {
-            New-Item -ItemType Directory -Path $DEST_PATH -Force
+            New-Item -ItemType Directory -Path $DEST_PATH -Force | Out-Null
             Write-Success "Profile directory created"
         }
         catch {
@@ -924,7 +924,7 @@ function Install-DeveloperTools {
     
     try {
         Write-Step "Installing Rust tools via Cargo"
-        cargo install hexyl tokei
+        Invoke-CheckedCommand { cargo install hexyl tokei }
         Write-Success "Developer tools installed successfully"
         Write-Header "Developer tools installation completed!"
         return $true
@@ -937,25 +937,40 @@ function Install-DeveloperTools {
 
 function Deploy-NeovimConfig {
     Write-Header "Deploying Neovim Configuration"
-    
-    $NVIM_PATH = "$env:USERPROFILE\AppData\Local\nvim"
-    
+    $source = Join-Path $DOTFILES "dot_config/nvim"
+    $destination = Join-Path $env:LOCALAPPDATA "nvim"
+    $suffix = [guid]::NewGuid().ToString("N")
+    $staging = "$destination.staging.$suffix"
+    $backup = "$destination.backup.$suffix"
+    $backedUp = $false
     try {
-        if (Test-PathExists $NVIM_PATH) {
-            Write-Step "Removing existing Neovim configuration"
-            Remove-Item -Recurse -Force $NVIM_PATH
+        if (-not (Test-Path (Join-Path $source "init.lua") -PathType Leaf)) {
+            throw "Neovim source configuration not found: $source"
         }
-        
-        Write-Step "Copying Neovim configuration"
-        Copy-Item -Path "$DOTFILES\.config\nvim" -Destination $NVIM_PATH -Recurse -Force
-        
+        New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
+        Copy-Item -LiteralPath $source -Destination $staging -Recurse -Force
+        if (Test-Path -LiteralPath $destination) {
+            Move-Item -LiteralPath $destination -Destination $backup
+            $backedUp = $true
+        }
+        Move-Item -LiteralPath $staging -Destination $destination
+        if ($backedUp) {
+            Write-Host "Previous configuration saved at $backup"
+        }
         Write-Success "Neovim configuration deployed successfully"
-        Write-Header "Neovim configuration deployment completed!"
         return $true
     }
     catch {
+        if ($backedUp -and -not (Test-Path -LiteralPath $destination)) {
+            Move-Item -LiteralPath $backup -Destination $destination
+        }
         Write-Error "Failed to deploy Neovim configuration: $($_.Exception.Message)"
         return $false
+    }
+    finally {
+        if (Test-Path -LiteralPath $staging) {
+            Remove-Item -LiteralPath $staging -Recurse -Force
+        }
     }
 }
 
@@ -979,33 +994,25 @@ function Show-Usage {
 # Main Processing
 # ==============================================================================
 
-# Command processing
-switch ($mode) {
-    { $_ -eq "i" -or $_ -eq "init" } {
-        Initialize-System | Out-Null
+# Keep status separate from incidental pipeline output produced by setup cmdlets.
+try {
+    $result = @(switch ($mode) {
+        { $_ -eq "i" -or $_ -eq "init" } { Initialize-System }
+        "fonts" { Install-NerdFonts }
+        "terminal" { Deploy-TerminalSettings }
+        "vscode" { Deploy-VSCodeSettings }
+        "wslconfig" { Deploy-WSLConfig }
+        "profile" { Deploy-PowerShellProfile }
+        "tools" { Install-DeveloperTools }
+        "nvim" { Deploy-NeovimConfig }
+        default { Show-Usage; $false }
+    })
+    if ($result.Count -eq 0 -or $result[-1] -isnot [bool] -or -not $result[-1]) {
+        exit 1
     }
-    "fonts" {
-        Install-NerdFonts | Out-Null
-    }
-    "terminal" {
-        Deploy-TerminalSettings | Out-Null
-    }
-    "vscode" {
-        Deploy-VSCodeSettings | Out-Null
-    }
-    "wslconfig" {
-        Deploy-WSLConfig | Out-Null
-    }
-    "profile" {
-        Deploy-PowerShellProfile | Out-Null
-    }
-    "tools" {
-        Install-DeveloperTools | Out-Null
-    }
-    "nvim" {
-        Deploy-NeovimConfig | Out-Null
-    }
-    default {
-        Show-Usage
-    }
+    exit 0
+}
+catch {
+    Write-Error $_.Exception.Message
+    exit 1
 }
