@@ -411,8 +411,16 @@ alias ta='tmux-create-new-session'
 alias rmcache='sudo sh -c "echo 3 >'/proc/sys/vm/drop_caches' && swapoff -a && swapon -a"'
 
 # plantuml-serverを立てる
-alias start-plantuml='rmp >/dev/null 2>&1; docker run -d -p 18123:8080 --name plantuml plantuml/plantuml-server:jetty'
-alias stop-plantuml='docker kill plantuml && docker rm $(docker ps -a -q)'
+start-plantuml() {
+    if docker container inspect plantuml >/dev/null 2>&1; then
+        docker start plantuml
+    else
+        docker run -d -p 18123:8080 --name plantuml plantuml/plantuml-server:jetty
+    fi
+}
+stop-plantuml() {
+    docker stop plantuml && docker rm plantuml
+}
 
 # dockerでnoneのイメージを全て削除
 if command -v docker >/dev/null 2>&1; then
