@@ -22,3 +22,5 @@
 !.config/yazi/**
 !.config/zellij/
 !.config/zellij/**
+!.config/dotfiles/
+!.config/dotfiles/**

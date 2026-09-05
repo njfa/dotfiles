@@ -38,12 +38,12 @@ assert_not_contains "$tmux_installer" 'win32yank'
 
 assert_not_contains "$tmux_conf" 'copy-pipe "win32yank\.exe -i --crlf"'
 assert_not_contains "$tmux_conf" 'copy-pipe-and-cancel "win32yank\.exe -i --crlf"'
-assert_contains "$tmux_conf" 'bind -T copy-mode-vi y send -X copy-pipe "\$HOME/\.dotfiles/bin/tmux-copy"'
-assert_contains "$tmux_conf" 'bind -T copy-mode-vi Enter send -X copy-pipe-and-cancel "\$HOME/\.dotfiles/bin/tmux-copy"'
+assert_contains "$tmux_conf" 'bind -T copy-mode-vi y send -X copy-pipe "\$HOME/\.config/dotfiles/bin/tmux-copy"'
+assert_contains "$tmux_conf" 'bind -T copy-mode-vi Enter send -X copy-pipe-and-cancel "\$HOME/\.config/dotfiles/bin/tmux-copy"'
 
 assert_contains "$tmux_copy" 'win32yank\.exe -i --crlf'
 assert_contains "$tmux_copy" 'base64'
 assert_contains "$tmux_copy" '52;c;'
 
 assert_not_contains "$lazygit_config" 'copyToClipboardCmd: .*win32yank\.exe -i --crlf'
-assert_contains "$lazygit_config" 'copyToClipboardCmd: '\''echo \{\{text\}\} \| \$HOME/\.dotfiles/bin/tmux-copy'\'''
+assert_contains "$lazygit_config" 'copyToClipboardCmd: '\''echo \{\{text\}\} \| \$HOME/\.config/dotfiles/bin/tmux-copy'\'''

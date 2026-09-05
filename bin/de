@@ -488,7 +488,7 @@ if [[ ${1:-} == help || ${1:-} == --help || ${1:-} == -h ]]; then
   exit $?
 fi
 
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 DOTFILES_PATH=$(cd "$SCRIPT_DIR/.." && pwd)
 export DOTFILES_PATH
 MISE_CONFIG_PATH="$DOTFILES_PATH/dot_config/mise/config.toml"

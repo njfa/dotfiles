@@ -53,7 +53,7 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
     export BROWSER='/mnt/c/Windows/System32/rundll32.exe url.dll,FileProtocolHandler'
 fi
 
-export PATH="$HOME/.dotfiles/bin:$PATH:~/.bun/bin"
+export PATH="$HOME/.config/dotfiles/bin:$PATH:~/.bun/bin"
 export EDITOR=nvim
 
 # -------------------------------------------------------------------
