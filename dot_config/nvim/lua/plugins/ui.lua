@@ -496,13 +496,6 @@ return {
                 desc = "ターミナルの表示切替",
             },
             {
-                "<A-g>",
-                function()
-                    Snacks.lazygit({ cwd = vim.fn.expand("%:p:h") })
-                end,
-                desc = "現在のファイルでLazygitを開く",
-            },
-            {
                 "<leader>sm",
                 function()
                     Snacks.scratch()

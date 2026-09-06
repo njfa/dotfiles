@@ -93,8 +93,6 @@ return {
                     {
                         { "<leader><leader>", group = "leader" },
                         { "<leader><leader>g", group = "Git差分/検索" },
-                        { "<leader><leader>c", "<cmd>tabnew<cr>", desc = "タブ作成" },
-                        { "<leader><leader>d", "<cmd>tabclose<CR>", desc = "タブを閉じる" },
                         {
                             "<leader><leader>e",
                             function()
@@ -109,6 +107,12 @@ return {
                         --                { "<leader><leader>p", "<cmd>Telescope registers<CR>", desc = "クリップボード履歴" },
                         { "<leader><leader>w", ":w ", desc = "ファイル名を付けて保存" },
                         { "<leader><leader>q", "<cmd>qa!<cr>", desc = "全ウィンドウを閉じる" },
+                    },
+
+                    {
+                        { "<leader>t", group = "タブを閉じる" },
+                        { "<leader>tc", "<cmd>tabclose<cr>", desc = "現在のタブを閉じる" },
+                        { "<leader>to", "<cmd>tabonly<cr>", desc = "現在以外のタブを閉じる" },
                     },
 
                     --            { "<F1>", "<cmd>lua require('telescope').extensions.dap.configurations{}<CR>", desc = "DAPの設定" },
@@ -317,9 +321,6 @@ return {
                 },
 
                 { "<Esc>", ":noh<cr>", desc = "検索結果のハイライトを削除" },
-
-                { "H", "<cmd>tabp<cr>", desc = "前のタブに移動" },
-                { "L", "<cmd>tabn<cr>", desc = "次のタブに移動" },
 
                 {
                     { "<C-w>", group = "画面操作" },

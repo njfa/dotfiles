@@ -4,13 +4,6 @@ return {
     "akinsho/bufferline.nvim",
     dependencies = {
         "nvim-tree/nvim-web-devicons",
-        -- バッファをタブ毎にグルーピングをする
-        {
-            "tiagovla/scope.nvim",
-            config = function()
-                require("scope").setup()
-            end,
-        },
     },
     cond = not vscode_enabled,
     config = function()
@@ -40,6 +33,7 @@ return {
                 },
             },
             options = {
+                mode = "buffers",
                 numbers = "none",
                 name_formatter = function(buf) -- buf contains:
                     return buf.name
@@ -65,7 +59,7 @@ return {
                 tab_size = 10,
                 color_icons = true,
                 sort_by = "insert_after_current",
-                show_tab_indicators = true,
+                show_tab_indicators = false,
                 separator_style = "thick",
                 indicator = {
                     icon = "▌",
