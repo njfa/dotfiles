@@ -90,6 +90,8 @@ return {
                         },
                     },
 
+                    { "<leader>n", group = "テスト" },
+
                     {
                         { "<leader><leader>", group = "leader" },
                         { "<leader><leader>g", group = "Git差分/検索" },

@@ -579,7 +579,7 @@ return {
                 desc = "最近開いたファイル",
             },
             {
-                "<leader>n",
+                "<leader>sn",
                 function()
                     Snacks.picker.notifications()
                 end,

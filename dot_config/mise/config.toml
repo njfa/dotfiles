@@ -5,6 +5,7 @@ python = "3.13.11"
 # Runtimes / CLIs (keep versions explicit so they can be overridden)
 node = "lts"
 go = "latest"
+gotestsum = "latest"
 terraform = "latest"
 
 # CLI tools managed via mise (plugins may be required)

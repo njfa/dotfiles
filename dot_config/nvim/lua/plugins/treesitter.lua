@@ -10,6 +10,7 @@ local ensure_installed = {
     "json",
     "yaml",
     "python",
+    "go",
     "terraform",
     "diff",
 }
