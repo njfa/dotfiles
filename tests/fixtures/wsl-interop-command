@@ -1,0 +1,17 @@
+#!/bin/sh
+case "${0##*/}" in
+    rundll32.exe)
+        printf '%s\n' "$@" > "$OPEN_ARGS"
+        exit "${OPEN_STATUS:-0}"
+        ;;
+    wslpath)
+        printf '%s\n' "$@" > "$PATH_ARGS"
+        [ "${PATH_STATUS:-0}" -eq 0 ] || exit "$PATH_STATUS"
+        printf '%s\n' "$WINDOWS_PATH"
+        ;;
+    win32yank.exe)
+        printf '%s\n' "$@" > "$CLIP_ARGS"
+        cat > "$CLIP_INPUT"
+        exit "${CLIP_STATUS:-0}"
+        ;;
+esac

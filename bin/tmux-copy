@@ -6,9 +6,15 @@ has_cmd() {
 }
 
 if has_cmd win32yank.exe; then
-  if win32yank.exe -i --crlf; then
+  # Keep stdin intact if win32yank consumes it before failing (e.g. interop
+  # disabled). A private temporary file also preserves trailing newlines.
+  input=$(mktemp)
+  trap 'rm -f "$input"' EXIT
+  cat > "$input"
+  if win32yank.exe -i --crlf < "$input"; then
     exit 0
   fi
+  exec < "$input"
 fi
 
 if ! has_cmd base64; then
@@ -17,9 +23,7 @@ if ! has_cmd base64; then
 fi
 
 payload=$(base64 | tr -d '\n')
-if [ -w /dev/tty ]; then
-  printf '\033]52;c;%s\a' "$payload" > /dev/tty
-else
+if ! { printf '\033]52;c;%s\a' "$payload" > /dev/tty; } 2>/dev/null; then
   printf '\033]52;c;%s\a' "$payload"
 fi
 exit 0

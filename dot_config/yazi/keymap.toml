@@ -2,6 +2,9 @@
 prepend_keymap = [
 	{ on = "<C-r>", run = "plugin fzf", desc = "Jump to a file/directory via fzf" },
 	{ on = "<C-f>", run = "plugin zoxide", desc = "Jump to a directory via zoxide" },
+	{ on = "m", run = 'shell -- zoxide add "$PWD"', desc = "Add current directory to zoxide" },
 	{ on = "z", run = "noop", desc = "Disable fzf on z" },
-    { on = "o",     run = ['shell -- tmux new-window nvim $@'],   desc = "Open in tmux window" },
+	{ on = [ "g", "w" ], run = "plugin windows-folder home", desc = "Go to Windows home" },
+	{ on = [ "g", "d" ], run = "plugin windows-folder downloads", desc = "Go to Windows Downloads" },
+	{ on = [ "g", "s" ], run = "plugin windows-folder screenshots", desc = "Go to Windows Screenshots" },
 ]

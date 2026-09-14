@@ -390,6 +390,7 @@ fi
 
 alias vimdiff='nvim -d'
 alias view='nvim -R'
+alias o='xdg-open'
 # alias fd='fdfind'
 alias lg='lazygit'
 alias ld='lazydocker'

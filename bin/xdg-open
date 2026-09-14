@@ -1,3 +1,24 @@
 #!/bin/sh
 
-/mnt/c/Windows/System32/rundll32.exe url.dll,FileProtocolHandler "$@"
+opener=$(command -v rundll32.exe) || opener=/mnt/c/Windows/System32/rundll32.exe
+if [ ! -x "$opener" ]; then
+    echo "xdg-open: rundll32.exe is unavailable" >&2
+    exit 127
+fi
+
+# Windows executables do not translate Linux file paths. Leave URLs and
+# Windows paths alone; only convert an existing local file or directory.
+if [ "$#" -eq 1 ] && [ -e "$1" ]; then
+    if ! command -v wslpath >/dev/null 2>&1; then
+        echo "xdg-open: wslpath is required for local paths" >&2
+        exit 127
+    fi
+    case "$1" in
+        /*) target=$1 ;;
+        *) target=./$1 ;;
+    esac
+    target=$(wslpath -w "$target") || exit "$?"
+    set -- "$target"
+fi
+
+exec "$opener" url.dll,FileProtocolHandler "$@"

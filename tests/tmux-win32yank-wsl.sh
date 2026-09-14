@@ -9,23 +9,23 @@ tmux_copy="bin/tmux-copy"
 lazygit_config="dot_config/lazygit/config.yml"
 
 assert_contains() {
-    local file="$1"
-    local pattern="$2"
+	local file="$1"
+	local pattern="$2"
 
-    if ! grep -Eq "$pattern" "$file"; then
-        echo "missing expected pattern in $file: $pattern" >&2
-        exit 1
-    fi
+	if ! grep -Eq "$pattern" "$file"; then
+		echo "missing expected pattern in $file: $pattern" >&2
+		exit 1
+	fi
 }
 
 assert_not_contains() {
-    local file="$1"
-    local pattern="$2"
+	local file="$1"
+	local pattern="$2"
 
-    if grep -Eq "$pattern" "$file"; then
-        echo "unexpected pattern found in $file: $pattern" >&2
-        exit 1
-    fi
+	if grep -Eq "$pattern" "$file"; then
+		echo "unexpected pattern found in $file: $pattern" >&2
+		exit 1
+	fi
 }
 
 assert_contains "$win32yank_installer" 'is_wsl\(\)'
@@ -46,4 +46,4 @@ assert_contains "$tmux_copy" 'base64'
 assert_contains "$tmux_copy" '52;c;'
 
 assert_not_contains "$lazygit_config" 'copyToClipboardCmd: .*win32yank\.exe -i --crlf'
-assert_contains "$lazygit_config" 'copyToClipboardCmd: '\''echo \{\{text\}\} \| \$HOME/\.config/dotfiles/bin/tmux-copy'\'''
+assert_contains "$lazygit_config" 'copyToClipboardCmd: .*printf "%s" \{\{text\}\} \| "\$HOME/\.config/dotfiles/bin/tmux-copy"'
