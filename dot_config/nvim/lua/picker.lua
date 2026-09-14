@@ -24,25 +24,8 @@ local strings = require("plenary.strings")
 local def_icon = devicons.get_icon("fname", { default = true })
 local iconwidth = strings.strdisplaywidth(def_icon)
 
-local function is_git_repo()
-    vim.fn.system("git rev-parse --is-inside-work-tree")
-
-    return vim.v.shell_error == 0
-end
-
-local function get_git_root()
-    local dot_git_path = vim.fn.finddir(".git", ".;")
-
-    return vim.fn.fnamemodify(dot_git_path, ":h")
-end
-
-local function getcwd()
-    local cwd = get_git_root()
-    if cwd == "." then
-        cwd = vim.fn.getcwd()
-    end
-    return vim.fn.fnamemodify(cwd, ":~:.")
-end
+local is_git_repo = require("common").is_git_repo
+local getcwd = require("common").get_cwd
 
 M.is_git_repo = function()
     return is_git_repo()
@@ -91,12 +74,14 @@ M.find_files_from_project_git_root = function(opts)
 
     opts.find_command = {
         "rg",
-        "--no-ignore",
         "--hidden",
         "--files",
         "--glob",
         "!**/.git/*",
     }
+    if opts.no_ignore then
+        table.insert(opts.find_command, "--no-ignore")
+    end
 
     local gen = require("telescope.make_entry").gen_from_file(opts)
     opts.entry_maker = function(line)

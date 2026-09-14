@@ -137,7 +137,7 @@ return {
                             function()
                                 local text = get_text()
                                 vscode_mapping(
-                                    Snacks.picker.files({ hidden = true, ignored = true, pattern = text }),
+                                    Snacks.picker.files({ hidden = true, ignored = false, pattern = text }),
                                     "workbench.action.quickOpen"
                                 )
                             end,
@@ -150,7 +150,7 @@ return {
                                 vscode_mapping(
                                     Snacks.picker.grep({
                                         hidden = true,
-                                        ignored = true,
+                                        ignored = false,
                                         on_show = function()
                                             vim.api.nvim_put({ text }, "c", true, true)
                                         end,
@@ -241,7 +241,7 @@ return {
                     {
                         "m=",
                         function()
-                            conform.format({ lsp_fallback = true, timeout_ms = 5000 })
+                            conform.format({ timeout_ms = 5000 })
                         end,
                         desc = "ファイル(normal)/範囲(visual)の整形",
                     },

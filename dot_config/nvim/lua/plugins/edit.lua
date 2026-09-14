@@ -184,7 +184,8 @@ return {
         ft = { "terraform" },
         cond = not vscode_enabled,
         init = function()
-            vim.g.terraform_fmt_on_save = 1
+            -- Conform owns the save hook; keep Terraform commands available.
+            vim.g.terraform_fmt_on_save = 0
         end,
     },
 
@@ -265,37 +266,55 @@ return {
 
     {
         "stevearc/conform.nvim",
-        opts = {},
         config = function()
             require("conform").setup({
-                lsp_format = "fallback",
+                default_format_opts = { lsp_format = "fallback", timeout_ms = 5000 },
+                format_on_save = function(bufnr)
+                    local ft = vim.bo[bufnr].filetype
+                    if not vscode_enabled and (ft == "terraform" or ft == "terraform-vars"
+                        or vim.api.nvim_buf_get_name(bufnr):match("%.tftest%.hcl$")) then
+                        return { formatters = { "terraform_fmt" }, lsp_format = "never", timeout_ms = 5000 }
+                    end
+                end,
                 formatters_by_ft = {
                     lua = { "stylua" },
-                    -- Conform will run multiple formatters sequentially
                     python = function(bufnr)
-                        if require("conform").get_formatter_info("ruff_format", bufnr).available then
+                        local conform = require("conform")
+                        if conform.get_formatter_info("ruff_format", bufnr).available then
                             return { "ruff_format" }
-                        else
-                            return { "isort", "black" }
+                        elseif conform.get_formatter_info("black", bufnr).available then
+                            return conform.get_formatter_info("isort", bufnr).available
+                                and { "isort", "black" } or { "black" }
                         end
+                        -- Do not let isort alone suppress LSP formatting fallback.
+                        return {}
                     end,
-                    -- You can customize some of the format options for the filetype (:help conform.format)
                     rust = { "rustfmt", lsp_format = "fallback" },
-                    -- Conform will run the first available formatter
-                    javascript = {
-                        "prettier" --[["prettierd", "prettier", stop_after_first = true ]],
-                    },
+                    javascript = { "prettier" },
+                    javascriptreact = { "prettier" },
+                    typescript = { "prettier" },
+                    typescriptreact = { "prettier" },
+                    json = { "prettier" },
+                    jsonc = { "prettier" },
+                    yaml = { "prettier" },
+                    sh = { "shfmt" },
                     bash = { "shfmt" },
                     java = { "google-java-format" },
                     go = { lsp_format = "prefer" },
                     markdown = { "markdownlint" },
+                    terraform = { "terraform_fmt" },
+                    ["terraform-vars"] = { "terraform_fmt" },
+                    hcl = function(bufnr)
+                        return vim.api.nvim_buf_get_name(bufnr):match("%.tftest%.hcl$")
+                            and { "terraform_fmt" } or {}
+                    end,
                 },
                 formatters = {
                     stylua = {
                         append_args = { "--indent-type", "Spaces", "--indent-width", "4" },
                     },
-                    prettier_java = {
-                        command = "prettier",
+                    shfmt = {
+                        append_args = { "-i", "4" },
                     },
                     ["google-java-format"] = {
                         append_args = { "-a" },

@@ -169,12 +169,7 @@ return {
             hl = { fg = "comment" },
             {
                 provider = function()
-                    local status_ok, _ = pcall(require, "telescope")
-                    if not status_ok then
-                        return vim.fn.getcwd()
-                    end
-
-                    local cwd = require("picker").get_cwd()
+                    local cwd = vim.fn.fnamemodify(require("common").get_cwd(), ":~:.")
                     if not conditions.width_percent_below(#cwd, 0.2) then
                         cwd = vim.fn.pathshorten(cwd)
                     end

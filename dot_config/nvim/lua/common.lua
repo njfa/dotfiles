@@ -1,23 +1,14 @@
 local M = {}
 
-local function is_git_repo()
-    vim.fn.system("git rev-parse --is-inside-work-tree")
-
-    return vim.v.shell_error == 0
-end
-
 local function get_git_root()
-    local dot_git_path = vim.fn.finddir(".git", ".;")
-
-    return vim.fn.fnamemodify(dot_git_path, ":h")
-end
-
-local function getcwd()
-    local cwd = get_git_root()
-    if cwd == "." then
-        cwd = vim.fn.getcwd()
+    local path = vim.api.nvim_buf_get_name(0)
+    if vim.bo.buftype ~= "" or path == "" or path:match("^%w[%w+.-]*://") then
+        path = vim.fn.getcwd()
+    elseif vim.fn.isdirectory(path) == 0 then
+        path = vim.fs.dirname(path)
     end
-    return vim.fn.fnamemodify(cwd, ":~:.")
+    -- vim.fs.root accepts both .git directories and worktree/submodule files.
+    return vim.fs.root(path, ".git")
 end
 
 -- Functional wrapper for mapping custom keybindings
@@ -40,11 +31,11 @@ M.buf_map = function(num, mode, lhs, rhs, opts)
 end
 
 M.is_git_repo = function()
-    return is_git_repo()
+    return get_git_root() ~= nil
 end
 
 M.get_cwd = function()
-    return getcwd()
+    return get_git_root() or vim.fs.normalize(vim.fn.getcwd())
 end
 
 M.lcd_current_workspace = function()

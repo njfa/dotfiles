@@ -138,12 +138,6 @@ return {
         config = function()
             local null_ls = require("null-ls")
 
-            local null_sources = {
-                -- null_ls.builtins.diagnostics.markdownlint.with({
-                --     extra_args = { "--disable", "MD007", "MD012", "MD013" }
-                -- })
-            }
-
             require("mason-null-ls").setup({
                 ensure_installed = {
                     "markdown",
@@ -160,16 +154,18 @@ return {
                     "shfmt",
                 },
                 automatic_installation = false,
+                -- Install CLI tools here, but only expose diagnostics via none-ls.
+                methods = {
+                    diagnostics = true,
+                    formatting = false,
+                    code_actions = false,
+                    completion = false,
+                    hover = false,
+                },
                 handlers = {
-                    -- function() end, -- disables automatic setup of all null-ls sources
                     markdownlint = function(_, _)
                         null_ls.register(null_ls.builtins.diagnostics.markdownlint.with({
                             extra_args = { "--disable", "MD007", "MD012", "MD013", "MD033", "MD051", "MD038", "MD040" },
-                        }))
-                    end,
-                    shfmt = function(source_name, methods)
-                        null_ls.register(null_ls.builtins.formatting.shfmt.with({
-                            extra_args = { "-i", "4" }, -- インデントをスペース4つに設定
                         }))
                     end,
                 },
@@ -177,7 +173,6 @@ return {
 
             null_ls.setup({
                 debug = true,
-                sources = null_sources,
             })
         end,
     },

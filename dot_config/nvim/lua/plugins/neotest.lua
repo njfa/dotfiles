@@ -213,7 +213,7 @@ return {
             {
                 "<leader>na",
                 function()
-                    neotest().run.run(vim.uv.cwd())
+                    neotest().run.run(require("common").get_cwd())
                 end,
                 desc = "プロジェクトのテストを実行",
             },

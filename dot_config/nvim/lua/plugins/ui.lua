@@ -443,6 +443,17 @@ return {
             input = { enabled = true },
             picker = {
                 enabled = true,
+                config = function(opts)
+                    if not opts.dirs and not opts.rtp
+                        and vim.tbl_contains({ "files", "grep", "git_files", "git_grep", "git_status", "explorer" }, opts.source) then
+                        -- Explicit scopes (config files, Yazi directories) take precedence.
+                        opts.cwd = opts.cwd or require("common").get_cwd()
+                    end
+                end,
+                sources = {
+                    files = { cmd = "rg", hidden = true, ignored = false },
+                    grep = { hidden = true, ignored = false },
+                },
                 layout = function()
                     if vim.o.columns <= PICKER_LAYOUT_WIDTH_THRESHOLD then
                         return default_layout_le_threshold
@@ -530,7 +541,7 @@ return {
                     vscode_mapping(
                         Snacks.picker.files({
                             hidden = true,
-                            ignored = true,
+                            ignored = false,
                             formatters = {
                                 file = {
                                     truncate = get_picker_width(),
@@ -543,12 +554,23 @@ return {
                 desc = "ファイル検索",
             },
             {
+                "<leader>F",
+                function()
+                    if vscode_enabled then
+                        require("vscode").action("workbench.action.quickOpen")
+                    else
+                        Snacks.picker.files({ hidden = true, ignored = true })
+                    end
+                end,
+                desc = "Find all files (including ignored)",
+            },
+            {
                 "<leader>g",
                 function()
                     vscode_mapping(
                         Snacks.picker.grep({
                             hidden = true,
-                            ignored = true,
+                            ignored = false,
                             formatters = {
                                 file = {
                                     truncate = get_picker_width(),
@@ -559,6 +581,17 @@ return {
                     )
                 end,
                 desc = "Grep検索",
+            },
+            {
+                "<leader>G",
+                function()
+                    if vscode_enabled then
+                        require("vscode").action("workbench.view.search")
+                    else
+                        Snacks.picker.grep({ hidden = true, ignored = true })
+                    end
+                end,
+                desc = "Grep all files (including ignored)",
             },
             {
                 "<leader>h",
@@ -615,7 +648,6 @@ return {
                 function()
                     Snacks.picker.git_files({
                         hidden = true,
-                        ignored = true,
                         formatters = {
                             file = {
                                 truncate = get_picker_width(),
@@ -630,7 +662,6 @@ return {
                 function()
                     Snacks.picker.git_grep({
                         hidden = true,
-                        ignored = true,
                         formatters = {
                             file = {
                                 truncate = get_picker_width(),

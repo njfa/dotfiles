@@ -98,6 +98,46 @@ return {
     {
         'nvim-treesitter/nvim-treesitter-textobjects',
         branch = "main",
+        dependencies = "nvim-treesitter/nvim-treesitter",
+        config = function()
+            require("nvim-treesitter-textobjects").setup({
+                select = { lookahead = true },
+                move = { set_jumps = true },
+            })
+
+            -- Keep targets.vim's aa/ia and Vim's ap/ip text objects intact.
+            for _, mapping in ipairs({
+                { "af", "@function.outer", "Around function" },
+                { "if", "@function.inner", "Inside function" },
+                { "ac", "@class.outer", "Around class" },
+                { "ic", "@class.inner", "Inside class" },
+                { "aP", "@parameter.outer", "Around parameter" },
+                { "iP", "@parameter.inner", "Inside parameter" },
+            }) do
+                vim.keymap.set({ "x", "o" }, mapping[1], function()
+                    require("nvim-treesitter-textobjects.select").select_textobject(mapping[2], "textobjects")
+                end, { desc = mapping[3] })
+            end
+
+            -- r = routine; preserve ftplugin [m/]m and Vim's [f/]f file jumps.
+            for _, mapping in ipairs({
+                { "]r", "goto_next_start", "Next function start" },
+                { "[r", "goto_previous_start", "Previous function start" },
+                { "]R", "goto_next_end", "Next function end" },
+                { "[R", "goto_previous_end", "Previous function end" },
+            }) do
+                vim.keymap.set({ "n", "x", "o" }, mapping[1], function()
+                    require("nvim-treesitter-textobjects.move")[mapping[2]]("@function.outer", "textobjects")
+                end, { desc = mapping[3] })
+            end
+
+            vim.keymap.set("n", "<leader>>", function()
+                require("nvim-treesitter-textobjects.swap").swap_next("@parameter.inner")
+            end, { desc = "Swap parameter with next" })
+            vim.keymap.set("n", "<leader><", function()
+                require("nvim-treesitter-textobjects.swap").swap_previous("@parameter.inner")
+            end, { desc = "Swap parameter with previous" })
+        end,
     },
     -- treesitter unitをテキストオブジェクトに追加
     "David-Kunz/treesitter-unit",

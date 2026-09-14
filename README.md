@@ -44,6 +44,8 @@ Neovimのプラグイン構成は `dot_config/nvim/lazy-lock.json` で管理し�
 
 Java（Mavenマルチモジュール）・Python・GoのLSP構成と環境設定は [NeovimのLSP](docs/neovim-lsp.md) を参照してください。
 
+Syntax keys, formatting, and project navigation: [Neovim editing](docs/neovim-editing.md).
+
 WindowsのNeovim設定はコピー完了後に置き換え、既存設定は同じ親ディレクトリの `nvim.backup.<ID>` に保持します。セットアップに失敗すると終了コード1を返します。
 
 ### Orca Server（個別インストール）
