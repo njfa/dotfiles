@@ -31,7 +31,9 @@ return {
             vim.keymap.set("n", "<F7>", dap.continue, { desc = "デバッグ開始/再開" })
             vim.keymap.set("n", "<F8>", dap.step_over, { desc = "ステップ実行 (OVER)" })
             vim.keymap.set("n", "<F9>", dap.step_out, { desc = "ステップ実行 (OUT)" })
-            vim.keymap.set("n", "<F10>", widgets.sessions, { desc = "デバッグセッションの切替" })
+            vim.keymap.set("n", "<F10>", function()
+                widgets.centered_float(widgets.sessions)
+            end, { desc = "デバッグセッションの切替" })
             vim.keymap.set("n", "<F12>", dapui.toggle, { desc = "DAP UIの表示切替" })
         end,
     },
