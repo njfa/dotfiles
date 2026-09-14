@@ -90,6 +90,8 @@ end
 -- netrwを無効化
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
+-- Let yazi handle directories instead of Neovim's built-in dir plugin.
+vim.g.loaded_nvim_dir_plugin = 1
 
 -- スワップファイル
 vim.opt.swapfile = false

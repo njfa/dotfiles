@@ -207,7 +207,7 @@ return {
     {
         "mikavilpas/yazi.nvim",
         version = "*",
-        event = "VeryLazy",
+        lazy = false,
         cond = not vscode_enabled,
         dependencies = { "nvim-lua/plenary.nvim" },
         opts = {
