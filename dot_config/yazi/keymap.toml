@@ -7,4 +7,5 @@ prepend_keymap = [
 	{ on = [ "g", "w" ], run = "plugin windows-folder home", desc = "Go to Windows home" },
 	{ on = [ "g", "d" ], run = "plugin windows-folder downloads", desc = "Go to Windows Downloads" },
 	{ on = [ "g", "s" ], run = "plugin windows-folder screenshots", desc = "Go to Windows Screenshots" },
+	{ on = [ "g", "e" ], run = "shell -- xdg-open .", desc = "Open current directory in Windows Explorer" },
 ]
