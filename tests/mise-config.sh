@@ -4,6 +4,11 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 config="$repo_root/dot_config/mise/config.toml"
 
+if ! grep -Fxq '"aqua:ip7z/7zip" = "latest"' "$config"; then
+    printf 'FAIL: expected 7-Zip for Yazi archives in %s\n' "$config" >&2
+    exit 1
+fi
+
 if ! grep -qx 'neovim = "nightly"' "$config"; then
     printf 'FAIL: expected neovim = "nightly" in %s\n' "$config" >&2
     exit 1

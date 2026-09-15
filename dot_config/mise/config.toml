@@ -25,6 +25,7 @@ uv = "latest"
 tree-sitter = "latest"
 
 yazi = "latest"
+"aqua:ip7z/7zip" = "latest"
 zoxide = "latest"
 eza = "latest"
 chezmoi = "latest"
