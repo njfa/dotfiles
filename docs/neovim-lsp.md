@@ -115,6 +115,14 @@ JDTLS_CPUS=2 JDTLS_MAX_HEAP=2g nvim
 
 ## Python
 
+Ruffのユーザー共通設定は `dot_config/ruff/ruff.toml` で管理し、通常は
+`~/.config/ruff/ruff.toml` に配置する。整形時の行幅の目安は120とし、標準ルール
+（`E4` / `E7` / `E9` / `F`）にimport整理（`I`）とバグになりやすい書き方の検出（`B`）を追加する。
+行長チェック（`E501`）は有効にしないため、長い行だけを理由に診断は出さない。
+プロジェクトにRuff設定がある場合はそちらを優先する。
+旧設定の `~/.ruff.toml` が残っている場合は削除する。旧ファイルの `[tool.ruff]` は
+`pyproject.toml` 専用の形式であり、Ruff専用設定ファイルでは読み込みエラーになる。
+
 Pyrightは `basic` の型チェックを開いているファイルに対して行い、Ruffはlintとimport整理を担当する。
 重複を避けるためRuffのhoverとPyrightのimport整理を無効にしている。この役割分担は
 [RuffのNeovim設定例](https://docs.astral.sh/ruff/editors/setup/#neovim) に沿っている。

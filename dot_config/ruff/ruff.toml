@@ -1,0 +1,5 @@
+line-length = 120
+
+[lint]
+# Default rules, import sorting, and common bug patterns. No line-length diagnostics (E501).
+select = ["E4", "E7", "E9", "F", "I", "B"]
