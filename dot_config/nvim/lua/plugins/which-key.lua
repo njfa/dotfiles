@@ -54,6 +54,21 @@ return {
                     { "gi", "<cmd>Trouble lsp_implementations<cr>", desc = "実装箇所の検索" },
                     { "gt", "<cmd>Trouble lsp_type_definitions<cr>", desc = "タイプ定義の表示" },
                     { "<A-m>", "<cmd>Mason<CR>", desc = "Masonを開く" },
+                    { "<leader>l", group = "LSP・診断" },
+                    {
+                        "<leader>ln",
+                        function()
+                            vim.diagnostic.jump({ count = 1, float = true })
+                        end,
+                        desc = "次のDiagnosticへ移動",
+                    },
+                    {
+                        "<leader>lp",
+                        function()
+                            vim.diagnostic.jump({ count = -1, float = true })
+                        end,
+                        desc = "前のDiagnosticへ移動",
+                    },
                     --            { "<leader>t", "<cmd>Telescope<CR>", desc = "Telescope機能一覧" },
 
                     {
@@ -117,16 +132,7 @@ return {
                         { "<leader>to", "<cmd>tabonly<cr>", desc = "現在以外のタブを閉じる" },
                     },
 
-                    --            { "<F1>", "<cmd>lua require('telescope').extensions.dap.configurations{}<CR>", desc = "DAPの設定" },
-                    --            { "<F2>", "<cmd>lua require('telescope').extensions.dap.commands{}<CR>", desc = "DAPのコマンド一覧" },
-                    --            { "<F3>", "<cmd>lua require('telescope').extensions.dap.list_breakpoints{}<CR>", desc = "ブレークポイントの一覧" },
-                    --            { "<F4>", "<cmd>lua require('dap').set_breakpoint()<CR>", desc = "ブレークポイントの追加" },
-                    --            { "<F5>", "<cmd>lua require('dap').toggle_breakpoint()<CR>", desc = "ブレークポイントの切替" },
-                    --            { "<F6>", "<cmd>lua require('dap').step_into()<CR>", desc = "ステップ実行 (IN)" },
-                    --            { "<F7>", "<cmd>lua require('dap').continue()<CR>", desc = "実行" },
-                    --            { "<F8>", "<cmd>lua require('dap').step_over()<CR>", desc = "ステップ実行 (Over)" },
-                    --            { "<F9>", "<cmd>lua require('dap').step_out()<CR>", desc = "ステップ実行 (OUT)" },
-                    --            { "<F12>", "<cmd>lua require('dapui').toggle()<CR>", desc = "DAP UIの表示切替" },
+                    { "<leader>v", group = "デバッグ" },
                 },
                 {
                     mode = { "x" },
@@ -367,7 +373,7 @@ return {
                     },
                     { "<leader>r", [[:<c-u>%s/]], desc = "文字列置換 (正規表現)" },
                     {
-                        "<leader>U",
+                        "<leader>u",
                         vscode_mapping("<cmd>UndotreeToggle<cr>", function()
                             vscode.action("timeline.focus")
                         end),
@@ -416,7 +422,7 @@ return {
                     },
 
                     {
-                        { "<leader>,", group = "バッファ関連の設定" },
+                        { "<leader>,", group = "バッファ・表示設定" },
                         {
                             "<leader>,<tab>",
                             function()
@@ -442,7 +448,7 @@ return {
                             end, function()
                                 vscode.action("workbench.action.editor.changeEncoding")
                             end),
-                            desc = "ファイルタイプの切替 (unix <-> dos)",
+                            desc = "改行コードの切替 (LF <-> CRLF)",
                         },
                         {
                             "<leader>,i",
@@ -487,7 +493,8 @@ return {
                     },
 
                     {
-                        { "<leader>.", group = "neovimの設定" },
+                        { "<leader>.", group = "LSP・エディタ設定" },
+                        { "<leader>.p", group = "プロファイラ" },
                     },
                 },
             },

@@ -21,20 +21,20 @@ return {
 
             require("debugging").setup()
 
-            vim.keymap.set("n", "<F11>", dap.terminate, { desc = "デバッグ終了" })
+            vim.keymap.set("n", "<leader>vq", dap.terminate, { desc = "デバッグ終了" })
             local widgets = require("dap.ui.widgets")
-            vim.keymap.set("n", "<F4>", function()
+            vim.keymap.set("n", "<leader>vB", function()
                 dap.set_breakpoint(vim.fn.input("ブレークポイント条件: "))
             end, { desc = "条件付きブレークポイントの追加" })
-            vim.keymap.set("n", "<F5>", dap.toggle_breakpoint, { desc = "ブレークポイントの切替" })
-            vim.keymap.set("n", "<F6>", dap.step_into, { desc = "ステップ実行 (IN)" })
-            vim.keymap.set("n", "<F7>", dap.continue, { desc = "デバッグ開始/再開" })
-            vim.keymap.set("n", "<F8>", dap.step_over, { desc = "ステップ実行 (OVER)" })
-            vim.keymap.set("n", "<F9>", dap.step_out, { desc = "ステップ実行 (OUT)" })
-            vim.keymap.set("n", "<F10>", function()
+            vim.keymap.set("n", "<leader>vb", dap.toggle_breakpoint, { desc = "ブレークポイントの切替" })
+            vim.keymap.set("n", "<leader>vi", dap.step_into, { desc = "ステップ実行 (IN)" })
+            vim.keymap.set("n", "<leader>vc", dap.continue, { desc = "デバッグ開始/再開" })
+            vim.keymap.set("n", "<leader>vn", dap.step_over, { desc = "ステップ実行 (OVER)" })
+            vim.keymap.set("n", "<leader>vo", dap.step_out, { desc = "ステップ実行 (OUT)" })
+            vim.keymap.set("n", "<leader>vs", function()
                 widgets.centered_float(widgets.sessions)
             end, { desc = "デバッグセッションの切替" })
-            vim.keymap.set("n", "<F12>", dapui.toggle, { desc = "DAP UIの表示切替" })
+            vim.keymap.set("n", "<leader>vu", dapui.toggle, { desc = "DAP UIの表示切替" })
         end,
     },
 

@@ -717,20 +717,6 @@ return {
                 desc = "コマンド検索",
             },
             {
-                "<leader>sd",
-                function()
-                    Snacks.picker.diagnostics()
-                end,
-                desc = "Diagnostics検索",
-            },
-            {
-                "<leader>sD",
-                function()
-                    Snacks.picker.diagnostics_buffer()
-                end,
-                desc = "Diagnostics検索 (バッファ内)",
-            },
-            {
                 "<leader>shh",
                 function()
                     Snacks.picker.help()
@@ -766,13 +752,6 @@ return {
                 desc = "キーマップ検索",
             },
             {
-                "<leader>sl",
-                function()
-                    Snacks.picker.loclist()
-                end,
-                desc = "Location List検索",
-            },
-            {
                 "<leader>shm",
                 function()
                     Snacks.picker.man()
@@ -787,25 +766,11 @@ return {
                 desc = "プラグイン検索",
             },
             {
-                "<leader>sq",
-                function()
-                    Snacks.picker.qflist()
-                end,
-                desc = "Quickfix List検索",
-            },
-            {
                 "<leader>sR",
                 function()
                     Snacks.picker.resume()
                 end,
                 desc = "最後に使用したPickerを呼び出し",
-            },
-            {
-                "<leader>su",
-                function()
-                    Snacks.picker.undo()
-                end,
-                desc = "Undo履歴検索",
             },
             {
                 "<leader>sC",
@@ -831,13 +796,6 @@ return {
             },
 
             -- LSP
-            {
-                "<leader>ss",
-                function()
-                    Snacks.picker.lsp_symbols()
-                end,
-                desc = "LSP Symbols",
-            },
             {
                 "<leader>sS",
                 function()
@@ -873,30 +831,32 @@ return {
                     end
                     vim.print = _G.dd -- Override print to use snacks for `:=` command
 
-                    -- Create some toggle mappings
-                    Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
-                    Snacks.toggle.option("wrap", { name = "行折り返し" }):map("<leader>uw")
+                    -- Current buffer/window settings live under <leader>,.
+                    Snacks.toggle.option("spell", { name = "スペルチェック" }):map("<leader>,s")
+                    Snacks.toggle.option("wrap", { name = "行折り返し" }):map("<leader>,w")
                     Snacks.toggle
                         .option("relativenumber", { off = false, on = true, name = "相対行番号表示" })
-                        :map("<leader>uL")
-                    Snacks.toggle.diagnostics():map("<leader>ud")
+                        :map("<leader>,r")
                     Snacks.toggle
                         .option("number", { off = false, on = true, name = "行番号表示" })
-                        :map("<leader>ul")
+                        :map("<leader>,n")
                     Snacks.toggle
                         .option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 })
-                        :map("<leader>uc")
-                    Snacks.toggle.treesitter():map("<leader>uT")
+                        :map("<leader>,c")
+                    Snacks.toggle.treesitter():map("<leader>,T")
+                    Snacks.toggle.inlay_hints():map("<leader>,h")
+
+                    -- Editor-wide toggles live under <leader>.
+                    Snacks.toggle.diagnostics():map("<leader>.d")
                     Snacks.toggle
                         .option("background", { off = "light", on = "dark", name = "ダークテーマ" })
-                        :map("<leader>ub")
-                    Snacks.toggle.inlay_hints():map("<leader>uh")
-                    Snacks.toggle.indent():map("<leader>ug")
-                    Snacks.toggle.dim():map("<leader>uD")
+                        :map("<leader>.b")
+                    Snacks.toggle.indent():map("<leader>.g")
+                    Snacks.toggle.dim():map("<leader>.D")
                     -- Toggle the profiler
-                    Snacks.toggle.profiler():map("<leader>upp")
+                    Snacks.toggle.profiler():map("<leader>.pp")
                     -- Toggle the profiler highlights
-                    Snacks.toggle.profiler_highlights():map("<leader>uph")
+                    Snacks.toggle.profiler_highlights():map("<leader>.ph")
                 end,
             })
         end,

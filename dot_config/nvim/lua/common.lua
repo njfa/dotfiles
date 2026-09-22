@@ -82,7 +82,6 @@ M.on_attach_lsp = function(_, bufnr)
         {
             mode = { "n" },
             buffer = bufnr,
-            { "<leader>l", group = "LSP" },
             { "<leader>lf", "<cmd>Trouble lsp focus=true<cr>", desc = "定義/呼び出し箇所の検索" },
             { "<leader>li", "<cmd>Trouble lsp_incoming_calls focus=true<cr>", desc = "コールヒエラルキー (IN)" },
             { "<leader>lo", "<cmd>Trouble lsp_outgoing_calls focus=true<cr>", desc = "コールヒエラルキー (OUT)" },
@@ -93,20 +92,6 @@ M.on_attach_lsp = function(_, bufnr)
                     vim.lsp.buf.rename()
                 end,
                 desc = "リネーム",
-            },
-            {
-                "<leader>ln",
-                function()
-                    vim.diagnostic.jump({ count = 1, float = true })
-                end,
-                desc = "次のDiagnosticへ移動",
-            },
-            {
-                "<leader>lp",
-                function()
-                    vim.diagnostic.jump({ count = -1, float = true })
-                end,
-                desc = "前のDiagnosticへ移動",
             },
             { "<leader>la", vim.lsp.buf.code_action, desc = "コードアクション" },
         },
