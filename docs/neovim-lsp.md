@@ -14,9 +14,60 @@ Neovim 0.11.7以降を前提に、LSPは `vim.lsp.config` / `vim.lsp.enable`、�
 `java-test`、`pyright`、`ruff`、`gopls`、`debugpy`、`delve` の導入完了を確認する。
 導入中に対象ファイルを開いた場合は完了後に開き直す。旧 `pylsp` はインストール済みでも自動起動しない。
 
+## LSPの起動ポリシーと手動切替
+
+全ての管理対象LSPは原則デフォルト無効。ファイルを開くだけでは起動しない。
+Masonでのインストールは引き続き自動で行うが、インストール済み・新規インストールのどちらも
+Masonから自動有効化しない。MarkdownなどのCLI診断を提供するnone-lsも、`null-ls`という名前で切替対象に含む。
+
+起動ポリシーは `dot_config/nvim/lua/lsp_policy.lua` で管理する。
+`servers` は管理・自動インストールするサーバーの一覧、`default_enabled` は起動時に有効にする例外の一覧。
+現在の `default_enabled` は空。例えばLuaとRuffだけ自動で有効化する場合は、次のように変更する。
+
+```lua
+default_enabled = { "lua_ls", "ruff" },
+```
+
+`jdtls` や `null-ls` も `default_enabled` に指定できる。`null-ls` は別プラグインで管理するため
+`servers` には追加しない。新たな通常のLSPは `servers` に追加し、必要なら `after/lsp/<サーバー名>.lua` に設定を置く。
+対応ファイルタイプはnvim-lspconfigの設定から取得する。
+
+| 操作 | 現在のファイルタイプに対応する全LSP | 個別指定の例 |
+| --- | --- | --- |
+| 有効化 | `:LspEnable` | `:LspEnable pyright` |
+| 無効化 | `:LspDisable` | `:LspDisable ruff` |
+| 切替 | `:LspToggle` | `:LspToggle jdtls` |
+
+ノーマルモードの `<leader>.l`（Space → . → l）または `<leader>lt` で、引数なしの `:LspToggle` を実行する。
+対象が全て有効なら全て無効にし、1つでも無効なら全て有効にする。
+対象外のファイルタイプでは通知のみ行う。LSP未接続時も操作できる。
+
+| ファイルタイプの例 | まとめて切り替えるLSP |
+| --- | --- |
+| Java | jdtls |
+| Python | pyright、ruff |
+| Go / go.mod / go.work | gopls |
+| Lua | lua_ls |
+| JavaScript / TypeScript（React含む） | ts_ls |
+| Terraform | terraformls、tflint |
+| terraform-vars | terraformls |
+| Markdown | null-ls（対応する診断ソースが登録されている場合） |
+
+サーバー名はTab補完できる。`:LspStatus` で有効・無効とクライアント数を確認する。
+キーマップは `<leader>.s`。表示設定などの関連操作は [設定・切替キーマップ](neovim-keymaps.md) を参照。
+有効化は開いている対象バッファにも適用され、以降に開くファイルでも起動する。
+無効化すると、そのサーバーの全プロジェクトのクライアントを停止し、自動再起動も抑止する。
+切替は現在のNeovimセッション全体に適用され、再起動すると `default_enabled` の設定に戻る。
+有効化の表示は起動許可を示し、サーバーが接続済みとは限らない。接続状態は `:checkhealth vim.lsp` で確認する。
+
+Javaの補完・定義ジャンプ・リファクタリング・JDT LS経由のデバッグには事前の有効化が必要。
+Conformから外部コマンドを使う整形は独立して動作する。LSPを使う整形には対応するLSPの有効化が必要。
+Python・GoのデバッグはLSPと独立して動作する。
+
 ## Java / Maven
 
-`ftplugin/java.lua` がJDT LSを起動する。Mason側の自動起動から `jdtls` を除外し、クライアントの二重起動を防いでいる。
+手動操作または `default_enabled` で有効化した場合に `ftplugin/java.lua` がJDT LSを起動する。
+組み込みの `vim.lsp.enable` 経由では起動せず、nvim-jdtlsに一本化してクライアントの二重起動を防いでいる。
 ファイルの位置から次の順にルートを選ぶため、Neovimを起動したディレクトリには依存しない。
 
 1. Git境界までにある最寄りの `.jdtls-root`。
@@ -127,7 +178,7 @@ debugpyの `127.0.0.1:5678` へのattach、Goは現在のパッケージ、パ�
 
 ## 確認
 
-`:checkhealth vim.lsp` で有効な設定と接続を確認する。Javaは同じ集約ルートで1つのjdtls、
+`:checkhealth vim.lsp` で有効な設定と接続を確認する。有効化後、Javaは同じ集約ルートで1つのjdtls、
 PythonはPyrightとRuff、Goはgoplsが接続する。整形設定は `:ConformInfo` で確認できる。
 
 外部サーバーを起動しない設定テストはリポジトリ直下で実行する。

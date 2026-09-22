@@ -20,9 +20,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end,
 })
 
--- jdtls is started by ftplugin/java.lua via nvim-jdtls.
--- Keep Neovim's built-in lspconfig path disabled to avoid duplicate clients.
-vim.lsp.enable('jdtls', false)
+require("lsp_control").setup()
 
 return {
     {
@@ -106,24 +104,10 @@ return {
         },
         config = function()
             require("mason-lspconfig").setup({
-                automatic_enable = {
-                    exclude = {
-                        "jdtls",
-                        "pylsp", -- Replaced by Pyright; may still be installed in Mason.
-                    },
-                },
-                ensure_installed = {
-                    -- "rust_analyzer",
-                    "ts_ls",
-                    "lua_ls",
-                    "ruff",
-                    "pyright",
-                    "gopls",
-                    "tflint",
-                    "terraformls",
-                    "jdtls",
-                },
+                automatic_enable = false,
+                ensure_installed = require("lsp_policy").servers,
             })
+            require("lsp_control").apply_defaults()
         end,
     },
 
@@ -173,6 +157,9 @@ return {
 
             null_ls.setup({
                 debug = true,
+                should_attach = function()
+                    return require("lsp_control").is_enabled("null-ls")
+                end,
             })
         end,
     },

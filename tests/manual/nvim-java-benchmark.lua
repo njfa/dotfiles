@@ -33,6 +33,7 @@ local function wait_for(timeout, condition)
 end
 
 vim.cmd.edit(vim.fn.fnameescape(file))
+vim.cmd("LspEnable jdtls")
 local client
 assert(wait_for(120000, function()
     client = vim.lsp.get_clients({ bufnr = 0, name = "jdtls" })[1]

@@ -6,6 +6,10 @@ end
 
 vim.g.java_ignore_markdown = 1
 
+if not require("lsp_control").is_enabled("jdtls") then
+    return
+end
+
 local function get_config_dir()
     -- Unlike some other programming languages (e.g. JavaScript)
     -- lua considers 0 truthy!
