@@ -23,13 +23,8 @@ if grep -q 'npm:tree-sitter-cli\|cargo:tree-sitter-cli' "$config"; then
     exit 1
 fi
 
-if ! grep -Fq 'git config --global wt.basedir \".worktrees\"' "$config"; then
-    printf 'FAIL: expected wt.basedir to use .worktrees in %s\n' "$config" >&2
-    exit 1
-fi
-
-if [[ $(grep -Fc 'git config --global wt.copymodified true' "$config") -ne 1 ]]; then
-    printf 'FAIL: expected wt.copymodified to be configured exactly once in %s\n' "$config" >&2
+if grep -q 'git config --global wt\.' "$config"; then
+    printf 'FAIL: expected git-wt settings to be removed from %s\n' "$config" >&2
     exit 1
 fi
 
@@ -56,7 +51,6 @@ fi
 required_init_tasks=(
     tpm
     mdformat
-    git-wt
     zsh
     tmux
     sdkman
@@ -86,8 +80,8 @@ if grep -q 'DOTFILES_PATH/.env\|/\.env"\|/\.env ' "$config"; then
     exit 1
 fi
 
-if ! awk '/^\[tasks\.git-wt\]/{f=1; next} /^\[/{f=0} f' "$config" | grep -q 'GIT_WT_VERSION=v0.17.0'; then
-    printf 'FAIL: expected git-wt task to define GIT_WT_VERSION in %s\n' "$config" >&2
+if grep -q '^\[tasks\.git-wt\]' "$config"; then
+    printf 'FAIL: expected git-wt task to be removed from %s\n' "$config" >&2
     exit 1
 fi
 

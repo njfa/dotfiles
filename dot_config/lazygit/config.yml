@@ -1,18 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jesseduffield/lazygit/master/schema/config.json
 gui:
   language: 'ja'
   showIcons: true
+  # Keep the in-app key guide and help hints visible for infrequent actions.
+  showBottomLine: true
+  showPanelJumps: true
+  showRandomTip: false
+  showCommandLog: true
+  theme:
+    optionsTextColor:
+      - '#7dcfff'
 git:
   diffRenderers:
     - command: delta --dark --paging=never --no-gitconfig --true-color=auto --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
 os:
   edit: "nvim \"{{filename}}\""
   copyToClipboardCmd: 'printf "%s" {{text}} | "$HOME/.config/dotfiles/bin/tmux-copy"'
+worktree:
+  # Keep lazygit-created worktrees consistent with the existing Git convention.
+  defaultPath: ".worktrees"
+keybinding:
+  universal:
+    # Ctrl-o is tmux's prefix, so it never reaches lazygit in a tmux session.
+    copyToClipboard: 'Y'
+    # ? opens the complete context-sensitive keybinding menu.
+    optionMenu: '?'
 customCommands:
-  - key: "w"
-    description: "git wt (create/switch, no cd)"
-    context: "localBranches"
-    prompts:
-      - type: "input"
-        title: "worktree/branch name"
-        initialValue: ""
-    command: "git wt --nocd '{{index .PromptResponses 0}}'"
+  - key: '<ctrl+g>'
+    description: '操作メモを開く（読み取り専用）'
+    context: 'global'
+    command: 'nvim -M -R "$HOME/.config/lazygit/keybindings.md"'
+    output: 'terminal'

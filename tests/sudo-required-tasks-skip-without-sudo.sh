@@ -39,7 +39,6 @@ chmod +x "$tools_dir/grep"
 
 scripts=(
   etc/os/ubuntu/init/tpm.sh
-  etc/os/ubuntu/init/git-wt.sh
   etc/os/ubuntu/init/zsh.sh
   etc/os/ubuntu/init/tmux.sh
   etc/os/ubuntu/init/sdkman.sh
@@ -49,7 +48,7 @@ scripts=(
 )
 
 for script in "${scripts[@]}"; do
-  output=$(PATH="$tools_dir" DOTFILES_PATH="$repo_root" GIT_WT_VERSION=v0.17.0 TMUX_VERSION=3.6a /usr/bin/bash "$repo_root/$script" 2>&1 || true)
+  output=$(PATH="$tools_dir" DOTFILES_PATH="$repo_root" TMUX_VERSION=3.6a /usr/bin/bash "$repo_root/$script" 2>&1 || true)
   if [[ "$output" != *'sudo is unavailable and current user is not root'* ]]; then
     printf 'FAIL: expected sudo skip message for %s, got:\n%s\n' "$script" "$output" >&2
     exit 1

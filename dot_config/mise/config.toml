@@ -120,13 +120,7 @@ run = [
   "git config --global delta.true-color always",
   "git config --global delta.syntax-theme Dracula",
   "git config --global merge.conflictstyle diff3",
-  "git config --global diff.colorMoved default",
-  "git config --global wt.basedir \".worktrees\"",
-  "git config --global wt.copyuntracked true",
-  "git config --global wt.copymodified true",
-  "git config --global wt.copyignored true",
-  "git config --global --replace-all wt.nocopy \"tmp/\"",
-  "git config --global --add wt.nocopy \"*.log\""
+  "git config --global diff.colorMoved default"
 ]
 
 [tasks.default]
@@ -136,7 +130,6 @@ run = [
   "mise run git-config",
   "mise run tpm",
   "mise run mdformat",
-  "mise run git-wt",
   "mise run zsh",
   "mise run tmux",
   "mise run sdkman",
@@ -214,14 +207,6 @@ run = '''bash -lc 'set -euo pipefail
 : "${DOTFILES_PATH:?DOTFILES_PATH is required}"
 cd "$DOTFILES_PATH"
 bash etc/os/ubuntu/init/mdformat.sh'
-'''
-
-[tasks.git-wt]
-run = '''bash -lc 'set -euo pipefail
-: "${DOTFILES_PATH:?DOTFILES_PATH is required}"
-cd "$DOTFILES_PATH"
-export GIT_WT_VERSION=v0.17.0
-bash etc/os/ubuntu/init/git-wt.sh'
 '''
 
 [tasks.zsh]
