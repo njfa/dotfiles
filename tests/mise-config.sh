@@ -4,6 +4,15 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 config="$repo_root/dot_config/mise/config.toml"
 
+if ! grep -Fxq '"pipx:apm-cli" = "latest"' "$config"; then
+    printf 'FAIL: expected apm to be installed with the initial mise install in %s\n' "$config" >&2
+    exit 1
+fi
+if grep -qx '\[tasks\.apm\]' "$config" || grep -q 'mise run apm\|aka.ms/apm-unix' "$config"; then
+    printf 'FAIL: expected apm not to use a separate setup task or native installer in %s\n' "$config" >&2
+    exit 1
+fi
+
 if ! grep -Fxq '"aqua:ip7z/7zip" = "latest"' "$config"; then
     printf 'FAIL: expected 7-Zip for Yazi archives in %s\n' "$config" >&2
     exit 1

@@ -17,6 +17,7 @@ fd = "latest"
 bat = "latest"
 terraform-docs = "latest"
 "pipx:pre-commit" = "latest"
+"pipx:apm-cli" = "latest"
 jq = "latest"
 yq = "latest"
 delta = "latest"
@@ -125,7 +126,6 @@ run = [
 
 [tasks.default]
 run = [
-  "mise run apm",
   "mise run rustup",
   "mise run git-config",
   "mise run tpm",
@@ -157,11 +157,6 @@ export ORCA_SHA256_AMD64=1c7f75361c743d0d4d5618828b74e4877df8d23adfdc39eb97d4711
 export ORCA_SHA256_ARM64=be60c412b8286392f0fa98537099a172ecd4e66971bbbd657195e09239af81aa
 bash etc/os/ubuntu/opt/orca-server.sh'
 '''
-
-[tasks.apm]
-run = [
-  "curl -sSL https://aka.ms/apm-unix | sh"
-]
 
 [tasks.node-tools]
 # Global npm tools
